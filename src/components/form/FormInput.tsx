@@ -125,16 +125,36 @@ const FormInput = forwardRef<
       e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
       let newValue = e.target.value;
+      newValue = newValue.replace(/^\s+/, "");
       if (isTextboxType && maxChars && newValue.length > maxChars) {
         newValue = newValue.slice(0, maxChars);
       }
       validateContent(newValue);
 
-      // Try string first, then event (RHF)
       try {
         onChange(newValue);
       } catch (err) {
+        e.target.value = newValue;
         onChange(e);
+      }
+    };
+
+    const handleBlur = (
+      e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (trimmed !== value) {
+          try {
+            onChange(trimmed);
+          } catch (err) {
+            e.target.value = trimmed;
+            onChange(e as any);
+          }
+        }
+      }
+      if (onBlur) {
+        onBlur();
       }
     };
 
@@ -214,7 +234,7 @@ const FormInput = forwardRef<
                 ref={ref as any}
                 value={value}
                 onChange={handleChange}
-                onBlur={onBlur}
+                onBlur={handleBlur}
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(inputClasses, prefix && "rounded-l-none")}
@@ -241,7 +261,7 @@ const FormInput = forwardRef<
                 type={type}
                 value={value}
                 onChange={handleChange}
-                onBlur={onBlur}
+                onBlur={handleBlur}
                 placeholder={placeholder}
                 inputMode={inputMode}
                 disabled={disabled}
