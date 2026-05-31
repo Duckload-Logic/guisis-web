@@ -1,8 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Calendar, FileText } from "lucide-react";
 import {
   useAppointments,
   useAppointmentsStats,
@@ -13,6 +18,9 @@ import { getStatusColorKey } from "@/config/constants";
 import { getMonthsList, getYearsList, getMonthRange } from "@/utils";
 import { Dropdown } from "@/components/form";
 import { usePageMetadata } from "@/context";
+import { Button } from "@/components/ui/button";
+import { ReportModal } from "@/components/shared/ReportModal";
+import { appointmentService } from "@/features/appointments/services";
 
 export default function AppointmentLogs() {
   const navigate = useNavigate();
@@ -55,8 +63,28 @@ export default function AppointmentLogs() {
   const [statusFilter, setStatusFilter] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportData, setReportData] = useState<Appointment[]>([]);
+  const [isReportLoading, setIsReportLoading] = useState(false);
 
   const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const handleGenerateReport = async () => {
+    setIsReportLoading(true);
+    try {
+      const response = await appointmentService.GetAllAppointments({
+        pageSize: 1000,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      });
+      setReportData(response.appointments || []);
+      setIsReportOpen(true);
+    } catch (error) {
+      console.error("Failed to generate report", error);
+    } finally {
+      setIsReportLoading(false);
+    }
+  };
 
   // Get date range from selected year/month
   const dateRange = useMemo(() => {
@@ -119,7 +147,8 @@ export default function AppointmentLogs() {
   usePageMetadata({
     title: "Appointment Logs",
     description:
-      "Historical record of all counseling sessions with date and status filters",
+      "Historical record of all counseling sessions with " +
+      "date and status filters",
     badgeText: "Audit Trail",
     badgeIcon: <Calendar className="h-4 w-4" />,
     isLoading: isPageLoading,
@@ -135,7 +164,12 @@ export default function AppointmentLogs() {
   return (
     <div className="space-y-6">
       {/* Filters Section */}
-      <Card className="bg-glass-bg/40 border-glass-border shadow-2xl backdrop-blur-2xl">
+      <Card
+        className={
+          "bg-glass-bg/40 border-glass-border " +
+          "shadow-2xl backdrop-blur-2xl"
+        }
+      >
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -156,6 +190,16 @@ export default function AppointmentLogs() {
               value={selectedMonth.id}
               onChange={handleMonthChange}
             />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              onClick={handleGenerateReport}
+              disabled={isReportLoading}
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              {isReportLoading ? "Generating..." : "Generate Monthly Report"}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -181,6 +225,15 @@ export default function AppointmentLogs() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         totalPages={totalPages}
+      />
+
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        type="appointments"
+        monthName={selectedMonth.name}
+        yearName={selectedYear.name}
+        data={reportData}
       />
     </div>
   );

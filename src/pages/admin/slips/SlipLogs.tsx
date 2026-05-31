@@ -1,14 +1,22 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Calendar, FileText } from "lucide-react";
 import { useSlipLogs, useGetSlipStats } from "@/features/slips/hooks";
 import type { Slip, SlipStatus } from "@/features/slips/types";
 import { SlipList } from "@/features/slips/components";
 import { getMonthsList, getYearsList, getMonthRange } from "@/utils";
 import { Dropdown } from "@/components/form";
 import { usePageMetadata } from "@/context";
+import { Button } from "@/components/ui/button";
+import { ReportModal } from "@/components/shared/ReportModal";
+import { slipService } from "@/features/slips/services";
 
 export default function SlipLogs() {
   const navigate = useNavigate();
@@ -51,8 +59,28 @@ export default function SlipLogs() {
   const [statusFilter, setStatusFilter] = useState<string>("0");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportData, setReportData] = useState<Slip[]>([]);
+  const [isReportLoading, setIsReportLoading] = useState(false);
 
   const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const handleGenerateReport = async () => {
+    setIsReportLoading(true);
+    try {
+      const response = await slipService.GetAllSlips({
+        pageSize: 1000,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      });
+      setReportData(response.slips || []);
+      setIsReportOpen(true);
+    } catch (error) {
+      console.error("Failed to generate report", error);
+    } finally {
+      setIsReportLoading(false);
+    }
+  };
 
   // Get date range from selected year/month
   const dateRange = useMemo(() => {
@@ -111,7 +139,8 @@ export default function SlipLogs() {
   usePageMetadata({
     title: "Admission Slip Logs",
     description:
-      "Historical record of all processed admission slips with date and status filters",
+      "Historical record of all processed admission slips with " +
+      "date and status filters",
     badgeText: "Audit Trail",
     badgeIcon: <Calendar className="h-4 w-4" />,
     isLoading: isPageLoading,
@@ -143,6 +172,16 @@ export default function SlipLogs() {
                 onChange={handleMonthChange}
               />
             </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                onClick={handleGenerateReport}
+                disabled={isReportLoading}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                {isReportLoading ? "Generating..." : "Generate Monthly Report"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -170,6 +209,15 @@ export default function SlipLogs() {
           }}
         />
       </div>
+
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        type="slips"
+        monthName={selectedMonth.name}
+        yearName={selectedYear.name}
+        data={reportData}
+      />
     </>
   );
 }
