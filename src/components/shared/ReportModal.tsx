@@ -607,15 +607,19 @@ export function ReportModal({
             }
           >
             <h3
-              className="font-semibold text-xs tracking-wider " +
+              className={
+                "font-semibold text-xs tracking-wider " +
                 "text-muted-foreground uppercase"
+              }
             >
               Statistical Summary
             </h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div
-                className="flex justify-between items-center py-1 " +
+                className={
+                  "flex justify-between items-center py-1 " +
                   "border-b border-border/50"
+                }
               >
                 <span className="text-muted-foreground">Total Count:</span>
                 <span className="font-bold text-foreground">
@@ -630,8 +634,10 @@ export function ReportModal({
                   {Object.entries(categoryStats).map(([cat, count]) => (
                     <div
                       key={cat}
-                      className="flex justify-between py-1 border-b " +
+                      className={
+                        "flex justify-between py-1 border-b " +
                         "border-border/20"
+                      }
                     >
                       <span className="text-muted-foreground">{cat}:</span>
                       <span className="font-semibold text-foreground">

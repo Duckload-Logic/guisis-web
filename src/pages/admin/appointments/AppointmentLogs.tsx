@@ -1,12 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, FileText } from "lucide-react";
 import {
   useAppointments,
@@ -166,8 +161,7 @@ export default function AppointmentLogs() {
       {/* Filters Section */}
       <Card
         className={
-          "bg-glass-bg/40 border-glass-border " +
-          "shadow-2xl backdrop-blur-2xl"
+          "bg-glass-bg/40 border-glass-border " + "shadow-md backdrop-blur-md"
         }
       >
         <CardHeader>
