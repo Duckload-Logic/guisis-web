@@ -51,7 +51,8 @@ export default function Dropdown({
   labelKey?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedOption = options.find(
+  const safeOptions = options || [];
+  const selectedOption = safeOptions.find(
     (opt) => String(opt[identifier]) === String(value),
   );
   const isFilled = selectedOption !== undefined && value !== "";
@@ -71,7 +72,7 @@ export default function Dropdown({
   };
 
   const handleSelect = (optionValue: string) => {
-    const selected = options.find(
+    const selected = safeOptions.find(
       (opt) => String(opt[identifier]) === optionValue,
     );
     if (selected) {
@@ -169,7 +170,7 @@ export default function Dropdown({
                   <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
                 )}
                 <CommandGroup>
-                  {options.map((option, index) => {
+                  {safeOptions.map((option, index) => {
                     const optId = option?.[identifier];
                     const key =
                       optId !== undefined ? String(optId) : `opt-${index}`;
