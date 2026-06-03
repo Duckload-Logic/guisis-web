@@ -416,25 +416,28 @@ const Documentation: React.FC = () => {
       >
         <DialogContent
           className={cn(
-            "max-w-2xl max-h-[80vh] flex flex-col p-0",
+            "flex max-h-[80vh] max-w-2xl flex-col p-0",
             "border-white/5 bg-glass-bg backdrop-blur-md",
           )}
         >
           <div
             className={cn(
               "flex items-center justify-between",
-              "border-b border-white/5 bg-white/[0.02] p-6",
+              "border-b border-white/5 p-6",
             )}
           >
             <div className="space-y-1">
               <DialogTitle className="text-xl font-bold">
                 Schema Definition
               </DialogTitle>
-              <DialogDescription
-                className="font-mono text-xs text-muted-foreground"
-              >
-                {selectedSchema?.name}
-              </DialogDescription>
+              {(() => {
+                const descCls = "font-mono text-xs text-muted-foreground";
+                return (
+                  <DialogDescription className={descCls}>
+                    {selectedSchema?.name}
+                  </DialogDescription>
+                );
+              })()}
             </div>
             <button
               onClick={() => setIsSchemaModalOpen(false)}
