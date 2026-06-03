@@ -435,8 +435,8 @@ function CalendarContent({
                 {isAdmin && statsMap[dateKey] && (
                   <div
                     className={cn(
-                      "pointer-events-none absolute flex -translate-y-1 transform",
-                      "justify-center -space-x-1",
+                      "pointer-events-none absolute left-1/2 top-0 flex",
+                      "-translate-x-1/2 -translate-y-1/2 -space-x-1",
                     )}
                   >
                     {/* Rescheduled is first in row-reverse order */}
