@@ -417,7 +417,7 @@ const Documentation: React.FC = () => {
         <DialogContent
           className={cn(
             "flex max-h-[80vh] max-w-2xl flex-col p-0",
-            "border-white/5 bg-glass-bg backdrop-blur-md",
+            "border-white/5 bg-background",
           )}
         >
           <div
