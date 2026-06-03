@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchInput from "@/components/form/SearchInput";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Endpoint {
   path: string;
@@ -419,20 +420,20 @@ const Documentation: React.FC = () => {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="glass-card relative z-[101] flex max-h-[80vh] w-full max-w-2xl flex-col"
             >
-              <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] p-6">
-                <div className="space-y-1">
+              <Card>
+                <CardContent className="space-y-1">
                   <h3 className="text-xl font-bold">Schema Definition</h3>
                   <p className="font-mono text-xs text-muted-foreground">
                     {selectedSchema.name}
                   </p>
-                </div>
+                </CardContent>
                 <button
                   onClick={() => setIsSchemaModalOpen(false)}
                   className="rounded-lg p-2 transition-colors hover:bg-white/5"
                 >
                   <X size={20} />
                 </button>
-              </div>
+              </Card>
 
               <div className="custom-scrollbar overflow-y-auto p-6">
                 <div className="overflow-x-auto rounded-xl border border-white/5 bg-black/40 p-6">
