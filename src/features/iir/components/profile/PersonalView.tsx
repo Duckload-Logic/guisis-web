@@ -24,7 +24,14 @@ export default function PersonalView({
     { label: "Last Name", value: asText(basicInfo?.lastName) },
     { label: "Gender", value: asText(personalInfo?.gender?.name) },
     { label: "Civil Status", value: asText(personalInfo?.civilStatus?.name) },
-    { label: "Religion", value: asText(personalInfo?.religion?.name) },
+    {
+      label: "Religion",
+      value:
+        personalInfo?.religion?.name === "Others" &&
+        personalInfo?.otherReligionText
+          ? `Others (${personalInfo.otherReligionText})`
+          : asText(personalInfo?.religion?.name),
+    },
     { label: "Height (m)", value: asText(personalInfo?.heightM) },
     { label: "Weight (kg)", value: asText(personalInfo?.weightKg) },
     { label: "Complexion", value: asText(personalInfo?.complexion) },
