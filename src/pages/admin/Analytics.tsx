@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAnalyticsDashboard } from "@/features/analytics/hooks/useAnalyticsDashboard";
 import {
   Card,
@@ -38,7 +38,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCourses, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
@@ -49,6 +48,10 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from "@/components/ui/responsive-modal";
+import { useQuery } from "@tanstack/react-query";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
 
 // --- THEME COLORS ---
 const COLORS = [
@@ -93,6 +96,12 @@ export default function AnalyticsPage() {
   const [selectedYear, setSelectedYear] = useState<string>("0");
   const [selectedCourse, setSelectedCourse] = useState<string>("0");
 
+  const { data: settings, isLoading: isSettingsLoading } = useQuery({
+    queryKey: ["counselor", "academicSettings"],
+    queryFn: GetAcademicSettings,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const {
     data,
     loading,
@@ -116,6 +125,28 @@ export default function AnalyticsPage() {
   }, [coursesData]);
   const { data: enrollmentYears } = useEnrollmentYears();
 
+  const [hasSetDefaultYear, setHasSetDefaultYear] = useState(false);
+
+  useEffect(() => {
+    if (settings?.currentYearStart && !hasSetDefaultYear) {
+      const yearStr = settings.currentYearStart.toString();
+      setSelectedYear(yearStr);
+      setHasSetDefaultYear(true);
+      refresh(settings.currentYearStart, parseInt(selectedCourse), 0);
+    } else if (!settings && !isSettingsLoading && !hasSetDefaultYear) {
+      const fallbackYear = new Date().getFullYear();
+      setSelectedYear(fallbackYear.toString());
+      setHasSetDefaultYear(true);
+      refresh(fallbackYear, parseInt(selectedCourse), 0);
+    }
+  }, [
+    settings,
+    isSettingsLoading,
+    hasSetDefaultYear,
+    selectedCourse,
+    refresh,
+  ]);
+
   // Update filters and refresh
   const handleYearChange = (val: string) => {
     setSelectedYear(val);
@@ -128,15 +159,16 @@ export default function AnalyticsPage() {
   };
 
   const yearOptions = useMemo(() => {
-    const years = enrollmentYears || [];
-    return [
-      { value: "0", label: "All Years" },
-      ...years.map((y: number) => ({
-        value: y.toString(),
-        label: y.toString(),
-      })),
-    ];
-  }, [enrollmentYears]);
+    const years = [...(enrollmentYears || [])];
+    const currentYear = settings?.currentYearStart;
+    if (currentYear && !years.includes(currentYear)) {
+      years.unshift(currentYear);
+    }
+    return years.map((y: number) => ({
+      value: y.toString(),
+      label: y.toString(),
+    }));
+  }, [enrollmentYears, settings]);
 
   const headerActions = useMemo(
     () => (
@@ -245,688 +277,91 @@ export default function AnalyticsPage() {
         message="Generating Document..."
       />
       <div className="animate-in fade-in space-y-8 duration-700">
-        <Tabs
-          defaultValue="overview"
-          className="space-y-8"
-        >
-          <div className="flex items-center justify-between border-b pb-4">
-            <TabsList className="gap-2 bg-background/50 backdrop-blur-sm">
-              {[
-                { label: "Overview", value: "overview" },
-                { label: "Demographics", value: "demographics" },
-                { label: "Academic", value: "academic" },
-                { label: "Family & Social", value: "family" },
-              ].map((tab) => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className={cn(
-                    "px-6 text-xs font-semibold uppercase",
-                    "data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground",
-                  )}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left Column: Gender Distribution Chart */}
+          <ChartCard
+            title="Gender Distribution"
+            description="Total student body split"
+            className="lg:col-span-1"
+          >
+            <ChartContainer
+              config={genderDistributionConfig}
+              className="mx-auto aspect-square max-h-[300px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={data?.genderDistribution ?? []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="total"
+                  nameKey="category"
+                  isAnimationActive={false}
                 >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  {(data?.genderDistribution ?? []).map((gender) => (
+                    <Cell
+                      key={gender.category}
+                      fill={
+                        gender.category === "Male"
+                          ? "var(--color-Male)"
+                          : "var(--color-Female)"
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  iconType="circle"
+                />
+              </PieChart>
+            </ChartContainer>
+          </ChartCard>
+
+          {/* Right Columns: KPIs */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
+            <KPICard
+              title="Total Population"
+              value={data?.totalStudents?.toLocaleString() ?? "0"}
+              subtitle="Enrolled Students"
+              icon={<Users className="h-5 w-5 text-primary" />}
+              gradient="from-primary/10 via-background to-background"
+            />
+            <KPICard
+              title="Gender Balance"
+              value={
+                data?.genderDistribution?.[0]
+                  ? `${data.genderDistribution[0].totalPct}%`
+                  : "0%"
+              }
+              subtitle={`${
+                data?.genderDistribution?.[0]?.category || "N/A"
+              } Majority`}
+              icon={<Network className="h-5 w-5 text-indigo-500" />}
+              gradient="from-indigo-500/10 via-background to-background"
+            />
+            <KPICard
+              title="Top Location"
+              value={data?.cityAddress?.[0]?.category || "None"}
+              subtitle="Primary Residence"
+              icon={<MapPin className="h-5 w-5 text-emerald-500" />}
+              gradient="from-emerald-500/10 via-background to-background"
+            />
+            <KPICard
+              title="Metric Depth"
+              value={(Object.keys(data || {}).length - 1).toString()}
+              subtitle="Datasets Analyzed"
+              icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
+              gradient="from-amber-500/10 via-background to-background"
+            />
           </div>
-
-          <TabsContent
-            value="overview"
-            className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* Left Column: Gender Distribution Chart */}
-              <ChartCard
-                title="Gender Distribution"
-                description="Total student body split"
-                className="lg:col-span-1"
-              >
-                <ChartContainer
-                  config={genderDistributionConfig}
-                  className="mx-auto aspect-square max-h-[300px]"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={data?.genderDistribution ?? []}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="total"
-                      nameKey="category"
-                      isAnimationActive={false}
-                    >
-                      {(data?.genderDistribution ?? []).map((gender) => (
-                        <Cell
-                          key={gender.category}
-                          fill={
-                            gender.category === "Male"
-                              ? "var(--color-Male)"
-                              : "var(--color-Female)"
-                          }
-                        />
-                      ))}
-                    </Pie>
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      iconType="circle"
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </ChartCard>
-
-              {/* Right Columns: KPIs */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
-                <KPICard
-                  title="Total Population"
-                  value={data?.totalStudents?.toLocaleString() ?? "0"}
-                  subtitle="Enrolled Students"
-                  icon={<Users className="h-5 w-5 text-primary" />}
-                  gradient="from-primary/10 via-background to-background"
-                />
-                <KPICard
-                  title="Gender Balance"
-                  value={
-                    data?.genderDistribution?.[0]
-                      ? `${data.genderDistribution[0].totalPct}%`
-                      : "0%"
-                  }
-                  subtitle={`${
-                    data?.genderDistribution?.[0]?.category || "N/A"
-                  } Majority`}
-                  icon={<Network className="h-5 w-5 text-indigo-500" />}
-                  gradient="from-indigo-500/10 via-background to-background"
-                />
-                <KPICard
-                  title="Top Location"
-                  value={data?.cityAddress?.[0]?.category || "None"}
-                  subtitle="Primary Residence"
-                  icon={<MapPin className="h-5 w-5 text-emerald-500" />}
-                  gradient="from-emerald-500/10 via-background to-background"
-                />
-                <KPICard
-                  title="Metric Depth"
-                  value={(Object.keys(data || {}).length - 1).toString()}
-                  subtitle="Datasets Analyzed"
-                  icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
-                  gradient="from-amber-500/10 via-background to-background"
-                />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="demographics"
-            className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <ChartCard
-                title="Age Distribution"
-                description="Grouped by Gender vs Total per age group"
-                className="lg:col-span-2"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    data={data?.ageDistribution ?? []}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend
-                      verticalAlign="top"
-                      height={36}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Religion"
-                description="Spiritual background distribution with gender split"
-                className="lg:col-span-1"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    layout="vertical"
-                    data={(data?.religions ?? []).slice(0, 5)}
-                    margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      hide
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      width={100}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="academic"
-            className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <ChartCard
-                title="High School GWA"
-                description="Academic performance with gender split"
-                className="lg:col-span-2"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    data={data?.highSchoolGWA ?? []}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend
-                      verticalAlign="top"
-                      height={36}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Performance Brackets"
-                description="Secondary GWA with gender breakdown"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    layout="vertical"
-                    data={data?.highSchoolGWA ?? []}
-                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      hide
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      width={80}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Educational Background"
-                description="School types by education level with gender split"
-                className="lg:col-span-3"
-              >
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <MiniBarChart
-                    title="Elementary"
-                    data={data?.elementary ?? []}
-                  />
-                  <MiniBarChart
-                    title="High School"
-                    data={data?.highSchool ?? []}
-                  />
-                  <MiniBarChart
-                    title="Vocational"
-                    data={data?.vocational ?? []}
-                  />
-                  <MiniBarChart
-                    title="College"
-                    data={data?.college ?? []}
-                  />
-                </div>
-              </ChartCard>
-
-              <CityDistributionCard data={data?.cityAddress ?? []} />
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="family"
-            className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-          >
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <ChartCard
-                title="Monthly Family Income"
-                description="Grouped by gender and income bracket"
-                className="lg:col-span-2"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    layout="vertical"
-                    data={data?.monthlyIncome ?? []}
-                    margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      width={100}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend
-                      verticalAlign="top"
-                      height={36}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={10}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={10}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={10}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Parent Marital Status"
-                description="Family structure indicators by gender"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[250px] w-full"
-                >
-                  <BarChart
-                    layout="vertical"
-                    data={data?.parentsMaritalStatus ?? []}
-                    margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      hide
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      width={100}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Study Environment"
-                description="Quiet place to study (Yes/No) by gender"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[200px] w-full"
-                >
-                  <BarChart
-                    layout="vertical"
-                    data={data?.quietStudyPlace ?? []}
-                    margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      type="number"
-                      hide
-                    />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      width={80}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Total"
-                      dataKey="total"
-                      fill="var(--color-total)"
-                      radius={[0, 4, 4, 0]}
-                      barSize={8}
-                      opacity={0.3}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-
-              <ChartCard
-                title="Ordinal Position"
-                description="Rank in the family by gender distribution"
-              >
-                <ChartContainer
-                  config={genderSplitConfig}
-                  className="aspect-auto h-[300px] w-full"
-                >
-                  <BarChart
-                    data={data?.ordinalPosition ?? []}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="hsl(var(--border))"
-                    />
-                    <XAxis
-                      dataKey="category"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{
-                        fontSize: 10,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Male"
-                      dataKey="maleCount"
-                      fill="var(--color-maleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      name="Female"
-                      dataKey="femaleCount"
-                      fill="var(--color-femaleCount)"
-                      radius={[4, 4, 0, 0]}
-                      barSize={20}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              </ChartCard>
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
 
         <ResponsiveModal
           open={!!pdfUrl}

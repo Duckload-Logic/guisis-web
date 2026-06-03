@@ -110,9 +110,8 @@ export function useAnalyticsDashboard() {
   }, [pdfUrl]);
 
   useEffect(() => {
-    fetchDashboard();
     fetchCourses();
-  }, [fetchDashboard, fetchCourses]);
+  }, [fetchCourses]);
 
   return {
     data,
