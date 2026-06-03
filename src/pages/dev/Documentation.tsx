@@ -417,13 +417,13 @@ const Documentation: React.FC = () => {
         <DialogContent
           className={cn(
             "flex max-h-[80vh] max-w-2xl flex-col p-0",
-            "border-white/5 bg-background",
+            "border-muted bg-background",
           )}
         >
           <div
             className={cn(
               "flex items-center justify-between",
-              "border-b border-white/5 p-6",
+              "border-b border-muted p-6",
             )}
           >
             <div className="space-y-1">
@@ -439,19 +439,12 @@ const Documentation: React.FC = () => {
                 );
               })()}
             </div>
-            <button
-              onClick={() => setIsSchemaModalOpen(false)}
-              className="rounded-lg p-2 transition-colors hover:bg-white/5"
-            >
-              <X size={20} />
-            </button>
           </div>
 
           <div className="custom-scrollbar overflow-y-auto p-6">
             <div
               className={cn(
-                "overflow-x-auto rounded-xl border",
-                "border-white/5 bg-black/40 p-6",
+                "overflow-x-auto rounded-xl border bg-background p-6",
               )}
             >
               <pre className="font-mono text-sm leading-relaxed">
