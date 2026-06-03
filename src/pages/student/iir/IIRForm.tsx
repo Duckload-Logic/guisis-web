@@ -9,10 +9,7 @@ import {
   useIIRProfile,
 } from "@/features/iir/hooks";
 import { IIRForm as IIRFormType } from "@/features/iir/types";
-import {
-  EMPTY_IIR_FORM,
-  COMPLETE_IIR_FORM as completeIIRForm,
-} from "@/features/iir/constants";
+import { EMPTY_IIR_FORM } from "@/features/iir/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { usePageMetadata } from "@/context";
 import { useToast } from "@/context";
@@ -209,8 +206,7 @@ export default function IIRForm() {
 
       const sourceData = isEditMode ? editProfileData || draft : draft;
       const initializedData = initializeFormData(
-        // sourceData ?? null,
-        completeIIRForm,
+        sourceData ?? null,
         EMPTY_IIR_FORM,
         me,
         { preserveBasicInfoFromSource: isEditMode },

@@ -186,8 +186,8 @@ export const COMPLETE_IIR_FORM: IIRForm = {
         address: {
           region: { id: 1, code: "1300000000" },
           province: null,
-          city: { id: 1, code: "133900000" },
-          barangay: { id: 1, code: "133901001" },
+          city: { id: 1, code: "1380601000" },
+          barangay: { id: 1, code: "1380601001" },
           streetDetail: "123 Street",
         },
       },
@@ -198,8 +198,8 @@ export const COMPLETE_IIR_FORM: IIRForm = {
         address: {
           region: { id: 1, code: "1300000000" },
           province: null,
-          city: { id: 1, code: "133900000" },
-          barangay: { id: 1, code: "133901001" },
+          city: { id: 1, code: "1380601000" },
+          barangay: { id: 1, code: "1380601001" },
           streetDetail: "123 Street",
         },
       },
@@ -208,8 +208,8 @@ export const COMPLETE_IIR_FORM: IIRForm = {
         address: {
           region: { id: 1, code: "1300000000" },
           province: null,
-          city: { id: 1, code: "133900000" },
-          barangay: { id: 1, code: "133901001" },
+          city: { id: 1, code: "1380601000" },
+          barangay: { id: 1, code: "1380601001" },
           streetDetail: "123 Street",
         },
       },
