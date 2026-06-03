@@ -15,7 +15,13 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchInput from "@/components/form/SearchInput";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface Endpoint {
   path: string;
@@ -404,48 +410,55 @@ const Documentation: React.FC = () => {
           );
         })}
       </div>
-      <AnimatePresence>
-        {isSchemaModalOpen && selectedSchema && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+      <Dialog
+        open={isSchemaModalOpen}
+        onOpenChange={setIsSchemaModalOpen}
+      >
+        <DialogContent
+          className={cn(
+            "max-w-2xl max-h-[80vh] flex flex-col p-0",
+            "border-white/5 bg-glass-bg backdrop-blur-md",
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center justify-between",
+              "border-b border-white/5 bg-white/[0.02] p-6",
+            )}
+          >
+            <div className="space-y-1">
+              <DialogTitle className="text-xl font-bold">
+                Schema Definition
+              </DialogTitle>
+              <DialogDescription
+                className="font-mono text-xs text-muted-foreground"
+              >
+                {selectedSchema?.name}
+              </DialogDescription>
+            </div>
+            <button
               onClick={() => setIsSchemaModalOpen(false)}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass-card relative z-[101] flex max-h-[80vh] w-full max-w-2xl flex-col"
+              className="rounded-lg p-2 transition-colors hover:bg-white/5"
             >
-              <Card>
-                <CardContent className="space-y-1">
-                  <h3 className="text-xl font-bold">Schema Definition</h3>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {selectedSchema.name}
-                  </p>
-                </CardContent>
-                <button
-                  onClick={() => setIsSchemaModalOpen(false)}
-                  className="rounded-lg p-2 transition-colors hover:bg-white/5"
-                >
-                  <X size={20} />
-                </button>
-              </Card>
-
-              <div className="custom-scrollbar overflow-y-auto p-6">
-                <div className="overflow-x-auto rounded-xl border border-white/5 bg-black/40 p-6">
-                  <pre className="font-mono text-sm leading-relaxed">
-                    {JSON.stringify(selectedSchema.schema, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            </motion.div>
+              <X size={20} />
+            </button>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="custom-scrollbar overflow-y-auto p-6">
+            <div
+              className={cn(
+                "overflow-x-auto rounded-xl border",
+                "border-white/5 bg-black/40 p-6",
+              )}
+            >
+              <pre className="font-mono text-sm leading-relaxed">
+                {selectedSchema &&
+                  JSON.stringify(selectedSchema.schema, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
