@@ -922,7 +922,7 @@ export const InterestsSection = forwardRef<
                   <h5 className="mb-6 text-[10px] uppercase tracking-[0.2em] text-primary sm:mb-8">
                     Occupational Role/Position:
                   </h5>
-                  <div className="grid grid-cols-2 items-start gap-5 sm:grid-cols-4 sm:gap-6">
+                  <div className="grid grid-cols-1 items-start gap-5 sm:gap-6 md:grid-cols-2">
                     {ROLE_OPTIONS.map((role, idx) => (
                       <Checkbox
                         key={role}
@@ -933,7 +933,7 @@ export const InterestsSection = forwardRef<
                         onCheckedChange={() => toggleRole(role)}
                       />
                     ))}
-                    <div className="col-span-2 space-y-4">
+                    <div className="space-y-4">
                       <Checkbox
                         id="role-others-check"
                         name="occupational_role"

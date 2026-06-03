@@ -231,9 +231,7 @@ export const PersonalSection = forwardRef<
             delete updated[
               `student.addresses.${PROVINCIAL_IDX}.address.province`
             ];
-            delete updated[
-              `student.addresses.${PROVINCIAL_IDX}.address.city`
-            ];
+            delete updated[`student.addresses.${PROVINCIAL_IDX}.address.city`];
             delete updated[
               `student.addresses.${PROVINCIAL_IDX}.address.barangay`
             ];
@@ -325,7 +323,7 @@ export const PersonalSection = forwardRef<
       : undefined,
   );
 
-  // Get provinces for residential address
+  // Get provinces for permanent address
   const { data: residentialProvinces = [] } = useGetProvinces(
     !isResidentialNCR && addressRegion.residential?.code
       ? addressRegion.residential.code
@@ -346,7 +344,7 @@ export const PersonalSection = forwardRef<
       addressProvince.provincial?.code || "",
     );
 
-  // Get cities for residential address
+  // Get cities for permanent address
   const {
     data: residentialCities = [],
     isLoading: isResidentialCitiesLoading,
@@ -368,7 +366,7 @@ export const PersonalSection = forwardRef<
     isLoading: isProvincialBarangaysLoading,
   } = useGetBarangays(addressCity.provincial?.code || "");
 
-  // Get barangays for residential address
+  // Get barangays for permanent address
   const {
     data: residentialBarangays = [],
     isLoading: isResidentialBarangaysLoading,
@@ -967,15 +965,15 @@ export const PersonalSection = forwardRef<
         <>
           <SectionContainer
             title="Address Information"
-            description="Permanent and current residential address"
+            description="Permanent and current permanent address"
             icon={MapPin}
           >
             <div className="flex flex-col gap-10">
-              {/* Residential Address */}
+              {/* Permanent Address */}
               <div>
                 <h4 className="mb-6 flex items-center gap-2 text-sm font-bold text-foreground/80">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Residential Address
+                  Permanent Address
                 </h4>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <Dropdown
@@ -1086,7 +1084,7 @@ export const PersonalSection = forwardRef<
                   </h4>
                   <Checkbox
                     id="provincialSameAsResidential"
-                    label="Same as residential address"
+                    label="Same as permanent address"
                     name="provincialSameAsResidential"
                     checked={provincialSync.isSynced}
                     onCheckedChange={(checked: any) =>
@@ -1111,8 +1109,7 @@ export const PersonalSection = forwardRef<
                     get="code"
                     identifier="code"
                     value={
-                      addressRegion.provincial?.code ||
-                      ({ code: "" } as Region)
+                      addressRegion.provincial?.code || ({ code: "" } as Region)
                     }
                     onChange={(val: any) => {
                       onChange(
@@ -1229,15 +1226,13 @@ export const PersonalSection = forwardRef<
                     }}
                     lockedReason={
                       provincialSync.isReadOnly
-                        ? "Synced with Residential Address"
+                        ? "Synced with Permanent Address"
                         : !addressRegion.provincial?.code
                           ? "Select a Region first"
                           : ""
                     }
                     error={
-                      errors[
-                        `student.addresses.${PROVINCIAL_IDX}.address.city`
-                      ]
+                      errors[`student.addresses.${PROVINCIAL_IDX}.address.city`]
                     }
                     required
                   />
@@ -1272,7 +1267,7 @@ export const PersonalSection = forwardRef<
                     }}
                     lockedReason={
                       provincialSync.isReadOnly
-                        ? "Synced with Residential Address"
+                        ? "Synced with Permanent Address"
                         : !addressCity.provincial?.code
                           ? "Select a City first"
                           : ""
@@ -1467,7 +1462,7 @@ export const PersonalSection = forwardRef<
                   </h4>
                   <Checkbox
                     id="emergencySameAsResidential"
-                    label="Same as residential address"
+                    label="Same as permanent address"
                     name="emergencySameAsResidential"
                     checked={emergencySync.isSynced}
                     onCheckedChange={(checked: any) =>
@@ -1610,7 +1605,7 @@ export const PersonalSection = forwardRef<
                     }}
                     lockedReason={
                       emergencySync.isReadOnly
-                        ? "Synced with Residential Address"
+                        ? "Synced with Permanent Address"
                         : !addressRegion.emergency?.code
                           ? "Select a Region first"
                           : ""
@@ -1653,7 +1648,7 @@ export const PersonalSection = forwardRef<
                     }}
                     lockedReason={
                       emergencySync.isReadOnly
-                        ? "Synced with Residential Address"
+                        ? "Synced with Permanent Address"
                         : !addressCity.emergency?.code
                           ? "Select a City first"
                           : ""

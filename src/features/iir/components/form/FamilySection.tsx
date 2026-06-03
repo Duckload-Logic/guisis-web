@@ -372,6 +372,29 @@ export const FamilySection = forwardRef<
   const { data: relationshipOptions } = useStudentRelationshipTypes();
   const { data: attainmentOptions } = useEducationalAttainments();
 
+  const isSiblingNA =
+    family?.background?.brothers === 0 &&
+    family?.background?.sisters === 0 &&
+    family?.background?.employedSiblings === 0 &&
+    family?.background?.ordinalPosition === 1;
+
+  const handleToggleSiblingNA = (
+    checked: boolean | "indeterminate",
+  ) => {
+    if (checked === true) {
+      handleInputChange("family.background.brothers", 0);
+      handleInputChange("family.background.sisters", 0);
+      handleInputChange("family.background.employedSiblings", 0);
+      handleInputChange("family.background.ordinalPosition", 1);
+      handleInputChange("family.background.siblingSupportTypes", []);
+    } else {
+      handleInputChange("family.background.brothers", "");
+      handleInputChange("family.background.sisters", "");
+      handleInputChange("family.background.employedSiblings", "");
+      handleInputChange("family.background.ordinalPosition", "");
+    }
+  };
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [otherTouched, setOtherTouched] = useState(false);
   const otherInputRef = useRef<HTMLInputElement | null>(null);
@@ -958,12 +981,28 @@ export const FamilySection = forwardRef<
                 description="Family composition and support structure"
                 icon={Users}
               >
-                <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+                <div className="mb-6">
+                  <Checkbox
+                    id="sibling-na"
+                    name="siblingNA"
+                    label="Not Applicable (Only Child)"
+                    checked={isSiblingNA}
+                    onCheckedChange={handleToggleSiblingNA}
+                  />
+                </div>
+
+                <div
+                  className={cn(
+                    "mb-8 grid grid-cols-1 gap-4",
+                    "sm:grid-cols-2 sm:gap-6 lg:grid-cols-4",
+                  )}
+                >
                   <FormInput
                     name="family.background.brothers"
                     label="Brothers"
                     type="number"
-                    required
+                    required={!isSiblingNA}
+                    disabled={isSiblingNA}
                     value={family?.background?.brothers ?? ""}
                     onChange={(val) =>
                       handleInputChange(
@@ -978,7 +1017,8 @@ export const FamilySection = forwardRef<
                     name="family.background.sisters"
                     label="Sisters"
                     type="number"
-                    required
+                    required={!isSiblingNA}
+                    disabled={isSiblingNA}
                     value={family?.background?.sisters ?? ""}
                     onChange={(val) =>
                       handleInputChange(
@@ -993,7 +1033,8 @@ export const FamilySection = forwardRef<
                     name="family.background.employedSiblings"
                     label="Employed Siblings"
                     type="number"
-                    required
+                    required={!isSiblingNA}
+                    disabled={isSiblingNA}
                     value={family?.background?.employedSiblings ?? ""}
                     onChange={(val) =>
                       handleInputChange(
@@ -1008,7 +1049,8 @@ export const FamilySection = forwardRef<
                     name="family.background.ordinalPosition"
                     label="Your Birth Order"
                     type="number"
-                    required
+                    required={!isSiblingNA}
+                    disabled={isSiblingNA}
                     value={family?.background?.ordinalPosition ?? ""}
                     onChange={(val) =>
                       handleInputChange(
@@ -1022,7 +1064,12 @@ export const FamilySection = forwardRef<
                 </div>
 
                 <div className="space-y-4">
-                  <label className="flex items-center gap-2 text-sm font-bold text-foreground">
+                  <label
+                    className={cn(
+                      "flex items-center gap-2 text-sm",
+                      "font-bold text-foreground",
+                    )}
+                  >
                     Is your brother/sister who is gainfully employed providing
                     support to your:
                   </label>
@@ -1030,7 +1077,8 @@ export const FamilySection = forwardRef<
                     {siblingSupportTypesOptions?.map((option: any) => {
                       const isChecked =
                         family?.background?.siblingSupportTypes?.some(
-                          (item: any) => String(item.id) === String(option.id),
+                          (item: any) =>
+                            String(item.id) === String(option.id),
                         );
                       return (
                         <Checkbox
@@ -1039,6 +1087,7 @@ export const FamilySection = forwardRef<
                           name="siblingSupportTypes"
                           label={option.name || option.text || option.code}
                           checked={!!isChecked}
+                          disabled={isSiblingNA}
                           onCheckedChange={() => {
                             const currentTypes =
                               family?.background?.siblingSupportTypes || [];
