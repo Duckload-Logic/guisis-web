@@ -29,7 +29,7 @@ interface SlipListProps {
 }
 
 export function SlipList({
-  title = "Submitted Excuse Slips",
+  title = "Submitted Admission Slips",
   searchTerm = "",
   onSearchChange,
   statuses,

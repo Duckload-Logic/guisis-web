@@ -182,7 +182,7 @@ export default function ReviewSlips() {
   );
 
   usePageMetadata({
-    title: "Review Excuse Slips",
+    title: "Review Admission Slips",
     description:
       "Review submissions, filter the queue, and process student requests.",
     badgeText: "Slip Management",
