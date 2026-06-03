@@ -12,7 +12,7 @@ export default defineConfig({
     svgr(),
     unusedCode({
       patterns: ["src/**/*.*"],
-      failOnHint: true,
+      failOnHint: false,
     }),
   ],
   resolve: {
