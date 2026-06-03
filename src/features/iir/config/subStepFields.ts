@@ -18,6 +18,7 @@ export const PERSONAL_SUBSTEP_FIELDS: Record<number, string[]> = {
     "student.personalInfo.gender",
     "student.personalInfo.civilStatus",
     "student.personalInfo.religion",
+    "student.personalInfo.otherReligionText",
     "student.personalInfo.dateOfBirth",
     "student.personalInfo.placeOfBirth",
     "student.personalInfo.highSchoolGWA",

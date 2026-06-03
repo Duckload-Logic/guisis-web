@@ -146,6 +146,7 @@ export interface PersonalInfo {
   gender: Gender;
   civilStatus: CivilStatus;
   religion: Religion;
+  otherReligionText?: string;
   heightM: string;
   weightKg: string;
   complexion: string;

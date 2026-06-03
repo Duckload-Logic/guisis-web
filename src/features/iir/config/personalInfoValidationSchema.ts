@@ -46,6 +46,20 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
   "student.personalInfo.gender": [commonRules.required("Gender")],
   "student.personalInfo.civilStatus": [commonRules.required("Civil status")],
   "student.personalInfo.religion": [commonRules.required("Religion")],
+  "student.personalInfo.otherReligionText": [
+    {
+      type: "required",
+      validate: (val: any, root: any) => {
+        const rel = root?.student?.personalInfo?.religion;
+        if (rel?.name === "Others") {
+          return val && String(val).trim().length > 0;
+        }
+        return true;
+      },
+      message: "Please specify your religion",
+    },
+    commonRules.noSpecialChars("Religion specification"),
+  ],
   "student.personalInfo.course": [commonRules.required("Course")],
   "student.personalInfo.yearLevel": [
     commonRules.required("Year level"),

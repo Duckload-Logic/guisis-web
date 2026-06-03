@@ -87,6 +87,9 @@ export function transformFormToPayload(formData: IIRForm): any {
         gender: formData.student.personalInfo.gender,
         civilStatus: formData.student.personalInfo.civilStatus,
         religion: formData.student.personalInfo.religion,
+        otherReligionText: handleNullableString(
+          formData.student.personalInfo.otherReligionText,
+        ),
         heightM: parseNumberSafely(formData.student.personalInfo.heightM),
         weightKg: parseNumberSafely(formData.student.personalInfo.weightKg),
         complexion: formData.student.personalInfo.complexion,
