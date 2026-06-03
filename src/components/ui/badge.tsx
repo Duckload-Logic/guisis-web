@@ -35,11 +35,7 @@ export interface BadgeProps
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
     <div
-      className={cn(
-        badgeVariants({ variant }),
-        "hover:brightness-110",
-        className,
-      )}
+      className={cn(badgeVariants({ variant }), className)}
       {...props}
     />
   );
