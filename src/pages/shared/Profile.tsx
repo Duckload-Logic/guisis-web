@@ -10,23 +10,18 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Camera,
   Mail,
-  Shield,
   User,
   Calendar,
-  LogOut,
   Settings,
   Lock,
   Activity,
   CheckCircle2,
   Clock,
   Key,
-  Smartphone,
-  Info,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import {
@@ -145,12 +140,17 @@ export default function Profile() {
 
   if (!user) return null;
 
-  usePageMetadata({
-    title: "Account Profile",
-    isLoading: false,
-    badgeText: "Management",
-    badgeIcon: <Settings size={16} />,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Account Profile",
+        isLoading: false,
+        badgeText: "Management",
+        badgeIcon: <Settings size={16} />,
+      }),
+      [user],
+    ),
+  );
 
   return (
     <div
@@ -163,11 +163,9 @@ export default function Profile() {
       <div
         className={cn(
           "group relative overflow-hidden rounded-[32px] border",
-          "border-white/20 bg-white/45 p-8",
-          "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
+          "border-glass-border bg-glass-bg p-8 shadow-md",
           "transition-all duration-500 hover:shadow-primary/5",
-          "dark:border-white/10 dark:bg-white/[0.04]",
-          "dark:shadow-[0_8px_22px_rgba(0,0,0,0.22)] md:p-12",
+          "md:p-12",
         )}
       >
         <div className="relative flex flex-col items-center gap-10 md:flex-row md:items-start">
@@ -181,19 +179,20 @@ export default function Profile() {
             >
               <div className="absolute inset-x-0 bottom-0 h-1/2 rounded-b-full bg-black/40 blur-sm" />
               <Avatar className="relative z-10 h-full w-full rounded-full border-4 border-card">
-                <AvatarImage
-                  src={previewImage || getProfilePictureUrl(user?.profilePicture)}
-
+                {/* <AvatarImage
+                  src={
+                    previewImage || getProfilePictureUrl(user?.profilePicture)
+                  }
                   className="object-cover transition-transform duration-500 group-hover/avatar:scale-110"
-                />
-                <AvatarFallback className="bg-muted text-4xl font-extrabold uppercase text-muted-foreground">
+                /> */}
+                <AvatarFallback className="bg-muted text-4xl font-bold uppercase text-muted-foreground">
                   {user.firstName[0]}
                   {user.lastName[0]}
                 </AvatarFallback>
               </Avatar>
             </div>
 
-            <button
+            {/* <button
               onClick={triggerFileInput}
               className={cn(
                 "absolute bottom-2 right-2 z-20 transform rounded-full",
@@ -207,7 +206,7 @@ export default function Profile() {
               disabled={isUploadingPicture}
             >
               <Camera size={20} />
-            </button>
+            </button> */}
             <input
               type="file"
               ref={fileInputRef}
@@ -236,7 +235,7 @@ export default function Profile() {
                     variant="secondary"
                     className={cn(
                       "rounded-full bg-muted/60 px-3 py-1 text-[10px] font-semibold",
-                      "uppercase tracking-wider text-foreground",
+                      "uppercase text-foreground",
                     )}
                   >
                     {role.name}
@@ -246,7 +245,7 @@ export default function Profile() {
               <h1
                 className={cn(
                   "bg-gradient-to-r from-foreground to-foreground/60",
-                  "bg-clip-text text-lg font-black tracking-tight",
+                  "bg-clip-text text-lg tracking-tight",
                   "text-foreground md:text-5xl",
                 )}
               >
@@ -254,7 +253,7 @@ export default function Profile() {
                 {user.lastName}
               </h1>
               <p className="text-xl font-medium text-muted-foreground/80">
-                @{user.email.split("@")[0]}
+                {user.email}
               </p>
             </div>
 
@@ -265,8 +264,8 @@ export default function Profile() {
               )}
             >
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                  Last Session
+                <span className="text-[10px] font-bold uppercase text-muted-foreground/60">
+                  Last Login
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-bold">
                   <Clock
@@ -291,72 +290,37 @@ export default function Profile() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <TabsList
             className={cn(
-              "h-auto self-start rounded-2xl border border-white/20",
-              "bg-white/45 p-1 backdrop-blur-md dark:bg-white/[0.04]",
+              "h-auto self-start rounded-2xl border border-glass-border bg-glass-bg",
+              "p-1 shadow-md backdrop-blur-md",
             )}
           >
-            <TabsTrigger
-              value="overview"
-              className={cn(
-                "flex gap-2 rounded-xl px-6 py-2.5 transition-all",
-                "data-[state=active]:bg-primary",
-                "data-[state=active]:text-primary-foreground",
-                "data-[state=active]:shadow-lg",
-              )}
-            >
-              <User size={16} /> Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="security"
-              className={cn(
-                "flex gap-2 rounded-xl px-6 py-2.5 transition-all",
-                "data-[state=active]:bg-primary",
-                "data-[state=active]:text-primary-foreground",
-                "data-[state=active]:shadow-lg",
-              )}
-            >
-              <Shield size={16} /> Security
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className={cn(
-                "flex gap-2 rounded-xl px-6 py-2.5 transition-all",
-                "data-[state=active]:bg-primary",
-                "data-[state=active]:text-primary-foreground",
-                "data-[state=active]:shadow-lg",
-              )}
-            >
-              <Activity size={16} /> Activity
-            </TabsTrigger>
+            {[
+              {
+                value: "overview",
+                label: "Overview",
+                icon: <User size={16} />,
+              },
+              {
+                value: "activity",
+                label: "Activity",
+                icon: <Activity size={16} />,
+              },
+            ].map((item) => (
+              <TabsTrigger
+                key={item.value}
+                value={item.value}
+                className={cn(
+                  "flex gap-2 rounded-xl px-6 py-2.5 transition-all",
+                  "data-[state=active]:bg-primary",
+                  "data-[state=active]:text-primary-foreground",
+                  "data-[state=active]:shadow-lg",
+                )}
+              >
+                {item.icon}
+                {item.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className={cn(
-                "rounded-xl border-border/50 text-xs font-bold uppercase",
-                "tracking-widest hover:bg-muted",
-              )}
-              disabled
-              title="Feature coming soon"
-            >
-              Export Account Data
-            </Button>
-            <Button
-              onClick={logout}
-              variant="destructive"
-              className={cn(
-                "rounded-xl text-xs font-bold uppercase tracking-widest",
-                "shadow-lg shadow-red-500/10",
-              )}
-            >
-              <LogOut
-                size={16}
-                className="mr-2"
-              />{" "}
-              Logout
-            </Button>
-          </div>
         </div>
 
         {/* Overview Tab Content */}
@@ -366,13 +330,13 @@ export default function Profile() {
         >
           <Card
             className={cn(
-              "overflow-hidden rounded-[32px] border-white/20 bg-white/45",
-              "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-              "transition-colors hover:border-primary/20",
-              "dark:border-white/10 dark:bg-white/[0.04] md:col-span-2",
+              "overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
+              "shadow-md backdrop-blur-xl",
+              "transition-colors",
+              "md:col-span-2",
             )}
           >
-            <CardHeader className="border-b border-white/10 bg-white/20 p-8 dark:bg-white/[0.02]">
+            <CardHeader className="border-b border-glass-border bg-glass-bg p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-2xl font-bold">
@@ -407,7 +371,7 @@ export default function Profile() {
                 <div className="group space-y-2">
                   <p
                     className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                      "text-[10px] uppercase tracking-[0.2em]",
                       "text-muted-foreground/60 transition-colors",
                       "group-hover:text-primary",
                     )}
@@ -427,7 +391,7 @@ export default function Profile() {
                   <div className="group space-y-2">
                     <p
                       className={cn(
-                        "text-[10px] font-black uppercase tracking-[0.2em]",
+                        "text-[10px] uppercase tracking-[0.2em]",
                         "text-muted-foreground/60 transition-colors",
                         "group-hover:text-primary",
                       )}
@@ -448,7 +412,7 @@ export default function Profile() {
                 <div className="group space-y-2">
                   <p
                     className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                      "text-[10px] uppercase tracking-[0.2em]",
                       "text-muted-foreground/60 transition-colors",
                       "group-hover:text-primary",
                     )}
@@ -467,7 +431,7 @@ export default function Profile() {
                 <div className="group space-y-2">
                   <p
                     className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                      "text-[10px] uppercase tracking-[0.2em]",
                       "text-muted-foreground/60 transition-colors",
                       "group-hover:text-primary",
                     )}
@@ -490,7 +454,7 @@ export default function Profile() {
                 <div className="group space-y-2 sm:col-span-2">
                   <p
                     className={cn(
-                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                      "text-[10px] uppercase tracking-[0.2em]",
                       "text-muted-foreground/60 transition-colors",
                       "group-hover:text-primary",
                     )}
@@ -508,45 +472,16 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-
-              <div
-                className={cn(
-                  "group mt-12 flex items-center justify-between rounded-[24px]",
-                  "border border-primary/10 bg-primary/5 p-6",
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "rounded-2xl bg-primary/20 p-3 text-primary",
-                      "transition-transform group-hover:scale-110",
-                    )}
-                  >
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold">Verified Account</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Your account has been verified by the system
-                      administrator.
-                    </p>
-                  </div>
-                </div>
-                <Badge className="border-none bg-primary/20 text-primary">
-                  SYSTEM VERIFIED
-                </Badge>
-              </div>
             </CardContent>
           </Card>
 
           <Card
             className={cn(
-              "self-start overflow-hidden rounded-[32px] border-white/20",
-              "bg-white/45 shadow-[0_8px_22px_rgba(15,23,42,0.06)]",
-              "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+              "self-start overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
+              "shadow-md backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-white/10 p-8">
+            <CardHeader className="border-b border-glass-border p-8">
               <CardTitle className="text-lg font-bold">Quick Stats</CardTitle>
               <CardDescription>Engagement and account metrics.</CardDescription>
             </CardHeader>
@@ -556,7 +491,7 @@ export default function Profile() {
                   <p className="mb-1 text-[10px] font-bold text-muted-foreground/60">
                     LOGINS
                   </p>
-                  <p className="text-xl font-black">{stats.logins}</p>
+                  <p className="text-xl">{stats.logins}</p>
                 </div>
                 <div
                   className={cn(
@@ -571,193 +506,11 @@ export default function Profile() {
                     />
                     <p className="text-xs font-bold">Join Date</p>
                   </div>
-                  <p className="text-xl font-black tracking-tight">
+                  <p className="text-xl tracking-tight">
                     {user.createdAt ? formatDate(user.createdAt) : "N/A"}
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Security Tab Content */}
-        <TabsContent
-          value="security"
-          className="grid grid-cols-1 gap-6 outline-none md:grid-cols-2"
-        >
-          <Card
-            className={cn(
-              "overflow-hidden rounded-[32px] border-white/20 bg-white/45",
-              "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-              "transition-colors hover:border-blue-500/20",
-              "dark:border-white/10 dark:bg-white/[0.04]",
-            )}
-          >
-            <CardHeader className="border-b border-white/10 p-8">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-blue-500/10 p-2 text-blue-500">
-                  <Key size={24} />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold">
-                    Password & Auth
-                  </CardTitle>
-                  <CardDescription>
-                    Manage your sign-in methods.
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 p-8">
-              <div
-                className={cn(
-                  "group flex items-center justify-between rounded-2xl border",
-                  "border-border/10 bg-muted/30 p-5 opacity-60 transition-all",
-                  "hover:bg-muted/50",
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "rounded-xl border border-border/20 bg-background p-2",
-                      "transition-transform group-hover:scale-110",
-                    )}
-                  >
-                    <Lock
-                      size={20}
-                      className="text-muted-foreground"
-                    />
-                  </div>
-                  <div>
-                    <h5 className="font-bold">Password</h5>
-                    <p className="text-xs text-muted-foreground">
-                      Feature not yet available
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[9px] font-bold"
-                >
-                  COMING SOON
-                </Badge>
-              </div>
-
-              <div
-                className={cn(
-                  "group flex items-center justify-between rounded-2xl border",
-                  "border-border/10 bg-muted/30 p-5 opacity-60 transition-all",
-                  "hover:bg-muted/50",
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "rounded-xl border border-border/20 bg-background p-2",
-                      "transition-transform group-hover:scale-110",
-                    )}
-                  >
-                    <Smartphone
-                      size={20}
-                      className="text-muted-foreground"
-                    />
-                  </div>
-                  <div>
-                    <h5 className="font-bold">Two-Factor Auth</h5>
-                    <p className="text-xs text-muted-foreground">Disabled</p>
-                  </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[9px] font-bold"
-                >
-                  COMING SOON
-                </Badge>
-              </div>
-
-              <div
-                className={cn(
-                  "flex flex-col gap-4 rounded-[24px] border",
-                  "border-amber-500/10 bg-amber-500/5 p-6",
-                )}
-              >
-                <div className="flex items-center gap-2 text-amber-500">
-                  <Info size={16} />
-                  <span className="text-xs font-black uppercase tracking-wider">
-                    Note
-                  </span>
-                </div>
-                <p className="text-sm font-medium italic leading-relaxed">
-                  Security management features are currently being implemented
-                  by the system developers. Some controls may be temporarily
-                  disabled.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className={cn(
-              "overflow-hidden rounded-[32px] border-white/20 bg-white/45",
-              "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-              "dark:border-white/10 dark:bg-white/[0.04]",
-            )}
-          >
-            <CardHeader className="border-b border-white/10 p-8">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-purple-500/10 p-2 text-purple-500">
-                  <Activity size={24} />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold">
-                    Current Session
-                  </CardTitle>
-                  <CardDescription>
-                    Details about your current login session.
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 p-8">
-              <div className="space-y-4">
-                <div
-                  className={cn(
-                    "flex items-center justify-between rounded-2xl border",
-                    "border-green-500/20 bg-green-500/5 p-4",
-                  )}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-full",
-                        "bg-green-500/10 text-green-500",
-                      )}
-                    >
-                      <Smartphone size={20} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h6 className="font-bold">Active Device</h6>
-                        <Badge className="h-4 border-none bg-green-500/20 text-[8px] text-green-600">
-                          CURRENT
-                        </Badge>
-                      </div>
-                      <p className="text-[10px] font-medium text-muted-foreground">
-                        Your current browser session
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-green-500">
-                    ACTIVE
-                  </span>
-                </div>
-              </div>
-
-              <Separator className="my-4 bg-border/10" />
-
-              <p className="text-center text-[10px] italic text-muted-foreground">
-                Advanced session management is not yet available.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -769,12 +522,11 @@ export default function Profile() {
         >
           <Card
             className={cn(
-              "overflow-hidden rounded-[32px] border-white/20 bg-white/45",
-              "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-              "dark:border-white/10 dark:bg-white/[0.04]",
+              "overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
+              "shadow-md backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-white/10 p-10">
+            <CardHeader className="border-b border-glass-border p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="rounded-2xl bg-primary/10 p-3 text-primary">

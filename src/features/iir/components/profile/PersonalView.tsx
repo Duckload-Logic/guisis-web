@@ -1,7 +1,7 @@
 import { Home } from "lucide-react";
 import { StudentSection, StudentAddress } from "../../types";
 import { asText, renderAddress } from "../../utils";
-import { formatDate } from "@/features/schedules/utils/formatters";
+import { formatDate } from "@/utils/dateTime";
 import EmptyState from "./EmptyState";
 import SectionTitle from "./SectionTitle";
 import CardBlock from "./CardBlock";
@@ -24,7 +24,14 @@ export default function PersonalView({
     { label: "Last Name", value: asText(basicInfo?.lastName) },
     { label: "Gender", value: asText(personalInfo?.gender?.name) },
     { label: "Civil Status", value: asText(personalInfo?.civilStatus?.name) },
-    { label: "Religion", value: asText(personalInfo?.religion?.name) },
+    {
+      label: "Religion",
+      value:
+        personalInfo?.religion?.name === "Others" &&
+        personalInfo?.otherReligionText
+          ? `Others (${personalInfo.otherReligionText})`
+          : asText(personalInfo?.religion?.name),
+    },
     { label: "Height (m)", value: asText(personalInfo?.heightM) },
     { label: "Weight (kg)", value: asText(personalInfo?.weightKg) },
     { label: "Complexion", value: asText(personalInfo?.complexion) },
@@ -52,7 +59,7 @@ export default function PersonalView({
         <SectionTitle title="Student Identity & Personal Details" />
         <div
           className={cn(
-            "mt-6 grid grid-cols-1 gap-x-10 gap-y-6",
+            "mt-6 grid grid-cols-2 gap-x-10 gap-y-6",
             "md:grid-cols-2 lg:grid-cols-3",
           )}
         >
@@ -67,23 +74,55 @@ export default function PersonalView({
       </section>
 
       <section>
+        <SectionTitle title="Employment Details" />
+        {personalInfo?.isEmployed ? (
+          <div
+            className={cn(
+              "mt-6 grid grid-cols-2 gap-x-10 gap-y-6",
+              "md:grid-cols-2 lg:grid-cols-3",
+            )}
+          >
+            <InfoItem
+              label="Currently Employed"
+              value="Yes"
+            />
+            <InfoItem
+              label="Employer Name"
+              value={asText(personalInfo?.employerName)}
+            />
+            <InfoItem
+              label="Employer Address"
+              value={asText(personalInfo?.employerAddress)}
+            />
+            <InfoItem
+              label="Employer Contact"
+              value={asText(personalInfo?.employerContactNumber)}
+            />
+          </div>
+        ) : (
+          <div className="mt-6">
+            <InfoItem
+              label="Currently Employed"
+              value="No"
+            />
+          </div>
+        )}
+      </section>
+
+      <section>
         <SectionTitle title="Residency Details" />
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {addresses?.length > 0 ? (
             addresses?.map((entry: StudentAddress) => (
-              <div
+              <CardBlock
+                icon={Home}
                 key={entry?.id}
-                className="rounded-xl border border-border p-4 shadow-sm"
+                title={asText(entry.addressType)}
               >
-                <CardBlock
-                  icon={Home}
-                  title={asText(entry.addressType)}
-                >
-                  <p className="text-xs text-card-foreground">
-                    {renderAddress(entry?.address)}
-                  </p>
-                </CardBlock>
-              </div>
+                <p className="text-xs text-card-foreground">
+                  {renderAddress(entry?.address)}
+                </p>
+              </CardBlock>
             ))
           ) : (
             <EmptyState label="No address records found" />

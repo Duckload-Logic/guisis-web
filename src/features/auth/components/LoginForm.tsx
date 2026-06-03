@@ -1,5 +1,5 @@
 import { Checkbox } from "@/components/form";
-import { FormField, Spinner } from "@/components/shared";
+import { FormField } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -114,7 +114,7 @@ export default function LoginForm({
             <div className="relative flex justify-center text-xs">
               <span
                 className={cn(
-                  "bg-[hsl(var(--card)/0.82)] px-2 uppercase tracking-wider text-muted-foreground",
+                  "bg-[hsl(var(--card)/0.82)] px-2 uppercase text-muted-foreground",
                 )}
               >
                 Or continue with

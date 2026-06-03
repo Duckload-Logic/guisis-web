@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
-  Settings as SettingsIcon,
   MousePointer2,
   Ear,
   AudioLines,
@@ -151,7 +150,7 @@ export const SpeechControl: React.FC = () => {
             className={cn(
               "flex animate-pulse items-center gap-2 rounded-full border",
               "border-white/20 bg-primary px-3 py-1.5 text-[10px] font-bold",
-              "uppercase tracking-widest text-primary-foreground shadow-lg",
+              "uppercase text-primary-foreground shadow-lg",
             )}
           >
             <MousePointer2 size={12} /> Live Reader

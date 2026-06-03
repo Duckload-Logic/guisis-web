@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvailableTimeSlotView, TimeSlot } from "../types";
 import { Sun, Moon } from "lucide-react";
-import { format12HourTime } from "../utils";
 import { Spinner } from "@/components/shared";
+import { format12HourTime } from "@/utils/dateTime";
 import { cn } from "@/lib/utils";
 
 interface TimeSlotselectorProps {

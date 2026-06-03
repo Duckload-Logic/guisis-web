@@ -120,7 +120,8 @@ All service functions follow the naming convention: **`[HTTP Method][Resource]`*
 Every service function accepts an optional `config` parameter for error logging.
 
 ```typescript
-export interface AxiosConfigWithMeta extends Partial<InternalAxiosRequestConfig> {
+export interface AxiosConfigWithMeta
+  extends Partial<InternalAxiosRequestConfig> {
   handlerName?: string; // Function name for logging
   stepName?: string; // Specific step that failed
   _retry?: boolean; // Internal retry flag
@@ -137,7 +138,7 @@ export async function GetMe(config?: AxiosConfigWithMeta): Promise<User> {
   } catch (error: any) {
     const handlerName = config?.handlerName || "GetMe";
     const stepName = config?.stepName || "Fetch User";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -438,7 +439,7 @@ export async function GetMyFeatures(config?: AxiosConfigWithMeta) {
   } catch (error: any) {
     const handlerName = config?.handlerName || "GetMyFeatures";
     const stepName = config?.stepName || "Fetch Features";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -457,7 +458,7 @@ export async function PostMyFeature(
   } catch (error: any) {
     const handlerName = config?.handlerName || "PostMyFeature";
     const stepName = config?.stepName || "Create Feature";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }

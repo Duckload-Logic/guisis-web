@@ -89,6 +89,7 @@ export const QUERY_KEYS = {
     lookups: {
       courses: ["iir", "lookups", "courses"] as const,
       genders: ["iir", "lookups", "genders"] as const,
+      enrollmentYears: ["iir", "lookups", "enrollment-years"] as const,
       religions: ["iir", "lookups", "religions"] as const,
       parentalStatusTypes: ["iir", "lookups", "parental-status-types"] as const,
       enrollmentReasons: ["iir", "lookups", "enrollment-reasons"] as const,
@@ -108,6 +109,12 @@ export const QUERY_KEYS = {
       ] as const,
       activityOptions: ["iir", "lookups", "activity-options"] as const,
       studentStatuses: ["iir", "lookups", "student-statuses"] as const,
+      educationalAttainments: [
+        "iir",
+        "lookups",
+        "educational-attainments",
+      ] as const,
+      educationalLevels: ["iir", "lookups", "educational-levels"] as const,
     },
     inventory: {
       all: ["iir", "inventory", "all"] as const,
@@ -142,6 +149,7 @@ export const QUERY_KEYS = {
     m2mClients: (includeRevoked: boolean) =>
       ["superadmin", "m2mClients", { includeRevoked }] as const,
     users: (params?: any) => ["superadmin", "users", params] as const,
+    whitelist: ["superadmin", "users", "whitelist"] as const,
     userDistribution: ["superadmin", "users", "distribution"] as const,
     analytics: ["superadmin", "analytics", "admin"] as const,
     securityLogs: (params?: any) =>
@@ -154,5 +162,9 @@ export const QUERY_KEYS = {
       ["superadmin", "logs", "stats", { startDate, endDate }] as const,
     logActivity: ["superadmin", "logs", "activity"] as const,
     myLogs: ["superadmin", "logs", "me"] as const,
+    traceTracks: (traceId: string) =>
+      ["superadmin", "logs", "trace", traceId] as const,
+    logDetail: (id: string) =>
+      ["superadmin", "logs", "detail", id] as const,
   },
 } as const;

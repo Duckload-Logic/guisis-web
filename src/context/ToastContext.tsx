@@ -1,7 +1,12 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback } from "react";
+
+export interface ToastItem {
+  id: string;
+  message: string;
+}
 
 interface ToastContextType {
-  toasts: string[];
+  toasts: ToastItem[];
   triggerToast: (message: string) => void;
 }
 
@@ -12,13 +17,15 @@ export const ToastContext = createContext<ToastContextType | undefined>(
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [toasts, setToasts] = useState<string[]>([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const triggerToast = useCallback((message: string) => {
-    setToasts((prev) => [...prev, message]);
+    const id = `${Date.now()}-${Math.random()}`;
+    const newToast: ToastItem = { id, message };
+    setToasts((prev) => [...prev, newToast]);
 
     setTimeout(() => {
-      setToasts((prev) => prev.slice(1));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   }, []);
 

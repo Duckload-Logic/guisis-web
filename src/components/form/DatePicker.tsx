@@ -43,7 +43,23 @@ export function DatePicker({
     return undefined;
   }, [value]);
 
+  const dateStringValue = React.useMemo(() => {
+    if (!dateValue) return "";
+    return format(dateValue, "yyyy-MM-dd");
+  }, [dateValue]);
+
   const [open, setOpen] = React.useState(false);
+
+  // Close the popover on mobile viewport resize
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640 && open) {
+        setOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [open]);
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
@@ -56,22 +72,39 @@ export function DatePicker({
   };
 
   const id = React.useId();
+  const safeId = id.replace(/:/g, "-");
 
-  const inputClasses = `
-    w-full justify-start text-left flex items-center gap-2 rounded-xl border px-4 py-2.5 outline-none transition-all duration-200
-    text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground/70
-    ${
-      disabled
-        ? "bg-muted/80 border-glass-border/20 text-muted-foreground cursor-not-allowed opacity-60"
-        : dateValue
-          ? "bg-muted/20 border-primary/30 focus:bg-glass-bg dark:focus:bg-glass-bg/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/5 shadow-sm"
-          : required
-            ? "bg-muted/60 dark:bg-muted/20 border-border hover:border-destructive/40 focus:border-destructive/50 focus:ring-2 focus:ring-destructive/5"
-            : "bg-muted/60 dark:bg-muted/20 border-border hover:border-glass-border/60 focus:bg-glass-bg dark:focus:bg-glass-bg/40 focus:border-primary/50 focus:ring-2 focus:ring-primary/5"
-    }
-    h-11
-    ${error ? "border-red-500 focus-visible:ring-red-500" : ""}
-  `;
+  const inputClasses = cn(
+    "w-full justify-start text-left flex items-center gap-2",
+    "rounded-xl border px-4 py-2.5 outline-none transition-all",
+    "duration-200 text-sm font-medium tracking-tight text-foreground",
+    "placeholder:text-muted-foreground/70 h-11",
+    disabled
+      ? "bg-muted/80 border-glass-border/20 text-muted-foreground " +
+          "cursor-not-allowed opacity-60"
+      : dateValue
+        ? "bg-muted/20 border-primary/30 focus:bg-glass-bg " +
+          "dark:focus:bg-glass-bg/50 focus:border-primary/50 " +
+          "focus:ring-2 focus:ring-primary/5 shadow-sm " +
+          "focus-within:bg-glass-bg focus-within:border-primary/50 " +
+          "focus-within:ring-2 focus-within:ring-primary/5"
+        : required
+          ? "bg-muted/60 dark:bg-muted/20 border-border " +
+            "hover:border-destructive/40 focus:border-destructive/50 " +
+            "focus:ring-2 focus:ring-destructive/5 " +
+            "focus-within:border-destructive/50 " +
+            "focus-within:ring-2 focus-within:ring-destructive/5"
+          : "bg-muted/60 dark:bg-muted/20 border-border " +
+            "hover:border-glass-border/60 focus:bg-glass-bg " +
+            "dark:focus:bg-glass-bg/40 focus:border-primary/50 " +
+            "focus:ring-2 focus:ring-primary/5 " +
+            "focus-within:bg-glass-bg focus-within:border-primary/50 " +
+            "focus-within:ring-2 focus-within:ring-primary/5",
+    error
+      ? "border-red-500 focus-visible:ring-red-500 " +
+          "focus-within:border-red-500 focus-within:ring-red-500"
+      : "",
+  );
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -81,41 +114,110 @@ export function DatePicker({
   };
 
   return (
-    <div className="space-y-2 w-full">
+    <div className="w-full space-y-2">
       {label && (
-        <div className="flex max-h-10 items-start gap-1 text-sm font-medium text-card-foreground">
+        <div
+          className={cn(
+            "flex max-h-10 items-start gap-1 text-sm font-medium",
+            "text-card-foreground",
+          )}
+        >
           <span>{label}</span>
           {required && <span className="text-red-500">*</span>}
         </div>
       )}
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
-          <Button
-            id={id}
-            variant="ghost"
-            className={cn(inputClasses, !dateValue && "text-muted-foreground/70 font-normal")}
-            disabled={disabled}
+
+      {/* Mobile view native date picker overlay */}
+      <div className="relative h-11 w-full sm:hidden">
+        <style>
+          {`
+          #${safeId}-mobile::-webkit-calendar-picker-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            opacity: 0;
+            cursor: pointer;
+          }
+          #${safeId}-mobile::-webkit-inner-spin-button {
+            display: none;
+          }
+        `}
+        </style>
+        {/* Styled background container mimicking the input */}
+        <div
+          className={cn(
+            inputClasses,
+            "pointer-events-none relative flex items-center gap-2",
+            !dateValue && "font-normal text-muted-foreground/70",
+          )}
+        >
+          <CalendarIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 truncate text-left">
+            {dateValue ? format(dateValue, "PPP") : "Select a date"}
+          </span>
+        </div>
+        {/* Invisible native input on top to capture clicks */}
+        <input
+          type="date"
+          id={`${safeId}-mobile`}
+          value={dateStringValue}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          disabled={disabled}
+          className={cn(
+            "absolute inset-0 h-full w-full cursor-pointer opacity-0",
+            "disabled:cursor-not-allowed",
+          )}
+        />
+      </div>
+
+      {/* Desktop view Popover calendar */}
+      <div className="hidden w-full sm:block">
+        <Popover
+          open={open}
+          onOpenChange={handleOpenChange}
+        >
+          <PopoverTrigger asChild>
+            <Button
+              id={`${safeId}-desktop`}
+              variant="ghost"
+              className={cn(
+                inputClasses,
+                !dateValue && "font-normal text-muted-foreground/70",
+              )}
+              disabled={disabled}
+            >
+              <CalendarIcon className="h-4 w-4 shrink-0" />
+              <span className="flex-1 truncate text-left">
+                {dateValue ? format(dateValue, "PPP") : "Select a date"}
+              </span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-[300px] rounded-xl bg-background p-0"
+            align="start"
           >
-            <CalendarIcon className="h-4 w-4 shrink-0" />
-            <span className="flex-1 text-left truncate">
-              {dateValue ? format(dateValue, "PPP") : "Select a date"}
-            </span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0 bg-background rounded-xl" align="start">
-          <Calendar
-            mode="single"
-            selected={dateValue}
-            defaultMonth={dateValue}
-            onSelect={handleSelect}
-            initialFocus
-            captionLayout="dropdown"
-            fromYear={1900}
-            toYear={new Date().getFullYear()}
-          />
-        </PopoverContent>
-      </Popover>
-      {error && <span className="text-xs text-red-500 mt-1.5 ml-1 block">{error}</span>}
+            <Calendar
+              mode="single"
+              selected={dateValue}
+              defaultMonth={dateValue}
+              onSelect={handleSelect}
+              initialFocus
+              captionLayout="dropdown"
+              fromYear={1900}
+              toYear={new Date().getFullYear()}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {error && (
+        <span className="ml-1 mt-1.5 block text-xs text-red-500">{error}</span>
+      )}
     </div>
   );
 }

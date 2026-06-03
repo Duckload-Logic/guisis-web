@@ -161,7 +161,8 @@ export const commonRules = {
       if (value === undefined || value === null || value === "") return true;
       return /^(09|\+639)\d{9}$/.test(String(value));
     },
-    message: "Must be a valid Philippine mobile number (e.g. 09XXXXXXXXX or +639XXXXXXXXX)",
+    message:
+      "Must be a valid Philippine mobile number (e.g. 09XXXXXXXXX or +639XXXXXXXXX)",
   }),
 
   telephone: (): ValidationRule => ({
@@ -251,7 +252,9 @@ export const commonRules = {
   inList: (list: string[], fieldName: string): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return list.some(item => item.toLowerCase() === String(value).toLowerCase());
+      return list.some(
+        (item) => item.toLowerCase() === String(value).toLowerCase(),
+      );
     },
     message: `${fieldName} must be one of: ${list.join(", ")}`,
   }),
@@ -271,11 +274,6 @@ export const validateField = (
         return rule.message;
       }
     } catch (error) {
-      console.error(`[ValidationSystem] Error in rule validate:`, {
-        ruleType: rule.type || "unknown",
-        value,
-        error,
-      });
       // Return null on internal error to avoid blocking the user/crashing
       return null;
     }

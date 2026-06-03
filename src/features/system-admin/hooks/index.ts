@@ -55,7 +55,29 @@ export function useRotateM2MSecret() {
 export function useVerifyM2MClient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => superadminService.verifyM2MClient(id),
+    mutationFn: ({
+      id,
+      hasPersonalInfoAccess,
+    }: {
+      id: number;
+      hasPersonalInfoAccess: boolean;
+    }) =>
+      superadminService.verifyM2MClient(id, hasPersonalInfoAccess),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.superadmin.m2mClients(false),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.superadmin.m2mClients(true),
+      });
+    },
+  });
+}
+
+export function useRejectM2MClient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => superadminService.rejectM2MClient(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.superadmin.m2mClients(false),
@@ -210,3 +232,64 @@ export function useUserActivity(id: string, params?: SystemLogsParams) {
     enabled: !!id,
   });
 }
+
+export function useLogDetail(id: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.superadmin.logDetail(id),
+    queryFn: () => superadminService.getLogDetail(id),
+    staleTime: CACHE_TIMING.MEDIUM.staleTime,
+    gcTime: CACHE_TIMING.MEDIUM.gcTime,
+    enabled: !!id,
+  });
+}
+
+export function useTraceTracks(traceId: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.superadmin.traceTracks(traceId),
+    queryFn: () => superadminService.getTraceTracks(traceId),
+    staleTime: CACHE_TIMING.MEDIUM.staleTime,
+    gcTime: CACHE_TIMING.MEDIUM.gcTime,
+    enabled: !!traceId,
+  });
+}
+
+export function useAddUserToWhitelist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      email,
+      roleIds,
+    }: {
+      email: string;
+      roleIds: number[];
+    }) => superadminService.addUserToWhitelist(email, roleIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["superadmin", "users"],
+      });
+    },
+  });
+}
+
+export function useRemoveUserFromWhitelist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (email: string) =>
+      superadminService.removeUserFromWhitelist(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["superadmin", "users"],
+      });
+    },
+  });
+}
+
+export function useWhitelist() {
+  return useQuery({
+    queryKey: QUERY_KEYS.superadmin.whitelist,
+    queryFn: () => superadminService.getWhitelist(),
+    staleTime: CACHE_TIMING.MEDIUM.staleTime,
+    gcTime: CACHE_TIMING.MEDIUM.gcTime,
+  });
+}
+

@@ -17,9 +17,7 @@ export async function GetMe(config?: AxiosConfigWithMeta): Promise<User> {
     const response = await apiClient.get(API_ROUTES.auth.me, config);
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetMe";
-    const stepName = config?.stepName || "Fetch User";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -41,9 +39,7 @@ export async function GetUserById(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetUserById";
-    const stepName = config?.stepName || "Fetch User";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -70,13 +66,10 @@ export async function UploadProfilePicture(
 
     return response.data?.data ?? response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "UploadProfilePicture";
-    const stepName = config?.stepName || "Upload Profile Picture";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
-
 
 /**
  * Legacy service object for backward compatibility

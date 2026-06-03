@@ -1,29 +1,32 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
+  AlertCircle,
+  Ban,
   Calendar,
-  Clock,
-  Plus,
-  Tag,
-  MoreHorizontal,
-  Eye,
-  X,
+  CalendarClock,
+  CalendarDays,
   CalendarX,
-  ClipboardCheck,
+  CheckCircle2,
+  Clock,
+  Hourglass,
+  Plus,
+  RotateCcw,
+  Tag,
+  UserX,
+  XCircle,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import type { LucideIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { STATUS_COLORS } from "@/config/constants";
+import {
+  LAYOUT_STYLES,
+  STATUS_COLORS,
+  getStatusColorKey,
+} from "@/config/constants";
 import {
   Appointment,
   AppointmentStatus,
@@ -32,32 +35,132 @@ import {
 import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
 import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
-import { Pagination, Spinner } from "@/components/shared";
-import { format12HourTime } from "@/features/appointments/utils";
+import { Pagination, Table } from "@/components/shared";
+import Dropdown from "@/components/form/Dropdown";
+import { format12HourTime, formatDate } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
-const GLASS_CARD =
-  "overflow-hidden rounded-[18px] border border-white/20 bg-white/45 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]";
+const GLASS_CARD = LAYOUT_STYLES.CARD;
+const GLASS_INNER = LAYOUT_STYLES.INNER;
+const ACTION_REQUIRED_ALERT = LAYOUT_STYLES.ALERT;
+
+const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
+  id: 0,
+  name: "All",
+};
+
+type StatusCardMeta = {
+  icon: LucideIcon;
+  label: string;
+  card: string;
+  glow: string;
+  iconBox: string;
+};
+
+const STATUS_CARD_META: Record<string, StatusCardMeta> = {
+  pending: {
+    icon: Hourglass,
+    label: "text-amber-700/90 dark:text-amber-200",
+    card: "border-amber-300/30 bg-gradient-to-br from-amber-50/55 via-white/35 to-white/25 shadow-amber-100/20 dark:border-amber-400/15 dark:from-amber-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-amber-200/20 dark:bg-amber-400/10",
+    iconBox:
+      "border-amber-300/30 bg-amber-50/45 text-amber-700 dark:border-amber-400/15 dark:bg-amber-400/10 dark:text-amber-200",
+  },
+  scheduled: {
+    icon: CalendarClock,
+    label: "text-sky-700/90 dark:text-sky-200",
+    card: "border-sky-300/30 bg-gradient-to-br from-sky-50/55 via-white/35 to-white/25 shadow-sky-100/20 dark:border-sky-400/15 dark:from-sky-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-sky-200/20 dark:bg-sky-400/10",
+    iconBox:
+      "border-sky-300/30 bg-sky-50/45 text-sky-700 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-200",
+  },
+  completed: {
+    icon: CheckCircle2,
+    label: "text-emerald-700/90 dark:text-emerald-200",
+    card: "border-emerald-300/30 bg-gradient-to-br from-emerald-50/55 via-white/35 to-white/25 shadow-emerald-100/20 dark:border-emerald-400/15 dark:from-emerald-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-emerald-200/20 dark:bg-emerald-400/10",
+    iconBox:
+      "border-emerald-300/30 bg-emerald-50/45 text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/10 dark:text-emerald-200",
+  },
+  cancelled: {
+    icon: XCircle,
+    label: "text-rose-700/90 dark:text-rose-200",
+    card: "border-rose-300/30 bg-gradient-to-br from-rose-50/55 via-white/35 to-white/25 shadow-rose-100/20 dark:border-rose-400/15 dark:from-rose-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-rose-200/20 dark:bg-rose-400/10",
+    iconBox:
+      "border-rose-300/30 bg-rose-50/45 text-rose-700 dark:border-rose-400/15 dark:bg-rose-400/10 dark:text-rose-200",
+  },
+  rejected: {
+    icon: Ban,
+    label: "text-red-700/90 dark:text-red-200",
+    card: "border-red-300/30 bg-gradient-to-br from-red-50/55 via-white/35 to-white/25 shadow-red-100/20 dark:border-red-400/15 dark:from-red-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-red-200/20 dark:bg-red-400/10",
+    iconBox:
+      "border-red-300/30 bg-red-50/45 text-red-700 dark:border-red-400/15 dark:bg-red-400/10 dark:text-red-200",
+  },
+  rescheduled: {
+    icon: RotateCcw,
+    label: "text-violet-700/90 dark:text-violet-200",
+    card: "border-violet-300/30 bg-gradient-to-br from-violet-50/55 via-white/35 to-white/25 shadow-violet-100/20 dark:border-violet-400/15 dark:from-violet-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-violet-200/20 dark:bg-violet-400/10",
+    iconBox:
+      "border-violet-300/30 bg-violet-50/45 text-violet-700 dark:border-violet-400/15 dark:bg-violet-400/10 dark:text-violet-200",
+  },
+  "no-show": {
+    icon: UserX,
+    label: "text-slate-700/90 dark:text-slate-200",
+    card: "border-slate-300/35 bg-gradient-to-br from-slate-50/65 via-white/35 to-white/25 shadow-slate-100/20 dark:border-slate-400/15 dark:from-slate-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-slate-200/20 dark:bg-slate-400/10",
+    iconBox:
+      "border-slate-300/35 bg-slate-50/55 text-slate-700 dark:border-slate-400/15 dark:bg-slate-400/10 dark:text-slate-200",
+  },
+  default: {
+    icon: CalendarDays,
+    label: "text-primary/90 dark:text-white",
+    card: "border-primary/20 bg-gradient-to-br from-primary/10 via-white/35 to-white/25 shadow-primary/10 dark:border-white/10 dark:from-white/[0.055] dark:via-white/[0.035] dark:to-white/[0.02]",
+    glow: "bg-primary/15 dark:bg-white/10",
+    iconBox:
+      "border-primary/20 bg-primary/10 text-primary dark:border-white/10 dark:bg-white/[0.055] dark:text-white",
+  },
+};
+
+const getStatusKey = (name?: string) => {
+  const normalized = (name || "").toLowerCase().trim().replace(/\s+/g, "-");
+
+  if (normalized === "canceled") return "cancelled";
+  if (normalized === "noshow" || normalized === "no-show") return "no-show";
+
+  return normalized;
+};
+
+const getStatusCardMeta = (name?: string) => {
+  const key = getStatusKey(name);
+  return STATUS_CARD_META[key] || STATUS_CARD_META.default;
+};
 
 export default function StudentAppointments() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: appointmentStatuses = [] } = useStatuses();
-  const filterStatuses = [
-    { id: 0, name: "All", colorKey: "stale" },
-    ...appointmentStatuses,
-  ];
+
+  const { data: appointmentStatuses = [], isLoading: isStatusesLoading } =
+    useStatuses();
+
+  const filterStatuses = useMemo(
+    () => [ALL_APPOINTMENT_STATUS, ...appointmentStatuses],
+    [appointmentStatuses],
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>(
-    filterStatuses[0],
+    ALL_APPOINTMENT_STATUS,
   );
 
   const { data, isLoading: isAppointmentsLoading } = useAppointments({
     isMe: true,
     params: {
       page: currentPage,
+      pageSize: 5,
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
     },
   });
@@ -65,29 +168,47 @@ export default function StudentAppointments() {
   const { data: appointmentStats, isLoading: isStatsLoading } =
     useAppointmentsStats({});
 
-  // Only pass initial structural loads to the global loader to prevent
-  // full page flashes when changing filters
-  const isGlobalLoading = isStatsLoading;
+  const appointments = data?.appointments || [];
+  const statusCounts = appointmentStats || ([] as StatusCount[]);
+  const isGlobalLoading = isStatsLoading || isStatusesLoading;
 
-  usePageMetadata({
-    title: "My Appointments",
-    description: "View and manage your counseling appointments",
-    badgeText: "Appointments",
-    badgeIcon: <Calendar className="h-4 w-4" />,
-    isLoading: isGlobalLoading,
-    headerActions: (
+  const dropdownOptions = useMemo(() => {
+    return filterStatuses.map((filter) => {
+      const count =
+        filter.id === 0
+          ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
+          : statusCounts?.find((s) => s.id === filter.id)?.count || 0;
+      return {
+        id: filter.id,
+        name: `${filter.name} (${count})`,
+      };
+    });
+  }, [filterStatuses, statusCounts]);
+
+  const pageBadgeIcon = useMemo(() => <Calendar className="h-4 w-4" />, []);
+
+  const hasValidCor = !!user?.studentCorUrl && !!user?.isStudentCorValid;
+
+  const pageHeaderActions = useMemo(
+    () => (
       <Button
-        asChild={!!user?.studentCorUrl}
-        disabled={!user?.studentCorUrl}
-        className="h-10 gap-2 rounded-xl shadow-lg shadow-primary/20"
-        title={!user?.studentCorUrl ? "Please upload your COR in your profile to book an appointment" : ""}
+        asChild={hasValidCor}
+        disabled={!hasValidCor}
+        className="h-10 gap-2 rounded-xl shadow-lg shadow-primary/15"
+        title={
+          !user?.studentCorUrl
+            ? "Please upload your COR in your profile to book an appointment"
+            : !user?.isStudentCorValid
+              ? "Your COR is invalid or outdated for the current academic term"
+              : ""
+        }
         onClick={(e) => {
-          if (!user?.studentCorUrl) {
+          if (!hasValidCor) {
             e.preventDefault();
           }
         }}
       >
-        {user?.studentCorUrl ? (
+        {hasValidCor ? (
           <Link to="/student/appointments/schedule">
             <Plus className="h-4 w-4" />
             New Appointment
@@ -100,121 +221,382 @@ export default function StudentAppointments() {
         )}
       </Button>
     ),
+    [user?.studentCorUrl, user?.isStudentCorValid, hasValidCor],
+  );
+
+  usePageMetadata({
+    title: "My Appointments",
+    description: "View and manage your counseling appointments",
+    badgeText: "Appointments",
+    badgeIcon: pageBadgeIcon,
+    isLoading: isGlobalLoading,
+    headerActions: pageHeaderActions,
   });
 
-  const appointments = data?.appointments || [];
-  const statusCounts = appointmentStats || ([] as StatusCount[]);
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const getStatusColor = (colorKey: string) => {
-    const key = colorKey as keyof typeof STATUS_COLORS;
+  const getStatusColor = (statusName?: string) => {
+    const key = getStatusColorKey(statusName);
     return STATUS_COLORS[key] || STATUS_COLORS.secondary;
   };
 
-  const getStatAccent = (colorKey: string) => {
-    switch (colorKey) {
-      case "warning":
-      case "yellow":
-        return "from-amber-500/15 to-yellow-500/5 text-amber-700 dark:text-amber-300 border-amber-500/20";
-      case "info":
-      case "blue":
-        return "from-blue-500/15 to-sky-500/5 text-blue-700 dark:text-blue-300 border-blue-500/20";
-      case "success":
-      case "green":
-        return "from-emerald-500/15 to-green-500/5 text-emerald-700 dark:text-emerald-300 border-emerald-500/20";
-      case "danger":
-      case "red":
-        return "from-rose-500/15 to-red-500/5 text-rose-700 dark:text-rose-300 border-rose-500/20";
-      case "purple":
-      case "violet":
-        return "from-violet-500/15 to-fuchsia-500/5 text-violet-700 dark:text-violet-300 border-violet-500/20";
-      default:
-        return "from-slate-500/15 to-slate-500/5 text-slate-700 dark:text-slate-300 border-slate-500/20";
-    }
-  };
+  const renderListItem = useCallback(
+    (appointment: Appointment, index: number) => (
+      <div
+        key={appointment.id}
+        className={cn(
+          "animate-fade-in-up cursor-pointer p-4",
+          "transition-colors duration-200 hover:bg-muted/50",
+          "sm:p-5",
+        )}
+        style={{
+          animationDelay: `${0.04 * (index + 1)}s`,
+          animationFillMode: "both",
+        }}
+        onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className={cn(
+              "hidden h-20 w-20 shrink-0 flex-col",
+              "items-center justify-center rounded-[18px] sm:flex",
+              GLASS_INNER,
+            )}
+          >
+            <div
+              className={cn(
+                "mb-1 text-xs font-semibold uppercase text-primary",
+              )}
+            >
+              {new Date(appointment.whenDate).toLocaleDateString("en-US", {
+                month: "short",
+              })}
+            </div>
+
+            <div className="text-2xl font-bold text-primary">
+              {new Date(appointment.whenDate).getDate()}
+            </div>
+          </div>
+
+          <div className="min-w-0 flex-1 space-y-2">
+            <div
+              className={cn(
+                "flex flex-col gap-2.5 sm:flex-row",
+                "sm:items-center sm:justify-between",
+              )}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border-white/45 bg-white/40 text-xs",
+                    "font-medium backdrop-blur-xl",
+                    "dark:border-white/10 dark:bg-white/[0.05]",
+                  )}
+                >
+                  <Tag className="mr-1 h-3 w-3" />
+                  {appointment.appointmentCategory.name}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs hover:brightness-110",
+                    getStatusColor(appointment.status?.name),
+                  )}
+                >
+                  {appointment.status?.name}
+                </Badge>
+              </div>
+
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-4 text-xs",
+                  "text-muted-foreground",
+                )}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span className="sm:hidden">
+                    {formatDate(appointment.whenDate)}
+                  </span>
+                  <span className="hidden sm:inline">
+                    {formatDate(appointment.whenDate)}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  {format12HourTime(appointment.timeSlot.time)}
+                </div>
+              </div>
+            </div>
+            <p
+              className={cn("line-clamp-1 text-xs", "text-muted-foreground/85")}
+            >
+              {appointment.reason}
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+    [navigate, formatDate, getStatusColor],
+  );
+
+  const emptyState = useMemo(
+    () => (
+      <div className="px-4 py-10 sm:px-6 sm:py-12">
+        <div
+          className={cn(
+            "mx-auto flex max-w-md flex-col",
+            "items-center text-center",
+          )}
+        >
+          <div
+            className={cn(
+              "mb-4 flex h-20 w-20 items-center",
+              "justify-center rounded-full",
+              GLASS_INNER,
+            )}
+          >
+            <CalendarX className="h-9 w-9 text-muted-foreground" />
+          </div>
+
+          <h3 className="mb-2 text-xl font-semibold text-foreground">
+            No appointments found
+          </h3>
+
+          <p className="mb-6 text-sm text-muted-foreground">
+            {selectedStatus.id === 0
+              ? "You haven't scheduled any appointments yet. " +
+                "Book your first counseling session now."
+              : `No ${selectedStatus.name.toLowerCase()} appointments found.`}
+          </p>
+
+          {selectedStatus.id === 0 && (
+            <Button
+              asChild={hasValidCor}
+              disabled={!hasValidCor}
+              className="rounded-xl shadow-lg shadow-primary/15"
+              title={
+                !user?.studentCorUrl
+                  ? "Please upload your COR in your profile " +
+                    "to book an appointment"
+                  : !user?.isStudentCorValid
+                    ? "Your COR is invalid or outdated for the " +
+                      "current academic term"
+                    : ""
+              }
+              onClick={(e) => {
+                if (!hasValidCor) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              {hasValidCor ? (
+                <Link to="/student/appointments/schedule">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Schedule Appointment
+                </Link>
+              ) : (
+                <div className="flex items-center">
+                  <Plus className="mr-2 h-4 w-4 opacity-50" />
+                  Schedule Appointment
+                </div>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+    ),
+    [selectedStatus, hasValidCor, user?.studentCorUrl, user?.isStudentCorValid],
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Missing COR Alert */}
-      {!user?.studentCorUrl && (
-        <Alert variant="destructive" className="animate-fade-in-up border-rose-500/50 bg-rose-500/10 text-rose-600 dark:border-rose-500/30 dark:text-rose-400">
+    <div className="relative isolate space-y-6 overflow-visible">
+      {/* <div className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-72 rounded-full bg-slate-300/10 blur-3xl dark:bg-slate-500/10" />
+      <div className="pointer-events-none absolute right-0 top-10 -z-10 h-80 w-80 rounded-full bg-primary/5 blur-3xl dark:bg-primary/10" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 -z-10 h-72 w-72 rounded-full bg-sky-200/10 blur-3xl dark:bg-sky-400/10" /> */}
+
+      {!user?.studentCorUrl ? (
+        <Alert
+          variant="destructive"
+          className={ACTION_REQUIRED_ALERT}
+        >
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Action Required: Missing Certificate of Registration</AlertTitle>
-          <AlertDescription>
+          <AlertTitle className="text-base font-medium">
+            Action Required: Missing Certificate of Registration
+          </AlertTitle>
+          <AlertDescription className="text-sm">
             You need to upload your COR before you can book appointments.{" "}
-            <Link to="/student/cor-management" className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300">
+            <Link
+              to="/student/cor-management"
+              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+            >
               Go to COR Management
             </Link>
           </AlertDescription>
         </Alert>
-      )}
-
-      {/* Stats Cards */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
-        {appointmentStatuses.map((stat: AppointmentStatus, index: number) => {
-          const count =
-            statusCounts?.find((s) => String(s.id) === String(stat.id))
-              ?.count || 0;
-
-          return (
-            <Card
-              key={stat.id}
-              className={cn(
-                "animate-fade-in-up group overflow-hidden rounded-[18px]",
-                "border border-white/20 bg-white/45",
-                "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-                "transition-all duration-200 hover:-translate-y-0.5",
-                "dark:border-white/10 dark:bg-white/[0.04]",
-              )}
-              style={{
-                animationDelay: `${0.05 * (index + 1)}s`,
-                animationFillMode: "both",
-              }}
+      ) : !user?.isStudentCorValid ? (
+        <Alert
+          variant="destructive"
+          className={ACTION_REQUIRED_ALERT}
+        >
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="text-base font-medium">
+            Action Required: Invalid or Outdated Certificate of Registration
+          </AlertTitle>
+          <AlertDescription className="text-sm">
+            Your uploaded COR is not valid for the current academic term. Please
+            upload your updated COR to proceed.{" "}
+            <Link
+              to="/student/cor-management"
+              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
             >
-              <CardContent className="p-0">
+              Go to COR Management
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <section className="hidden md:block">
+        <div
+          className="grid gap-4"
+          style={{
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
+          }}
+        >
+          {appointmentStatuses.map((stat: AppointmentStatus, index: number) => {
+            const count =
+              statusCounts?.find((s) => String(s.id) === String(stat.id))
+                ?.count || 0;
+
+            const statusMeta = getStatusCardMeta(stat.name);
+            const StatusIcon = statusMeta.icon;
+
+            return (
+              <Card
+                key={stat.id}
+                className={cn(
+                  GLASS_CARD,
+                  "animate-fade-in-up group relative h-[124px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
+                  statusMeta.card,
+                )}
+                style={{
+                  animationDelay: `${0.05 * (index + 1)}s`,
+                  animationFillMode: "both",
+                }}
+              >
                 <div
-                  className={`${STATUS_COLORS[stat.colorKey]} flex items-start justify-between gap-3 rounded-[18px] px-4 py-4`}
-                >
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">
-                      {stat.name}
-                    </p>
-                    <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                  className={cn(
+                    "pointer-events-none absolute -right-8 -top-8",
+                    "h-28 w-28 rounded-full blur-2xl",
+                    statusMeta.glow,
+                  )}
+                />
+
+                <div
+                  className={cn(
+                    "pointer-events-none absolute inset-x-0 top-0 h-px",
+                    "bg-white/70 dark:bg-white/15",
+                  )}
+                />
+                <div
+                  className={cn(
+                    "pointer-events-none absolute inset-x-0 bottom-0",
+                    "from-white/28 h-1/2 bg-gradient-to-t to-transparent",
+                    "dark:from-black/15",
+                  )}
+                />
+
+                <CardContent className="relative flex h-full flex-col justify-between p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        title={stat.name}
+                        className={cn(
+                          "whitespace-nowrap text-[11px] font-bold " +
+                            "uppercase",
+                          statusMeta.label,
+                        )}
+                      >
+                        {stat.name}
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-1 whitespace-nowrap text-[11px] font-medium",
+                          "text-muted-foreground/75",
+                        )}
+                      >
+                        Appointment status
+                      </p>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex h-11 w-11 shrink-0 items-center justify-center " +
+                          "rounded-[15px] transition-transform duration-300" +
+                          "group-hover:scale-105",
+                        statusMeta.iconBox,
+                      )}
+                    >
+                      <StatusIcon
+                        className="h-5 w-5"
+                        strokeWidth={2}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-3">
+                    <p className="text-[34px] tabular-nums leading-none tracking-tight text-foreground">
                       {count}
                     </p>
+                    <span
+                      className={cn(
+                        "rounded-full px-3 py-1",
+                        "text-[10px] font-bold uppercase " +
+                          "tracking-[0.16em] text-muted-foreground/85",
+                        GLASS_INNER,
+                      )}
+                    >
+                      Total
+                    </span>
                   </div>
-
-                  <div
-                    className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center",
-                      "rounded-xl border border-white/30 bg-white/50",
-                      "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
-                    )}
-                  >
-                    <ClipboardCheck className="h-5 w-5 text-foreground/80" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </section>
 
-      {/* Main Content Card */}
-      <Card className={`${GLASS_CARD} animate-fade-in-up`}>
-        {/* Filter Tabs */}
-        <CardHeader className="border-b border-white/20 px-4 py-3 dark:border-white/10">
-          <div className="scrollbar-hide flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {filterStatuses?.map((filter: AppointmentStatus) => {
-              const isActive = selectedStatus.id === filter.id;
+      <Card className={cn(GLASS_CARD, "animate-fade-in-up")}>
+        <CardHeader
+          className={cn(
+            "border-b border-white/30 px-4 py-3.5",
+            "dark:border-white/10",
+          )}
+        >
+          {/* Mobile Dropdown */}
+          <div className="w-full max-w-xs md:hidden">
+            <Dropdown
+              label="Appointment Status"
+              options={dropdownOptions}
+              value={selectedStatus.id}
+              onChange={(val) => {
+                const selected = filterStatuses.find(
+                  (s) => String(s.id) === String(val),
+                );
+                if (selected) {
+                  setSelectedStatus(selected);
+                  setCurrentPage(1);
+                }
+              }}
+            />
+          </div>
+
+          {/* Desktop Tabs */}
+          <div className="hidden flex-wrap gap-2 md:flex">
+            {filterStatuses.map((filter) => {
+              const isActive = String(selectedStatus.id) === String(filter.id);
               const count =
                 filter.id === 0
                   ? statusCounts.reduce(
@@ -226,25 +608,32 @@ export default function StudentAppointments() {
               return (
                 <Button
                   key={filter.id}
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
                   onClick={() => {
                     setSelectedStatus(filter);
                     setCurrentPage(1);
                   }}
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className={`flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-xs font-medium transition-all duration-200 ${
+                  className={cn(
+                    "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
                     isActive
-                      ? "shadow-md shadow-primary/20"
-                      : "hover:bg-white/60 dark:hover:bg-white/[0.06]"
-                  }`}
+                      ? "shadow-md"
+                      : cn(
+                          "border-glass-border bg-glass-bg",
+                          "hover:bg-primary/10 hover:text-primary hover:opacity-90",
+                        ),
+                  )}
                 >
                   <span>{filter.name}</span>
                   <Badge
-                    className={`flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[10px] font-bold ${
+                    variant="outline"
+                    className={cn(
+                      "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
+                      "font-bold transition-all",
                       isActive
-                        ? "bg-primary-foreground/40 text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                        ? "bg-primary-foreground text-primary"
+                        : "bg-muted/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground",
+                    )}
                   >
                     {count}
                   </Badge>
@@ -254,187 +643,23 @@ export default function StudentAppointments() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
-          {isAppointmentsLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Spinner size="md" message="Loading your appointments..." />
-            </div>
-          ) : appointments.length > 0 ? (
-            <>
-              {/* Appointments List */}
-              <div className="divide-y divide-white/20 dark:divide-white/10">
-                {appointments.map((appointment: Appointment, index: number) => (
-                  <div
-                    key={appointment.id}
-                    className={cn(
-                      "animate-fade-in-up cursor-pointer p-4 transition-colors duration-200",
-                      "hover:bg-black/5 dark:hover:bg-white/[0.03] sm:p-5",
-                    )}
-                    style={{
-                      animationDelay: `${0.04 * (index + 1)}s`,
-                      animationFillMode: "both",
-                    }}
+        <CardContent className="bg-glass-bg p-0">
+          <Table
+            variant="list"
+            data={appointments}
+            renderListItem={renderListItem}
+            isLoading={isAppointmentsLoading}
+            emptyState={emptyState}
+          />
 
-                    onClick={() =>
-                      navigate(`/student/appointments/${appointment.id}`)
-                    }
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Date Badge */}
-                      <div
-                        className={cn(
-                          "hidden h-20 w-20 shrink-0 flex-col items-center",
-                          "justify-center rounded-[18px] border border-white/20",
-                          "bg-white/50 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
-                          "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
-                          "sm:flex",
-                        )}
-                      >
-                        <div className="mb-1 text-xs font-semibold uppercase text-primary">
-                          {new Date(appointment.whenDate).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                            },
-                          )}
-                        </div>
-                        <div className="text-2xl font-bold text-primary">
-                          {new Date(appointment.whenDate).getDate()}
-                        </div>
-                      </div>
+          <Separator className="bg-white/25 dark:bg-white/10" />
 
-                      {/* Content */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 space-y-1.5">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "border-white/30 bg-white/60 text-xs font-medium",
-                                  "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-                                )}
-                              >
-                                <Tag className="mr-1 h-3 w-3" />
-                                {appointment.appointmentCategory.name}
-                              </Badge>
-
-                              <Badge
-                                className={`text-xs ${getStatusColor(
-                                  appointment.status?.colorKey || "",
-                                )} hover:opacity-90`}
-                              >
-                                {appointment.status?.name}
-                              </Badge>
-                            </div>
-
-                            <p className="line-clamp-2 text-sm font-medium text-foreground">
-                              {appointment.reason}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Date & Time Info */}
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span className="sm:hidden">
-                              {formatDate(appointment.whenDate)}
-                            </span>
-                            <span className="hidden sm:inline">
-                              {new Date(
-                                appointment.whenDate,
-                              ).toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            {format12HourTime(appointment.timeSlot.time)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <Separator className="bg-white/20 dark:bg-white/10" />
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={data?.totalPages || 1}
-                onPageChange={(page) => setCurrentPage(page)}
-                className="mt-0 border-t-0 px-4 py-3"
-              />
-            </>
-          ) : (
-            <>
-              {/* Empty State */}
-              <div className="px-4 py-10 sm:px-6 sm:py-12">
-                <div className="mx-auto flex max-w-md flex-col items-center text-center">
-                  <div
-                    className={cn(
-                      "mb-4 flex h-20 w-20 items-center justify-center rounded-full",
-                      "border border-white/20 bg-white/60 backdrop-blur-md",
-                      "dark:border-white/10 dark:bg-white/[0.05]",
-                    )}
-                  >
-                    <CalendarX className="h-9 w-9 text-muted-foreground" />
-                  </div>
-
-                  <h3 className="mb-2 text-xl font-semibold text-foreground">
-                    No appointments found
-                  </h3>
-
-                  <p className="mb-6 text-sm text-muted-foreground">
-                    {selectedStatus.id === 0
-                      ? "You haven't scheduled any appointments yet. Book your first counseling session now."
-                      : `No ${selectedStatus.name.toLowerCase()} appointments found.`}
-                  </p>
-
-                  {selectedStatus.id === 0 && (
-                    <Button
-                      asChild={!!user?.studentCorUrl}
-                      disabled={!user?.studentCorUrl}
-                      className="rounded-xl shadow-lg shadow-primary/20"
-                      title={!user?.studentCorUrl ? "Please upload your COR in your profile to book an appointment" : ""}
-                      onClick={(e) => {
-                        if (!user?.studentCorUrl) {
-                          e.preventDefault();
-                        }
-                      }}
-                    >
-                      {user?.studentCorUrl ? (
-                        <Link to="/student/appointments/schedule">
-                          <Plus className="mr-2 h-4 w-4" />
-                          Schedule Appointment
-                        </Link>
-                      ) : (
-                        <div className="flex items-center">
-                          <Plus className="mr-2 h-4 w-4 opacity-50" />
-                          Schedule Appointment
-                        </div>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <Separator className="bg-white/20 dark:bg-white/10" />
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={data?.totalPages || 1}
-                onPageChange={(page) => setCurrentPage(page)}
-                className="mt-0 border-t-0 px-4 py-3"
-              />
-            </>
-          )}
+          <Pagination
+            currentPage={data?.meta?.page || 1}
+            totalPages={data?.meta?.totalPages || 1}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="mt-0 border-t-0 px-4 py-3"
+          />
         </CardContent>
       </Card>
     </div>

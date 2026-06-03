@@ -9,6 +9,7 @@ export default function Radio({
   required = false,
   columns = 1,
   disabled = false,
+  name,
 }: {
   label: string;
   options: Array<{
@@ -22,6 +23,7 @@ export default function Radio({
   required?: boolean;
   columns?: number;
   disabled?: boolean;
+  name?: string;
 }) {
   const gridColsClass =
     {
@@ -32,15 +34,15 @@ export default function Radio({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-start gap-1 text-sm font-medium text-card-foreground">
+      <div className="mb-4 flex items-start gap-1 text-sm font-medium text-card-foreground">
         <span>{label}</span>
         {required && <span className="text-red-500">*</span>}
       </div>
-      <div className={`grid ${gridColsClass} gap-4`}>
+      <div className={`grid grid-cols-1 md:${gridColsClass} gap-4`}>
         {options.map((option) => (
           <label
             key={option.id}
-            className="group flex cursor-pointer items-center gap-3"
+            className="group/radio flex cursor-pointer items-center gap-3"
           >
             <div
               className={cn(
@@ -50,7 +52,7 @@ export default function Radio({
             >
               <input
                 type="radio"
-                name={label}
+                name={name || label}
                 value={option.id}
                 checked={String(value) === String(option.id)}
                 onChange={() => onChange(option.id)}
@@ -59,11 +61,9 @@ export default function Radio({
               />
               <div
                 className={cn(
-                  "h-full w-full rounded-full border border-white/30",
-                  "bg-white/40 transition-all duration-200",
-                  "peer-checked:border-primary peer-checked:bg-primary/5",
-                  "dark:border-white/10 dark:bg-white/[0.04]",
-                  "dark:peer-checked:border-primary",
+                  "h-full w-full rounded-full border border-muted-foreground",
+                  "bg-muted transition-all duration-200",
+                  "peer-checked:border-primary peer-checked:bg-primary/10",
                 )}
               />
               <div
@@ -77,7 +77,7 @@ export default function Radio({
             <span
               className={cn(
                 "text-sm font-medium text-foreground/80 transition-colors",
-                "duration-200 group-hover:text-primary",
+                "duration-200 group-hover/radio:text-primary",
               )}
             >
               {option.name || option.text || option.code}

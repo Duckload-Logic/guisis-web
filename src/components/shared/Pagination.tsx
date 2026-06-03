@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   isLoading = false,
   className,
 }) => {
+  const navRef = useRef<HTMLElement>(null);
+
   // Validate inputs
   if (totalPages < 1) return null;
   if (currentPage < 1 || currentPage > totalPages) {
@@ -83,6 +85,12 @@ export const Pagination: React.FC<PaginationProps> = ({
   const handlePageChange = (page: number) => {
     if (!isLoading && page !== currentPage && page >= 1 && page <= totalPages) {
       onPageChange(page);
+      if (navRef.current?.parentElement) {
+        navRef.current.parentElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
     }
   };
 
@@ -98,6 +106,7 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <nav
+      ref={navRef}
       className={cn(
         "flex flex-col-reverse gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
         className,

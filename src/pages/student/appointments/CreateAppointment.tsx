@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAvailableSlots } from "@/features/appointments/hooks/useLookups";
 import {
@@ -19,14 +19,15 @@ import {
   ChevronRight,
   Edit2,
   CircleChevronLeft,
+  RefreshCw,
+  UserPlus,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import type { ConcernCategory } from "@/features/appointments/types";
 import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
-import { toISODateString } from "@/features/appointments/utils";
-import Layout from "@/components/layout/Layout";
+import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
@@ -72,10 +73,18 @@ export default function CreateAppointment() {
     });
   };
 
-  usePageMetadata({
-    title: "Schedule Appointment",
-    isLoading: isLoading || isSubmitting,
-  });
+  usePageMetadata(
+    useMemo(() => {
+      return {
+        title: "Schedule Appointment",
+        description:
+          "Select your preferred date and time. Please be descriptive about your concern to help our counselor prepare.",
+        badgeText: "New Appointment",
+        badgeIcon: <UserPlus className="h-3 w-3" />,
+        isLoading: isLoading,
+      };
+    }, [isLoading]),
+  );
 
   // Calculate max date (2 weeks from now)
   const maxDate = new Date();
@@ -84,45 +93,16 @@ export default function CreateAppointment() {
   return (
     <>
       <div className="min-h-full bg-background">
-        {/* Header */}
-        <div
-          className={cn(
-            "flex flex-col items-center space-y-4 border-b",
-            "border-border/40 bg-background/50 py-10 text-center",
-            "backdrop-blur-sm",
-          )}
-        >
-          <Link
-            to="/student/appointments"
-            className={cn(
-              "group inline-flex items-center gap-2 rounded-full px-3",
-              "py-1.5 text-xs font-semibold text-muted-foreground",
-              "transition-all hover:bg-primary/10 hover:text-primary",
-            )}
-          >
-            <CircleChevronLeft
-              size={16}
-              className="transition-transform group-hover:-translate-x-0.5"
-            />
-            <span>Return to My Appointments</span>
-          </Link>
-
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Schedule an Appointment
-            </h1>
-            <p className="max-w-prose text-sm text-muted-foreground">
-              Select your preferred date and time. Please be descriptive about
-              your concern to help our counselor prepare.
-            </p>
-          </div>
-        </div>
-
         {/* Main Content */}
-        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
+        <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
           {/* Compact Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-0">
+          <div className="mb-6 w-full">
+            <div
+              className={cn(
+                "mx-auto flex w-full max-w-xs items-center justify-center",
+                "gap-0 px-2 sm:max-w-md",
+              )}
+            >
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isCompleted = currentStep > step.id;
@@ -135,7 +115,7 @@ export default function CreateAppointment() {
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                        className={`flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 ${
                           isCompleted
                             ? "bg-primary text-primary-foreground"
                             : isCurrent
@@ -144,20 +124,29 @@ export default function CreateAppointment() {
                         } `}
                       >
                         {isCompleted ? (
-                          <CheckCircle2 className="h-5 w-5" />
+                          <CheckCircle2 className="h-4.5 w-4.5" />
                         ) : (
-                          <StepIcon className="h-5 w-5" />
+                          <StepIcon className="h-4.5 w-4.5" />
                         )}
                       </div>
                       <span
-                        className={`mt-1.5 text-xs font-medium transition-colors ${isCurrent || isCompleted ? "text-foreground" : "text-muted-foreground"} `}
+                        className={`mt-1 hidden text-xs font-medium transition-colors sm:block ${
+                          isCurrent || isCompleted
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        } `}
                       >
                         {step.label}
                       </span>
                     </div>
                     {index < steps.length - 1 && (
                       <div
-                        className={`mx-3 h-0.5 w-16 rounded-full transition-colors duration-300 sm:w-24 ${currentStep > step.id ? "bg-primary" : "bg-border"} `}
+                        className={cn(
+                          "mx-1 h-0.5 flex-1 rounded-full transition-colors",
+                          "min-w-[1.5rem] duration-300 sm:mx-2",
+                          "sm:min-w-[3.5rem]",
+                          currentStep > step.id ? "bg-primary" : "bg-border",
+                        )}
                       />
                     )}
                   </div>
@@ -341,6 +330,49 @@ export default function CreateAppointment() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isSubmitting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className={cn(
+              "fixed inset-0 z-[100] flex flex-col items-center",
+              "justify-center bg-slate-950/40 shadow-md",
+            )}
+          >
+            <div
+              className={cn(
+                "flex w-[calc(100%-2rem)] max-w-sm flex-col items-center",
+                "gap-4 rounded-xl border border-border bg-card p-6",
+                "shadow-2xl backdrop-blur-2xl sm:p-10",
+              )}
+            >
+              <div className="relative">
+                <RefreshCw
+                  size={48}
+                  className="animate-spin text-primary"
+                />
+                <div
+                  className={cn(
+                    "absolute inset-0 animate-ping rounded-full",
+                    "border border-primary/20",
+                  )}
+                />
+              </div>
+              <div className="space-y-1 text-center">
+                <h3 className="text-lg font-bold text-foreground">
+                  Scheduling Appointment
+                </h3>
+                <p className="max-w-[280px] text-sm text-muted-foreground">
+                  Reserving your slot and creating appointment. Please wait...
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

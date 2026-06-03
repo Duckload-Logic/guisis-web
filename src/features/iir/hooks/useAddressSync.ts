@@ -16,6 +16,40 @@ export function useAddressSync(
   onSync: (address: Address | null) => void,
 ) {
   const [isSynced, setIsSynced] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  /**
+   * Auto-detect sync on initial load/data fetch
+   */
+  useEffect(() => {
+    if (
+      !hasInitialized &&
+      sourceAddress?.region?.code &&
+      targetAddress?.region?.code
+    ) {
+      const regionMatch =
+        sourceAddress.region?.code === targetAddress.region?.code;
+      const provinceMatch =
+        sourceAddress.province?.code === targetAddress.province?.code;
+      const cityMatch =
+        sourceAddress.city?.code === targetAddress.city?.code;
+      const barangayMatch =
+        sourceAddress.barangay?.code === targetAddress.barangay?.code;
+      const streetMatch =
+        sourceAddress.streetDetail === targetAddress.streetDetail;
+
+      if (
+        regionMatch &&
+        provinceMatch &&
+        cityMatch &&
+        barangayMatch &&
+        streetMatch
+      ) {
+        setIsSynced(true);
+      }
+      setHasInitialized(true);
+    }
+  }, [sourceAddress, targetAddress, hasInitialized]);
 
   /**
    * Sync target address with source address when checkbox is toggled

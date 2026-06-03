@@ -45,18 +45,11 @@ export interface SystemLogsResponse {
 export async function GetMyActivities(
   config?: AxiosConfigWithMeta,
 ): Promise<SystemLogsResponse> {
-  try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.logs.myLogs,
-      config,
-    );
-    return data;
-  } catch (error: any) {
-    const handlerName = config?.handlerName || "GetMyActivities";
-    const stepName = config?.stepName || "Fetch User Activities";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
-    throw error;
-  }
+  const { data } = await apiClient.get(
+    API_ROUTES.superadmin.logs.myLogs,
+    config,
+  );
+  return data;
 }
 
 export const logService = {

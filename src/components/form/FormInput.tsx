@@ -1,4 +1,4 @@
-import { Info, Check, Mic, MicOff, Banknote } from "lucide-react";
+import { Info, Mic, MicOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
@@ -37,6 +37,7 @@ const FormInput = forwardRef<
     prefix?: string;
     noSpecialCharacters?: boolean;
     list?: string;
+    maxChars?: number;
   }
 >(
   (
@@ -61,6 +62,7 @@ const FormInput = forwardRef<
       prefix,
       noSpecialCharacters = true,
       list,
+      maxChars,
     },
     ref,
   ) => {
@@ -73,6 +75,8 @@ const FormInput = forwardRef<
     } = useSpeechToText();
 
     const previousTranscriptRef = useRef("");
+    const isTextboxType = isTextarea || type === "textbox";
+    const charCount = typeof value === "string" ? value.length : 0;
 
     useEffect(() => {
       if (transcript && transcript !== previousTranscriptRef.current) {
@@ -95,7 +99,7 @@ const FormInput = forwardRef<
         }
         previousTranscriptRef.current = transcript;
       }
-    }, [transcript, onChange, value, name]);
+    }, [transcript, onChange, value, name, isTextboxType, maxChars]);
 
     const handleMicToggle = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -120,66 +124,134 @@ const FormInput = forwardRef<
     const handleChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
-      const newValue = e.target.value;
+      let newValue = e.target.value;
+      newValue = newValue.replace(/^\s+/, "");
+      if (isTextboxType && maxChars && newValue.length > maxChars) {
+        newValue = newValue.slice(0, maxChars);
+      }
       validateContent(newValue);
 
-      // Try string first, then event (RHF)
       try {
         onChange(newValue);
       } catch (err) {
+        e.target.value = newValue;
         onChange(e);
       }
     };
 
-    const inputClasses = `
-      w-full rounded-xl border px-4 py-2.5 outline-none transition-all duration-200
-      text-sm font-medium tracking-tight text-foreground placeholder:text-muted-foreground/70
-      ${
-        disabled
-          ? "bg-muted/80 border-glass-border/20 text-muted-foreground cursor-not-allowed opacity-60"
-          : value !== undefined && value !== null && value !== ""
-            ? "bg-muted/20 border-primary/30 focus:bg-glass-bg dark:focus:bg-glass-bg/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/5 shadow-sm"
-            : required
-              ? "bg-muted/60 dark:bg-muted/20 border-border hover:border-destructive/40 focus:border-destructive/50 focus:ring-2 focus:ring-destructive/5"
-              : "bg-muted/60 dark:bg-muted/20 border-border hover:border-glass-border/60 focus:bg-glass-bg dark:focus:bg-glass-bg/40 focus:border-primary/50 focus:ring-2 focus:ring-primary/5"
+    const handleBlur = (
+      e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (trimmed !== value) {
+          try {
+            onChange(trimmed);
+          } catch (err) {
+            e.target.value = trimmed;
+            onChange(e as any);
+          }
+        }
       }
-      ${isTextarea ? "min-h-[100px] py-3 resize-none" : "h-11"}
-      ${isListening ? "border-primary ring-2 ring-primary/10" : ""}
-    `;
+      if (onBlur) {
+        onBlur();
+      }
+    };
+
+    const inputClasses = cn(
+      "w-full rounded-xl border px-4 py-2.5 outline-none transition-all",
+      "duration-200 text-sm font-medium tracking-tight text-foreground",
+      "placeholder:text-muted-foreground/70",
+      "bg-card border-foreground/30",
+      disabled
+        ? "bg-border/50 border-0 text-muted-foreground " +
+            "cursor-not-allowed opacity-90"
+        : value !== undefined && value !== null && value !== ""
+          ? "bg-muted/20 border-primary/30 focus:bg-glass-bg " +
+            "dark:focus:bg-glass-bg/50 focus:border-primary/50 " +
+            "focus:ring-2 focus:ring-primary/5 shadow-sm"
+          : required
+            ? "hover:border-destructive/40 focus:border-destructive/50 " +
+              "focus:ring-2 focus:ring-destructive/5"
+            : "hover:border-glass-border/60 focus:bg-glass-bg " +
+              "dark:focus:bg-glass-bg/40 focus:border-primary/50 " +
+              "focus:ring-2 focus:ring-primary/5",
+      isTextboxType
+        ? cn(
+            "min-h-[100px] pt-3 pr-4 resize-none",
+            browserSupportsSpeechRecognition && !disabled ? "pb-12" : "pb-3",
+          )
+        : "h-11",
+      isListening ? "border-primary ring-2 ring-primary/10" : "",
+    );
 
     return (
       <div className={`space-y-2 ${className}`}>
-        <div className="flex max-h-10 items-start gap-1 text-sm font-medium text-card-foreground">
-          {info && <CustomTooltip content={info} />}
-          <span>{label}</span>
-          {required && <span className="text-red-500">*</span>}
+        <div
+          className={cn(
+            "flex max-h-10 items-start justify-between gap-1",
+            "text-sm font-medium text-card-foreground",
+          )}
+        >
+          <div className="flex items-center gap-1">
+            {info && <CustomTooltip content={info} />}
+            <span>{label}</span>
+            {required && <span className="text-red-500">*</span>}
+          </div>
+          {isTextboxType && maxChars && (
+            <span className="text-xs font-semibold text-muted-foreground">
+              {charCount}/{maxChars}
+            </span>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className={cn("flex", prefix ? "gap-0" : "gap-2")}>
           {prefix && (
             <div
               className={cn(
-                "flex w-fit items-center rounded-md rounded-r-none",
-                "bg-muted-foreground/50 px-3 py-2 text-muted-foreground",
+                "relative flex h-11 w-fit items-center rounded-l-xl rounded-r-none",
+                "bg-muted-foreground/20 px-4 text-muted-foreground",
+                "border-glass-border/30 border border-r-0",
               )}
             >
               <span className="text-nowrap text-sm font-medium text-card-foreground">
                 {prefix}
               </span>
+              {/* Protruding puzzle piece tab */}
+              <div
+                className={cn(
+                  "absolute right-[-6px] top-1/2 -translate-y-1/2",
+                  "z-10 h-3 w-3 rounded-full bg-muted-foreground/20",
+                  "border-glass-border/30 border border-l-0",
+                )}
+              />
             </div>
           )}
           <div className="relative w-full">
-            {isTextarea ? (
+            {isTextboxType ? (
               <textarea
                 id={id}
                 name={name}
                 ref={ref as any}
                 value={value}
                 onChange={handleChange}
-                onBlur={onBlur}
+                onBlur={handleBlur}
                 placeholder={placeholder}
                 disabled={disabled}
-                className={inputClasses}
+                className={cn(inputClasses, prefix && "rounded-l-none")}
+                style={
+                  prefix
+                    ? {
+                        WebkitMaskImage:
+                          "radial-gradient(circle 6px at 0px 50%, " +
+                          "transparent 6px, black 6.5px)",
+                        maskImage:
+                          "radial-gradient(circle 6px at 0px 50%, " +
+                          "transparent 6px, black 6.5px)",
+                      }
+                    : undefined
+                }
                 rows={5}
+                maxLength={maxChars}
               />
             ) : (
               <input
@@ -189,34 +261,48 @@ const FormInput = forwardRef<
                 type={type}
                 value={value}
                 onChange={handleChange}
-                onBlur={onBlur}
+                onBlur={handleBlur}
                 placeholder={placeholder}
                 inputMode={inputMode}
                 disabled={disabled}
-                className={inputClasses}
+                className={cn(inputClasses, prefix && "rounded-l-none")}
+                style={
+                  prefix
+                    ? {
+                        WebkitMaskImage:
+                          "radial-gradient(circle 6px at 0px 50%, " +
+                          "transparent 6px, black 6.5px)",
+                        maskImage:
+                          "radial-gradient(circle 6px at 0px 50%, " +
+                          "transparent 6px, black 6.5px)",
+                      }
+                    : undefined
+                }
                 min={min}
                 max={max}
                 list={list}
               />
             )}
 
-            <div className="bottom-4 right-2 z-10 block flex items-center gap-2">
-              {isTextarea && browserSupportsSpeechRecognition && !disabled && (
+            {isTextboxType && browserSupportsSpeechRecognition && !disabled && (
+              <div className="absolute bottom-4 right-2 z-10">
                 <button
                   type="button"
                   onClick={handleMicToggle}
                   title={isListening ? "Stop Dictation" : "Start Dictation"}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg p-0 shadow-sm transition-all ${
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-lg p-0",
+                    "transition-all",
                     isListening
                       ? "animate-pulse bg-primary text-white ring-4 ring-primary/20"
-                      : "bg-transparent text-muted-foreground hover:bg-primary/10 " +
-                        "border border-border/50 hover:text-primary"
-                  }`}
+                      : "bg-glass-bg text-muted-foreground hover:bg-primary/10 " +
+                          "hover:text-primary",
+                  )}
                 >
                   {isListening ? <MicOff size={15} /> : <Mic size={15} />}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
         {(error || internalError) && (

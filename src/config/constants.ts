@@ -23,6 +23,33 @@ export const STATUS_COLORS: Record<string, string> = {
     "bg-notice-background text-notice-foreground border-notice-foreground",
 } as const;
 
+/**
+ * Maps a status name to its corresponding color key in STATUS_COLORS.
+ */
+export function getStatusColorKey(statusName?: string): string {
+  if (!statusName) return "info";
+  const name = statusName.toLowerCase().trim();
+  switch (name) {
+    case "pending":
+      return "warning";
+    case "scheduled":
+      return "info";
+    case "completed":
+    case "approved":
+      return "success";
+    case "cancelled":
+    case "rejected":
+      return "danger";
+    case "rescheduled":
+    case "for revision":
+      return "notice";
+    case "no-show":
+      return "stale";
+    default:
+      return "info";
+  }
+}
+
 // App config
 export const APP_CONFIG = {
   APP_NAME: "PUP Guidance System",
@@ -91,3 +118,19 @@ export const CACHE_TIMING = {
     gcTime: 2 * 60 * 60 * 1000,
   } as const,
 } as const;
+
+// Shared layout style utilities for student and admin modules
+export const LAYOUT_STYLES = {
+  CARD:
+    "overflow-hidden rounded-[18px] border border-border bg-card " +
+    "shadow-sm",
+  INNER:
+    "border border-border/55 bg-muted/40 shadow-md",
+  ALERT:
+    "animate-fade-in-up rounded-[18px] border border-rose-400/45 " +
+    "bg-rose-50/80 px-5 py-4 text-rose-600 " +
+    "shadow-[0_10px_26px_rgba(244,63,94,0.08)] backdrop-blur-xl " +
+    "dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400 " +
+    "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
+} as const;
+

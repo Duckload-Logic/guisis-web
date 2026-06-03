@@ -12,9 +12,7 @@ export const GetMyNotifications = async (
     );
     return data as unknown as ListNotificationsResponse;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetMyNotifications";
-    const stepName = config?.stepName || "Fetch Notifications";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
+
     throw error;
   }
 };
@@ -26,9 +24,7 @@ export const PatchNotificationRead = async (
   try {
     await apiClient.patch(API_ROUTES.notifications.markAsRead(id), {}, config);
   } catch (error) {
-    const handlerName = config?.handlerName || "PatchNotificationRead";
-    const stepName = config?.stepName || "Mark Read";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
+
     throw error;
   }
 };
@@ -37,3 +33,5 @@ export const GetNotificationStreamUrl = (): string => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
   return `${baseUrl}${API_ROUTES.notifications.stream}`;
 };
+
+export * from "./push";

@@ -7,6 +7,7 @@ export interface M2MClient {
   scopes?: string[];
   isActive: boolean;
   isVerified: boolean;
+  hasPersonalInfoAccess: boolean;
   lastUsedAt?: string;
   expiresAt?: string;
   createdAt: string;
@@ -17,6 +18,7 @@ export interface CreateM2MClientRequest {
   clientDescription: string;
   scopes?: string[];
   expiresAt?: string;
+  hasPersonalInfoAccess?: boolean;
 }
 
 export interface CreateM2MClientResponse extends M2MClient {
@@ -90,6 +92,7 @@ export interface AdminAnalytics {
 // System Log types
 export interface SystemLog {
   id: number;
+  level: string;
   category: string;
   action: string;
   message: string;
@@ -98,6 +101,7 @@ export interface SystemLog {
   ipAddress?: string;
   userAgent?: string;
   metadata?: Record<string, unknown>;
+  traceId?: string;
   createdAt: string;
 }
 
@@ -123,6 +127,7 @@ export interface SystemLogsParams {
 }
 
 export interface LogStats {
+  level: string;
   category: string;
   count: number;
 }
@@ -137,3 +142,10 @@ export interface RoleDistribution {
   roleName: string;
   count: number;
 }
+
+export interface WhitelistEntry {
+  email: string;
+  roles: UserRole[];
+  createdAt: string;
+}
+

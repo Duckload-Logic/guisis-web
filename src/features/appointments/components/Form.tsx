@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Appointment, ConcernCategory, TimeSlot } from "../types";
+import { Appointment } from "../types";
 import { Dropdown } from "@/components/form";
 import { useCategories } from "../hooks";
-import { useState } from "react";
 import { FormInput } from "@/components/form";
 import { cn } from "@/lib/utils";
 

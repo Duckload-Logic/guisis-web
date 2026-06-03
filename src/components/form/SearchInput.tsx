@@ -47,7 +47,7 @@ export default function SearchInput({
             placeholder={placeholder}
             value={searchTerm}
             onChange={(e) => handleChange(e.target.value)}
-            className={`hover:border-glass-border/60 dark:focus:bg-glass-bg/40 h-11 w-full rounded-xl border border-border bg-muted/60 px-4 py-2.5 text-sm font-medium tracking-tight text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground/70 focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5 dark:bg-muted/20 ${error ? "border-destructive/50 ring-destructive/5" : ""} `}
+            className={`hover:border-glass-border/60 dark:focus:bg-glass-bg/40 h-11 w-full rounded-xl border border-border bg-muted/60 px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground/70 focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5 dark:bg-muted/20 ${error ? "border-destructive/50 ring-destructive/5" : ""} `}
           />
         </div>
         {searchTerm ? (

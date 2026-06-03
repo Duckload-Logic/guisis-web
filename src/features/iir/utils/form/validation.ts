@@ -128,7 +128,8 @@ const personalInfoSchema = z.object({
   isEmployed: z.boolean(),
   employerName: z.string().nullable(),
   employerAddress: z.string().nullable(),
-  employerContact: z.string().nullable(),
+  employerContactNumber: z.string().nullable(),
+
   emergencyContact: emergencyContactSchema,
 });
 
@@ -208,7 +209,10 @@ const relatedPersonSchema = z.object({
   middleName: z.string().nullable(),
   lastName: z.string().min(1, "Last name is required"),
   dateOfBirth: z.string(),
-  educationalLevel: z.string().min(1, "Educational level is required"),
+  educationalAttainment: z.object({
+    id: z.number().min(1, "Educational attainment is required"),
+    name: z.string().optional(),
+  }),
   occupation: z.string().nullable(),
   employerName: z.string().nullable(),
   employerAddress: z.string().nullable(),
@@ -253,6 +257,8 @@ const healthRecordSchema = z.object({
   speechDetails: z.string().nullable(),
   generalHealthHasProblem: z.boolean(),
   generalHealthDetails: z.string().nullable(),
+  mentalEmotionalHasProblem: z.boolean(),
+  mentalEmotionalDetails: z.string().nullable(),
 });
 
 /**

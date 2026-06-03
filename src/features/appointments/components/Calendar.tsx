@@ -195,26 +195,33 @@ export default function Calendar({
 
   return (
     <>
-      {/* Mobile View: Modal Trigger */}
+      {/* Mobile View: Inline Card */}
       <div className="w-full sm:hidden">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="flex h-12 w-full items-center justify-between border-2 border-dashed px-4">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-primary" />
-                <span className="font-semibold">
-                  {selectedDate
-                    ? selectedDate.toLocaleDateString()
-                    : "Select Appointment Date"}
-                </span>
-              </div>
-              <span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
-                Change
-              </span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[95%] max-w-md overflow-hidden rounded-2xl border-none p-0">
-            <DialogTitle className="sr-only">Select Date</DialogTitle>
+        <Card
+          className={cn(
+            "bg-glass-bg/40 hover:bg-glass-bg/50 h-fit border-glass-border",
+            "shadow-md backdrop-blur-2xl transition-all duration-500",
+            className,
+          )}
+        >
+          {hasHeader && (
+            <CardHeader
+              className={cn(
+                "border-glass-border/30 border-b bg-muted/10",
+                "px-3 py-3.5",
+              )}
+            >
+              <CardTitle
+                className={cn(
+                  "text-lg font-bold tracking-tight",
+                  "text-foreground/90",
+                )}
+              >
+                {title}
+              </CardTitle>
+            </CardHeader>
+          )}
+          <CardContent className="px-3 pb-5 pt-5">
             <CalendarContent
               monthName={monthName}
               handlePrevMonth={handlePrevMonth}
@@ -233,18 +240,32 @@ export default function Calendar({
               statsMap={statsMap}
               displayLegends={displayLegends}
             />
-          </DialogContent>
-        </Dialog>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Desktop View: Inline Card */}
       <div className="hidden sm:block">
         <Card
-          className={`bg-glass-bg/40 hover:bg-glass-bg/50 h-fit border-glass-border shadow-2xl backdrop-blur-2xl transition-all duration-500 ${className ?? ""}`}
+          className={cn(
+            "bg-glass-bg/40 hover:bg-glass-bg/50 h-fit border-glass-border",
+            "shadow-md backdrop-blur-2xl transition-all duration-500",
+            className,
+          )}
         >
           {hasHeader && (
-            <CardHeader className="border-glass-border/30 rounded-t-3xl border-b bg-muted/10 px-6 py-5">
-              <CardTitle className="text-xl font-bold tracking-tight text-foreground/90">
+            <CardHeader
+              className={cn(
+                "border-glass-border/30 rounded-t-3xl border-b bg-muted/10",
+                "px-6 py-5",
+              )}
+            >
+              <CardTitle
+                className={cn(
+                  "text-xl font-bold tracking-tight",
+                  "text-foreground/90",
+                )}
+              >
                 {title}
               </CardTitle>
             </CardHeader>
@@ -313,7 +334,7 @@ function CalendarContent({
   displayLegends,
 }: CalendarContentProps) {
   return (
-    <div className="flex flex-col p-4 sm:p-0">
+    <div className="flex flex-col p-0">
       {/* Month Navigation */}
       <div className="mb-6 flex items-center justify-between">
         <button
@@ -348,11 +369,11 @@ function CalendarContent({
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
           {emptyDays.map((_, idx) => (
             <div
               key={`empty-${idx}`}
-              className="p-1"
+              className="w-full aspect-square"
             />
           ))}
           {days.map((day) => {
@@ -362,21 +383,50 @@ function CalendarContent({
               selectedDate?.getDate() === day &&
               selectedDate.getMonth() === currentMonthIndex &&
               selectedDate.getFullYear() === currentYear;
-            const isWeekend = isDateDisabled(day);
+            const isDisabled = isDateDisabled(day);
+
+            let btnClass = cn(
+              "flex w-full aspect-square max-w-[2.5rem] sm:max-w-[3rem]",
+              "items-center justify-center text-nowrap rounded-full",
+              "text-sm font-semibold transition-all focus:outline-none",
+              "focus:ring-1 focus:ring-primary/50",
+            );
+
+            if (isDisabled) {
+              btnClass = cn(
+                btnClass,
+                "text-muted-foreground/35 cursor-not-allowed bg-transparent",
+              );
+            } else if (isSelected) {
+              btnClass = cn(
+                btnClass,
+                "bg-primary text-primary-foreground shadow",
+              );
+            } else if (isToday) {
+              btnClass = cn(
+                btnClass,
+                "border border-primary text-primary bg-transparent",
+                "hover:bg-muted/80",
+              );
+            } else {
+              btnClass = cn(
+                btnClass,
+                "text-foreground bg-transparent hover:bg-muted/80",
+              );
+            }
+
             return (
               <div
                 key={day}
-                className="group relative flex justify-center p-1"
+                className={cn(
+                  "group relative flex w-full aspect-square",
+                  "items-center justify-center",
+                )}
               >
                 <button
+                  disabled={isDisabled}
                   onClick={() => handleDateClick(day)}
-                  className={`flex size-12 items-center justify-center text-nowrap rounded-lg text-sm font-semibold transition-colors focus:outline-none focus:ring-1 focus:ring-primary/50 ${isWeekend ? "cursor-not-allowed opacity-50" : "hover:ring-1 hover:ring-primary"} ${
-                    isSelected
-                      ? "bg-primary text-primary-foreground ring-1 ring-primary"
-                      : isWeekend
-                        ? "bg-muted/50 text-muted-foreground"
-                        : "bg-muted text-foreground hover:bg-muted/80"
-                  } ${isToday ? "ring-1 ring-primary" : ""} `}
+                  className={btnClass}
                   aria-label={`${day} ${monthName}`}
                   aria-pressed={isSelected}
                 >
@@ -385,14 +435,17 @@ function CalendarContent({
                 {isAdmin && statsMap[dateKey] && (
                   <div
                     className={cn(
-                      "pointer-events-none absolute flex -translate-y-1 transform",
-                      "justify-center -space-x-1",
+                      "pointer-events-none absolute left-1/2 top-0 flex",
+                      "-translate-x-1/2 -translate-y-1/2 -space-x-1",
                     )}
                   >
-                    {/* Rescheduled is first in row-reverse order to be on top-right */}
+                    {/* Rescheduled is first in row-reverse order */}
                     {statsMap[dateKey].rescheduledCount > 0 && (
                       <div
-                        className="size-3 rounded-full border-2 border-notice-foreground bg-notice-background"
+                        className={cn(
+                          "size-3 rounded-full border-2 border-notice-foreground",
+                          "bg-notice-background",
+                        )}
                         title="Rescheduled"
                       />
                     )}
@@ -400,15 +453,21 @@ function CalendarContent({
                     {/* Scheduled is rendered second (middle) */}
                     {statsMap[dateKey].scheduledCount > 0 && (
                       <div
-                        className="size-3 rounded-full border-2 border-info-foreground bg-info-background"
+                        className={cn(
+                          "size-3 rounded-full border-2 border-info-foreground",
+                          "bg-info-background",
+                        )}
                         title="Scheduled"
                       />
                     )}
 
-                    {/* Pending is rendered last (right-most, top of stack) */}
+                    {/* Pending is rendered last */}
                     {statsMap[dateKey].pendingCount > 0 && (
                       <div
-                        className="size-3 rounded-full border-2 border-warning-foreground bg-warning-background"
+                        className={cn(
+                          "size-3 rounded-full border-2 border-warning-foreground",
+                          "bg-warning-background",
+                        )}
                         title="Pending"
                       />
                     )}

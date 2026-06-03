@@ -21,15 +21,15 @@ import {
   CheckCircle2,
   Ban,
   RefreshCw,
-  Download,
-  Eye,
   Clock,
   ExternalLink,
   FileText,
+  Ticket,
+  ShieldCheck,
 } from "lucide-react";
 import type { Slip } from "../types";
 import { AttachmentsGrid } from "./AttachmentsGrid";
-import { STATUS_COLORS } from "@/config/constants";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { useGetSlipAttachments } from "../hooks";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -97,14 +97,14 @@ export function ViewModal({
     onClose();
   };
 
-  const getStatusColor = (colorKey?: string) => {
-    if (!colorKey) return "bg-gray-100 text-gray-800";
-    const key = colorKey as keyof typeof STATUS_COLORS;
+  const getStatusColor = (statusName?: string) => {
+    const key = getStatusColorKey(statusName);
     return STATUS_COLORS[key] || "bg-gray-100 text-gray-800";
   };
 
-  const getStatusIcon = (colorKey?: string) => {
-    switch (colorKey) {
+  const getStatusIcon = (statusName?: string) => {
+    const key = getStatusColorKey(statusName);
+    switch (key) {
       case "success":
         return <CheckCircle2 className="h-4 w-4" />;
       case "danger":
@@ -166,9 +166,13 @@ export function ViewModal({
                         Status
                       </p>
                       <div
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(slip.status?.colorKey)} mt-1`}
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-full",
+                          "px-3 py-1 text-sm font-medium mt-1",
+                          getStatusColor(slip.status?.name),
+                        )}
                       >
-                        {getStatusIcon(slip.status?.colorKey)}
+                        {getStatusIcon(slip.status?.name)}
                         {slip.status?.name}
                       </div>
                     </div>
@@ -225,11 +229,78 @@ export function ViewModal({
                         <span>View Verified Student COR</span>
                         <ExternalLink className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
-
                     </div>
                   )}
                 </CardContent>
               </Card>
+
+              {/* Ticket Information Card */}
+              {slip.ticket && (
+                <Card
+                  className={cn(
+                    "border-2 border-dashed transition-all duration-200 hover:shadow-md",
+                    slip.ticket.isVerified
+                      ? "border-success-foreground bg-success-background/10"
+                      : "border-primary/50 bg-primary/5",
+                  )}
+                >
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "rounded-lg p-2",
+                            slip.ticket.isVerified
+                              ? "bg-success-background text-success-foreground"
+                              : "bg-primary/10 text-primary",
+                          )}
+                        >
+                          <Ticket className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Admission Slip Ticket Code
+                          </p>
+                          <p className="font-mono text-2xl font-bold text-foreground">
+                            {slip.ticket.ticketCode}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Verification Status
+                        </p>
+                        <div
+                          className={cn(
+                            "mt-1 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-tight",
+                            slip.ticket.isVerified
+                              ? "bg-success-background text-success-foreground"
+                              : "bg-warning-background text-warning-foreground",
+                          )}
+                        >
+                          {slip.ticket.isVerified ? (
+                            <>
+                              <ShieldCheck className="h-3.5 w-3.5" />
+                              Claimed
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="h-3.5 w-3.5" />
+                              Pending Claim
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {slip.ticket.isVerified && slip.ticket.verifiedAt && (
+                      <p className="mt-3 text-xs italic text-muted-foreground">
+                        Verified on{" "}
+                        {new Date(slip.ticket.verifiedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Reason Card */}
               <Card className="transition-all duration-200 hover:shadow-md">

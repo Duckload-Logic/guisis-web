@@ -6,19 +6,16 @@ import { NAV_CONFIG } from "@/config/navigation";
 import { Spinner } from "@/components/shared/Spinner";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate, Outlet } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 
-import { useAuth, useUI, PageMetadata, useToast } from "@/context";
+import { useAuth, useUI, useToast } from "@/context";
 import { ErrorBoundary } from "../shared/ErrorBoundary";
-import ConsentModal from "@/features/consents/components/ConsentModal";
-import { useGetLatestStatement } from "@/features/consents/hooks";
-import useCheckUserConsent from "@/features/consents/hooks/useCheckUserConsent";
-import { useGiveConsent } from "@/features/consents/hooks/useGiveConsent";
 import Navigation from "./Navigation";
 import SubHeader from "./SubHeader";
 import { SpeechControl } from "../shared/SpeechControl";
 import { AnimationStyles } from "../ui/animations";
 import ScrollToTop from "@/utils/componentUtils";
+import ConsentModal from "@/features/consents/components/ConsentModal";
 import { cn } from "@/lib/utils";
 
 interface LayoutProps {
@@ -89,29 +86,22 @@ export default function Layout({
 
   const { user, logout, activeRole } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [sessionAccepted, setSessionAccepted] = useState(() => {
     // Check if they accepted during THIS specific browser session
     return sessionStorage.getItem("session_consent_accepted") === "true";
   });
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { toasts, triggerToast } = useToast();
+  const [termsOpen, setTermsOpen] = useState(false);
 
-  const excludedPaths = ["/terms", "/privacy"];
-  const currentPath = location.pathname;
-  const isExcluded = excludedPaths.includes(currentPath);
-  const mustAcceptTerms =
-    !sessionAccepted && !isExcluded && !!user && isLoggedIn;
+  const mustAcceptTerms = !sessionAccepted && !!user && isLoggedIn;
 
   useEffect(() => {
     setTermsOpen(mustAcceptTerms);
   }, [mustAcceptTerms]);
 
-  const [showNotifications, setShowNotifications] = useState(false);
-  const { toasts, triggerToast } = useToast();
-  const [termsOpen, setTermsOpen] = useState(false);
-
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const expanded = isExpanded;
 
   useEffect(() => {
     if (darkMode) {
@@ -192,9 +182,12 @@ export default function Layout({
 
       triggerToast("Terms and Conditions accepted.");
     } catch (err) {
-      console.error("[Layout] Consent Update: ", err);
       triggerToast("Failed to accept terms. Please try again.");
     }
+  };
+
+  const handleDismissTerms = () => {
+    logout();
   };
 
   return (
@@ -250,14 +243,6 @@ export default function Layout({
           />
         </div>
 
-        {mustAcceptTerms && (
-          <ConsentModal
-            open={termsOpen}
-            role={currentRole || ""}
-            onAccept={handleAcceptTerms}
-          />
-        )}
-
         <div
           ref={contentRef}
           className={`relative z-10 flex min-h-0 flex-1 transform-gpu flex-col transition-all duration-300 ${
@@ -304,7 +289,10 @@ export default function Layout({
             <div className="relative min-w-0 flex-1 overflow-hidden">
               <div
                 ref={scrollRef}
-                className="relative z-10 flex h-full flex-col overflow-y-auto overflow-x-hidden"
+                className={cn(
+                  "relative z-10 flex max-h-full flex-col",
+                  "overflow-y-auto overflow-x-hidden pb-12",
+                )}
               >
                 <main className="flex-1 p-4 md:p-6 lg:p-8">
                   {showHeader && showSubHeader && (
@@ -319,7 +307,7 @@ export default function Layout({
                     />
                   )}
                   {isLoading ? (
-                    <div className="flex h-full min-h-[400px] w-full items-center justify-center">
+                    <div className="h flex min-h-[400px] w-full items-center justify-center">
                       <Spinner size="lg" />
                     </div>
                   ) : null}
@@ -341,6 +329,14 @@ export default function Layout({
             </div>
           </div>
         </div>
+
+        <ConsentModal
+          open={termsOpen}
+          role={currentRole || "student"}
+          loading={false}
+          onAccept={handleAcceptTerms}
+          onCancel={handleDismissTerms}
+        />
 
         <Toast toasts={toasts} />
         <SpeechControl />

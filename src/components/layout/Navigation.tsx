@@ -7,20 +7,11 @@ import {
   LogOut,
   ShieldCheck,
   Gavel,
-  ChevronRight,
-  ChevronLeft,
   Pin,
   PinOff,
-  RefreshCw,
-  LayoutDashboard,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+
+
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
@@ -136,7 +127,8 @@ export default function Navigation({
 
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
-    counselor: "/counselor",
+    admin: "/admin",
+    counselor: "/admin",
     superadmin: "/superadmin",
     developer: "/developer",
   };
@@ -283,16 +275,15 @@ export default function Navigation({
     );
   }
 
-return (
-  <div 
-    className={`relative h-full hidden md:flex items-center shrink-0 transition-all duration-300 z-[90] ${sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]"}`}
-  >
-    <aside
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative z-30 flex h-[95%] flex-col overflow-x-hidden rounded-3xl rounded-bl-none rounded-tl-none border border-l-0 border-glass-border shadow-2xl transition-all duration-300 ${isExpanded ? "w-64" : "w-[4.5rem]"}`}
+  return (
+    <div
+      className={`relative z-[90] hidden h-full shrink-0 items-center transition-all duration-300 md:flex ${sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]"}`}
     >
-      
+      <aside
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`relative z-30 flex h-[95%] flex-col overflow-x-hidden rounded-3xl rounded-bl-none rounded-tl-none border border-l-0 border-glass-border shadow-lg transition-all duration-300 ${isExpanded ? "w-64" : "w-[4.5rem]"}`}
+      >
         <nav className="mt-2 flex flex-col gap-2 p-3">
           {navigationItems.map((item) => {
             return (
@@ -308,7 +299,7 @@ return (
         </nav>
 
         {/* Role Switcher (Desktop) */}
-        {user?.roles?.length > 1 && (
+        {/* {user?.roles?.length > 1 && (
           <div className="mb-2 mt-auto p-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -328,7 +319,7 @@ return (
                     />
                   </div>
                   {isExpanded && (
-                    <span className="flex-1 overflow-hidden whitespace-nowrap text-left text-xs font-bold uppercase tracking-wider">
+                    <span className="flex-1 overflow-hidden whitespace-nowrap text-left text-xs font-bold uppercase">
                       Switch Role
                     </span>
                   )}
@@ -339,7 +330,7 @@ return (
                 align="start"
                 className="w-56 rounded-2xl border-white/20 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/90"
               >
-                <p className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                <p className="px-3 py-2 text-[10px] uppercase text-muted-foreground/60">
                   Your Workspaces
                 </p>
                 <DropdownMenuSeparator className="bg-white/10" />
@@ -372,15 +363,15 @@ return (
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        )}
+        )} */}
 
         {/* Pin Toggle (Desktop Only) - Balanced spacing */}
-        <div className={cn("mb-2 p-3", user?.roles?.length <= 1 && "mt-auto")}>
+        <div className={cn("mb-2 mt-auto p-3")}>
           <button
             onClick={toggleSidebarPinned}
             className={`sidebar-icon-tilt group flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm ${
               sidebarPinned
-                ? "bg-primary/10 text-primary shadow-sm"
+                ? "bg-primary/10 text-primary shadow-lg"
                 : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
             }`}
             title={sidebarPinned ? "Unpin Sidebar" : "Pin Sidebar"}
@@ -451,9 +442,9 @@ function MobileSettingsContent({
       </div>
 
       {/* Mobile Role Switcher */}
-      {user?.roles?.length > 1 && (
+      {/* {user?.roles?.length > 1 && (
         <div className="space-y-3">
-          <p className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+          <p className="px-2 text-[10px] uppercase text-muted-foreground/60">
             Switch Workspace
           </p>
           <div className="grid grid-cols-1 gap-2">
@@ -492,7 +483,7 @@ function MobileSettingsContent({
             })}
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="my-2 border-t border-border" />
       <div className="flex flex-col gap-2">

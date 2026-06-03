@@ -20,7 +20,6 @@ export interface ConcernCategory {
 export interface AppointmentStatus {
   id: number;
   name: string;
-  colorKey: string;
 }
 
 export interface AvailableTimeSlotView {
@@ -38,10 +37,12 @@ export interface StatusCount {
 /** Paginated response for student appointments */
 export interface PaginatedAppointmentsResponse {
   appointments: Appointment[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  meta?: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }
 
 /**

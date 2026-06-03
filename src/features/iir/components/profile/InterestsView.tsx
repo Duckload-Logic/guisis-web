@@ -7,6 +7,17 @@ import TagList from "./TagList";
 import { asText } from "../../utils";
 import { ActivityOption, Hobby, InterestsSection } from "../../types";
 
+function getActivityOption(activity: any): ActivityOption | undefined {
+  if (activity?.activityOption) return activity.activityOption;
+  if (Array.isArray(activity?.activityOptions))
+    return activity.activityOptions[0];
+  return undefined;
+}
+
+function getActivityCategory(activity: any) {
+  return getActivityOption(activity)?.category?.toLowerCase() || "";
+}
+
 export default function InterestsHobbiesView({
   data,
 }: {
@@ -14,12 +25,10 @@ export default function InterestsHobbiesView({
 }) {
   const activities = data?.activities || [];
   const academicInterests = activities.filter((activity: any) =>
-    activity.activityOptions?.some((opt: any) => opt.category === "academic"),
+    getActivityCategory(activity).includes("academic"),
   );
-  const otherActivities = activities.filter((activity: any) =>
-    activity.activityOptions?.some(
-      (opt: ActivityOption) => opt.category === "extra_curricular",
-    ),
+  const otherActivities = activities.filter(
+    (activity: any) => !getActivityCategory(activity).includes("academic"),
   );
 
   const preferredSubjects = data?.subjectPreferences || [];
@@ -38,11 +47,11 @@ export default function InterestsHobbiesView({
         <SectionTitle title="Activities" />
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ActivityCard
-            title="Academic"
+            title="Academic Clubs/Organizations"
             list={academicInterests}
           />
           <ActivityCard
-            title="Other"
+            title="Extracurricular Activities/Organizations"
             list={otherActivities}
           />
         </div>
@@ -72,10 +81,10 @@ export default function InterestsHobbiesView({
         <SectionTitle title="Hobbies (Priority Rank)" />
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {hobbies.length > 0 ? (
-            hobbies.map((hobby: any) => (
+            hobbies.map((hobby: any, index: number) => (
               <CardBlock
-                key={hobby.id}
-                title={`Rank ${hobby.priorityRank}`}
+                key={hobby.id || `${hobby.hobbyName}-${index}`}
+                title={`Rank ${hobby.priorityRank || index + 1}`}
               >
                 <div className="flex items-center gap-3">
                   <Trophy className="h-4 w-4 text-primary" />
@@ -99,19 +108,28 @@ function ActivityCard({ title, list }: { title: string; list: any[] }) {
     <CardBlock title={title}>
       {list.length > 0 ? (
         <div className="space-y-3">
-          {list.map((activity: any) => (
-            <div
-              key={activity.id}
-              className="rounded-lg border border-glass-border bg-glass-bg p-3"
-            >
-              <p className="text-xs font-semibold text-card-foreground">
-                {asText(activity.activityOptions?.[0]?.name || "Activity")}
-              </p>
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Role: {asText(activity.role)}
-              </p>
-            </div>
-          ))}
+          {list.map((activity: any, index: number) => {
+            const activityOption = getActivityOption(activity);
+
+            return (
+              <div
+                key={activity.id || `${title}-${index}`}
+                className="rounded-lg border border-glass-border bg-glass-bg p-3"
+              >
+                <p className="text-xs font-semibold text-card-foreground">
+                  {asText(
+                    activityOption?.name ||
+                      activity.otherSpecification ||
+                      "Activity",
+                  )}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {!title.includes("Academic") &&
+                    `Role: ${asText(activity.role)}`}
+                </p>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-xs italic text-muted-foreground">No records</p>

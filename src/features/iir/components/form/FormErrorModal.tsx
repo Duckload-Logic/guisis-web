@@ -40,6 +40,114 @@ export const groupErrorsBySection = (
   );
 };
 
+const getSectionIdForField = (fieldPath: string): number => {
+  if (fieldPath.startsWith("student.")) {
+    if (
+      fieldPath.startsWith("student.basicInfo") ||
+      fieldPath.includes("suffix") ||
+      fieldPath.includes("studentNumber") ||
+      fieldPath.includes("course")
+    ) {
+      return 1;
+    }
+    if (
+      fieldPath.includes("gender") ||
+      fieldPath.includes("civilStatus") ||
+      fieldPath.includes("religion") ||
+      fieldPath.includes("dateOfBirth") ||
+      fieldPath.includes("placeOfBirth") ||
+      fieldPath.includes("highSchoolGWA") ||
+      fieldPath.includes("heightM") ||
+      fieldPath.includes("weightKg") ||
+      fieldPath.includes("complexion")
+    ) {
+      return 2;
+    }
+    if (
+      fieldPath.includes("addresses") ||
+      fieldPath.includes("emergencyContact") ||
+      fieldPath.includes("mobileNumber") ||
+      fieldPath.includes("telephoneNumber")
+    ) {
+      return 3;
+    }
+    if (
+      fieldPath.includes("isEmployed") ||
+      fieldPath.includes("employerName") ||
+      fieldPath.includes("employerAddress") ||
+      fieldPath.includes("employerContactNumber")
+    ) {
+      return 4;
+    }
+    return 1;
+  }
+
+  if (fieldPath.startsWith("education.")) {
+    return 5;
+  }
+
+  if (fieldPath.startsWith("family.")) {
+    if (fieldPath.includes("relatedPersons.0")) {
+      return 7;
+    }
+    if (fieldPath.includes("relatedPersons.1")) {
+      return 8;
+    }
+    if (
+      fieldPath.includes("relatedPersons.2") ||
+      fieldPath.includes("finance.siblings")
+    ) {
+      return 9;
+    }
+    return 6;
+  }
+
+  if (fieldPath.startsWith("health.")) {
+    return 10;
+  }
+
+  if (fieldPath.startsWith("interests.")) {
+    return 11;
+  }
+
+  return 1;
+};
+
+const findElement = (
+  fieldPath: string,
+  errorMessage: string,
+): HTMLElement | null => {
+  let el = document.querySelector(
+    `[name="${fieldPath}"], [id="${fieldPath}"], [data-path="${fieldPath}"]`,
+  ) as HTMLElement;
+  if (el) return el;
+
+  if (errorMessage) {
+    const errorEls = Array.from(document.querySelectorAll("p, span, div"))
+      .filter((e) => e.textContent?.trim() === errorMessage.trim());
+    for (const errEl of errorEls) {
+      const container = errEl.closest("div.space-y-2, div.grid, td, tr, div");
+      if (container) {
+        const input = container.querySelector(
+          "input, select, textarea, button",
+        ) as HTMLElement;
+        if (input) return input;
+      }
+    }
+  }
+
+  const lastPart = fieldPath.split(".").pop();
+  if (lastPart) {
+    el = document.querySelector(
+      `[name*="${lastPart}"], [id*="${lastPart}"]`,
+    ) as HTMLElement;
+    if (el) return el;
+  }
+
+  return null;
+};
+
+
 interface FormErrorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -67,22 +175,18 @@ export function FormErrorModal({
 
   if (!isRendered && !isOpen) return null;
 
-  const handleDeepLinkClick = (fieldPath: string, sectionTitle: string) => {
+  const handleDeepLinkClick = (
+    fieldPath: string,
+    sectionTitle: string,
+    errorMessage: string,
+  ) => {
     onClose();
 
-    const sectionMap: Record<string, number> = {
-      "Personal Info": 1,
-      "Education Background": 2,
-      "Family Background": 3,
-      "Health Info": 4,
-      Interests: 5,
-    };
-    onNavigateToSection(sectionMap[sectionTitle]);
+    const sectionId = getSectionIdForField(fieldPath);
+    onNavigateToSection(sectionId);
 
     setTimeout(() => {
-      const element = document.querySelector(
-        `[name="${fieldPath}"], [id="${fieldPath}"]`,
-      );
+      const element = findElement(fieldPath, errorMessage);
       if (element) {
         const y = element.getBoundingClientRect().top + window.scrollY - 100;
         window.scrollTo({ top: y, behavior: "smooth" });
@@ -93,7 +197,7 @@ export function FormErrorModal({
         const originalBoxShadow = targetElement.style.boxShadow;
 
         targetElement.style.transition = "all 0.3s ease-in-out";
-        targetElement.style.boxShadow = "0 0 0 4px rgba(220, 38, 38, 0.4)"; // tailwind destructive red
+        targetElement.style.boxShadow = "0 0 0 4px rgba(220, 38, 38, 0.4)";
         targetElement.focus();
 
         setTimeout(() => {
@@ -103,7 +207,7 @@ export function FormErrorModal({
           }, 300);
         }, 1500);
       }
-    }, 150);
+    }, 250);
   };
 
   return (
@@ -153,7 +257,7 @@ export function FormErrorModal({
             >
               <h3
                 className={cn(
-                  "border-b pb-1 text-sm font-semibold uppercase tracking-wider",
+                  "border-b pb-1 text-sm font-semibold uppercase",
                   "text-muted-foreground",
                 )}
               >
@@ -164,7 +268,11 @@ export function FormErrorModal({
                   <button
                     key={idx}
                     onClick={() =>
-                      handleDeepLinkClick(error.fieldPath, sectionTitle)
+                      handleDeepLinkClick(
+                        error.fieldPath,
+                        sectionTitle,
+                        error.message,
+                      )
                     }
                     className={cn(
                       "group flex w-full items-start gap-3 rounded-lg border",

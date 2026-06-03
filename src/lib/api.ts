@@ -1,3 +1,4 @@
+import { capitalizeFirstLetter } from "@/utils";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { decamelizeKeys, camelizeKeys } from "humps";
 
@@ -7,7 +8,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
  * Extended Axios config with custom logging metadata
  * Allows partial config for use in hooks and services
  */
-export interface AxiosConfigWithMeta extends Partial<InternalAxiosRequestConfig> {
+export interface AxiosConfigWithMeta
+  extends Partial<InternalAxiosRequestConfig> {
   handlerName?: string;
   stepName?: string;
   _retry?: boolean;
@@ -73,7 +75,6 @@ apiClient.interceptors.response.use(
     const errorMsg = error.message || "Unknown error";
 
     // Log the error with precision format
-    console.error(`[${handlerName}] {${stepName}}: ${errorMsg}`);
 
     // If we are locked out from refreshing, don't even try
     if (isRefreshLockedOut && error.response?.status === 401) {
@@ -128,9 +129,6 @@ apiClient.interceptors.response.use(
         // Refresh failed – reject to allow AuthProvider
         // to handle session expiration and redirect
         const refreshErr = refreshError as AxiosError;
-        console.error(
-          `[${handlerName}] {Session Refresh Failed}: ${refreshErr.message}`,
-        );
 
         return Promise.reject(refreshError);
       }
@@ -142,3 +140,46 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+/**
+ * Extracts and formats user-friendly error messages from backend responses
+ * adhering to the JSend specification (success/fail/error).
+ */
+export function getErrorMessage(error: any): string {
+  if (!error) return "An unexpected error occurred.";
+
+  const responseData = error.response?.data;
+  if (responseData && typeof responseData === "object") {
+    // 1. JSend 'error' pattern: server-side errors
+    if (
+      responseData.status === "error" &&
+      typeof responseData.message === "string"
+    ) {
+      return capitalizeFirstLetter(responseData.message);
+    }
+    // 2. JSend 'fail' pattern: client-side/validation failures
+    if (responseData.status === "fail" && responseData.data) {
+      const data = responseData.data;
+      if (typeof data === "object") {
+        if (typeof data.error === "string") {
+          return capitalizeFirstLetter(data.error);
+        }
+        if (typeof data.message === "string") {
+          return capitalizeFirstLetter(data.message);
+        }
+
+        // Return the first validation message if it's a map
+        const values = Object.values(data);
+        if (values.length > 0 && typeof values[0] === "string") {
+          return capitalizeFirstLetter(values[0]);
+        }
+      }
+      if (typeof data === "string") return capitalizeFirstLetter(data);
+    }
+  }
+
+  // Fallback to standard Axios or native Error message
+  return (
+    capitalizeFirstLetter(error.message) || "An unexpected error occurred."
+  );
+}

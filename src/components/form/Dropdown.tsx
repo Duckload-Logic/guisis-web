@@ -1,4 +1,4 @@
-import { Check, Lock, ChevronDown } from "lucide-react";
+import { Check, Lock, ChevronDown, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -51,11 +51,11 @@ export default function Dropdown({
   labelKey?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const selectedOption = options.find(
+  const safeOptions = options || [];
+  const selectedOption = safeOptions.find(
     (opt) => String(opt[identifier]) === String(value),
   );
-  const isFilled = selectedOption !== undefined;
-
+  const isFilled = selectedOption !== undefined && value !== "";
   const getLabel = (option: any) => {
     if (!option) return `Select ${label}`;
     if (labelKey) return option[labelKey] || "";
@@ -72,11 +72,16 @@ export default function Dropdown({
   };
 
   const handleSelect = (optionValue: string) => {
-    const selected = options.find(
+    const selected = safeOptions.find(
       (opt) => String(opt[identifier]) === optionValue,
     );
     if (selected) {
-      onChange(selected[get]);
+      const selectedVal = selected[get];
+      if (String(value) === String(selectedVal)) {
+        onChange("");
+      } else {
+        onChange(selectedVal);
+      }
       setOpen(false);
       if (onBlur) onBlur();
     }
@@ -118,7 +123,9 @@ export default function Dropdown({
                     "font-normal italic text-muted-foreground/50",
                 )}
               >
-                {selectedOption ? getLabel(selectedOption) : `Select ${label}`}
+                {selectedOption && value !== ""
+                  ? getLabel(selectedOption)
+                  : `Select ${label}`}
               </span>
 
               <div className="ml-2 flex flex-shrink-0 items-center gap-2">
@@ -128,19 +135,6 @@ export default function Dropdown({
                     className="text-muted-foreground/60"
                     strokeWidth={2}
                   />
-                )}
-                {enabled && isFilled && !error && formStyle && (
-                  <div
-                    className={cn(
-                      "animate-in zoom-in flex h-5 w-5 items-center justify-center",
-                      "rounded-full bg-primary/10 text-primary duration-300",
-                    )}
-                  >
-                    <Check
-                      size={12}
-                      strokeWidth={3}
-                    />
-                  </div>
                 )}
                 <ChevronDown
                   className={cn(
@@ -176,7 +170,7 @@ export default function Dropdown({
                   <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
                 )}
                 <CommandGroup>
-                  {options.map((option, index) => {
+                  {safeOptions.map((option, index) => {
                     const optId = option?.[identifier];
                     const key =
                       optId !== undefined ? String(optId) : `opt-${index}`;
@@ -209,7 +203,7 @@ export default function Dropdown({
       </div>
 
       {error && (
-        <p className="mt-1 text-xs font-semibold text-red-600">{error}</p>
+        <p className="mt-1 text-xs font-normal text-red-500">{error}</p>
       )}
     </div>
   );

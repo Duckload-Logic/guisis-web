@@ -1,5 +1,5 @@
 import { asText } from "@/features/iir/utils";
-import { formatDate } from "@/features/schedules/utils/formatters";
+import { formatDate } from "@/utils/dateTime";
 import CardBlock from "./CardBlock";
 import EmptyState from "./EmptyState";
 import InfoItem from "./InfoItem";

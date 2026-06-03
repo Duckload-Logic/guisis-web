@@ -9,6 +9,7 @@ import type {
   M2MClient,
   CreateM2MClientRequest,
   CreateM2MClientResponse,
+  SystemLog,
   SystemLogsResponse,
   SystemLogsParams,
   LogStats,
@@ -17,6 +18,7 @@ import type {
   AdminAnalytics,
   LogActivityStat,
   RoleDistribution,
+  WhitelistEntry,
 } from "../types";
 
 /**
@@ -36,9 +38,6 @@ export const GetM2MClients = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetM2MClients";
-    const stepName = config?.stepName || "Fetch M2M Clients";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -58,9 +57,6 @@ export const PostM2MClient = async (
     );
     return response.data;
   } catch (error) {
-    const handlerName = config?.handlerName || "PostM2MClient";
-    const stepName = config?.stepName || "Create M2M Client";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -73,14 +69,8 @@ export const DeleteM2MClient = async (
   config?: AxiosConfigWithMeta,
 ): Promise<void> => {
   try {
-    await apiClient.delete(
-      API_ROUTES.superadmin.m2mClients.revoke(id),
-      config,
-    );
+    await apiClient.delete(API_ROUTES.superadmin.m2mClients.revoke(id), config);
   } catch (error) {
-    const handlerName = config?.handlerName || "DeleteM2MClient";
-    const stepName = config?.stepName || "Revoke M2M Client";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -100,9 +90,6 @@ export const PostM2MSecret = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "PostM2MSecret";
-    const stepName = config?.stepName || "Rotate M2M Secret";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -112,18 +99,34 @@ export const PostM2MSecret = async (
  */
 export const PatchVerifyM2MClient = async (
   id: number,
+  hasPersonalInfoAccess: boolean,
   config?: AxiosConfigWithMeta,
 ): Promise<void> => {
   try {
     await apiClient.patch(
       API_ROUTES.superadmin.m2mClients.verify(id),
+      { hasPersonalInfoAccess },
+      config,
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Reject M2M client
+ */
+export const PatchRejectM2MClient = async (
+  id: number,
+  config?: AxiosConfigWithMeta,
+): Promise<void> => {
+  try {
+    await apiClient.patch(
+      API_ROUTES.superadmin.m2mClients.reject(id),
       {},
       config,
     );
   } catch (error) {
-    const handlerName = config?.handlerName || "PatchVerifyM2MClient";
-    const stepName = config?.stepName || "Verify M2M Client";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -136,15 +139,12 @@ export const GetUsers = async (
   config?: AxiosConfigWithMeta,
 ): Promise<ListUsersResponse> => {
   try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.users.list,
-      { ...config, params },
-    );
+    const { data } = await apiClient.get(API_ROUTES.superadmin.users.list, {
+      ...config,
+      params,
+    });
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetUsers";
-    const stepName = config?.stepName || "Fetch User List";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -162,9 +162,6 @@ export const GetUserDistribution = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetUserDistribution";
-    const stepName = config?.stepName || "Fetch User Distribution";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -184,9 +181,6 @@ export const PostToggleUserStatus = async (
       config,
     );
   } catch (error) {
-    const handlerName = config?.handlerName || "PostToggleUserStatus";
-    const stepName = config?.stepName || `${action} user`.toUpperCase();
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -208,9 +202,6 @@ export const GetAdminAnalytics = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetAdminAnalytics";
-    const stepName = config?.stepName || "Fetch Admin Analytics";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -223,15 +214,12 @@ export const GetSecurityLogs = async (
   config?: AxiosConfigWithMeta,
 ): Promise<SystemLogsResponse> => {
   try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.logs.security,
-      { ...config, params },
-    );
+    const { data } = await apiClient.get(API_ROUTES.superadmin.logs.security, {
+      ...config,
+      params,
+    });
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetSecurityLogs";
-    const stepName = config?.stepName || "Fetch Security Logs";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -244,15 +232,12 @@ export const GetSystemLogs = async (
   config?: AxiosConfigWithMeta,
 ): Promise<SystemLogsResponse> => {
   try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.logs.system,
-      { ...config, params },
-    );
+    const { data } = await apiClient.get(API_ROUTES.superadmin.logs.system, {
+      ...config,
+      params,
+    });
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetSystemLogs";
-    const stepName = config?.stepName || "Fetch System Logs";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -265,15 +250,12 @@ export const GetAuditLogs = async (
   config?: AxiosConfigWithMeta,
 ): Promise<SystemLogsResponse> => {
   try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.logs.audit,
-      { ...config, params },
-    );
+    const { data } = await apiClient.get(API_ROUTES.superadmin.logs.audit, {
+      ...config,
+      params,
+    });
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetAuditLogs";
-    const stepName = config?.stepName || "Fetch Audit Logs";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -287,21 +269,15 @@ export const GetLogStats = async (
   config?: AxiosConfigWithMeta,
 ): Promise<LogStats[]> => {
   try {
-    const { data } = await apiClient.get(
-      API_ROUTES.superadmin.logs.stats,
-      {
-        ...config,
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-        },
+    const { data } = await apiClient.get(API_ROUTES.superadmin.logs.stats, {
+      ...config,
+      params: {
+        start_date: startDate,
+        end_date: endDate,
       },
-    );
+    });
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetLogStats";
-    const stepName = config?.stepName || "Fetch Log Stats";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -319,9 +295,6 @@ export const GetLogActivity = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetLogActivity";
-    const stepName = config?.stepName || "Fetch Log Activity";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -340,9 +313,6 @@ export const GetUserSessions = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetUserSessions";
-    const stepName = config?.stepName || "Fetch User Sessions";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -361,9 +331,6 @@ export const DeleteUserSession = async (
       config,
     );
   } catch (error) {
-    const handlerName = config?.handlerName || "DeleteUserSession";
-    const stepName = config?.stepName || "Revoke User Session";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -383,9 +350,6 @@ export const GetUserActivity = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetUserActivity";
-    const stepName = config?.stepName || "Fetch User Activity";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -411,12 +375,101 @@ export const PostUpdateUserRoles = async (
       config,
     );
   } catch (error) {
-    const handlerName = config?.handlerName || "PostUpdateUserRoles";
-    const stepName = config?.stepName || "Update User Roles";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
+    throw error;
     throw error;
   }
 };
+
+/**
+ * Get single log detail by ID
+ */
+export const GetLogDetail = async (
+  id: string,
+  config?: AxiosConfigWithMeta,
+): Promise<SystemLog> => {
+  try {
+    const { data } = await apiClient.get(
+      API_ROUTES.superadmin.logs.detail(id),
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Get trace tracks by trace ID
+ */
+export const GetTraceTracks = async (
+  traceId: string,
+  config?: AxiosConfigWithMeta,
+): Promise<SystemLog[]> => {
+  try {
+    const { data } = await apiClient.get(
+      API_ROUTES.superadmin.logs.traceTracks(traceId),
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Add a user to whitelist
+ */
+export const PostAddUserToWhitelist = async (
+  email: string,
+  roleIds: number[],
+  config?: AxiosConfigWithMeta,
+): Promise<void> => {
+  try {
+    await apiClient.post(
+      API_ROUTES.superadmin.users.whitelist,
+      { email, roleIds },
+      config,
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Remove user from whitelist
+ */
+export const PostRemoveUserFromWhitelist = async (
+  email: string,
+  config?: AxiosConfigWithMeta,
+): Promise<void> => {
+  try {
+    await apiClient.post(
+      API_ROUTES.superadmin.users.removeWhitelist,
+      { email },
+      config,
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Get all whitelisted users
+ */
+export const GetWhitelist = async (
+  config?: AxiosConfigWithMeta,
+): Promise<WhitelistEntry[]> => {
+  try {
+    const { data } = await apiClient.get<WhitelistEntry[]>(
+      API_ROUTES.superadmin.users.whitelist,
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 export const superadminService = {
   listM2MClients: GetM2MClients,
@@ -424,10 +477,14 @@ export const superadminService = {
   revokeM2MClient: DeleteM2MClient,
   rotateM2MSecret: PostM2MSecret,
   verifyM2MClient: PatchVerifyM2MClient,
+  rejectM2MClient: PatchRejectM2MClient,
   listUsers: GetUsers,
   getUserDistribution: GetUserDistribution,
   toggleUserStatus: PostToggleUserStatus,
   updateUserRoles: PostUpdateUserRoles,
+  addUserToWhitelist: PostAddUserToWhitelist,
+  removeUserFromWhitelist: PostRemoveUserFromWhitelist,
+  getWhitelist: GetWhitelist,
   getAdminAnalytics: GetAdminAnalytics,
   getSecurityLogs: GetSecurityLogs,
   getSystemLogs: GetSystemLogs,
@@ -437,4 +494,6 @@ export const superadminService = {
   getUserSessions: GetUserSessions,
   revokeUserSession: DeleteUserSession,
   getUserActivity: GetUserActivity,
+  getTraceTracks: GetTraceTracks,
+  getLogDetail: GetLogDetail,
 };

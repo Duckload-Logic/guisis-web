@@ -1,4 +1,5 @@
 import { AuthContext } from "@/context/AuthContext";
+import { UI_STORAGE_KEYS } from "@/utils/uiPreferences";
 import React, {
   createContext,
   useContext,
@@ -50,16 +51,7 @@ interface UIContextType {
 
 export const UIContext = createContext<UIContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  SIDEBAR_EXPANDED: "sidebar_expanded",
-  DARK_MODE: "theme",
-  GRAYSCALE: "grayscale",
-  DYSLEXIA: "dyslexia",
-  FONT_SCALE: "fontScale",
-  SPEECH_RATE: "speech_rate",
-  SPEECH_VOICE: "speech_voice",
-  PERFORMANCE: "performance_mode",
-};
+const STORAGE_KEYS = UI_STORAGE_KEYS;
 
 export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -75,7 +67,7 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
   const [grayscale, setGrayscaleInternal] = useState(false);
   const [dyslexiaMode, setDyslexiaModeInternal] = useState(false);
   const [fontScale, setFontScaleInternal] = useState(100);
-  const [performanceMode, setPerformanceModeInternal] = useState(false);
+  const [performanceMode, setPerformanceModeInternal] = useState(true);
   const [speechRate, setSpeechRateState] = useState(1);
   const [speechVoice, setSpeechVoiceState] = useState("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
@@ -124,7 +116,7 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
         parseInt(getPref(STORAGE_KEYS.FONT_SCALE, "100"), 10),
       );
       setPerformanceModeInternal(
-        getPref(STORAGE_KEYS.PERFORMANCE, "false") === "true",
+         getPref(STORAGE_KEYS.PERFORMANCE, "true") === "true",
       );
       setSpeechRateState(parseFloat(getPref(STORAGE_KEYS.SPEECH_RATE, "1")));
       setSpeechVoiceState(getPref(STORAGE_KEYS.SPEECH_VOICE, ""));

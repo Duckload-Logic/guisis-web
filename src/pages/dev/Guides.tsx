@@ -11,12 +11,20 @@ import {
   Globe,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const Guides: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"laravel" | "php" | "curl">(
     "laravel",
   );
   const [copied, setCopied] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+
+  const copyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
+  };
 
   usePageMetadata({
     title: "Implementation Guides",
@@ -39,7 +47,7 @@ const Guides: React.FC = () => {
       code: `use Illuminate\\Support\\Facades\\Http;
 
 $response = Http::withToken('YOUR_TOKEN')
-    ->get('https://api.guisis.dllbsit2027.com/api/v1/integrations/students/profiles', [
+    ->get('${import.meta.env.VITE_API_BASE_URL}/integrations/students/profiles', [
         'page' => 1,
         'page_size' => 10
     ]);
@@ -52,7 +60,7 @@ if ($response->successful()) {
       title: "Native PHP (cURL)",
       desc: "Standard cURL implementation for legacy PHP environments.",
       code: `<?php
-$ch = curl_init('https://api.guisis.dllbsit2027.com/api/v1/integrations/students/profiles');
+$ch = curl_init('${import.meta.env.VITE_API_BASE_URL}/integrations/students/profiles');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer YOUR_TOKEN',
@@ -66,14 +74,14 @@ curl_close($ch);`,
     curl: {
       title: "cURL / CLI",
       desc: "Quick testing from your terminal or shell scripts.",
-      code: `curl -X GET "https://api.guisis.dllbsit2027.com/api/v1/integrations/students/profiles" \\
+      code: `curl -X GET "${import.meta.env.VITE_API_BASE_URL}/integrations/students/profiles" \\
      -H "Authorization: Bearer YOUR_TOKEN" \\
      -H "Content-Type: application/json"`,
     },
   };
 
   return (
-    <div className="animate-in fade-in mx-auto max-w-5xl space-y-12 pb-20 duration-500">
+    <div className="animate-in fade-in mx-auto max-w-5xl duration-500">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Navigation Sidebar */}
         <div className="space-y-3">
@@ -114,7 +122,7 @@ curl_close($ch);`,
               className="space-y-6"
             >
               <div className="glass-card space-y-4 p-8">
-                <h2 className="text-3xl font-black uppercase leading-none tracking-tight">
+                <h2 className="text-3xl uppercase leading-none tracking-tight">
                   {snippets[activeTab].title}
                 </h2>
                 <p className="font-medium text-muted-foreground">
@@ -144,25 +152,59 @@ curl_close($ch);`,
               </div>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-3 rounded-lg border border-white/5 bg-white/5 p-6">
+                <div
+                  className={cn(
+                    "min-w-0 space-y-3 rounded-lg border",
+                    "border-white/5 bg-glass-bg p-6 shadow-md",
+                  )}
+                >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Globe size={18} />
                   </div>
                   <h4 className="font-bold uppercase tracking-tight">
                     Base URL
                   </h4>
-                  <code className="text-wrap font-mono text-xs text-muted-foreground">
-                    https://api.guisis.dllbsit2027.com/api/v1
-                  </code>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between gap-2",
+                      "rounded-lg border border-white/10 bg-muted/30 px-3 py-1.5",
+                    )}
+                  >
+                    <code
+                      className={cn(
+                        "truncate font-mono text-xs",
+                        "text-muted-foreground",
+                      )}
+                    >
+                      {import.meta.env.VITE_API_BASE_URL}
+                    </code>
+                    <button
+                      onClick={() =>
+                        copyUrl(`${import.meta.env.VITE_API_BASE_URL}`)
+                      }
+                      className={cn(
+                        "text-muted-foreground transition-colors",
+                        "hover:text-foreground",
+                      )}
+                      type="button"
+                    >
+                      {copiedUrl ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-3 rounded-lg border border-white/5 bg-white/5 p-6">
+                <div
+                  className={cn(
+                    "min-w-0 space-y-3 rounded-lg border",
+                    "border-white/5 bg-glass-bg p-6 shadow-md",
+                  )}
+                >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
                     <Cpu size={18} />
                   </div>
                   <h4 className="font-bold uppercase tracking-tight">
                     Authentication
                   </h4>
-                  <p className="text-[10px] text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  <p className="text-[10px] text-xs font-medium uppercase text-muted-foreground">
                     Bearer Token Auth
                   </p>
                 </div>

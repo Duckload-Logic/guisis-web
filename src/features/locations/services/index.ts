@@ -16,9 +16,7 @@ export async function GetRegions(config?: AxiosConfigWithMeta) {
     const response = await apiClient.get(API_ROUTES.locations.regions, config);
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetRegions";
-    const stepName = config?.stepName || "Fetch Regions";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -39,9 +37,7 @@ export async function GetProvinces(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetProvinces";
-    const stepName = config?.stepName || "Fetch Provinces";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -68,9 +64,7 @@ export async function GetCities(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetCities";
-    const stepName = config?.stepName || "Fetch Cities";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -92,9 +86,7 @@ export async function GetBarangays(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetBarangays";
-    const stepName = config?.stepName || "Fetch Barangays";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }

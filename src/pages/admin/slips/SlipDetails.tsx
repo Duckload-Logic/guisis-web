@@ -14,12 +14,13 @@ import {
   FileText,
   Calendar,
   User,
-  Info,
   ShieldUser,
   Fingerprint,
   Building2,
   MessageSquare,
   Clock3,
+  Ticket,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { STATUS_COLORS } from "@/config/constants";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { usePageMetadata } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
@@ -160,30 +161,94 @@ export default function SlipDetails() {
     });
   };
 
+  const needsSignificantNote =
+    slip.ticket?.isVerified && !slip.hasSignificantNote;
+
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-6 space-y-8 duration-700">
+    <div
+      className={cn(
+        "animate-in fade-in slide-in-from-bottom-6 duration-700",
+        "mx-auto w-full max-w-5xl space-y-6 px-4 pb-12",
+        "sm:px-6 md:px-8",
+      )}
+    >
+      {needsSignificantNote && (
+        <div
+          className={cn(
+            "animate-in zoom-in-95 flex flex-col items-center",
+            "justify-between gap-4 rounded-xl border border-primary/20",
+            "bg-primary/10 p-6 shadow-md backdrop-blur-xl duration-500",
+            "sm:flex-row",
+          )}
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                "rounded-2xl border border-primary/30",
+                "bg-primary/20 p-3",
+              )}
+            >
+              <StickyNote className="h-6 w-6 text-primary" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-sm font-bold tracking-tight text-foreground">
+                Record Significant Note
+              </h3>
+              <p className="text-xs font-medium text-muted-foreground">
+                This verified admission slip requires a significant note for the
+                student's records.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() =>
+              navigate(
+                `/admin/student-records/${slip.iirId}` +
+                  `?addNote=true&admissionSlipId=${slip.id}`,
+              )
+            }
+            className={cn(
+              "h-11 rounded-xl bg-primary px-6 font-bold text-white",
+              "shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]",
+              "hover:bg-primary/90",
+            )}
+          >
+            Add Note Now
+          </Button>
+        </div>
+      )}
       {/* Top Row: Identity & Information */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Identity Card */}
         <Card
           className={cn(
-            "bg-glass-bg/40 group relative overflow-hidden",
-            "border-glass-border shadow-xl backdrop-blur-2xl lg:col-span-1",
+            "group relative overflow-hidden",
+            "border-border bg-glass-bg shadow-md lg:col-span-1",
           )}
         >
-          <CardContent className="relative z-10 flex flex-col items-center space-y-5 p-8 text-center">
-            <Avatar className="relative z-10 h-24 w-24 border-2 border-glass-border shadow-lg">
+          <CardContent
+            className={cn(
+              "relative z-10 flex flex-col items-center",
+              "space-y-4 p-6 text-center",
+            )}
+          >
+            <Avatar
+              className={cn(
+                "relative z-10 h-20 w-20 border-2",
+                "border-border shadow-md",
+              )}
+            >
               <AvatarImage
                 src={slip.user?.profilePicture}
                 className="object-cover"
               />
-              <AvatarFallback className="bg-muted/50 text-3xl font-bold uppercase text-foreground/80">
+              <AvatarFallback className="bg-muted/50 text-2xl font-bold uppercase text-foreground/80">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
             <div className="space-y-1">
-              <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground/90">
+              <h2 className="text-lg font-bold leading-tight tracking-tight text-foreground/90">
                 {fullName}
               </h2>
               <p className="text-xs font-medium italic text-muted-foreground">
@@ -191,15 +256,15 @@ export default function SlipDetails() {
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="grid w-full grid-cols-1 gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 className={cn(
                   "group/btn w-full gap-2 rounded-xl border-primary/20",
-                "bg-primary/5 font-bold text-primary shadow-sm transition-all",
-                "duration-300 hover:bg-primary hover:text-white",
-              )}
+                  "bg-primary/5 font-bold text-primary transition-all",
+                  "duration-300 hover:bg-primary hover:text-white",
+                )}
                 onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
               >
                 <User className="h-3.5 w-3.5" />
@@ -211,13 +276,13 @@ export default function SlipDetails() {
                   size="sm"
                   className={cn(
                     "group/btn w-full gap-2 rounded-xl border-primary/20",
-                    "bg-primary/5 font-bold text-primary shadow-sm transition-all",
+                    "bg-primary/5 font-bold text-primary transition-all",
                     "duration-300 hover:bg-primary hover:text-white",
                   )}
                   onClick={() => setShowCorPreview(true)}
                 >
                   <FileText className="h-3.5 w-3.5" />
-                  Certificate of Registration
+                  View COR
                 </Button>
               )}
             </div>
@@ -225,24 +290,29 @@ export default function SlipDetails() {
         </Card>
 
         {/* General Information Card */}
-        <Card className="bg-glass-bg/40 border-glass-border shadow-xl backdrop-blur-2xl lg:col-span-2">
+        <Card className="border-border bg-glass-bg shadow-md lg:col-span-2">
           <CardHeader
             className={cn(
-              "border-glass-border/30 flex flex-row items-center",
-              "justify-between border-b bg-muted/10 px-8 py-7 pb-6",
+              "flex flex-row items-center justify-between",
+              "border-b bg-muted/5 p-5 sm:p-6",
             )}
           >
-            <CardTitle className="flex items-center gap-3 text-xl font-bold tracking-tight">
-              <ShieldUser className="h-6 w-6 text-primary" />
+            <CardTitle
+              className={cn(
+                "flex items-center gap-2.5 text-lg font-bold",
+                "tracking-tight",
+              )}
+            >
+              <ShieldUser className="h-5 w-5 text-primary" />
               Submission Profile
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 pb-10">
-            <div className="grid h-full grid-cols-1 content-center gap-10 sm:grid-cols-2">
+          <CardContent className="p-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="group space-y-2 transition-all duration-300">
                 <p
                   className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider",
+                    "text-[10px] font-bold uppercase",
                     "text-muted-foreground/60 transition-colors",
                     "group-hover:text-primary",
                   )}
@@ -251,13 +321,13 @@ export default function SlipDetails() {
                 </p>
                 <div
                   className={cn(
-                    "border-glass-border/20 flex items-center gap-3 rounded-2xl",
-                    "border bg-muted/20 p-4 shadow-inner transition-all",
+                    "flex items-center gap-3 rounded-xl",
+                    "border bg-muted/15 p-3 shadow-inner transition-all",
                     "group-hover:border-primary/20",
                   )}
                 >
-                  <Fingerprint className="h-5 w-5 text-primary/60" />
-                  <p className="text-lg font-bold tracking-wide text-foreground/80">
+                  <Fingerprint className="h-4 w-4 text-primary/60" />
+                  <p className="text-base font-bold text-foreground/80">
                     {slip.studentNumber || "N/A"}
                   </p>
                 </div>
@@ -265,7 +335,7 @@ export default function SlipDetails() {
               <div className="group space-y-2 transition-all duration-300">
                 <p
                   className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider",
+                    "text-[10px] font-bold uppercase",
                     "text-muted-foreground/60 transition-colors",
                     "group-hover:text-primary",
                   )}
@@ -274,13 +344,13 @@ export default function SlipDetails() {
                 </p>
                 <div
                   className={cn(
-                    "border-glass-border/20 flex items-center gap-3 rounded-2xl",
-                    "border bg-muted/20 p-4 shadow-inner transition-all",
+                    "flex items-center gap-3 rounded-xl",
+                    "border bg-muted/15 p-3 shadow-inner transition-all",
                     "group-hover:border-primary/20",
                   )}
                 >
-                  <Building2 className="h-5 w-5 text-primary/60" />
-                  <p className="truncate text-lg font-bold text-foreground/80">
+                  <Building2 className="h-4 w-4 text-primary/60" />
+                  <p className="truncate text-base font-bold text-foreground/80">
                     {slip.user?.email || "N/A"}
                   </p>
                 </div>
@@ -291,41 +361,38 @@ export default function SlipDetails() {
       </div>
 
       {/* Content Row: Submission Details & Actions */}
-      <div className="grid grid-cols-1 gap-8 pb-12 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12">
         {/* Left: Submission Details (Col-span 8) */}
-        <div className="space-y-8 lg:col-span-8">
-          <Card
-            className={cn(
-              "bg-glass-bg/40 h-full overflow-hidden border-glass-border",
-              "shadow-xl backdrop-blur-2xl",
-            )}
-          >
+        <div className="space-y-6 lg:col-span-8">
+          <Card className="h-full overflow-hidden border-border bg-glass-bg shadow-md">
             <CardHeader
               className={cn(
-                "border-glass-border/30 flex flex-row items-center",
-                "justify-between border-b bg-muted/10 px-8 py-7",
+                "flex flex-row items-center justify-between",
+                "border-b bg-muted/5 p-5 sm:p-6",
               )}
             >
-              <div className="flex items-center gap-4">
-                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3">
-                  <FileText className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl border border-primary/20 bg-primary/10 p-2.5">
+                  <FileText className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold tracking-tight">
+                  <CardTitle className="text-lg font-bold tracking-tight">
                     Submission Context
                   </CardTitle>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <p className="font-mono text-[10px] text-muted-foreground">
                     ID: {slip.id?.substring(0, 8)}
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 {slip.status && (
                   <Badge
+                    variant="outline"
                     className={cn(
-                      "rounded-full border px-4 py-1.5 text-[10px] font-bold tracking-wide shadow-sm",
-                      STATUS_COLORS[slip.status.colorKey || "info"],
+                      "rounded-full border px-3 py-1 text-[10px] font-bold",
+                      "shadow-sm",
+                      STATUS_COLORS[getStatusColorKey(slip.status.name)],
                     )}
                   >
                     {slip.status.name}
@@ -333,86 +400,83 @@ export default function SlipDetails() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-12 p-10">
+            <CardContent className="space-y-6 p-5 sm:p-6">
               {/* Reason for Absence Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-2">
-                    <MessageSquare className="h-4 w-4 text-primary" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-1.5">
+                    <MessageSquare className="h-3.5 w-3.5 text-primary" />
                   </div>
-                  <h3 className="text-sm font-bold tracking-tight text-foreground/80">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">
                     Reason for Absence
                   </h3>
                 </div>
 
                 <div
                   className={cn(
-                    "border-glass-border/20 rounded-[24px] border bg-muted/20 p-8",
-                    "shadow-inner backdrop-blur-sm",
+                    "rounded-xl border bg-muted/15 p-5 shadow-inner",
                   )}
                 >
-                  <p className="text-base font-medium italic leading-relaxed text-foreground/80">
+                  <p className="text-sm font-medium italic leading-relaxed text-foreground/80">
                     "{slip.reason || "No specific reason provided."}"
                   </p>
                 </div>
               </div>
 
               {/* Date Info Grid */}
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div
                   className={cn(
-                    "border-glass-border/30 hover:bg-glass-bg/40 group relative",
-                    "space-y-3 rounded-3xl border bg-muted/10 p-6 shadow-sm",
+                    "group relative space-y-2 rounded-xl border bg-muted/5 p-4",
                     "transition-all duration-300 hover:border-primary/30",
                   )}
                 >
-                  <div className="flex items-center gap-3 text-muted-foreground/70">
-                    <Calendar className="h-5 w-5 text-primary/60" />
-                    <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60">
+                  <div className="flex items-center gap-2 text-muted-foreground/70">
+                    <Calendar className="h-4 w-4 text-primary/60" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground/60">
                       Date of Absence
                     </span>
                   </div>
-                  <p className="text-lg font-bold tracking-tight text-foreground/90">
+                  <p className="text-lg font-bold text-foreground/90">
                     {formatDateShort(slip.dateOfAbsence)}
                   </p>
                 </div>
                 <div
                   className={cn(
-                    "border-glass-border/30 hover:bg-glass-bg/40 group relative",
-                    "space-y-3 rounded-3xl border bg-muted/10 p-6 shadow-sm",
+                    "group relative space-y-2 rounded-xl border bg-muted/5 p-4",
                     "transition-all duration-300 hover:border-primary/30",
                   )}
                 >
-                  <div className="flex items-center gap-3 text-muted-foreground/70">
-                    <Clock className="h-5 w-5 text-primary/60" />
-                    <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60">
+                  <div className="flex items-center gap-2 text-muted-foreground/70">
+                    <Clock className="h-4 w-4 text-primary/60" />
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground/60">
                       Date Needed
                     </span>
                   </div>
-                  <p className="text-lg font-bold tracking-tight text-foreground/90">
+                  <p className="text-lg font-bold text-foreground/90">
                     {formatDateShort(slip.dateNeeded)}
                   </p>
                 </div>
               </div>
 
               {/* Attachments Section */}
-              <div className="space-y-6 pt-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-2">
-                    <ShieldUser className="h-5 w-5 text-primary" />
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-1.5">
+                    <ShieldUser className="h-4 w-4 text-primary" />
                   </div>
-                  <h3 className="text-sm font-bold tracking-tight text-foreground/80">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">
                     Supporting Documents
                   </h3>
                 </div>
-                <div className="border-glass-border/20 rounded-3xl border bg-muted/10 p-6 shadow-inner">
+                <div className="rounded-xl border bg-muted/5 p-4 shadow-inner sm:p-5">
                   {attachments && attachments.length > 0 ? (
                     <AttachmentsGrid
                       slipId={slip.id || ""}
                       files={attachments}
                     />
                   ) : (
-                    <p className="py-8 text-center text-sm italic text-muted-foreground">
+                    <p className="py-6 text-center text-xs italic text-muted-foreground">
                       No attachments provided
                     </p>
                   )}
@@ -420,22 +484,22 @@ export default function SlipDetails() {
               </div>
 
               {slip.adminNotes && (
-                <div className="border-glass-border/20 border-t pt-10">
-                  <div className="mb-6 flex items-center gap-3">
-                    <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-2">
-                      <ShieldUser className="h-5 w-5 text-orange-500" />
+                <div className="border-t border-border/50 pt-6">
+                  <div className="mb-4 flex items-center gap-2">
+                    <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-1.5">
+                      <ShieldUser className="h-4 w-4 text-orange-500" />
                     </div>
-                    <h3 className="text-[11px] font-bold tracking-wide text-orange-500">
+                    <h3 className="text-xs font-bold uppercase text-orange-500">
                       Counselor Remarks
                     </h3>
                   </div>
                   <div
                     className={cn(
-                      "rounded-3xl border border-orange-500/10 bg-orange-500/[0.03]",
-                      "p-8 shadow-inner backdrop-blur-sm",
+                      "rounded-xl border border-orange-500/10 bg-orange-500/[0.02]",
+                      "p-5 shadow-inner",
                     )}
                   >
-                    <p className="text-base italic leading-relaxed text-foreground/80">
+                    <p className="text-sm italic leading-relaxed text-foreground/80">
                       {slip.adminNotes}
                     </p>
                   </div>
@@ -446,38 +510,81 @@ export default function SlipDetails() {
         </div>
 
         {/* Right: Actions & History (Col-span 4) */}
-        <div className="space-y-8 lg:col-span-4">
-          <Card className="bg-glass-bg/40 overflow-hidden border-glass-border shadow-xl backdrop-blur-2xl">
-            <CardHeader className="border-glass-border/30 border-b bg-muted/10 px-8 py-6">
-              <CardTitle className="flex items-center gap-3 text-lg font-bold tracking-tight">
-                <ShieldUser className="h-5 w-5 text-primary" />
+        <div className="space-y-6 lg:col-span-4">
+          <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
+            <CardHeader className="border-b bg-muted/5 p-5">
+              <CardTitle className="flex items-center gap-2.5 text-base font-bold tracking-tight">
+                <ShieldUser className="h-4 w-4 text-primary" />
                 Administrative Controls
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-5">
+              {slip.ticket && (
+                <div
+                  className={cn(
+                    "mb-4 rounded-xl border border-dashed p-4 transition-all duration-300",
+                    slip.ticket.isVerified
+                      ? "border-green-500/50 bg-green-500/5"
+                      : "border-primary/50 bg-primary/5",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "rounded-lg p-2 text-white",
+                        slip.ticket.isVerified ? "bg-green-500" : "bg-primary",
+                      )}
+                    >
+                      <Ticket className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                        Admission Slip Ticket
+                      </p>
+                      <p className="font-mono text-lg font-bold tracking-tighter text-foreground">
+                        {slip.ticket.ticketCode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between border-t border-border/20 pt-3">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                      Status
+                    </span>
+                    <Badge
+                      variant={slip.ticket.isVerified ? "default" : "outline"}
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase",
+                        slip.ticket.isVerified &&
+                          "bg-green-600 hover:bg-green-700",
+                      )}
+                    >
+                      {slip.ticket.isVerified ? "Claimed" : "Pending Claim"}
+                    </Badge>
+                  </div>
+                </div>
+              )}
               {isPending ? (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                   <Button
                     onClick={() => handleActionClick("approve")}
                     disabled={isUpdatingStatus}
                     className={cn(
-                      "group/action h-14 w-full items-center justify-between",
-                      "rounded-2xl border border-white/10 bg-green-600 px-6",
-                      "text-white shadow-lg transition-all duration-300",
-                      "hover:scale-[1.02] hover:bg-green-700 hover:shadow-xl",
+                      "group/action h-11 w-full items-center justify-between",
+                      "rounded-xl border border-white/10 bg-green-600 px-4",
+                      "text-white shadow-sm transition-all duration-300",
+                      "hover:scale-[1.02] hover:bg-green-700 hover:shadow-md",
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span className="text-[11px] font-bold tracking-wide">
-                        Approve Slip
-                      </span>
+                      <span className="text-xs font-bold">Approve Slip</span>
                     </div>
                     <ArrowLeft
                       className={cn(
-                        "h-4 w-4 -translate-x-2 rotate-180 opacity-0 transition-all",
-                        "duration-300 group-hover/action:translate-x-0",
-                        "group-hover/action:opacity-100",
+                        "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
+                        "transition-all duration-300",
+                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
@@ -486,23 +593,23 @@ export default function SlipDetails() {
                     onClick={() => handleActionClick("revision")}
                     disabled={isUpdatingStatus}
                     className={cn(
-                      "group/action h-14 w-full items-center justify-between",
-                      "rounded-2xl border border-white/10 bg-blue-600 px-6",
-                      "text-white shadow-lg transition-all duration-300",
-                      "hover:scale-[1.02] hover:bg-blue-700 hover:shadow-xl",
+                      "group/action h-11 w-full items-center justify-between",
+                      "rounded-xl border border-white/10 bg-blue-600 px-4",
+                      "text-white shadow-sm transition-all duration-300",
+                      "hover:scale-[1.02] hover:bg-blue-700 hover:shadow-md",
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <RefreshCw className="h-4 w-4" />
-                      <span className="text-[11px] font-bold tracking-wide">
+                      <span className="text-xs font-bold">
                         Request Revision
                       </span>
                     </div>
                     <ArrowLeft
                       className={cn(
-                        "h-4 w-4 -translate-x-2 rotate-180 opacity-0 transition-all",
-                        "duration-300 group-hover/action:translate-x-0",
-                        "group-hover/action:opacity-100",
+                        "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
+                        "transition-all duration-300",
+                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
@@ -511,23 +618,21 @@ export default function SlipDetails() {
                     onClick={() => handleActionClick("reject")}
                     disabled={isUpdatingStatus}
                     className={cn(
-                      "group/action h-14 w-full items-center justify-between",
-                      "rounded-2xl border border-white/10 bg-red-600 px-6 text-white",
-                      "shadow-lg transition-all duration-300 hover:scale-[1.02]",
-                      "hover:bg-red-700 hover:shadow-xl",
+                      "group/action h-11 w-full items-center justify-between",
+                      "rounded-xl border border-white/10 bg-red-600 px-4 text-white",
+                      "shadow-sm transition-all duration-300 hover:scale-[1.02]",
+                      "hover:bg-red-700 hover:shadow-md",
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <Ban className="h-4 w-4" />
-                      <span className="text-[11px] font-bold tracking-wide">
-                        Reject Slip
-                      </span>
+                      <span className="text-xs font-bold">Reject Slip</span>
                     </div>
                     <ArrowLeft
                       className={cn(
-                        "h-4 w-4 -translate-x-2 rotate-180 opacity-0 transition-all",
-                        "duration-300 group-hover/action:translate-x-0",
-                        "group-hover/action:opacity-100",
+                        "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
+                        "transition-all duration-300",
+                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
@@ -535,14 +640,13 @@ export default function SlipDetails() {
               ) : (
                 <div
                   className={cn(
-                    "border-glass-border/20 space-y-4 rounded-3xl border",
-                    "border-dashed bg-muted/10 py-12 text-center",
+                    "space-y-3 rounded-xl border border-dashed py-8 text-center",
                   )}
                 >
-                  <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-4">
-                    <CheckCircle2 className="h-8 w-8 text-primary/60" />
+                  <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-3">
+                    <CheckCircle2 className="h-6 w-6 text-primary/60" />
                   </div>
-                  <p className="text-xs font-bold italic tracking-wide text-muted-foreground/60">
+                  <p className="text-xs font-bold italic text-muted-foreground/60">
                     Processed as {slip.status?.name}
                   </p>
                 </div>
@@ -550,42 +654,42 @@ export default function SlipDetails() {
             </CardContent>
           </Card>
 
-          <Card className="bg-glass-bg/40 overflow-hidden border-glass-border shadow-xl backdrop-blur-2xl">
-            <CardHeader className="border-glass-border/30 border-b bg-muted/20 px-8 py-6">
+          <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
+            <CardHeader className="border-b bg-muted/5 p-5">
               <CardTitle
                 className={cn(
-                  "flex items-center gap-2 text-[10px] font-bold tracking-wider",
-                  "text-muted-foreground",
+                  "flex items-center gap-2 text-[10px] font-bold",
+                  "uppercase tracking-wider text-muted-foreground",
                 )}
               >
                 <Clock3 className="h-3.5 w-3.5" />
                 Audit Trail
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-8 p-8">
-              <div className="group flex items-start gap-5">
+            <CardContent className="space-y-6 p-5">
+              <div className="group flex items-start gap-4">
                 <div className="relative mt-1">
                   <div
                     className={cn(
-                      "relative z-10 h-4 w-4 shrink-0 rounded-full border-2",
+                      "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full border-2",
                       "border-primary bg-background shadow-sm",
                     )}
                   />
                   <div
                     className={cn(
-                      "bg-glass-border/30 absolute left-1/2 top-4 h-10 w-0.5",
+                      "absolute left-1/2 top-3.5 h-10 w-0.5 bg-border",
                       "-translate-x-1/2 group-last:hidden",
                     )}
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold leading-none tracking-wide text-foreground/80">
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-foreground/80">
                     Submission Received
                   </p>
                   <p
                     className={cn(
-                      "border-glass-border/10 w-fit rounded-full border bg-muted/30",
-                      "px-2 py-0.5 text-[10px] font-bold text-muted-foreground/60",
+                      "w-fit rounded-full border bg-muted/30",
+                      "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
                     )}
                   >
                     {formatDateShort(slip.createdAt)}
@@ -593,16 +697,16 @@ export default function SlipDetails() {
                 </div>
               </div>
               {slip.updatedAt && slip.updatedAt !== slip.createdAt && (
-                <div className="group flex items-start gap-5">
-                  <div className="h-4 w-4 shrink-0 rounded-full border-2 border-blue-500 bg-background shadow-sm" />
-                  <div className="space-y-1.5">
-                    <p className="text-[11px] font-bold leading-none tracking-wide text-foreground/80">
+                <div className="group flex items-start gap-4">
+                  <div className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-blue-500 bg-background shadow-sm" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-foreground/80">
                       System Activity Recorded
                     </p>
                     <p
                       className={cn(
-                        "border-glass-border/10 w-fit rounded-full border bg-muted/30",
-                        "px-2 py-0.5 text-[10px] font-bold text-muted-foreground/60",
+                        "w-fit rounded-full border bg-muted/30",
+                        "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
                       )}
                     >
                       {formatDateShort(slip.updatedAt)}
@@ -628,7 +732,7 @@ export default function SlipDetails() {
         <AlertDialogContent
           className={cn(
             "animate-in zoom-in-95 fade-in rounded-2xl border",
-            "border-white/10 bg-background/90 shadow-2xl backdrop-blur-2xl",
+            "border-border bg-card shadow-2xl backdrop-blur-2xl",
             "duration-200",
           )}
         >
@@ -658,15 +762,15 @@ export default function SlipDetails() {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className={cn(
-                  "min-h-36 rounded-2xl border-white/10 bg-muted/30 italic",
-                  "placeholder:text-muted-foreground/40 focus:ring-primary/20",
+                  "min-h-36 rounded-2xl border-border bg-muted/15 italic",
+                  "placeholder:text-muted-foreground/45 focus:ring-primary/20",
                 )}
               />
             </div>
           )}
 
-          <div className="flex justify-end gap-3 border-t border-white/5 pt-6">
-            <AlertDialogCancel className="rounded-xl border-white/10 px-6 font-bold transition-all hover:bg-white/5">
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-6">
+            <AlertDialogCancel className="rounded-xl border-border px-6 font-bold transition-all hover:bg-muted/10">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

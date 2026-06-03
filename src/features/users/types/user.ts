@@ -15,6 +15,7 @@ export interface User {
   studentNumber?: string;
   profilePicture?: string;
   studentCorUrl?: string;
+  isStudentCorValid?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

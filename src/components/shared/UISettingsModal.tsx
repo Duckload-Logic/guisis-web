@@ -3,7 +3,7 @@ import {
   ResponsiveModal,
   ResponsiveModalContent,
 } from "@/components/ui/responsive-modal";
-import { X, Palette, Type, Volume2, Leaf, Zap } from "lucide-react";
+import { Palette, Type, Volume2, Leaf, Zap } from "lucide-react";
 import { useUI } from "@/context";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
@@ -196,7 +196,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
                 Display & Accessibility
               </h2>
               <p className="mt-1 text-xs text-slate-600 dark:text-white/60 sm:text-sm">

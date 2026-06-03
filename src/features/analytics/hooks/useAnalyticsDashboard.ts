@@ -1,28 +1,35 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiClient } from "@/lib/api";
-import { DashboardResponse, AnalyticsCourse } from "../types/analytics.types";
+import { API_ROUTES } from "@/config/apiRoutes";
+import {
+  IIRAnalyticsReportResponse,
+  AnalyticsCourse,
+} from "../types/analytics.types";
 
 export function useAnalyticsDashboard() {
-  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [data, setData] = useState<IIRAnalyticsReportResponse | null>(null);
   const [courses, setCourses] = useState<AnalyticsCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // PDF Export states
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [currentFileName, setCurrentFileName] = useState<string>("");
 
   const fetchDashboard = useCallback(
     async (year?: number, courseId?: number, statusId?: number) => {
       try {
         setLoading(true);
-        const params = new URLSearchParams();
-        if (year) params.append("year", year.toString());
-        if (courseId) params.append("course_id", courseId.toString());
-        if (statusId) params.append("status_id", statusId.toString());
+        const params: any = {};
+        if (year) params.year = year;
+        if (courseId) params.course_id = courseId;
+        if (statusId) params.status_id = statusId;
 
-        const response = await apiClient.get(
-          `/analytics/dashboard?${params.toString()}`,
-        );
+        const response = await apiClient.get(API_ROUTES.analytics.iirReport, {
+          params,
+        });
 
-        // The apiClient interceptor in api.ts already unwraps JSend responses
-        // and validates the "success" status. response.data is now the dashboard object.
         if (response.data) {
           setData(response.data);
         } else {
@@ -48,10 +55,63 @@ export function useAnalyticsDashboard() {
     }
   }, []);
 
+  const generatePreview = useCallback(
+    async (year?: number, courseId?: number) => {
+      try {
+        setIsDownloading(true);
+        const params: any = {};
+        if (year) params.year = year;
+        if (courseId) params.course_id = courseId;
+
+        const response = await apiClient.get(
+          API_ROUTES.analytics.iirReportExport,
+          {
+            params,
+            responseType: "blob",
+          },
+        );
+
+        const url = window.URL.createObjectURL(
+          new Blob([response.data], { type: "application/pdf" }),
+        );
+        setPdfUrl(url);
+        setCurrentFileName(
+          `Freshmen-Profile_${year || new Date().getFullYear()}.pdf`,
+        );
+      } catch (err) {
+        console.error("Failed to generate PDF preview", err);
+        alert("Failed to generate PDF report preview. Please try again.");
+      } finally {
+        setIsDownloading(false);
+      }
+    },
+    [],
+  );
+
+  const downloadFromPreview = useCallback(() => {
+    if (!pdfUrl) return;
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.setAttribute(
+      "download",
+      currentFileName || "Student-Profiles-Report.pdf",
+    );
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }, [pdfUrl, currentFileName]);
+
+  const clearPreview = useCallback(() => {
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+      setCurrentFileName("");
+    }
+  }, [pdfUrl]);
+
   useEffect(() => {
-    fetchDashboard();
     fetchCourses();
-  }, [fetchDashboard, fetchCourses]);
+  }, [fetchCourses]);
 
   return {
     data,
@@ -59,5 +119,10 @@ export function useAnalyticsDashboard() {
     loading,
     error,
     refresh: fetchDashboard,
+    generatePreview,
+    downloadFromPreview,
+    clearPreview,
+    pdfUrl,
+    isDownloading,
   };
 }

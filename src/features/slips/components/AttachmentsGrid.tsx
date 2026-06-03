@@ -52,7 +52,12 @@ function PreviewModal({
       open={isOpen}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="max-w-4xl border-border/40 bg-background/95 shadow-2xl backdrop-blur-xl">
+      <DialogContent
+        className={cn(
+          "w-[95vw] max-w-4xl border-border/40 bg-background/95",
+          "shadow-2xl backdrop-blur-xl sm:w-full"
+        )}
+      >
         <DialogHeader>
           <DialogTitle>File Preview</DialogTitle>
           <DialogDescription>
@@ -80,12 +85,18 @@ function PreviewModal({
             <img
               src={previewUrl}
               alt="Preview"
-              className="max-h-96 max-w-full rounded-lg"
+              className={cn(
+                "max-h-[50vh] max-w-full rounded-lg object-contain",
+                "sm:max-h-[60vh]"
+              )}
             />
           ) : isPdfFile(file.fileName) && previewUrl ? (
             <iframe
               src={previewUrl}
-              className="h-[60vh] w-full rounded-lg border border-border/40"
+              className={cn(
+                "h-[45vh] w-full rounded-lg border border-border/40",
+                "sm:h-[60vh]"
+              )}
               title="PDF Preview"
             />
           ) : (
@@ -273,7 +284,12 @@ export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        className={cn(
+          "grid grid-cols-2 gap-2.5",
+          "sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"
+        )}
+      >
         {files.map((file, index) => (
           <AttachmentItem
             key={index}

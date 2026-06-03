@@ -38,7 +38,13 @@ export default function Checkbox({
               onCheckedChange?.(e.target.checked);
             }}
             disabled={disabled}
-            className={`peer absolute z-10 h-full w-full cursor-pointer opacity-0 ${className}`}
+            className={cn(
+              "peer absolute z-10 h-full w-full opacity-0",
+              disabled
+                ? "cursor-not-allowed pointer-events-none"
+                : "cursor-pointer",
+              className,
+            )}
           />
           <div
             className={cn(
@@ -48,6 +54,7 @@ export default function Checkbox({
               "peer-checked:border-primary peer-checked:bg-primary",
               "peer-hover:border-primary",
               "dark:border-white/10 dark:border-white/30 dark:bg-white/[0.04]",
+              disabled && "opacity-50",
             )}
           />
           <Check
@@ -55,15 +62,18 @@ export default function Checkbox({
               "pointer-events-none absolute h-3 w-3 scale-50 text-white",
               "opacity-0 transition-all duration-200 peer-checked:scale-100",
               "peer-checked:opacity-100",
+              disabled && "opacity-50",
             )}
           />
         </div>
         <label
           htmlFor={id}
           className={cn(
-            "cursor-pointer select-none text-sm font-medium",
+            "select-none text-sm font-medium",
             "text-foreground transition-colors duration-200",
-            "disabled:opacity-50 group-hover/checkbox:text-primary",
+            disabled
+              ? "opacity-50 cursor-not-allowed pointer-events-none"
+              : "cursor-pointer group-hover/checkbox:text-primary",
           )}
         >
           {label}

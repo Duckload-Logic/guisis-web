@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAnalyticsDashboard } from "@/features/analytics/hooks/useAnalyticsDashboard";
-import Layout from "@/components/layout/Layout";
 import {
   Card,
   CardContent,
@@ -14,10 +13,10 @@ import {
   TrendingUp,
   Users,
   MapPin,
-  GraduationCap,
   Home,
-  DollarSign,
   Network,
+  FileDown,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,10 +38,20 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCourses, useStudentStatuses } from "@/features/iir/hooks";
+import { useCourses, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
+import { FullScreenLoader } from "@/components/shared";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from "@/components/ui/responsive-modal";
+import { useQuery } from "@tanstack/react-query";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
 
 // --- THEME COLORS ---
 const COLORS = [
@@ -86,65 +95,148 @@ const genderDistributionConfig = {
 export default function AnalyticsPage() {
   const [selectedYear, setSelectedYear] = useState<string>("0");
   const [selectedCourse, setSelectedCourse] = useState<string>("0");
-  const [selectedStatus, setSelectedStatus] = useState<string>("0");
 
-  const { data, loading, error, refresh } = useAnalyticsDashboard();
-  const { data: courses } = useCourses();
+  const { data: settings, isLoading: isSettingsLoading } = useQuery({
+    queryKey: ["counselor", "academicSettings"],
+    queryFn: GetAcademicSettings,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const {
+    data,
+    loading,
+    error,
+    refresh,
+    generatePreview,
+    downloadFromPreview,
+    clearPreview,
+    pdfUrl,
+    isDownloading,
+  } = useAnalyticsDashboard();
+  const { data: coursesData } = useCourses();
+  const courses = useMemo(() => {
+    return [
+      { value: "0", label: "All Courses" },
+      ...(coursesData || []).map((c: any) => ({
+        value: c.id.toString(),
+        label: c.code,
+      })),
+    ];
+  }, [coursesData]);
+  const { data: enrollmentYears } = useEnrollmentYears();
+
+  const [hasSetDefaultYear, setHasSetDefaultYear] = useState(false);
+
+  useEffect(() => {
+    if (settings?.currentYearStart && !hasSetDefaultYear) {
+      const yearStr = settings.currentYearStart.toString();
+      setSelectedYear(yearStr);
+      setHasSetDefaultYear(true);
+      refresh(settings.currentYearStart, parseInt(selectedCourse), 0);
+    } else if (!settings && !isSettingsLoading && !hasSetDefaultYear) {
+      const fallbackYear = new Date().getFullYear();
+      setSelectedYear(fallbackYear.toString());
+      setHasSetDefaultYear(true);
+      refresh(fallbackYear, parseInt(selectedCourse), 0);
+    }
+  }, [
+    settings,
+    isSettingsLoading,
+    hasSetDefaultYear,
+    selectedCourse,
+    refresh,
+  ]);
 
   // Update filters and refresh
   const handleYearChange = (val: string) => {
     setSelectedYear(val);
-    refresh(parseInt(val), parseInt(selectedCourse), parseInt(selectedStatus));
+    refresh(parseInt(val), parseInt(selectedCourse), 0);
   };
 
   const handleCourseChange = (val: string) => {
     setSelectedCourse(val);
-    refresh(parseInt(selectedYear), parseInt(val), parseInt(selectedStatus));
+    refresh(parseInt(selectedYear), parseInt(val), 0);
   };
 
-  const handleStatusChange = (val: string) => {
-    setSelectedStatus(val);
-    refresh(parseInt(selectedYear), parseInt(selectedCourse), parseInt(val));
-  };
+  const yearOptions = useMemo(() => {
+    const years = [...(enrollmentYears || [])];
+    const currentYear = settings?.currentYearStart;
+    if (currentYear && !years.includes(currentYear)) {
+      years.unshift(currentYear);
+    }
+    return years.map((y: number) => ({
+      value: y.toString(),
+      label: y.toString(),
+    }));
+  }, [enrollmentYears, settings]);
 
-  usePageMetadata({
-    title: "Student Analytics",
-    description:
-      "Holistic analysis of student demographics, academic background, and social profiles",
-    badgeText: "Real-time Metrics",
-    badgeIcon: <TrendingUp className="h-4 w-4" />,
-    isLoading: loading,
-    headerActions: (
+  const headerActions = useMemo(
+    () => (
       <div className="flex gap-4">
         <Dropdown
           name="year"
-          label="Enrollment Year"
           get="value"
           identifier="value"
           value={selectedYear}
           onChange={handleYearChange}
-          options={Array.from(
-            { length: 5 },
-            (_, i) => new Date().getFullYear() - i,
-          ).map((year) => ({
-            value: year.toString(),
-            label: year.toString(),
-          }))}
+          options={yearOptions}
           formStyle={false}
         />
 
         <Dropdown
           name="course"
-          label="Course"
-          get="id"
-          identifier="id"
+          get="value"
+          identifier="value"
           value={selectedCourse}
           onChange={handleCourseChange}
           options={courses}
           formStyle={false}
         />
+
+        <Button
+          variant="outline"
+          disabled={isDownloading}
+          onClick={() =>
+            generatePreview(parseInt(selectedYear), parseInt(selectedCourse))
+          }
+          className={cn(
+            "border-glass-border/40 hover:border-glass-border/60",
+            "dark:focus:bg-glass-bg/40 flex h-11 w-full items-center",
+            "justify-between rounded-xl border bg-muted/20 px-4",
+            "py-2.5 text-left text-sm font-medium tracking-tight",
+            "text-foreground shadow-sm outline-none transition-all",
+            "duration-200 focus:border-primary/50 focus:bg-glass-bg",
+            "focus:ring-2 focus:ring-primary/5",
+          )}
+        >
+          <FileDown className="h-4 w-4" />
+          <span>Download Report</span>
+        </Button>
       </div>
     ),
+    [
+      selectedYear,
+      handleYearChange,
+      yearOptions,
+      selectedCourse,
+      handleCourseChange,
+      courses,
+      isDownloading,
+      generatePreview,
+    ],
+  );
+
+  const pageBadgeIcon = useMemo(() => <TrendingUp className="h-4 w-4" />, []);
+
+  usePageMetadata({
+    title: "Student Analytics",
+    description:
+      "Holistic analysis of student demographics, academic background, " +
+      "and social profiles",
+    badgeText: "Real-time Metrics",
+    badgeIcon: pageBadgeIcon,
+    isLoading: false,
+    headerActions,
   });
 
   if (error) {
@@ -162,11 +254,7 @@ export default function AnalyticsPage() {
         <Button
           variant="outline"
           onClick={() =>
-            refresh(
-              parseInt(selectedYear),
-              parseInt(selectedCourse),
-              parseInt(selectedStatus),
-            )
+            refresh(parseInt(selectedYear), parseInt(selectedCourse), 0)
           }
           className="mt-4 border-primary/20 hover:bg-primary/5"
         >
@@ -183,58 +271,61 @@ export default function AnalyticsPage() {
   if (!data) return null;
 
   return (
-    <div className="animate-in fade-in space-y-8 duration-700">
-      <Tabs
-        defaultValue="overview"
-        className="space-y-8"
-      >
-        <div className="flex items-center justify-between border-b pb-4">
-          <TabsList className="bg-background/50 backdrop-blur-sm">
-            <TabsTrigger
-              value="overview"
-              className={cn(
-                "px-6 text-xs font-bold uppercase tracking-widest",
-                "data-[state=active]:bg-primary/50",
-              )}
+    <>
+      <FullScreenLoader
+        isLoading={isDownloading}
+        message="Generating Document..."
+      />
+      <div className="animate-in fade-in space-y-8 duration-700">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left Column: Gender Distribution Chart */}
+          <ChartCard
+            title="Gender Distribution"
+            description="Total student body split"
+            className="lg:col-span-1"
+          >
+            <ChartContainer
+              config={genderDistributionConfig}
+              className="mx-auto aspect-square max-h-[300px]"
             >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="demographics"
-              className={cn(
-                "px-6 text-xs font-bold uppercase tracking-widest",
-                "data-[state=active]:bg-primary/50",
-              )}
-            >
-              Demographics
-            </TabsTrigger>
-            <TabsTrigger
-              value="academic"
-              className={cn(
-                "px-6 text-xs font-bold uppercase tracking-widest",
-                "data-[state=active]:bg-primary/50",
-              )}
-            >
-              Academic
-            </TabsTrigger>
-            <TabsTrigger
-              value="family"
-              className={cn(
-                "px-6 text-xs font-bold uppercase tracking-widest",
-                "data-[state=active]:bg-primary/50",
-              )}
-            >
-              Family & Social
-            </TabsTrigger>
-          </TabsList>
-        </div>
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={data?.genderDistribution ?? []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="total"
+                  nameKey="category"
+                  isAnimationActive={false}
+                >
+                  {(data?.genderDistribution ?? []).map((gender) => (
+                    <Cell
+                      key={gender.category}
+                      fill={
+                        gender.category === "Male"
+                          ? "var(--color-Male)"
+                          : "var(--color-Female)"
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  iconType="circle"
+                />
+              </PieChart>
+            </ChartContainer>
+          </ChartCard>
 
-        <TabsContent
-          value="overview"
-          className="space-y-8 focus-visible:outline-none focus-visible:ring-0"
-        >
-          {/* --- KPI SECTION --- */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Right Columns: KPIs */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
             <KPICard
               title="Total Population"
               value={data?.totalStudents?.toLocaleString() ?? "0"}
@@ -249,7 +340,9 @@ export default function AnalyticsPage() {
                   ? `${data.genderDistribution[0].totalPct}%`
                   : "0%"
               }
-              subtitle={`${data?.genderDistribution?.[0]?.category || "N/A"} Majority`}
+              subtitle={`${
+                data?.genderDistribution?.[0]?.category || "N/A"
+              } Majority`}
               icon={<Network className="h-5 w-5 text-indigo-500" />}
               gradient="from-indigo-500/10 via-background to-background"
             />
@@ -268,545 +361,46 @@ export default function AnalyticsPage() {
               gradient="from-amber-500/10 via-background to-background"
             />
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <ChartCard
-              title="Gender Distribution"
-              description="Total student body split"
-            >
-              <ChartContainer
-                config={genderDistributionConfig}
-                className="mx-auto aspect-square max-h-[300px]"
-              >
-                <PieChart>
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Pie
-                    data={data?.genderDistribution ?? []}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="total"
-                    nameKey="category"
-                    isAnimationActive={false}
-                  >
-                    {(data?.genderDistribution ?? []).map((gender) => (
-                      <Cell
-                        key={gender.category}
-                        fill={
-                          gender.category === "Male"
-                            ? "var(--color-Male)"
-                            : "var(--color-Female)"
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                  />
-                </PieChart>
-              </ChartContainer>
-            </ChartCard>
-            <StatSummaryCard
-              title="Top Global Rankings"
-              data={data}
-              className="lg:col-span-2"
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent
-          value="demographics"
-          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
+        <ResponsiveModal
+          open={!!pdfUrl}
+          onOpenChange={(open) => !open && clearPreview()}
         >
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <ChartCard
-              title="Age Distribution"
-              description="Grouped by Gender vs Total per age group"
-              className="lg:col-span-2"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  data={data?.ageDistribution ?? []}
-                  margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+          <ResponsiveModalContent
+            hasCloseButton={false}
+            className="flex h-[90vh] max-h-[90vh] flex-col p-0 sm:max-w-4xl"
+          >
+            <ResponsiveModalHeader className="h-14 px-4 py-3 sm:px-6">
+              <div className="flex items-center justify-between">
+                <ResponsiveModalTitle>
+                  Student Profiles PDF Preview
+                </ResponsiveModalTitle>
+                <button
+                  onClick={downloadFromPreview}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2",
+                    "text-sm font-semibold text-white transition-colors hover:bg-emerald-600",
+                  )}
                 >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 12,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 12,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Religion"
-              description="Spiritual background distribution with gender split"
-              className="lg:col-span-1"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  layout="vertical"
-                  data={(data?.religions ?? []).slice(0, 5)}
-                  margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    type="number"
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    width={100}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-          </div>
-        </TabsContent>
-
-        <TabsContent
-          value="academic"
-          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-        >
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <ChartCard
-              title="High School GWA"
-              description="Academic performance with gender split"
-              className="lg:col-span-2"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  data={data?.highSchoolGWA ?? []}
-                  margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[4, 4, 0, 0]}
-                    barSize={20}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Performance Brackets"
-              description="Secondary GWA with gender breakdown"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  layout="vertical"
-                  data={data?.highSchoolGWA ?? []}
-                  margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    type="number"
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    width={80}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-
-            <CityDistributionCard data={data?.cityAddress ?? []} />
-          </div>
-        </TabsContent>
-
-        <TabsContent
-          value="family"
-          className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-        >
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <ChartCard
-              title="Monthly Family Income"
-              description="Grouped by gender and income bracket"
-              className="lg:col-span-2"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  layout="vertical"
-                  data={data?.monthlyIncome ?? []}
-                  margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    type="number"
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    width={100}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={10}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={10}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={10}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Parent Marital Status"
-              description="Family structure indicators by gender"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[250px] w-full"
-              >
-                <BarChart
-                  layout="vertical"
-                  data={data?.parentsMaritalStatus ?? []}
-                  margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    type="number"
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    width={100}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Study Environment"
-              description="Quiet place to study (Yes/No) by gender"
-            >
-              <ChartContainer
-                config={genderSplitConfig}
-                className="aspect-auto h-[200px] w-full"
-              >
-                <BarChart
-                  layout="vertical"
-                  data={data?.quietStudyPlace ?? []}
-                  margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    type="number"
-                    hide
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    axisLine={false}
-                    tickLine={false}
-                    width={80}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Male"
-                    dataKey="maleCount"
-                    fill="var(--color-maleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Female"
-                    dataKey="femaleCount"
-                    fill="var(--color-femaleCount)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                  />
-                  <Bar
-                    isAnimationActive={false}
-                    name="Total"
-                    dataKey="total"
-                    fill="var(--color-total)"
-                    radius={[0, 4, 4, 0]}
-                    barSize={8}
-                    opacity={0.3}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </ChartCard>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+                  <Download size={16} />
+                  Download PDF
+                </button>
+              </div>
+            </ResponsiveModalHeader>
+            <div className="flex-1 overflow-hidden bg-muted/20">
+              {pdfUrl && (
+                <iframe
+                  src={`${pdfUrl}#toolbar=0`}
+                  className="h-full w-full rounded-b-lg border-0"
+                  title="PDF Preview"
+                />
+              )}
+            </div>
+          </ResponsiveModalContent>
+        </ResponsiveModal>
+      </div>
+    </>
   );
 }
 
@@ -819,15 +413,13 @@ const KPICard = React.memo(
         className={`shadow-premium overflow-hidden border-none bg-gradient-to-br ${gradient}`}
       >
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <CardTitle className="text-xs font-bold uppercase text-muted-foreground">
             {title}
           </CardTitle>
-          <div className="rounded-xl bg-background/80 p-2 shadow-sm">
-            {icon}
-          </div>
+          <div className="rounded-xl p-2 shadow-sm">{icon}</div>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-black">{value}</div>
+          <div className="text-3xl font-semibold">{value}</div>
           <p className="mt-1 text-[10px] font-medium text-muted-foreground">
             {subtitle}
           </p>
@@ -932,11 +524,11 @@ const CityDistributionCard = React.memo(({ data }: { data: any[] }) => {
             size="sm"
             onClick={() => setCityPage((p) => Math.max(0, p - 1))}
             disabled={cityPage === 0}
-            className="h-8 text-[10px] font-bold uppercase tracking-wider"
+            className="h-8 text-[10px] font-bold uppercase"
           >
             Previous
           </Button>
-          <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+          <div className="text-[10px] font-medium uppercase text-muted-foreground">
             Showing {cityPage * CITY_PAGE_SIZE + 1} -{" "}
             {Math.min((cityPage + 1) * CITY_PAGE_SIZE, data?.length || 0)} of{" "}
             {data?.length || 0}
@@ -946,7 +538,7 @@ const CityDistributionCard = React.memo(({ data }: { data: any[] }) => {
             size="sm"
             onClick={() => setCityPage((p) => p + 1)}
             disabled={(cityPage + 1) * CITY_PAGE_SIZE >= (data?.length || 0)}
-            className="h-8 text-[10px] font-bold uppercase tracking-wider"
+            className="h-8 text-[10px] font-bold uppercase"
           >
             Next
           </Button>
@@ -980,7 +572,7 @@ function StatSummaryCard({ title, data, className }: any) {
         />
         <InsightItem
           label="Family Position"
-          value={`${topOrdinal} Child`}
+          value={topOrdinal}
           icon={<Network className="h-4 w-4" />}
         />
       </div>
@@ -1007,7 +599,7 @@ function InsightItem({ label, value, icon }: any) {
     <div className="flex items-start gap-3 rounded-2xl border border-primary/10 bg-background p-4">
       <div className="rounded-lg bg-primary/10 p-2 text-primary">{icon}</div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-[10px] font-bold uppercase text-muted-foreground">
           {label}
         </p>
         <p className="mt-0.5 text-sm font-bold text-foreground">{value}</p>
@@ -1034,3 +626,52 @@ function AnalyticsSkeleton() {
     </div>
   );
 }
+
+const MiniBarChart = React.memo(
+  ({ title, data }: { title: string; data: any[] }) => {
+    return (
+      <div className="space-y-2">
+        <p className="text-[10px] font-bold uppercase text-muted-foreground">
+          {title}
+        </p>
+        <ChartContainer
+          config={genderSplitConfig}
+          className="aspect-auto h-[120px] w-full"
+        >
+          <BarChart
+            data={data}
+            margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="hsl(var(--border))"
+            />
+            <XAxis
+              dataKey="category"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }}
+            />
+            <YAxis hide />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar
+              isAnimationActive={false}
+              name="Male"
+              dataKey="maleCount"
+              fill="var(--color-maleCount)"
+              radius={[2, 2, 0, 0]}
+            />
+            <Bar
+              isAnimationActive={false}
+              name="Female"
+              dataKey="femaleCount"
+              fill="var(--color-femaleCount)"
+              radius={[2, 2, 0, 0]}
+            />
+          </BarChart>
+        </ChartContainer>
+      </div>
+    );
+  },
+);

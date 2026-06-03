@@ -8,8 +8,6 @@ import {
   Brain,
   User,
   Users,
-  Calendar,
-  ChevronDown,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,7 +17,7 @@ import {
   validateField,
 } from "@/services/validationSchema";
 import { healthValidationSchema } from "@/features/iir/config/healthValidationSchema";
-import { FormInput } from "@/components/form";
+import { FormInput, Radio, DatePicker } from "@/components/form";
 import { SectionContainer } from "./SectionContainer";
 
 interface FormErrors {
@@ -37,14 +35,17 @@ export const HealthSection = forwardRef<
     onChange: (path: string, value: any) => void;
     onFieldBlur?: (fieldPath: string) => void;
     shouldShowError?: (fieldPath: string) => boolean;
+    isEditMode?: boolean;
   }
 >(function HealthSection(
-  { health, onChange, onFieldBlur, shouldShowError },
+  { health, onChange, onFieldBlur, shouldShowError, isEditMode = false },
   ref,
 ) {
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const validate = (step?: number): { isValid: boolean; errors: FormErrors } => {
+  const validate = (
+    step?: number,
+  ): { isValid: boolean; errors: FormErrors } => {
     // Helper to map consultations by type for easy access in rules
     const _consultations = (health?.consultations || []).reduce(
       (acc: any, c: any) => {
@@ -206,6 +207,18 @@ export const HealthSection = forwardRef<
       yesValue: health?.healthRecord?.generalHealthHasProblem,
       detailsValue: health?.healthRecord?.generalHealthDetails || "",
     },
+    ...(isEditMode
+      ? [
+          {
+            label: "Mental / Emotional Health",
+            icon: Brain,
+            yesKey: "health.healthRecord.mentalEmotionalHasProblem",
+            detailsKey: "health.healthRecord.mentalEmotionalDetails",
+            yesValue: health?.healthRecord?.mentalEmotionalHasProblem,
+            detailsValue: health?.healthRecord?.mentalEmotionalDetails || "",
+          },
+        ]
+      : []),
   ];
 
   // Array of psychological consultation types
@@ -256,80 +269,65 @@ export const HealthSection = forwardRef<
             Do you have any existing or previous problems with:
           </p>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="flex flex-col gap-6">
             {physicalItems.map((item, idx) => (
               <div
                 key={idx}
                 className={cn(
-                  "bg-glass-bg/60 relative overflow-hidden rounded-[24px]",
-                  "border p-5 backdrop-blur-glass transition-all",
-                  "duration-300 sm:p-8",
-                  item.yesValue === true
-                    ? "border-primary/30 shadow-sm ring-1 ring-primary/10"
-                    : "border-glass-border/40 hover:bg-glass-bg/80 hover:border-primary/20",
+                  "flex flex-col gap-4 pb-6",
+                  "border-glass-border/20 border-b last:border-b-0",
                 )}
               >
-                <div className="mb-6 flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "flex h-12 w-12 items-center justify-center rounded-2xl",
-                      "transition-colors duration-300",
-                      item.yesValue === true
-                        ? "bg-primary text-white"
-                        : "bg-primary/10 text-primary",
-                    )}
-                  >
-                    <item.icon
-                      className="h-6 w-6"
-                      strokeWidth={2.5}
+                <div
+                  className={cn(
+                    "flex flex-col gap-3",
+                    "sm:flex-row sm:items-center sm:justify-between",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="h-5 w-5 shrink-0 text-primary" />
+                    <span className="font-semibold text-foreground">
+                      {item.label}
+                    </span>
+                  </div>
+                  <div className="w-full sm:w-auto">
+                    <Radio
+                      label=""
+                      name={item.yesKey}
+                      // required={isFieldRequired(
+                      //   healthValidationSchema,
+                      //   item.yesKey,
+                      // )}
+                      options={[
+                        { id: "yes", name: "Yes" },
+                        { id: "no", name: "No" },
+                      ]}
+                      value={
+                        item.yesValue === true
+                          ? "yes"
+                          : item.yesValue === false
+                            ? "no"
+                            : ""
+                      }
+                      onChange={(val) => {
+                        handleInputChange(item.yesKey, val === "yes");
+                      }}
+                      columns={2}
                     />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-neutral-900 dark:text-white">
-                      {item.label}
-                    </h4>
-                    {isFieldRequired(healthValidationSchema, item.yesKey) && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                        Required
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mb-6 grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Yes", value: true },
-                    { label: "No", value: false },
-                  ].map((opt) => (
-                    <button
-                      key={opt.label}
-                      type="button"
-                      onClick={() => handleInputChange(item.yesKey, opt.value)}
-                      className={cn(
-                        "relative flex h-12 items-center justify-center",
-                        "rounded-xl border text-sm font-bold transition-all",
-                        "duration-300",
-                        item.yesValue === opt.value
-                          ? "border-primary bg-primary text-white shadow-sm"
-                          : "bg-glass-bg/40 border-glass-border/20 text-muted-foreground hover:border-primary/30",
-                      )}
-                    >
-                      {item.yesValue === opt.value && (
-                        <Check
-                          size={16}
-                          className="animate-in zoom-in absolute left-4 duration-300"
-                          strokeWidth={3}
-                        />
-                      )}
-                      {opt.label}
-                    </button>
-                  ))}
                 </div>
 
                 {item.yesValue === true && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div
+                    className={cn(
+                      "pl-8 duration-300",
+                      "animate-in fade-in slide-in-from-top-2",
+                    )}
+                  >
                     <FormInput
                       label="Please specify details"
+                      type="textbox"
+                      maxChars={100}
                       placeholder="Type details here..."
                       value={item.detailsValue}
                       onChange={(val: string) =>
@@ -345,7 +343,12 @@ export const HealthSection = forwardRef<
                   </div>
                 )}
                 {getFieldError(item.yesKey) && (
-                  <p className="mt-2 flex items-center gap-1 text-[11px] font-bold text-primary">
+                  <p
+                    className={cn(
+                      "mt-2 flex items-center gap-1 pl-8",
+                      "text-[11px] font-bold text-primary",
+                    )}
+                  >
                     <span className="h-1 w-1 rounded-full bg-primary" />
                     {getFieldError(item.yesKey)}
                   </p>
@@ -354,8 +357,6 @@ export const HealthSection = forwardRef<
             ))}
           </div>
         </section>
-
-        <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         {/* B. Psychological */}
         <section>
@@ -369,81 +370,68 @@ export const HealthSection = forwardRef<
             Have you ever consulted a:
           </p>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="flex flex-col gap-6">
             {consultationTypes.map((type, idx) => (
               <div
                 key={idx}
                 className={cn(
-                  "bg-glass-bg/60 relative overflow-hidden rounded-[24px]",
-                  "border p-5 backdrop-blur-glass transition-all",
-                  "duration-300 sm:p-8",
-                  type.consulted === true
-                    ? "border-primary/30 shadow-sm ring-1 ring-primary/10"
-                    : "border-glass-border/40 hover:bg-glass-bg/80 hover:border-primary/20",
+                  "flex flex-col gap-4 pb-6",
+                  "border-glass-border/20 border-b last:border-b-0",
                 )}
               >
-                <div className="mb-6 flex flex-col items-center text-center">
-                  <div
-                    className={cn(
-                      "mb-4 flex h-16 w-16 items-center justify-center",
-                      "rounded-[1.25rem] transition-all duration-300",
-                      type.consulted === true
-                        ? "scale-110 bg-primary text-white"
-                        : "bg-primary/10 text-primary",
-                    )}
-                  >
-                    <type.icon
-                      className="h-8 w-8"
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                  <h4 className="text-lg font-bold text-neutral-900 dark:text-white">
-                    {type.label}
-                  </h4>
-                  {isFieldRequired(
-                    healthValidationSchema,
-                    `_consultations.${type.type}.hasConsulted`,
-                  ) && (
-                    <span className="mt-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                      Required
-                    </span>
+                <div
+                  className={cn(
+                    "flex flex-col gap-3",
+                    "sm:flex-row sm:items-center sm:justify-between",
                   )}
-                </div>
-
-                <div className="mb-6 grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Yes", value: true },
-                    { label: "No", value: false },
-                  ].map((opt) => (
-                    <button
-                      key={opt.label}
-                      type="button"
-                      onClick={() =>
+                >
+                  <div className="flex items-center gap-3">
+                    <type.icon className="h-5 w-5 shrink-0 text-primary" />
+                    <span className="font-semibold text-foreground">
+                      {type.label}
+                    </span>
+                  </div>
+                  <div className="w-full sm:w-auto">
+                    <Radio
+                      label=""
+                      name={type.type}
+                      // required={isFieldRequired(
+                      //   healthValidationSchema,
+                      //   `_consultations.${type.type}.hasConsulted`,
+                      // )}
+                      options={[
+                        { id: "yes", name: "Yes" },
+                        { id: "no", name: "No" },
+                      ]}
+                      value={
+                        type.consulted === true
+                          ? "yes"
+                          : type.consulted === false
+                            ? "no"
+                            : ""
+                      }
+                      onChange={(val) => {
                         handleConsultationChange(
                           type.type,
                           "consulted",
-                          opt.value,
-                        )
-                      }
-                      className={cn(
-                        "relative flex h-11 items-center justify-center",
-                        "rounded-xl border text-xs font-bold transition-all",
-                        "duration-300",
-                        type.consulted === opt.value
-                          ? "border-primary bg-primary text-white shadow-sm"
-                          : "bg-glass-bg/40 border-glass-border/20 text-muted-foreground hover:border-primary/30",
-                      )}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+                          val === "yes",
+                        );
+                      }}
+                      columns={2}
+                    />
+                  </div>
                 </div>
 
                 {type.consulted === true && (
-                  <div className="animate-in fade-in slide-in-from-top-2 space-y-4 duration-300">
-                    <FormInput
+                  <div
+                    className={cn(
+                      "pl-8 duration-300",
+                      "animate-in fade-in slide-in-from-top-2",
+                      "grid grid-cols-1 gap-4 sm:grid-cols-2",
+                    )}
+                  >
+                    <DatePicker
                       label="When"
-                      type="date"
                       value={type.when}
                       onChange={(val: string) =>
                         handleConsultationChange(type.type, "whenDate", val)
@@ -477,7 +465,7 @@ export const HealthSection = forwardRef<
                 {getFieldError(`_consultations.${type.type}.hasConsulted`) && (
                   <p
                     className={cn(
-                      "mt-2 flex items-center justify-center gap-1",
+                      "mt-2 flex items-center gap-1 pl-8",
                       "text-[11px] font-bold text-primary",
                     )}
                   >

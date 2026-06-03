@@ -36,6 +36,8 @@ export const API_ROUTES = Object.freeze({
       categories: "/slips/lookups/categories",
     }),
     updateStatus: (id: string) => `/slips/id/${id}/status`,
+    claimTicket: "/slips/tickets/claim",
+    ticketByCode: (code: string) => `/slips/tickets/${code}`,
   }),
 
   /**
@@ -95,6 +97,8 @@ export const API_ROUTES = Object.freeze({
   analytics: Object.freeze({
     all: "/analytics",
     reports: "/analytics/reports",
+    iirReport: "/analytics/reports/iir",
+    iirReportExport: "/analytics/reports/iir/export",
     adminDashboard: "/analytics/admin-dashboard",
   }),
 
@@ -118,6 +122,7 @@ export const API_ROUTES = Object.freeze({
     lookups: Object.freeze({
       courses: "/students/lookups/courses",
       genders: "/students/lookups/genders",
+      enrollmentYears: "/students/lookups/enrollment-years",
       religions: "/students/lookups/religions",
       parentalStatusTypes: "/students/lookups/parental-status-types",
       enrollmentReasons: "/students/lookups/enrollment-reasons",
@@ -129,6 +134,8 @@ export const API_ROUTES = Object.freeze({
       studentRelationshipTypes: "/students/lookups/student-relationship-types",
       activityOptions: "/students/lookups/activity-options",
       studentStatuses: "/students/lookups/student-statuses",
+      educationalLevels: "/students/lookups/educational-levels",
+      educationalAttainments: "/students/lookups/educational-attainments",
     }),
     inventory: Object.freeze({
       all: "/students/inventory/records",
@@ -193,6 +200,7 @@ export const API_ROUTES = Object.freeze({
       revoke: (id: string | number) => `/m2m-clients/${id}`,
       rotateSecret: (id: string | number) => `/m2m-clients/${id}/secret`,
       verify: (id: string | number) => `/m2m-clients/${id}/verify`,
+      reject: (id: string | number) => `/m2m-clients/${id}/reject`,
     }),
     users: Object.freeze({
       list: "/users",
@@ -203,6 +211,8 @@ export const API_ROUTES = Object.freeze({
       revokeSession: (userId: string, sessionId: string) =>
         `/users/${userId}/sessions/${sessionId}`,
       activity: (id: string) => `/users/${id}/activity`,
+      whitelist: "/users/whitelist",
+      removeWhitelist: "/users/whitelist/remove",
       updateRoles: "/users/update-roles",
     }),
     analytics: Object.freeze({
@@ -215,7 +225,16 @@ export const API_ROUTES = Object.freeze({
       audit: "/logs/audit",
       stats: "/logs/stats",
       activity: "/logs/activity",
+      traceTracks: (traceId: string) => `/logs/trace/${traceId}`,
+      detail: (id: string) => `/logs/${id}`,
     }),
+  }),
+
+  /**
+   * Academic related endpoints
+   */
+  academic: Object.freeze({
+    settings: "/students/settings/academic",
   }),
   /**
    * Developer portal related endpoints
@@ -228,7 +247,10 @@ export const API_ROUTES = Object.freeze({
    */
   notifications: Object.freeze({
     me: "/notifications/me",
-    stream: "/notifications/stream",
+    stream: "/notifications/me/stream",
     markAsRead: (id: string) => `/notifications/${id}/read`,
+    push: Object.freeze({
+      subscribe: "/notifications/push/subscribe",
+    }),
   }),
 });

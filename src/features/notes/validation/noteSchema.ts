@@ -6,6 +6,7 @@ import { z } from "zod";
  */
 export const significantNoteSchema = z.object({
   appointmentId: z.string().optional(),
+  admissionSlipId: z.string().optional(),
   note: z
     .string()
     .min(1, "Note description is required")

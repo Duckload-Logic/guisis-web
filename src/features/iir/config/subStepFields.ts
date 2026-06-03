@@ -18,6 +18,7 @@ export const PERSONAL_SUBSTEP_FIELDS: Record<number, string[]> = {
     "student.personalInfo.gender",
     "student.personalInfo.civilStatus",
     "student.personalInfo.religion",
+    "student.personalInfo.otherReligionText",
     "student.personalInfo.dateOfBirth",
     "student.personalInfo.placeOfBirth",
     "student.personalInfo.highSchoolGWA",
@@ -50,6 +51,8 @@ export const PERSONAL_SUBSTEP_FIELDS: Record<number, string[]> = {
     "student.personalInfo.isEmployed",
     "student.personalInfo.employerName",
     "student.personalInfo.employerAddress",
+    "student.personalInfo.employerContactNumber",
+
   ],
 };
 
@@ -68,7 +71,7 @@ export const FAMILY_SUBSTEP_FIELDS: Record<number, string[]> = {
     "family.relatedPersons.0.middleName",
     "family.relatedPersons.0.lastName",
     "family.relatedPersons.0.dateOfBirth",
-    "family.relatedPersons.0.educationalLevel",
+    "family.relatedPersons.0.educationalAttainment",
     "family.relatedPersons.0.occupation",
   ],
   3: [
@@ -77,7 +80,7 @@ export const FAMILY_SUBSTEP_FIELDS: Record<number, string[]> = {
     "family.relatedPersons.1.middleName",
     "family.relatedPersons.1.lastName",
     "family.relatedPersons.1.dateOfBirth",
-    "family.relatedPersons.1.educationalLevel",
+    "family.relatedPersons.1.educationalAttainment",
     "family.relatedPersons.1.occupation",
   ],
   4: [
@@ -88,7 +91,7 @@ export const FAMILY_SUBSTEP_FIELDS: Record<number, string[]> = {
     "family.relatedPersons.2.lastName",
     "family.relatedPersons.2.dateOfBirth",
     "family.relatedPersons.2.occupation",
-    "family.relatedPersons.2.educationalLevel",
+    "family.relatedPersons.2.educationalAttainment",
     "family.background.brothers",
     "family.background.sisters",
     "family.background.employedSiblings",

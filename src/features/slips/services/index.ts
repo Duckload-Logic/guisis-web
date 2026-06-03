@@ -5,12 +5,7 @@
 
 import { apiClient, AxiosConfigWithMeta } from "@/lib/api";
 import { API_ROUTES } from "@/config/apiRoutes";
-import type {
-  Slip,
-  CreateSlipRequest,
-  PaginatedSlipsResponse,
-  QueryParams,
-} from "../types";
+import type { Slip, PaginatedSlipsResponse, QueryParams } from "../types";
 
 /**
  * Get slip statistics
@@ -29,9 +24,7 @@ export async function GetSlipStats(
     });
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipStats";
-    const stepName = config?.stepName || "Fetch Stats";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -49,9 +42,7 @@ export async function GetSlipStatuses(config?: AxiosConfigWithMeta) {
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipStatuses";
-    const stepName = config?.stepName || "Fetch Statuses";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -69,9 +60,7 @@ export async function GetSlipCategories(config?: AxiosConfigWithMeta) {
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipCategories";
-    const stepName = config?.stepName || "Fetch Categories";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -96,16 +85,16 @@ export async function GetMySlips(
   } catch (error: any) {
     const handlerName = config?.handlerName || "GetMySlips";
 
-    if (error.response?.status === 403 && error.response.data?.error?.includes("IIR")) {
+    if (
+      error.response?.status === 403 &&
+      error.response.data?.error?.includes("IIR")
+    ) {
       const stepName = config?.stepName || "Check IIR Profile";
-      console.error(
-        `[${handlerName}] {${stepName}}: ${error.response.data?.error}`,
-      );
       throw new Error("Please complete your IIR profile");
     }
 
     const stepName = config?.stepName || "Fetch My Slips";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -127,9 +116,7 @@ export async function GetUrgentSlips(
     });
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetUrgentSlips";
-    const stepName = config?.stepName || "Fetch Urgent Slips";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -151,9 +138,7 @@ export async function GetAllSlips(
     });
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetAllSlips";
-    const stepName = config?.stepName || "Fetch All Slips";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -169,9 +154,7 @@ export async function GetSlipById(id: string, config?: AxiosConfigWithMeta) {
     const response = await apiClient.get(API_ROUTES.slips.byId(id), config);
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipById";
-    const stepName = config?.stepName || "Fetch Slip";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -193,9 +176,7 @@ export async function GetSlipAttachments(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipAttachments";
-    const stepName = config?.stepName || "Fetch Attachments";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -212,9 +193,6 @@ export async function PostSlip(
   config?: AxiosConfigWithMeta,
 ): Promise<Slip> {
   try {
-    const { ["Content-Type"]: _contentType, ...headers } =
-      config?.headers || {};
-
     const response = await apiClient.post(API_ROUTES.slips.all, data, {
       ...config,
       headers: {
@@ -228,14 +206,12 @@ export async function PostSlip(
 
     if (error.response?.status === 403) {
       const stepName = config?.stepName || "Check IIR Profile";
-      console.error(
-        `[${handlerName}] {${stepName}}: ${error.response.data?.error}`,
-      );
+
       throw new Error("Please complete your IIR profile");
     }
 
     const stepName = config?.stepName || "Submit Slip";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -262,9 +238,7 @@ export async function PatchSlip(
     });
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "PatchSlip";
-    const stepName = config?.stepName || "Update Slip";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
@@ -299,9 +273,52 @@ export async function PatchSlipStatus(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "PatchSlipStatus";
-    const stepName = config?.stepName || "Update Status";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
+    throw error;
+  }
+}
+
+/**
+ * Claim/Verify a ticket on-site
+ * @param ticketCode - The ticket code to verify
+ * @param config - Axios config with logging metadata
+ * @returns Success message
+ */
+export async function ClaimTicket(
+  ticketCode: string,
+  config?: AxiosConfigWithMeta,
+) {
+  try {
+    const response = await apiClient.post(
+      API_ROUTES.slips.claimTicket,
+      { ticketCode },
+      config,
+    );
+    return response.data;
+  } catch (error: any) {
+
+    throw error;
+  }
+}
+
+/**
+ * Get slip details by ticket code (Admin only)
+ * @param code - Ticket code
+ * @param config - Axios config
+ * @returns Slip details
+ */
+export async function GetTicketDetails(
+  code: string,
+  config?: AxiosConfigWithMeta,
+): Promise<Slip> {
+  try {
+    const response = await apiClient.get(
+      API_ROUTES.slips.ticketByCode(code),
+      config,
+    );
+    return response.data;
+  } catch (error: any) {
+
     throw error;
   }
 }
@@ -328,17 +345,11 @@ export async function GetSlipAttachmentDownload(
     );
     return response.data;
   } catch (error: any) {
-    const handlerName = config?.handlerName || "GetSlipAttachmentDownload";
-    const stepName = config?.stepName || "Download Attachment";
-    console.error(`[${handlerName}] {${stepName}}: ${error.message}`);
+
     throw error;
   }
 }
 
-/**
- * Legacy service object for backward compatibility
- * Gradually migrate to direct function imports
- */
 export const slipService = {
   GetSlipStats,
   GetSlipStatuses,
@@ -349,6 +360,9 @@ export const slipService = {
   GetSlipById,
   GetSlipAttachments,
   PostSlip,
+  PatchSlip,
   PatchSlipStatus,
+  ClaimTicket,
+  GetTicketDetails,
   GetSlipAttachmentDownload,
 };

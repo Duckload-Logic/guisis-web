@@ -25,7 +25,7 @@ export function MetricCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+        "overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
         className,
       )}
     >

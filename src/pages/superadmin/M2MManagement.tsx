@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Key,
   Plus,
   Trash2,
   Copy,
@@ -13,7 +12,6 @@ import {
   Ban,
   RefreshCw,
   Fingerprint,
-  Info,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -41,66 +40,42 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   useM2MClients,
-  useCreateM2MClient,
   useRevokeM2MClient,
   useRotateM2MSecret,
   useVerifyM2MClient,
+  useRejectM2MClient,
 } from "@/features/system-admin/hooks";
 import type { M2MClient } from "@/features/system-admin/types";
-import { Checkbox } from "@/components/form";
+import { Checkbox, FormInput } from "@/components/form";
+import { formatDate } from "@/utils/dateTime";
 
 export default function M2MManagement() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<M2MClient | null>(null);
   const [rotateTarget, setRotateTarget] = useState<M2MClient | null>(null);
-
-  const [newClientName, setNewClientName] = useState("");
-  const [newClientDesc, setNewClientDesc] = useState("");
-  const [newClientScopes, setNewClientScopes] = useState("");
-  const [newClientExpiry, setNewClientExpiry] = useState("");
+  const [verifyTarget, setVerifyTarget] = useState<M2MClient | null>(null);
+  const [verifyPersonalInfo, setVerifyPersonalInfo] = useState(false);
 
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
 
   const { data: clients = [], isLoading } = useM2MClients(includeRevoked);
-  const createMutation = useCreateM2MClient();
   const revokeMutation = useRevokeM2MClient();
   const rotateMutation = useRotateM2MSecret();
   const verifyMutation = useVerifyM2MClient();
+  const rejectMutation = useRejectM2MClient();
 
   const isPageLoading =
     isLoading ||
-    createMutation.isPending ||
     revokeMutation.isPending ||
     rotateMutation.isPending ||
-    verifyMutation.isPending;
+    verifyMutation.isPending ||
+    rejectMutation.isPending;
 
   const activeClients = clients?.filter((c) => c.isActive) || [];
   const revokedClients = clients?.filter((c) => !c.isActive) || [];
-
-  const handleCreate = async () => {
-    if (!newClientName.trim() || !newClientDesc.trim()) return;
-
-    const scopes = newClientScopes
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    const result = await createMutation.mutateAsync({
-      clientName: newClientName.trim(),
-      clientDescription: newClientDesc.trim(),
-      scopes: scopes.length > 0 ? scopes : undefined,
-      expiresAt: newClientExpiry || undefined,
-    });
-
-    setCreatedSecret(result.clientSecret);
-    setNewClientName("");
-    setNewClientDesc("");
-    setNewClientScopes("");
-    setNewClientExpiry("");
-  };
 
   const handleRevoke = async () => {
     if (!revokeTarget) return;
@@ -116,8 +91,12 @@ export default function M2MManagement() {
     setIsCreateOpen(true); // Re-use the "secret reveal" modal logic
   };
 
-  const handleVerify = async (id: number) => {
-    await verifyMutation.mutateAsync(id);
+  const handleVerify = async (id: number, hasPersonalInfoAccess: boolean) => {
+    await verifyMutation.mutateAsync({ id, hasPersonalInfoAccess });
+  };
+
+  const handleReject = async (id: number) => {
+    await rejectMutation.mutateAsync(id);
   };
 
   const handleCopySecret = async () => {
@@ -129,16 +108,6 @@ export default function M2MManagement() {
     } catch (error) {
       console.error("Failed to copy client secret:", error);
     }
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const statCards = [
@@ -170,16 +139,8 @@ export default function M2MManagement() {
     badgeText: "Infrastructure Access Control",
     badgeIcon: <Sparkles className="h-3.5 w-3.5" />,
     description:
-      "Manage Machine-to-Machine clients for integration, automation, and infrastructure services.",
-    headerActions: (
-      <Button
-        onClick={() => setIsCreateOpen(true)}
-        className="h-10 gap-2 rounded-xl px-4 shadow-sm"
-      >
-        <Plus size={16} />
-        Register Client
-      </Button>
-    ),
+      "Manage Machine-to-Machine clients for integration, " +
+      "automation, and infrastructure services.",
   });
 
   return (
@@ -191,7 +152,7 @@ export default function M2MManagement() {
             return (
               <Card
                 key={card.label}
-                className="rounded-[18px] border border-white/20 bg-white/45 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+                className="rounded-xl border-glass-border bg-glass-bg shadow-md"
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
@@ -216,7 +177,7 @@ export default function M2MManagement() {
           })}
         </section>
 
-        <Card className="overflow-hidden rounded-[20px] border border-white/20 bg-white/45 shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
+        <Card className="overflow-hidden rounded-xl border-glass-border bg-glass-bg shadow-md">
           <CardHeader className="border-b border-white/20 pb-4 dark:border-white/10">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -243,24 +204,28 @@ export default function M2MManagement() {
 
           <CardContent className="p-0">
             {clients?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/30 bg-white/60 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
+              <div
+                className={
+                  "flex flex-col items-center justify-center " +
+                  "px-6 py-14 text-center"
+                }
+              >
+                <div
+                  className={
+                    "mb-4 flex h-14 w-14 items-center justify-center " +
+                    "rounded-2xl border border-white/30 bg-white/60" +
+                    "backdrop-blur-md dark:border-white/10" +
+                    "dark:bg-white/[0.05]"
+                  }
+                >
                   <Fingerprint className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <p className="text-lg font-semibold text-foreground">
                   No M2M clients registered
                 </p>
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                  Register your first machine client to allow external system
-                  integrations.
+                  No machine clients have been registered in the system yet.
                 </p>
-                <Button
-                  onClick={() => setIsCreateOpen(true)}
-                  className="mt-5 h-10 rounded-xl px-4"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Register Client
-                </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -311,7 +276,11 @@ export default function M2MManagement() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             <code className="rounded-lg border border-white/20 bg-white/55 px-2.5 py-1 font-mono text-[11px] text-foreground dark:border-white/10 dark:bg-white/[0.04]">
-                              {client.clientId}
+                              {client.isVerified ? (
+                                client.clientId
+                              ) : (
+                                <span className="italic">••••••••••••</span>
+                              )}
                             </code>
                             <Button
                               variant="ghost"
@@ -320,6 +289,7 @@ export default function M2MManagement() {
                               onClick={() => {
                                 navigator.clipboard.writeText(client.clientId);
                               }}
+                              disabled={!client.isVerified}
                             >
                               <Copy size={12} />
                             </Button>
@@ -329,6 +299,7 @@ export default function M2MManagement() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             <Badge
+                              variant="outline"
                               className={
                                 client.isActive
                                   ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
@@ -338,8 +309,29 @@ export default function M2MManagement() {
                               {client.isActive ? "Active" : "Revoked"}
                             </Badge>
                             {client.isVerified && (
-                              <Badge className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                              <Badge
+                                variant="outline"
+                                className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                              >
                                 Verified
+                              </Badge>
+                            )}
+                            {client.isVerified && (
+                              <Badge
+                                variant="outline"
+                                className={
+                                  client.hasPersonalInfoAccess
+                                    ? "border-purple-500/20 " +
+                                      "bg-purple-500/10 text-purple-700" +
+                                      "dark:text-purple-400"
+                                    : "border-slate-500/20 " +
+                                      "bg-slate-500/10 text-slate-700" +
+                                      "dark:text-slate-400"
+                                }
+                              >
+                                {client.hasPersonalInfoAccess
+                                  ? "PII: Allowed"
+                                  : "PII: Denied"}
                               </Badge>
                             )}
                           </div>
@@ -379,42 +371,95 @@ export default function M2MManagement() {
                           <div className="flex justify-end gap-1">
                             {client.isActive && (
                               <>
-                                {!client.isVerified && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleVerify(client.id)}
-                                    className="h-8 w-8 rounded-xl p-0 text-blue-600 hover:bg-blue-600/10 hover:text-blue-600"
-                                    title="Verify Client"
-                                    disabled={verifyMutation.isPending}
-                                  >
-                                    <Check
-                                      size={14}
-                                      strokeWidth={3}
-                                    />
-                                  </Button>
+                                {!client.isVerified ? (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
+                                      className={
+                                        "h-8 w-8 rounded-xl p-0 " +
+                                        "text-blue-600" +
+                                        "hover:bg-blue-600/10" +
+                                        "hover:text-blue-600"
+                                      }
+                                      title="Verify Client"
+                                      disabled={verifyMutation.isPending}
+                                    >
+                                      <Check
+                                        size={14}
+                                        strokeWidth={3}
+                                      />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleReject(client.id)}
+                                      className={
+                                        "h-8 w-8 rounded-xl p-0 " +
+                                        "text-destructive" +
+                                        "hover:bg-destructive/10" +
+                                        "hover:text-destructive"
+                                      }
+                                      title="Reject Client"
+                                      disabled={rejectMutation.isPending}
+                                    >
+                                      <Ban size={14} />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
+                                      className={
+                                        "h-8 w-8 rounded-xl p-0 " +
+                                        "text-purple-600" +
+                                        "hover:bg-purple-600/10"
+                                      }
+                                      title="Manage Personal Info Access"
+                                    >
+                                      <ShieldCheck size={14} />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setRotateTarget(client)}
+                                      className="h-8 w-8 rounded-xl p-0"
+                                      title="Rotate Client Secret"
+                                    >
+                                      <RefreshCw
+                                        size={14}
+                                        className={"text-muted-foreground"}
+                                      />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setRevokeTarget(client)}
+                                      className={
+                                        "h-8 w-8 rounded-xl p-0 " +
+                                        "text-destructive" +
+                                        "hover:bg-destructive/10" +
+                                        "hover:text-destructive"
+                                      }
+                                      title="Revoke Client"
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </>
                                 )}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setRotateTarget(client)}
-                                  className="h-8 w-8 rounded-xl p-0"
-                                  title="Rotate Client Secret"
-                                >
-                                  <RefreshCw
-                                    size={14}
-                                    className="text-muted-foreground"
-                                  />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setRevokeTarget(client)}
-                                  className="h-8 w-8 rounded-xl p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                  title="Revoke Client"
-                                >
-                                  <Trash2 size={14} />
-                                </Button>
                               </>
                             )}
                           </div>
@@ -439,23 +484,29 @@ export default function M2MManagement() {
             }
           }}
         >
-          <DialogContent className="border-white/20 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/90 sm:max-w-lg">
+          <DialogContent className="backdrop-blur-2xl sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>
-                {createdSecret ? "Client Secret Issued" : "Register M2M Client"}
-              </DialogTitle>
+              <DialogTitle>Client Secret Issued</DialogTitle>
               <DialogDescription>
-                {createdSecret
-                  ? "Store this secret securely — it will never be shown again."
-                  : "M2M clients use Client ID and Secret to authenticate services."}
+                Store this secret securely — it will never be shown again.
               </DialogDescription>
             </DialogHeader>
 
-            {createdSecret ? (
+            {createdSecret && (
               <div className="space-y-4">
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+                <div
+                  className={
+                    "rounded-xl border border-amber-500/20 " +
+                    "bg-amber-500/10 p-4"
+                  }
+                >
                   <div className="flex items-start gap-2">
-                    <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                    <AlertTriangle
+                      className={
+                        "mt-0.5 h-5 w-5 flex-shrink-0 " +
+                        "text-amber-600 dark:text-amber-400"
+                      }
+                    />
                     <p className="text-sm text-amber-800 dark:text-amber-200">
                       Copy this secret now. You will not be able to retrieve it
                       later. If you lose it, you must rotate the secret.
@@ -464,11 +515,23 @@ export default function M2MManagement() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <Label className="text-[10px] uppercase text-muted-foreground">
                     Client Secret
                   </Label>
-                  <div className="flex min-w-0 items-center gap-2">
-                    <code className="flex min-w-0 flex-1 break-all rounded-xl border border-white/20 bg-white/60 p-3 font-mono text-xs dark:border-white/10 dark:bg-white/[0.04]">
+                  <div
+                    className={
+                      "grid w-full grid-cols-[1fr_auto_auto] " +
+                      "items-center gap-2"
+                    }
+                  >
+                    <code
+                      className={
+                        "block overflow-x-auto whitespace-nowrap " +
+                        "rounded-xl border border-white/20" +
+                        "bg-white/60 p-3 font-mono text-xs" +
+                        "dark:border-white/10 dark:bg-white/[0.04]"
+                      }
+                    >
                       {showSecret ? createdSecret : "•".repeat(48)}
                     </code>
 
@@ -499,91 +562,19 @@ export default function M2MManagement() {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name</Label>
-                  <Input
-                    id="clientName"
-                    placeholder="e.g., Billing Service"
-                    value={newClientName}
-                    onChange={(e) => setNewClientName(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="clientDesc">Client Description</Label>
-                  <Input
-                    id="clientDesc"
-                    placeholder="Briefly describe what this client is for"
-                    value={newClientDesc}
-                    onChange={(e) => setNewClientDesc(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="clientScopes">
-                    Scopes{" "}
-                    <span className="text-[10px] font-normal text-muted-foreground">
-                      (comma-separated, optional)
-                    </span>
-                  </Label>
-                  <Input
-                    id="clientScopes"
-                    placeholder="e.g., read:reports, write:logs"
-                    value={newClientScopes}
-                    onChange={(e) => setNewClientScopes(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="clientExpiry">
-                    Expiration Date{" "}
-                    <span className="text-[10px] font-normal text-muted-foreground">
-                      (optional)
-                    </span>
-                  </Label>
-                  <Input
-                    id="clientExpiry"
-                    type="datetime-local"
-                    value={newClientExpiry}
-                    onChange={(e) => setNewClientExpiry(e.target.value)}
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
             )}
 
             <DialogFooter>
-              {createdSecret ? (
-                <Button
-                  onClick={() => {
-                    setIsCreateOpen(false);
-                    setCreatedSecret(null);
-                    setShowSecret(false);
-                  }}
-                  className="rounded-xl"
-                >
-                  Done
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleCreate}
-                  disabled={
-                    !newClientName.trim() ||
-                    !newClientDesc.trim() ||
-                    createMutation.isPending
-                  }
-                  className="rounded-xl"
-                >
-                  {createMutation.isPending
-                    ? "Registering..."
-                    : "Register Client"}
-                </Button>
-              )}
+              <Button
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setCreatedSecret(null);
+                  setShowSecret(false);
+                }}
+                className="rounded-xl"
+              >
+                Done
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -593,7 +584,7 @@ export default function M2MManagement() {
           open={!!revokeTarget}
           onOpenChange={(open) => !open && setRevokeTarget(null)}
         >
-          <AlertDialogContent className="dark:bg-neutral-900/92 border-white/20 bg-white/85 backdrop-blur-2xl dark:border-white/10">
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Revoke M2M Client</AlertDialogTitle>
               <AlertDialogDescription>
@@ -622,7 +613,7 @@ export default function M2MManagement() {
           open={!!rotateTarget}
           onOpenChange={(open) => !open && setRotateTarget(null)}
         >
-          <AlertDialogContent className="dark:bg-neutral-900/92 border-white/20 bg-white/85 backdrop-blur-2xl dark:border-white/10 sm:max-w-md">
+          <AlertDialogContent className="backdrop-blur-2xl dark:border-white/10 sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <RefreshCw
@@ -651,6 +642,67 @@ export default function M2MManagement() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Verify M2M Client Modal */}
+        <Dialog
+          open={!!verifyTarget}
+          onOpenChange={(open) => {
+            if (!open) {
+              setVerifyTarget(null);
+            }
+          }}
+        >
+          <DialogContent className="backdrop-blur-2xl sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Verify M2M Client</DialogTitle>
+              <DialogDescription>
+                Confirm verification for client &quot;
+                {verifyTarget?.clientName}&quot;.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div
+                className={
+                  "flex items-center justify-between " +
+                  "rounded-xl border border-border bg-muted/20 p-4"
+                }
+              >
+                <div className="space-y-0.5">
+                  <label className="text-sm font-bold text-foreground">
+                    Grant Student Personal Info Access
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Allow access to addresses, contacts, and student profiles.
+                  </p>
+                </div>
+                <Switch
+                  checked={verifyPersonalInfo}
+                  onCheckedChange={setVerifyPersonalInfo}
+                  className="min-w-1/2"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => setVerifyTarget(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!verifyTarget) return;
+                  await handleVerify(verifyTarget.id, verifyPersonalInfo);
+                  setVerifyTarget(null);
+                }}
+              >
+                Verify & Grant Access
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

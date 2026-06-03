@@ -16,6 +16,7 @@ export {
   useSubmitSlip,
   useUpdateSlipStatus,
   useUpdateSlip,
+  useClaimTicket,
 } from "./useSlipMutations";
 
 // Attachment hooks

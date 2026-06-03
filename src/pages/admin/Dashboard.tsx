@@ -2,22 +2,16 @@ import {
   Calendar,
   Users,
   FileText,
-  Clock,
   MoreHorizontal,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { useAdminDashboard } from "@/features/analytics/hooks";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -25,21 +19,40 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import {
-  format12HourTime,
-  toISODateString,
-} from "@/features/appointments/utils";
 import { usePageMetadata } from "@/context";
 import { DashboardMetrics } from "@/features/counseling/components/DashboardMetrics";
 import { SlipStatusTracker } from "@/features/counseling/components/SlipStatusTracker";
-import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
+import {
+  useGetSlipStats,
+  useGetUrgentSlips,
+} from "@/features/slips/hooks/useSlips";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { toISODateString, format12HourTime } from "@/utils";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const todayStr = toISODateString(new Date());
+
+  const { data: settings } = useQuery({
+    queryKey: ["counselor", "academicSettings"],
+    queryFn: GetAcademicSettings,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const isSettingsOutdated = useMemo(() => {
+    if (!settings) return false;
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    if (settings.currentYearEnd < currentYear) {
+      return true;
+    }
+    if (currentMonth >= 8 && settings.currentYearStart < currentYear) {
+      return true;
+    }
+    return false;
+  }, [settings]);
 
   const { data: appointmentData, isLoading: isAppointmentsLoading } =
     useAppointments({
@@ -53,6 +66,7 @@ export default function Dashboard() {
   const [showDailyTip, setShowDailyTip] = useState(false);
 
   const { data: slipStats, isLoading: isSlipsLoading } = useGetSlipStats();
+  const { data: urgentSlips } = useGetUrgentSlips({ pageSize: 1 });
   const { data: adminAnalytics, isLoading: isAnalyticsLoading } =
     useAdminDashboard();
 
@@ -145,6 +159,59 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 pb-10">
+      {/* Outdated Academic Settings Warning */}
+      {isSettingsOutdated && (
+        <div
+          className={cn(
+            "animate-in fade-in slide-in-from-top-4 relative",
+            "overflow-hidden rounded-3xl border border-red-500/20",
+            "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
+            "backdrop-blur-md duration-700",
+          )}
+        >
+          <div className="flex items-start gap-5">
+            <div
+              className={cn(
+                "rounded-2xl bg-red-500 p-3 text-white shadow-lg",
+                "shadow-red-500/20",
+              )}
+            >
+              <AlertTriangle size={24} />
+            </div>
+            <div className="flex-1 pr-10">
+              <h4
+                className={cn(
+                  "mb-1 flex items-center gap-2 text-sm font-bold",
+                  "text-red-950 dark:text-red-100",
+                )}
+              >
+                Academic Year Out of Date
+              </h4>
+              <p
+                className={cn(
+                  "text-sm font-medium leading-relaxed",
+                  "text-red-900/80 dark:text-red-200/80",
+                )}
+              >
+                The active academic year ({settings?.currentYearStart}–
+                {settings?.currentYearEnd}) appears to be outdated. Please
+                update the active term and school year configuration.
+              </p>
+              <button
+                onClick={() => navigate("/admin/academic-settings")}
+                className={cn(
+                  "mt-3 rounded-xl bg-red-500 px-4 py-2 text-xs font-bold",
+                  "text-white transition-all hover:bg-red-600",
+                  "active:scale-[.98]",
+                )}
+              >
+                Configure Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Daily Tip Alert */}
       {showDailyTip && (
         <div
@@ -188,7 +255,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <DashboardMetrics metrics={metrics} />
         {/* Monthly Visitors Analytics */}
-        <Card className="overflow-hidden shadow-lg backdrop-blur-md">
+        <Card className="overflow-hidden shadow-md backdrop-blur-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold">
               Monthly Visitors
@@ -196,7 +263,10 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="pb-4 pt-4">
             <div className="h-48 w-full">
-              <ChartContainer config={visitorConfig}>
+              <ChartContainer
+                config={visitorConfig}
+                className="aspect-auto h-full w-full"
+              >
                 <LineChart data={visitorData}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -217,6 +287,7 @@ export default function Dashboard() {
                   <YAxis hide={true} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line
+                    isAnimationActive={false}
                     type="monotone"
                     dataKey="visitors"
                     stroke="var(--color-visitors)"
@@ -239,7 +310,7 @@ export default function Dashboard() {
       <div className="flex flex-col gap-8 xl:flex-row">
         {/* Main Content: Upcoming Appointments */}
         <div className="flex-1 space-y-8">
-          <Card className="overflow-hidden shadow-lg backdrop-blur-md">
+          <Card className="overflow-hidden shadow-md backdrop-blur-md">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold">
                 Upcoming Appointments
@@ -265,44 +336,49 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {appointments.slice(0, 5).map((apt) => (
-                      <tr
-                        key={apt.id}
-                        className="group cursor-pointer bg-glass-bg transition-colors"
-                        onClick={() =>
-                          navigate(`/admin/appointments/${apt.id}`)
-                        }
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-8 rounded-lg">
-                              <AvatarImage src={apt.user?.profilePicture} />
-                              <AvatarFallback className="rounded-lg bg-primary/10 text-[10px] font-bold uppercase text-primary">
-                                {apt.user?.firstName?.[0]}
-                                {apt.user?.lastName?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                {apt.user?.firstName} {apt.user?.lastName}
-                              </p>
-                              <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
-                                {apt.user?.studentNumber}
-                              </p>
+                    {appointments
+                      .slice(0, 5)
+                      .sort((a, b) =>
+                        a.timeSlot.time.localeCompare(b.timeSlot.time),
+                      )
+                      .map((apt) => (
+                        <tr
+                          key={apt.id}
+                          className="group cursor-pointer bg-glass-bg transition-colors"
+                          onClick={() =>
+                            navigate(`/admin/appointments/${apt.id}`)
+                          }
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-8 rounded-lg">
+                                <AvatarImage src={apt.user?.profilePicture} />
+                                <AvatarFallback className="rounded-lg bg-primary/10 text-[10px] font-bold uppercase text-primary">
+                                  {apt.user?.firstName?.[0]}
+                                  {apt.user?.lastName?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                  {apt.user?.firstName} {apt.user?.lastName}
+                                </p>
+                                <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
+                                  {apt.user?.studentNumber}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                          {apt.appointmentCategory.name}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-500">
-                          {new Date(apt.whenDate).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">
-                          {format12HourTime(apt.timeSlot.time)}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-medium text-slate-500">
+                            {apt.appointmentCategory.name}
+                          </td>
+                          <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-500">
+                            {new Date(apt.whenDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">
+                            {format12HourTime(apt.timeSlot.time)}
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
                 {appointments.length === 0 && (
@@ -320,10 +396,19 @@ export default function Dashboard() {
           {/* Slip Status Tracker */}
           <SlipStatusTracker
             stats={{
-              pending: slipStats?.pending || 12,
-              approvedToday: slipStats?.approvedToday || 5,
-              rejectedToday: slipStats?.rejectedToday || 1,
-              urgentRequests: 3,
+              pending:
+                slipStats?.find(
+                  (slip: any) => slip.name.toLowerCase() === "pending",
+                )?.count || 0,
+              approvedToday:
+                slipStats?.find(
+                  (slip: any) => slip.name.toLowerCase() === "approved",
+                )?.count || 0,
+              rejectedToday:
+                slipStats?.find(
+                  (slip: any) => slip.name.toLowerCase() === "rejected",
+                )?.count || 0,
+              urgentRequests: urgentSlips?.meta?.total || 0,
             }}
           />
         </div>

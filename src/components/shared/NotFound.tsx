@@ -15,7 +15,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   const userRole = user?.roles?.[0]?.name?.toLowerCase().replace(/\s+/g, "") || "guest";
-  let homeRoute = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES];
+  const homeRoute = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES];
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">

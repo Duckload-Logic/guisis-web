@@ -26,17 +26,19 @@ export default function EducationView({
     <div className="animate-in slide-in-from-bottom-4 space-y-8 duration-500">
       <section>
         <SectionTitle title="Schooling Overview" />
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mt-6 flex flex-wrap gap-4">
           <StatCard
             label="Nature of Schooling"
             value={asText(data?.natureOfSchooling)}
             icon={BookOpen}
           />
-          <StatCard
-            label="Interrupted Details"
-            value={asText(data?.interruptedDetails)}
-            icon={BadgeInfo}
-          />
+          {data?.interruptedDetails && (
+            <StatCard
+              label="Interrupted Details"
+              value={asText(data?.interruptedDetails)}
+              icon={BadgeInfo}
+            />
+          )}
           <StatCard
             label="School Records"
             value={asText(schools.length)}

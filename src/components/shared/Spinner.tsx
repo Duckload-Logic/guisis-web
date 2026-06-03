@@ -85,7 +85,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
       </div>
 
       <div className="flex animate-pulse flex-col items-center gap-1">
-        <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground opacity-80">
+        <Label className="text-sm font-bold uppercase text-muted-foreground opacity-80">
           {message}
         </Label>
       </div>

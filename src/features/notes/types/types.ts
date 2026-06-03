@@ -6,6 +6,7 @@
 export interface SignificantNote {
   id?: string;
   appointmentId?: string;
+  admissionSlipId?: string;
   note: string;
   remarks: string;
   createdAt?: string;
@@ -14,6 +15,7 @@ export interface SignificantNote {
 
 export interface CreateNoteRequest {
   appointmentId?: string;
+  admissionSlipId?: string;
   note: string;
   remarks: string;
 }

@@ -32,22 +32,24 @@ export default function ConsentDialog({
       open={open}
       onOpenChange={(isOpen) => !isOpen && !isSubmitting && onCancel()}
     >
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent
+        hasCloseButton={false}
+        className="sm:max-w-[600px]"
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl">Confirm Submission</DialogTitle>
-          <DialogDescription className="pt-4 text-base">
-            I confirm that the information given is legitimate and accurate, and
-            that this information will be processed in our system under the
-            terms of use and privacy policy of the{" "}
-            <a
-              href="https://www.pup.edu.ph/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary underline hover:text-primary/80"
-            >
-              Polytechnic University of the Philippines
-            </a>{" "}
-            website.
+          <DialogDescription className="pt-4 text-justify text-base">
+            By submitting this form, I hereby certify and testify that all
+            information provided herein are true, accurate, and legitimate to
+            the best of my knowledge. I acknowledge that any deliberate
+            omission, misrepresentation, or falsification of information herein
+            shall constitute grounds for disciplinary action, academic
+            sanctions, and/or legal penalties in accordance with the rules and
+            regulations of the{" "}
+            <span className="font-semibold text-primary">
+              Polytechnic University of the Philippines - Taguig Campus
+            </span>{" "}
+            and applicable laws.
           </DialogDescription>
         </DialogHeader>
 

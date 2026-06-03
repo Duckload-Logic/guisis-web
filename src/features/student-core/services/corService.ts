@@ -1,13 +1,19 @@
 import { apiClient, AxiosConfigWithMeta } from "@/lib/api";
-import { API_ROUTES } from "@/config/apiRoutes";
+import { validateCorFile } from "@/utils/corValidation";
 
 /**
  * Upload a new COR
  */
 export async function UploadCOR(
   file: File,
-  config?: AxiosConfigWithMeta
+  config?: AxiosConfigWithMeta,
 ): Promise<{ message: string; fileId: string }> {
+  const validation = await validateCorFile(file);
+
+  if (!validation.isValid) {
+    throw new Error(validation.error || "Invalid COR file.");
+  }
+
   const formData = new FormData();
   formData.append("cor", file);
 
@@ -18,11 +24,10 @@ export async function UploadCOR(
       {
         ...config,
         headers: { "Content-Type": "multipart/form-data" },
-      }
+      },
     );
     return response.data?.data ?? response.data;
   } catch (error: any) {
-    console.error(`[UploadCOR]: ${error.message}`);
     throw error;
   }
 }
@@ -35,7 +40,6 @@ export async function GetMyCORs(config?: AxiosConfigWithMeta): Promise<any[]> {
     const response = await apiClient.get("/students/inventory/cors", config);
     return response.data?.data ?? response.data;
   } catch (error: any) {
-    console.error(`[GetMyCORs]: ${error.message}`);
     throw error;
   }
 }

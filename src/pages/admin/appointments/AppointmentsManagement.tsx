@@ -3,17 +3,15 @@ import { useNavigate } from "react-router-dom";
 import {
   useAppointments,
   useAppointmentsStats,
-  useUpdateAppointment,
 } from "@/features/appointments/hooks";
 import { Calendar, AppointmentList } from "@/features/appointments/components";
 import { Appointment, AppointmentStatus } from "@/features/appointments/types";
 import { useStatuses } from "@/features/appointments/hooks";
 import { useDebounce } from "@/hooks/useDebounce";
-import { toISODateString } from "@/features/appointments/utils";
+import { toISODateString } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { STATUS_COLORS } from "@/config/constants";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Button } from "@/components/ui/button";
-import Layout from "@/components/layout/Layout";
 import { usePageMetadata } from "@/context";
 
 import {
@@ -29,6 +27,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  type ChartConfig,
 } from "@/components/ui/chart";
 import { CalendarPlus, Archive } from "lucide-react";
 import { formatDate } from "@/utils";
@@ -63,7 +62,20 @@ const chartConfig = {
     label: "No-show",
     color: "#94A3B8",
   },
-};
+} satisfies ChartConfig;
+
+function getChartColorKey(statusName: string): keyof typeof chartConfig {
+  const name = statusName.toLowerCase().trim();
+  if (name === "pending") return "pending";
+  if (name === "scheduled") return "scheduled";
+  if (name === "completed" || name === "approved") return "completed";
+  if (name === "cancelled") return "cancelled";
+  if (name === "rejected") return "rejected";
+  if (name === "rescheduled" || name === "for revision") {
+    return "rescheduled";
+  }
+  return "noShow";
+}
 
 export default function AppointmentsManagement() {
   const navigate = useNavigate();
@@ -80,7 +92,6 @@ export default function AppointmentsManagement() {
   const defaultStatus: AppointmentStatus = {
     id: 0,
     name: "All",
-    colorKey: "stale",
   };
 
   const [selectedStatus, setSelectedStatus] =
@@ -123,6 +134,7 @@ export default function AppointmentsManagement() {
     isMe: false,
     params: {
       page: currentPage,
+      pageSize: 10,
       search: debouncedSearch,
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
       startDate: getLocalDateString(selectedDate, startDate),
@@ -131,7 +143,7 @@ export default function AppointmentsManagement() {
   });
 
   const appointments = data?.appointments || [];
-  const totalPages = data?.totalPages || 1;
+  const totalPages = data?.meta?.totalPages || 1;
 
   const bookedDates = new Set(
     appointments.map((apt) => {
@@ -148,28 +160,15 @@ export default function AppointmentsManagement() {
   };
 
   const chartData = (statusCounts || []).map((stat) => {
-    let key: keyof typeof chartConfig = "noShow";
-    const name = stat.name.toLowerCase();
-
-    if (name === "pending") key = "pending";
-    else if (name === "scheduled") key = "scheduled";
-    else if (name === "completed") key = "completed";
-    else if (name === "cancelled") key = "cancelled";
-    else if (name === "rejected") key = "rejected";
-    else if (name === "rescheduled") key = "rescheduled";
-
     return {
       status: stat.name,
       count: stat.count || 0,
-      fill: chartConfig[key].color,
+      fill: chartConfig[getChartColorKey(stat.name)].color,
     };
   });
 
   const isPageLoading = isStatusesLoading || isStatsLoading;
 
-  // These must be stable references — usePageMetadata's useEffect uses
-  // referential equality (===) to detect changes. Inline JSX creates a new
-  // object on every render, causing an infinite setState → re-render loop.
   const pageBadgeIcon = useMemo(() => <CalendarPlus className="h-4 w-4" />, []);
 
   const pageHeaderActions = useMemo(
@@ -234,7 +233,7 @@ export default function AppointmentsManagement() {
                     status.name.includes("Rescheduled"),
                 )
                 .map((status) => ({
-                  color: STATUS_COLORS[status.colorKey],
+                  color: STATUS_COLORS[getStatusColorKey(status.name)],
                   label: status.name,
                 }))}
               hasHeader
@@ -244,7 +243,7 @@ export default function AppointmentsManagement() {
 
           <Card
             className={cn(
-              "hover:bg-glass-bg/50 overflow-hidden shadow-2xl",
+              "hover:bg-glass-bg/50 overflow-hidden shadow-md",
               "backdrop-blur-2xl transition-all duration-500 lg:col-span-4",
             )}
           >
@@ -378,7 +377,7 @@ export default function AppointmentsManagement() {
                       <p className="text-sm font-medium text-muted-foreground/60">
                         No activity recorded for this period
                       </p>
-                      <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                      <p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground/40">
                         Appointments Stats
                       </p>
                     </div>

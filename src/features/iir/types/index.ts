@@ -1,4 +1,3 @@
-import { User } from "@/features/users/types/user";
 
 export interface Gender {
   id: number;
@@ -147,6 +146,7 @@ export interface PersonalInfo {
   gender: Gender;
   civilStatus: CivilStatus;
   religion: Religion;
+  otherReligionText?: string;
   heightM: string;
   weightKg: string;
   complexion: string;
@@ -161,6 +161,8 @@ export interface PersonalInfo {
   isEmployed: boolean;
   employerName: string | null;
   employerAddress: string | null;
+  employerContactNumber: string | null;
+
   emergencyContact: EmergencyContact;
 }
 
@@ -196,7 +198,7 @@ export interface RelatedPerson {
   middleName: string | null;
   lastName: string;
   dateOfBirth: string;
-  educationalLevel: string;
+  educationalAttainment: EducationalLevel;
   occupation: string | null;
   employerName: string | null;
   employerAddress: string | null;
@@ -224,6 +226,8 @@ export interface HealthRecord {
   speechDetails: string | null;
   generalHealthHasProblem: boolean;
   generalHealthDetails: string | null;
+  mentalEmotionalHasProblem: boolean;
+  mentalEmotionalDetails: string | null;
 }
 
 export interface ConsultationRecord {

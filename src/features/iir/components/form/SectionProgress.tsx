@@ -82,7 +82,7 @@ export function SectionProgress({
     sections.find((s) => s.id === currentSection) || sections[0];
 
   return (
-    <div className="mb-6 select-none">
+    <div className="select-none">
       <div className="w-full">
         {/* === Mobile View === */}
         <div className="relative py-2 md:hidden">
@@ -95,7 +95,7 @@ export function SectionProgress({
             )}
           >
             <div className="flex flex-col text-left">
-              <span className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <span className="mb-0.5 text-[10px] font-bold uppercase text-muted-foreground">
                 Section {currentSection} of {sections.length}
               </span>
               <span className="max-w-[200px] truncate text-sm font-bold text-foreground">
@@ -121,7 +121,7 @@ export function SectionProgress({
                 "dark:bg-neutral-900",
               )}
             >
-              {sections.map((section) => {
+              {sections.map((section, idx) => {
                 const active = currentSection === section.id;
                 const isCompleted = isSectionFinished(section.id);
                 const navigable = isNavigable(section.id);
@@ -143,8 +143,7 @@ export function SectionProgress({
                     )}
                   >
                     <span className="text-sm">
-                      {section.id}.{" "}
-                      {section.title.split(". ")[1] || section.title}
+                      {idx + 1}. {section.title.split(". ")[1] || section.title}
                     </span>
                     {finished ? (
                       <Check className="h-4 w-4 text-green-500" />
@@ -168,7 +167,7 @@ export function SectionProgress({
             )}
           >
             <div className="flex flex-col gap-1 px-1">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+              <h2 className="text-[10px] uppercase tracking-[0.25em] text-primary">
                 IIR Wizard Progress
               </h2>
               <div className="flex items-center gap-2">
@@ -267,7 +266,7 @@ export function SectionProgress({
                         {sectionTitle}
                       </span>
                       {active && (
-                        <span className="text-[9px] font-medium uppercase tracking-widest text-primary/70">
+                        <span className="text-[9px] font-medium uppercase text-primary/70">
                           Current Step
                         </span>
                       )}

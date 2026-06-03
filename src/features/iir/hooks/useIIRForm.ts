@@ -48,6 +48,12 @@ export function useIIRFormSave() {
       queryClient.invalidateQueries({
         queryKey: ["iirForm"],
       });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.iir.draft,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["iir", "inventory", "profile", "me"],
+      });
     },
   });
 
@@ -60,14 +66,21 @@ export function useIIRFormSave() {
 }
 
 /**
- * Hook for fetching the current IIR draft
+ * Hook for fetching the current IIR draft.
+ * Pass enabled=false in edit mode so a broken/missing draft endpoint will not
+ * block editing an existing IIR record.
  */
-export function useGetIIRDraft() {
+export function useGetIIRDraft(enabled = true) {
   const query = useQuery({
     queryKey: QUERY_KEYS.iir.draft,
     queryFn: () => {
-      return GetIIRDraft() as Promise<IIRForm | null>;
+      return GetIIRDraft({
+        handlerName: "useGetIIRDraft",
+        stepName: "Fetch IIR Draft",
+      }) as Promise<IIRForm | null>;
     },
+    enabled,
+    retry: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
@@ -90,27 +103,30 @@ export function useSaveIIRDraft() {
   const [lastSaved, setLastSaved] = useState<string>("");
 
   const clearDraft = useCallback(() => {
-    localStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me?.id || ""));
+    if (!me?.id) return;
+    localStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me.id));
   }, [me?.id]);
 
   const mutation = useMutation({
-    mutationFn: (data: IIRForm) => {
-      // Mirror to local storage
-      try {
-        localStorage.setItem(
-          IIR_DRAFT_STORAGE_KEY(me?.id || ""),
-          JSON.stringify(data),
-        );
-        const now = new Date();
-        setLastSaved(
-          now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        );
-      } catch (err) {
-        console.error("Local storage save error:", err);
+    mutationFn: async (data: IIRForm) => {
+      // Mirror to local storage even if the backend draft endpoint fails.
+      if (me?.id) {
+        try {
+          localStorage.setItem(IIR_DRAFT_STORAGE_KEY(me.id), JSON.stringify(data));
+          const now = new Date();
+          setLastSaved(
+            now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          );
+        } catch (err) {
+          console.error("Local storage save error:", err);
+        }
       }
 
-      // Save backend draft
-      return PostIIRDraft(data);
+      // Save backend draft.
+      return PostIIRDraft(data, {
+        handlerName: "useSaveIIRDraft",
+        stepName: "Save IIR Draft",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -120,10 +136,11 @@ export function useSaveIIRDraft() {
   });
 
   return {
-    saveDraft: mutation.mutate,
+    saveDraft: mutation.mutateAsync,
     isSavingDraft: mutation.isPending,
     saveDraftError: mutation.error,
     clearDraft,
     lastSaved,
   };
 }
+

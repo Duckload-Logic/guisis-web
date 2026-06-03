@@ -57,7 +57,6 @@ export default function Callback() {
         // Handle IDP error response
         if (errorParam) {
           const errorDesc = searchParams.get("error_description");
-          console.error(`[AuthCallback] {IDP Error}: ${errorParam}`);
           setError(errorDesc || IDP_ERROR_MESSAGES.MISSING_CODE);
           setIsLoading(false);
           return;
@@ -71,7 +70,6 @@ export default function Callback() {
 
         if (!isNative) {
           if (!code) {
-            console.error("[AuthCallback] {Extract Params}: missing code");
             setError(IDP_ERROR_MESSAGES.MISSING_CODE);
             setIsLoading(false);
             return;
@@ -117,9 +115,6 @@ export default function Callback() {
         ];
 
         if (!dashboardRoute) {
-          console.error(
-            `[AuthCallback] {Route User}: ` + `unknown role ${roleKey}`,
-          );
           setError(IDP_ERROR_MESSAGES.UNKNOWN_ROLE);
           await logout();
           setIsLoading(false);
@@ -134,8 +129,6 @@ export default function Callback() {
             ? err.message
             : IDP_ERROR_MESSAGES.TOKEN_EXCHANGE_FAILED;
 
-        console.error(`[AuthCallback] {Process Callback}: ${err}`);
-
         setError(errorMessage);
         setIsLoading(false);
       }
@@ -149,7 +142,6 @@ export default function Callback() {
    */
   useEffect(() => {
     if (error) {
-      console.error("[AuthCallback] {Error}:", error);
       const timeoutId = setTimeout(() => {
         navigate("/login", { replace: true });
       }, ERROR_DISMISS_TIMEOUT);
@@ -351,7 +343,7 @@ export default function Callback() {
           <div
             className={cn(
               "mt-6 flex items-center justify-center space-x-2 text-[10px]",
-              "font-bold uppercase tracking-widest text-muted-foreground/40",
+              "font-bold uppercase text-muted-foreground/40",
             )}
           >
             <span className="h-1 w-1 rounded-full bg-muted-foreground/20" />

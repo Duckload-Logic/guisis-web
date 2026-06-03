@@ -51,7 +51,7 @@ export function SlipStatusTracker({
 
   return (
     <Card
-      className={cn("overflow-hidden shadow-lg backdrop-blur-md", className)}
+      className={cn("overflow-hidden shadow-md backdrop-blur-md", className)}
     >
       <CardHeader className="pb-4">
         <CardTitle className="text-lg font-bold">Excuse Slip Tracker</CardTitle>
@@ -69,12 +69,7 @@ export function SlipStatusTracker({
               )}
             >
               <div className="flex items-center gap-4">
-                <div
-                  className={cn(
-                    "rounded-xl bg-white p-2 shadow-sm",
-                    item.color,
-                  )}
-                >
+                <div className={cn("rounded-xl shadow-sm", item.color)}>
                   <item.icon size={20} />
                 </div>
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -82,9 +77,7 @@ export function SlipStatusTracker({
                 </span>
               </div>
 
-              <div className="text-2xl font-bold tracking-tight">
-                {item.value}
-              </div>
+              <div className="text-xl font-semibold">{item.value}</div>
             </div>
           ))}
         </div>
@@ -92,9 +85,8 @@ export function SlipStatusTracker({
         <div className="mt-6 border-t border-slate-200/50 pt-4 dark:border-white/5">
           <button
             className={cn(
-              "w-full rounded-xl bg-slate-900 py-3 text-sm font-bold",
-              "text-white shadow-lg transition-all hover:opacity-90",
-              "active:scale-95 dark:bg-white dark:text-slate-900",
+              "w-full rounded-xl bg-primary py-3 text-sm font-bold text-white transition-all hover:bg-primary/90",
+              "active:scale-95",
             )}
             onClick={() => navigate("/admin/slips")}
           >

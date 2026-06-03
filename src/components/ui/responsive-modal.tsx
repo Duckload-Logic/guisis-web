@@ -71,7 +71,8 @@ export function ResponsiveModalTrigger({
 export function ResponsiveModalContent({
   children,
   className,
-}: BaseProps & { className?: string }) {
+  hasCloseButton = true,
+}: BaseProps & { className?: string; hasCloseButton?: boolean }) {
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -83,7 +84,10 @@ export function ResponsiveModalContent({
   }
 
   return (
-    <DialogContent className={cn("sm:max-w-md", className)}>
+    <DialogContent
+      hasCloseButton={hasCloseButton}
+      className={cn("sm:max-w-md", className)}
+    >
       {children}
     </DialogContent>
   );

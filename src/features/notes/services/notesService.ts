@@ -23,9 +23,7 @@ export const getStudentNotes = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "getStudentNotes";
-    const stepName = config?.stepName || "Fetch Student Notes";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
+
     throw error;
   }
 };
@@ -45,9 +43,7 @@ export const createNote = async (
   try {
     await apiClient.post(API_ROUTES.notes.byIirId(iirId), noteData, config);
   } catch (error) {
-    const handlerName = config?.handlerName || "createNote";
-    const stepName = config?.stepName || "Create Note";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
+
     throw error;
   }
 };

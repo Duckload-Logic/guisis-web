@@ -11,13 +11,9 @@ import {
   Calendar,
   Clock,
   MapPin,
-  ArrowLeft,
-  X,
   FileCheck,
   AlertCircle,
   MessageSquare,
-  User,
-  ExternalLink,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -34,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/context";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +40,11 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useCancelAppointment();
+
+  const getStatusColor = (statusName?: string) => {
+    const key = getStatusColorKey(statusName);
+    return STATUS_COLORS[key] || "bg-muted text-muted-foreground";
+  };
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -93,6 +95,107 @@ export default function AppointmentDetails() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-6 py-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {/* Left Column Skeleton */}
+          <div className="space-y-6 md:col-span-2">
+            <Card className="border-0 bg-card/60 shadow-lg">
+              <CardHeader className="border-b border-border/60 pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "h-9 w-9 rounded-lg bg-slate-200/50",
+                        "dark:bg-slate-700/50",
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "h-6 w-48 rounded bg-slate-200/50",
+                        "dark:bg-slate-700/50",
+                      )}
+                    />
+                  </div>
+                  <div
+                    className={cn(
+                      "h-6 w-20 rounded-full bg-slate-200/50",
+                      "dark:bg-slate-700/50",
+                    )}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="space-y-2"
+                    >
+                      <div
+                        className={cn(
+                          "h-3 w-16 rounded bg-slate-200/50",
+                          "dark:bg-slate-700/50",
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "h-5 w-32 rounded bg-slate-200/50",
+                          "dark:bg-slate-700/50",
+                        )}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2 border-t border-border/40 pt-4">
+                  <div
+                    className={cn(
+                      "h-3 w-28 rounded bg-slate-200/50",
+                      "dark:bg-slate-700/50",
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "h-16 w-full rounded-lg bg-slate-200/50",
+                      "dark:bg-slate-700/50",
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          {/* Right Column Skeleton */}
+          <div className="space-y-6">
+            <Card className="border-0 bg-glass-bg shadow-md">
+              <CardHeader className="border-b border-border/40 pb-3">
+                <div
+                  className={cn(
+                    "h-4 w-24 rounded bg-slate-200/50",
+                    "dark:bg-slate-700/50",
+                  )}
+                />
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div
+                  className={cn(
+                    "h-16 w-full rounded bg-slate-200/50",
+                    "dark:bg-slate-700/50",
+                  )}
+                />
+                <div
+                  className={cn(
+                    "h-8 w-full rounded bg-slate-200/50",
+                    "dark:bg-slate-700/50",
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const isCancellable =
     appointment?.status?.name === "Pending" ||
     appointment?.status?.name === "Scheduled";
@@ -101,7 +204,7 @@ export default function AppointmentDetails() {
     <>
       <AnimationStyles />
       <div className="min-h-full bg-background">
-        <div className="max-w-full py-6">
+        <div className="max-w-full">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Left Column: Primary Details */}
             <div className="space-y-6 md:col-span-2">
@@ -117,10 +220,11 @@ export default function AppointmentDetails() {
                       </CardTitle>
                     </div>
                     <Badge
-                      className={`px-3 py-1 ${
-                        appointment?.status?.colorKey ||
-                        "bg-muted text-muted-foreground"
-                      }`}
+                      variant="outline"
+                      className={cn(
+                        "px-3 py-1",
+                        getStatusColor(appointment?.status?.name),
+                      )}
                     >
                       {appointment?.status?.name}
                     </Badge>
@@ -129,7 +233,7 @@ export default function AppointmentDetails() {
                 <CardContent className="space-y-6 pt-6">
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
                         Date
                       </p>
                       <div className="flex items-center gap-2">
@@ -145,7 +249,7 @@ export default function AppointmentDetails() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
                         Time
                       </p>
                       <div className="flex items-center gap-2">
@@ -156,7 +260,7 @@ export default function AppointmentDetails() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
                         Category
                       </p>
                       <div className="flex items-center gap-2">
@@ -166,20 +270,20 @@ export default function AppointmentDetails() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
                         Location
                       </p>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          Guidance Office (Main Bldg)
+                          Office of the Guidance Counselor (Academic Bldg)
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-border/40 pt-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
                       My Reason / Concern
                     </p>
                     <div className="rounded-lg border border-border/40 bg-muted/50 p-4">
@@ -212,7 +316,7 @@ export default function AppointmentDetails() {
 
             {/* Right Column: Actions & Metadata */}
             <div className="space-y-6">
-              <Card className="border-0 bg-muted/30 shadow-md">
+              <Card className="border-0 bg-glass-bg shadow-md">
                 <CardHeader className="border-b border-border/40 pb-3">
                   <CardTitle className="text-sm font-semibold uppercase">
                     Management

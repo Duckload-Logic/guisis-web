@@ -87,6 +87,31 @@ export const healthValidationSchema: FieldValidationSchema = {
     },
     commonRules.noSpecialChars("General health details"),
   ],
+
+  "health.healthRecord.mentalEmotionalHasProblem": [
+    {
+      type: "required",
+      validate: (value: any) => value !== undefined && value !== null,
+      message: "Please select Yes or No",
+    },
+  ],
+  "health.healthRecord.mentalEmotionalDetails": [
+    {
+      type: "required",
+      validate: (value: any, rootData: any) => {
+        if (
+          rootData?.health?.healthRecord?.mentalEmotionalHasProblem ===
+          true
+        ) {
+          return value && String(value).trim().length > 0;
+        }
+        return true;
+      },
+      message: "Please specify the details",
+    },
+    commonRules.noSpecialChars("Mental health details"),
+  ],
+
   ...["Psychiatrist", "Psychologist", "Counselor"].reduce((acc, type) => {
     acc[`_consultations.${type}.hasConsulted`] = [
       {

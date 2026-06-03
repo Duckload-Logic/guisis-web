@@ -40,8 +40,8 @@ export default function InfoContent({
   return (
     <div
       className={cn(
-        "z-10 mb-4 min-h-[500px] w-full rounded-b-lg border-2",
-        "border-glass-border bg-card p-4 shadow-lg sm:rounded-t-lg",
+        "z-10 mb-4 min-h-[500px] w-full rounded-b-xl border-2",
+        "border-glass-border bg-card p-4 shadow-md sm:rounded-t-xl",
         "sm:p-6",
       )}
     >

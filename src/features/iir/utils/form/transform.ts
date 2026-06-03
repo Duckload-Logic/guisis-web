@@ -82,11 +82,14 @@ export function transformFormToPayload(formData: IIRForm): any {
       },
       personalInfo: {
         id: formData.student.personalInfo.id,
-        iirId: formData.student.personalInfo.id,
+        iirId: formData.id,
         studentNumber: formData.student.personalInfo.studentNumber,
         gender: formData.student.personalInfo.gender,
         civilStatus: formData.student.personalInfo.civilStatus,
         religion: formData.student.personalInfo.religion,
+        otherReligionText: handleNullableString(
+          formData.student.personalInfo.otherReligionText,
+        ),
         heightM: parseNumberSafely(formData.student.personalInfo.heightM),
         weightKg: parseNumberSafely(formData.student.personalInfo.weightKg),
         complexion: formData.student.personalInfo.complexion,
@@ -111,6 +114,10 @@ export function transformFormToPayload(formData: IIRForm): any {
         telephoneNumber: handleNullableString(
           formData.student.personalInfo.telephoneNumber,
         ),
+        employerContactNumber: handleNullableString(
+          formData.student.personalInfo.employerContactNumber,
+        ),
+
         emergencyContact: {
           id: formData.student.personalInfo.emergencyContact.id,
           firstName: formData.student.personalInfo.emergencyContact.firstName,
@@ -142,7 +149,7 @@ export function transformFormToPayload(formData: IIRForm): any {
           },
         },
       },
-      addresses: formData.student.addresses.map(
+      addresses: (formData.student.addresses || []).map(
         (addr: StudentAddress, index: number) => ({
           id: addr.id,
           addressType: index === 0 ? "Provincial" : "Residential",
@@ -161,7 +168,7 @@ export function transformFormToPayload(formData: IIRForm): any {
       interruptedDetails: handleNullableString(
         formData.education.interruptedDetails,
       ),
-      schools: formData.education.schools.map((school: SchoolDetails) => ({
+      schools: (formData.education.schools || []).map((school: SchoolDetails) => ({
         id: school.id,
         educationalLevel: school.educationalLevel,
         schoolName: school.schoolName,
@@ -195,7 +202,7 @@ export function transformFormToPayload(formData: IIRForm): any {
         ),
         natureOfResidence: formData.family.background.natureOfResidence,
       },
-      relatedPersons: formData.family.relatedPersons.map(
+      relatedPersons: (formData.family.relatedPersons || []).map(
         (person: RelatedPerson, index: number) => {
           return {
             id: person.id,
@@ -205,7 +212,9 @@ export function transformFormToPayload(formData: IIRForm): any {
             dateOfBirth: person.dateOfBirth
               ? formatDateForBackend(person.dateOfBirth)
               : undefined,
-            educationalLevel: person.educationalLevel,
+            educationalAttainment: {
+              id: person.educationalAttainment?.id || 0,
+            },
             occupation: handleNullableString(person.occupation),
             employerName: handleNullableString(person.employerName),
             employerAddress: handleNullableString(person.employerAddress),
@@ -252,8 +261,13 @@ export function transformFormToPayload(formData: IIRForm): any {
         generalHealthDetails: handleNullableString(
           formData.health.healthRecord.generalHealthDetails,
         ),
+        mentalEmotionalHasProblem:
+          formData.health.healthRecord.mentalEmotionalHasProblem,
+        mentalEmotionalDetails: handleNullableString(
+          formData.health.healthRecord.mentalEmotionalDetails,
+        ),
       },
-      consultations: formData.health.consultations.map(
+      consultations: (formData.health.consultations || []).map(
         (consultation: ConsultationRecord) => ({
           id: consultation.id,
           professionalType: consultation.professionalType,
@@ -264,21 +278,32 @@ export function transformFormToPayload(formData: IIRForm): any {
       ),
     },
     interests: {
-      activities: formData.interests.activities.map((activity: Activity) => ({
-        id: activity.id,
-        activityOption: activity.activityOption,
-        otherSpecification: handleNullableString(activity.otherSpecification),
-        role: activity.role,
-        roleSpecification: handleNullableString(activity.roleSpecification),
-      })),
-      subjectPreferences: formData.interests.subjectPreferences.map(
+      activities: (formData.interests.activities || [])
+        .filter(
+          (activity: Activity) =>
+            activity.activityOption &&
+            activity.activityOption.id &&
+            activity.activityOption.id !== 0,
+        )
+        .map((activity: Activity) => ({
+          id: activity.id,
+          activityOption: activity.activityOption,
+          otherSpecification: handleNullableString(
+            activity.otherSpecification,
+          ),
+          role: activity.role,
+          roleSpecification: handleNullableString(
+            activity.roleSpecification,
+          ),
+        })),
+      subjectPreferences: (formData.interests.subjectPreferences || []).map(
         (pref: SubjectPreference) => ({
           id: pref.id,
           subjectName: pref.subjectName,
           isFavorite: pref.isFavorite,
         }),
       ),
-      hobbies: formData.interests.hobbies.map((hobby: Hobby) => ({
+      hobbies: (formData.interests.hobbies || []).map((hobby: Hobby) => ({
         id: hobby.id,
         hobbyName: hobby.hobbyName,
         priorityRank: hobby.priorityRank,
@@ -326,3 +351,4 @@ function formatDateForBackend(date: Date | string): string {
 
 // Export legacy function name for backward compatibility
 export const transformFormToDTO = transformFormToPayload;
+

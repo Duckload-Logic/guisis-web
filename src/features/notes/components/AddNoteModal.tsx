@@ -26,6 +26,7 @@ interface AddNoteModalProps {
   onSubmit: (data: SignificantNoteFormData) => Promise<void>;
   isSubmitting?: boolean;
   appointmentId?: string;
+  admissionSlipId?: string;
 }
 
 export default function AddNoteModal({
@@ -34,6 +35,7 @@ export default function AddNoteModal({
   onSubmit,
   isSubmitting = false,
   appointmentId,
+  admissionSlipId,
 }: AddNoteModalProps) {
   const {
     handleSubmit,
@@ -44,21 +46,23 @@ export default function AddNoteModal({
     resolver: zodResolver(significantNoteSchema),
     defaultValues: {
       appointmentId: appointmentId || "",
+      admissionSlipId: admissionSlipId || "",
       note: "",
       remarks: "",
     },
   });
 
-  // Update appointmentId if prop changes
+  // Update appointmentId or admissionSlipId if prop changes
   useEffect(() => {
-    if (open && appointmentId) {
+    if (open && (appointmentId || admissionSlipId)) {
       reset({
-        appointmentId,
+        appointmentId: appointmentId || "",
+        admissionSlipId: admissionSlipId || "",
         note: "",
         remarks: "",
       });
     }
-  }, [open, appointmentId, reset]);
+  }, [open, appointmentId, admissionSlipId, reset]);
 
   const handleFormSubmit = async (data: SignificantNoteFormData) => {
     await onSubmit(data);

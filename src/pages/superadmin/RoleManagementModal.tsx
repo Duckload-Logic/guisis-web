@@ -71,7 +71,7 @@ export function RoleManagementModal({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
     >
-      <DialogContent className="dark:bg-neutral-900/92 border-white/20 bg-glass-bg backdrop-blur-2xl dark:border-white/10 sm:max-w-[425px]">
+      <DialogContent className="dark:bg-neutral-900/92 border-white/20 bg-card backdrop-blur-2xl dark:border-white/10 sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Manage User Roles</DialogTitle>

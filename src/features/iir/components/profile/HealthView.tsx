@@ -7,7 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { asText } from "../../utils";
-import { formatDate } from "@/features/schedules/utils/formatters";
+import { formatDate } from "@/utils/dateTime";
 import EmptyState from "./EmptyState";
 import InfoItem from "./InfoItem";
 import SectionTitle from "./SectionTitle";
@@ -55,14 +55,14 @@ export default function HealthView({
       )}
     >
       <section>
-        <SectionTitle title="Physical Remarks" />
+        <SectionTitle title="Health Remarks" />
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {physicalStats.map((stat) => (
             <div
               key={stat.label}
               className={cn(
                 "rounded-xl border border-glass-border bg-glass-bg p-4",
-                "shadow-sm transition-shadow hover:shadow-lg",
+                "h-fit shadow-sm transition-shadow hover:shadow-lg",
               )}
             >
               <div className="mb-3 flex min-h-[62px] items-center gap-3">
@@ -71,7 +71,7 @@ export default function HealthView({
                 </div>
                 <span
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-widest",
+                    "text-[10px] uppercase",
                     "text-muted-foreground",
                   )}
                 >

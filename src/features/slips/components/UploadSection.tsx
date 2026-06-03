@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileUp, Trash2, CheckCircle2, X } from "lucide-react";
+import { FileUp, CheckCircle2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";

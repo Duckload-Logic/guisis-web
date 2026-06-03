@@ -1,9 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
-import { API_ROUTES } from "@/config/apiRoutes";
-import { PostSlip, PatchSlip, PatchSlipStatus } from "../services";
+import { PostSlip, PatchSlip, PatchSlipStatus, ClaimTicket } from "../services";
 import type { CreateSlipRequest } from "../types";
 import { QUERY_KEYS } from "@/config/queryKeys";
+import { validateCorFile } from "@/utils/corValidation";
+
+const validateCorFiles = async (files: File[] = []) => {
+  for (const file of files) {
+    const validation = await validateCorFile(file, {
+      maxSizeBytes: 5 * 1024 * 1024,
+    });
+
+    if (!validation.isValid) {
+      throw new Error(validation.error || "Invalid COR file.");
+    }
+  }
+};
 
 /**
  * Hook to submit a new admission slip
@@ -134,6 +145,33 @@ export function useUpdateSlipStatus() {
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.slips.mySlips,
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.slips.stats,
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.analytics.all,
+      });
+    },
+  });
+}
+
+/**
+ * Hook to claim/verify a ticket on-site (Admin only)
+ */
+export function useClaimTicket() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ticketCode: string) => {
+      return ClaimTicket(ticketCode, {
+        handlerName: "useClaimTicket",
+        stepName: "Verify Ticket",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.slips.all,
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.slips.stats,

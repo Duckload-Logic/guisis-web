@@ -8,7 +8,7 @@ export interface DemographicStat {
   totalPct: number;
 }
 
-export interface DashboardResponse {
+export interface IIRAnalyticsReportResponse {
   totalStudents: number;
   genderDistribution: DemographicStat[];
   ageDistribution: DemographicStat[];
@@ -22,11 +22,16 @@ export interface DashboardResponse {
   parentsMaritalStatus: DemographicStat[];
   highSchoolGWA: DemographicStat[];
   elementary: DemographicStat[];
+  highSchool: DemographicStat[];
   juniorHigh: DemographicStat[];
   seniorHigh: DemographicStat[];
+  vocational: DemographicStat[];
+  college: DemographicStat[];
   natureOfSchooling: DemographicStat[];
   quietStudyPlace: DemographicStat[];
 }
+
+export type DashboardResponse = IIRAnalyticsReportResponse;
 
 export interface AnalyticsCourse {
   id: number;

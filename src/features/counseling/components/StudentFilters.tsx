@@ -1,13 +1,5 @@
 import { Dropdown, SearchInput } from "@/components/form";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Label } from "@radix-ui/react-label";
-import { ChevronDownIcon, X } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface SearchFilterProps {
@@ -51,11 +43,11 @@ export default function StudentFilters({
     <div
       className={cn(
         "hover:bg-glass-bg/30 rounded-3xl border border-glass-border",
-        "bg-glass-bg p-6 shadow-sm backdrop-blur-glass transition-all",
+        "bg-glass-bg p-6 shadow-md backdrop-blur-glass transition-all",
         "duration-500",
       )}
     >
-      <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-4">
         <SearchInput
           className="md:col-span-2"
           searchTerm={searchTerm}
@@ -65,7 +57,7 @@ export default function StudentFilters({
         <div
           className={cn(
             "grid w-full grid-cols-1 items-center justify-center gap-2",
-            "md:col-span-1 md:grid-cols-4",
+            "md:col-span-2 md:grid-cols-3",
           )}
         >
           <Dropdown
@@ -89,13 +81,13 @@ export default function StudentFilters({
               ...(yearLevels || []),
             ]}
           />
-          <Dropdown
+          {/* <Dropdown
             label="Status"
             value={selectedStatusId}
             onChange={onStatusChange}
             options={[{ id: 0, name: "All Statuses" }, ...(statuses || [])]}
             labelKey="name"
-          />
+          /> */}
         </div>
       </div>
     </div>

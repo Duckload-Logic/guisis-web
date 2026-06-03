@@ -29,7 +29,7 @@ export default function BioCard({
         <DefaultProfileIcon
           className={cn(
             "h-24 w-24 rounded-full border-4 border-card bg-background",
-            "p-1 text-muted-foreground shadow-xl",
+            "p-1 text-muted-foreground shadow-lg",
           )}
         />
       </div>
@@ -37,11 +37,11 @@ export default function BioCard({
       <div
         className={cn(
           "w-full rounded-2xl border border-glass-border bg-glass-bg",
-          "px-6 pb-6 pt-16 shadow-xl",
+          "px-6 pb-6 pt-16 shadow-md",
         )}
       >
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-black tracking-tight text-card-foreground">
+          <h2 className="text-xl tracking-tight text-card-foreground">
             {data?.basicInfo?.firstName}{" "}
             {data?.basicInfo?.middleName
               ? `${data.basicInfo.middleName[0]}.`
@@ -51,7 +51,7 @@ export default function BioCard({
           <span
             className={cn(
               "mt-1 inline-block rounded-lg bg-primary/10 px-3 py-2",
-              "text-[10px] font-bold uppercase tracking-widest text-primary",
+              "text-[10px] font-bold uppercase text-primary",
             )}
           >
             {data?.personalInfo?.course?.code || NOT_SPECIFIED}-
@@ -88,10 +88,10 @@ export default function BioCard({
           {data?.studentCorUrl && (
             <div className="mt-2 border-t border-glass-border pt-4">
               <a
-                href={`${import.meta.env.VITE_API_URL}${data.studentCorUrl}`}
+                href={`${import.meta.env.VITE_API_BASE_URL}${data.studentCorUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 py-3 text-xs font-black uppercase tracking-[0.2em] text-primary transition-all hover:bg-primary/20"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 py-3 text-xs uppercase tracking-[0.2em] text-primary transition-all hover:bg-primary/20"
               >
                 <FileText size={18} />
                 <span>View Student COR</span>
@@ -107,8 +107,8 @@ export default function BioCard({
       <div
         className={cn(
           "via-glass-bg/30 relative mt-2 w-full overflow-hidden",
-          "rounded-2xl border-2 border-glass-border bg-gradient-to-b",
-          "from-glass-bg to-muted/50 px-6 py-5",
+          "rounded-2xl border-2 border-glass-border bg-glass-bg",
+          "px-6 py-5 shadow-md",
         )}
       >
         <div className="absolute bottom-0 left-0 top-0 w-1 bg-gradient-to-b from-primary to-secondary" />
@@ -119,7 +119,7 @@ export default function BioCard({
           />
           <p
             className={cn(
-              "text-[12px] font-black uppercase tracking-[0.15em]",
+              "text-[12px] uppercase tracking-[0.15em]",
               "text-muted-foreground",
             )}
           >

@@ -30,7 +30,7 @@ export function useMarkNotificationRead() {
     },
     onError: (error) => {
       console.error(
-        "[useMarkNotificationRead] {Mutation}: ",
+        "Failed to mark notification as read: ",
         error instanceof Error ? error.message : "Failed to mark as read",
       );
     },
@@ -52,12 +52,6 @@ export function useNotificationsStream() {
       });
     }, 15000);
 
-    return () => {
-      if (fallbackTimer) {
-        clearInterval(fallbackTimer);
-      }
-    };
-
     const source = new EventSource(GetNotificationStreamUrl(), {
       withCredentials: true,
     });
@@ -75,6 +69,9 @@ export function useNotificationsStream() {
     };
 
     return () => {
+      if (fallbackTimer) {
+        clearInterval(fallbackTimer);
+      }
       source.removeEventListener("notification", refreshNotifications);
       source.removeEventListener("message", refreshNotifications);
       source.close();

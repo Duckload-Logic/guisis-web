@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StudentFilters from "@/features/counseling/components/StudentFilters";
 import StudentGrid from "@/features/counseling/components/StudentGrid";
@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Users } from "lucide-react";
+import { AlertCircle, LayoutGrid, List, Users } from "lucide-react";
 import {
   useCourses,
   useGenders,
@@ -24,9 +24,87 @@ import { IIRProfileView } from "@/features/iir/types";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Spinner } from "@/components/shared";
 import { Pagination } from "@/components/shared";
-import Layout from "@/components/layout/Layout";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function StudentRecordsSkeleton() {
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-6",
+        "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+      )}
+    >
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div
+          key={index}
+          className={cn(
+            "group relative overflow-hidden rounded-[28px]",
+            "border border-glass-border bg-glass-bg p-6",
+            "shadow-sm backdrop-blur-glass",
+          )}
+        >
+          {/* Status Badge Skeleton */}
+          <div className="absolute right-4 top-4">
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+
+          <div className="relative z-10 flex flex-col gap-5">
+            {/* Header with Avatar and Name */}
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="relative">
+                <Skeleton
+                  className={cn(
+                    "h-28 w-28 rounded-full border-[6px]",
+                    "border-primary/20",
+                  )}
+                />
+                <div className="absolute bottom-1 right-1">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col items-center space-y-2">
+                <Skeleton className="h-6 w-3/4 rounded-lg" />
+                <Skeleton className="h-4 w-1/2 rounded-lg" />
+              </div>
+            </div>
+
+            {/* Info Grid Skeleton */}
+            <div
+              className={cn(
+                "border-glass-border/30 grid grid-cols-1 gap-3",
+                "border-t pt-4",
+              )}
+            >
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-3 w-1/4 rounded" />
+                <Skeleton className="h-4 w-full rounded" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3 w-1/2 rounded" />
+                  <Skeleton className="h-4 w-3/4 rounded" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3 w-1/2 rounded" />
+                  <Skeleton className="h-4 w-3/4 rounded" />
+                </div>
+              </div>
+            </div>
+
+            {/* Actions Skeleton */}
+            <div className="pt-2">
+              <Skeleton className="h-10 w-full rounded-xl" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function StudentRecords() {
   const {
@@ -50,6 +128,16 @@ export default function StudentRecords() {
     { id: 3, name: "3rd Year" },
     { id: 4, name: "4th Year" },
   ];
+
+  const [viewMode, setViewMode] = useState<"tile" | "list">(() => {
+    const saved = localStorage.getItem("student_grid_view_mode");
+    return saved === "tile" ? "tile" : "list";
+  });
+
+  const handleViewModeChange = (mode: "tile" | "list") => {
+    setViewMode(mode);
+    localStorage.setItem("student_grid_view_mode", mode);
+  };
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -76,28 +164,67 @@ export default function StudentRecords() {
   });
 
   const allStudents = data?.students || [];
-  const totalRecords = data?.total || 0;
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<IIRProfileView | null>(
     null,
   );
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [showAdd, setShowAdd] = useState(false);
   const navigate = useNavigate();
 
-  const isLoading =
-    isCoursesLoading || isGendersLoading || isStudentsLoading || isDeleting;
+  const isGridLoading =
+    isCoursesLoading || isGendersLoading || isStudentsLoading;
 
-  usePageMetadata({
-    title: "Student Records",
-    description:
-      "Access and manage student cumulative records and personal information",
-    badgeText: "Admin Management",
-    badgeIcon: <Users className="h-4 w-4" />,
-    isLoading,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Student Records",
+        description:
+          "Access and manage student cumulative records and personal " +
+          "information",
+        headerActions: (
+          <div
+            className={cn(
+              "flex items-center gap-1 rounded-xl border border-glass-border p-1 shadow-md",
+              "bg-glass-bg/50 backdrop-blur-glass",
+            )}
+          >
+            <button
+              onClick={() => handleViewModeChange("list")}
+              className={cn(
+                "flex items-center justify-center",
+                "rounded-lg transition-all",
+                viewMode === "list"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:bg-glass-bg " +
+                      "hover:text-foreground",
+              )}
+              title="List View"
+            >
+              <List size={16} />
+            </button>
+            <button
+              onClick={() => handleViewModeChange("tile")}
+              className={cn(
+                "flex items-center justify-center",
+                "rounded-lg transition-all",
+                viewMode === "tile"
+                  ? "bg-primary text-white shadow-md"
+                  : "text-muted-foreground hover:bg-glass-bg " +
+                      "hover:text-foreground",
+              )}
+              title="Tile View"
+            >
+              <LayoutGrid size={16} />
+            </button>
+          </div>
+        ),
+        badgeText: "Admin Management",
+        badgeIcon: <Users className="h-4 w-4" />,
+        isLoading: false,
+      }),
+      [viewMode],
+    ),
+  );
 
   return (
     <>
@@ -140,93 +267,31 @@ export default function StudentRecords() {
         />
 
         <div className="relative min-h-[400px]">
-          {(isStudentsLoading || isDeleting) && (
-            <div
-              className={cn(
-                "bg-glass-bg/5 absolute inset-0 z-20 flex items-center",
-                "justify-center rounded-[32px] backdrop-blur-[2px]",
-              )}
-            >
-              <Spinner size="lg" />
-            </div>
-          )}
+          {isGridLoading ? (
+            <StudentRecordsSkeleton />
+          ) : (
+            <div className="space-y-8 transition-all duration-700">
+              <StudentGrid
+                students={allStudents}
+                isStudentsLoading={false} // Loading handled by parent
+                onViewClick={(student: any) => {
+                  navigate(`/admin/student-records/${student.iirId}`, {
+                    state: { student },
+                  });
+                }}
+                viewMode={viewMode}
+                yearLevels={yearLevels}
+              />
 
-          <div
-            className={cn(
-              "space-y-8 transition-all duration-700",
-              (isStudentsLoading || isDeleting) &&
-                "pointer-events-none opacity-40 blur-[1px]",
-            )}
-          >
-            <StudentGrid
-              students={allStudents}
-              isStudentsLoading={false} // Loading handled by parent
-              onViewClick={(student: any) => {
-                navigate(`/admin/student-records/${student.iirId}`, {
-                  state: { student },
-                });
-              }}
-              onDeleteClick={(student: any) => {
-                setStudentToDelete(student);
-                setDeleteConfirmOpen(true);
-              }}
-              yearLevels={yearLevels}
-            />
-
-            <div className="flex justify-center pt-4">
               <Pagination
                 currentPage={page}
                 totalPages={data?.meta?.totalPages || 1}
                 onPageChange={setPage}
               />
             </div>
-          </div>
+          )}
         </div>
       </div>
-      {/* <AddStudentModal
-        isOpen={showAdd}
-        onClose={() => {
-          setShowAdd(false);
-          form.reset();
-        }}
-        onSubmit={onSubmit}
-        courses={courses}
-      /> */}
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Student Record</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the student record for{" "}
-              {studentToDelete?.firstName} {studentToDelete?.lastName}? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          {deleteError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{deleteError}</AlertDescription>
-            </Alert>
-          )}
-
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              // onClick={handleConfirmDelete}
-              disabled={isDeleting}
-              className="bg-red-600 text-white hover:bg-red-700"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

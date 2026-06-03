@@ -3,7 +3,7 @@
  * Handles login, registration, and logout operations
  */
 
-import { UserRole, User } from "@/features/users/types/user";
+import { User } from "@/features/users/types/user";
 import { apiClient, AxiosConfigWithMeta } from "@/lib/api";
 import { API_ROUTES } from "@/config/apiRoutes";
 import type {
@@ -67,7 +67,6 @@ export const PostIDPTokenExchange = async (
     );
     return data;
   } catch (error) {
-    console.error(`[PostIDPTokenExchange] {Token Exchange}: ${error}`);
     throw error;
   }
 };
@@ -90,9 +89,6 @@ export const PostLogin = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "PostLogin";
-    const stepName = config?.stepName || "Login";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -115,9 +111,6 @@ export const PostRegister = async (
     );
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "PostRegister";
-    const stepName = config?.stepName || "Register";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };
@@ -134,9 +127,6 @@ export const GetCurrentUser = async (
     const { data } = await apiClient.get(API_ROUTES.auth.me, config);
     return data;
   } catch (error) {
-    const handlerName = config?.handlerName || "GetCurrentUser";
-    const stepName = config?.stepName || "Fetch User";
-    console.error(`[${handlerName}] {${stepName}}: ${error}`);
     throw error;
   }
 };

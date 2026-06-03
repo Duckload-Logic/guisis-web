@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,14 +23,12 @@ import {
   ShieldUser,
   ExternalLink,
 } from "lucide-react";
-import { STATUS_COLORS } from "@/config/constants";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import ActionConfirmModal from "./ConfirmModal";
 import RescheduleModal from "./RescheduleModal";
-import { set } from "zod";
-import { format12HourTime } from "../utils";
-import { formatDate } from "@/features/schedules/utils/formatters";
 import { cn } from "@/lib/utils";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
+import { format12HourTime, formatDate } from "@/utils";
 
 interface ViewModalProps {
   appointment: Appointment | null;
@@ -203,7 +200,7 @@ export default function ViewModal({
             <div className="flex justify-start">
               <span
                 className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                  STATUS_COLORS[appointment.status?.colorKey || "info"]
+                  STATUS_COLORS[getStatusColorKey(appointment.status?.name)]
                 }`}
               >
                 {appointment.status?.name}
@@ -214,7 +211,7 @@ export default function ViewModal({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Student Info */}
               <div className="space-y-3">
-                <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-sm font-medium uppercase text-muted-foreground">
                   Student
                 </h3>
                 <div className="space-y-2">
@@ -238,7 +235,6 @@ export default function ViewModal({
                         <span>View Student COR</span>
                         <ExternalLink className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
-
                     </div>
                   )}
                 </div>
@@ -246,7 +242,7 @@ export default function ViewModal({
 
               {/* Date & Time */}
               <div className="space-y-3">
-                <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-sm font-medium uppercase text-muted-foreground">
                   Schedule
                 </h3>
                 <div className="space-y-2">
@@ -264,7 +260,7 @@ export default function ViewModal({
 
             {/* Category & Reason */}
             <div className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+              <h3 className="text-sm font-medium uppercase text-muted-foreground">
                 Details
               </h3>
               <div className="grid grid-cols-1 gap-x-6 gap-y-4 text-foreground md:grid-cols-2">
@@ -272,7 +268,7 @@ export default function ViewModal({
                 <div className="flex items-start gap-2">
                   <Tag className="mt-1 size-4 flex-shrink-0 text-muted-foreground" />
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">
                       Category
                     </span>
                     <span className="w-fit rounded-md bg-muted px-2 py-0.5 text-sm">
@@ -285,7 +281,7 @@ export default function ViewModal({
                 <div className="flex items-start gap-2">
                   <FileText className="mt-1 size-4 flex-shrink-0 text-muted-foreground" />
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">
                       Reason for Visit
                     </span>
                     <span
@@ -305,7 +301,7 @@ export default function ViewModal({
                   <div className="col-span-full mt-2 flex items-start gap-2 border-t border-border/50 pt-4">
                     <ShieldUser className="mt-1 size-4 flex-shrink-0 text-notice-foreground" />
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
                         Admin Remarks
                       </span>
                       <p

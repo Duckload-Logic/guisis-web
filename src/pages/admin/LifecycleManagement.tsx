@@ -16,14 +16,12 @@ import { cn } from "@/lib/utils";
 import {
   useCourses,
   useIIRPagination,
-  useStudentStatuses,
 } from "@/features/iir/hooks";
 import { Course, IIRProfileView } from "@/features/iir/types";
 import { iirService } from "@/features/iir/services/service";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Spinner } from "@/components/shared";
 import { Pagination } from "@/components/shared";
-import Layout from "@/components/layout/Layout";
 import { usePageMetadata } from "@/context";
 import {
   AlertDialog,
@@ -176,7 +174,7 @@ function StudentRow({
         <div className="flex justify-center self-center">
           <span
             className={cn(
-              "rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider",
+              "rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase",
               statusColors[student.status?.id ?? 1],
             )}
           >
@@ -194,7 +192,7 @@ function StudentRow({
           });
         }}
         className={cn(
-          "text-[11px] font-bold uppercase tracking-wider",
+          "text-[11px] font-bold uppercase",
           "text-primary/50 transition-colors hover:text-primary",
         )}
       >
@@ -519,15 +517,15 @@ export default function LifecycleManagement() {
               </button>
 
               <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr] gap-3">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="text-[10px] font-bold uppercase text-muted-foreground">
                   Student
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="text-[10px] font-bold uppercase text-muted-foreground">
                   Course
                 </p>
                 <p
                   className={cn(
-                    "text-center text-[10px] font-bold uppercase tracking-widest",
+                    "text-center text-[10px] font-bold uppercase",
                     "text-muted-foreground",
                   )}
                 >
@@ -535,7 +533,7 @@ export default function LifecycleManagement() {
                 </p>
                 <p
                   className={cn(
-                    "text-center text-[10px] font-bold uppercase tracking-widest",
+                    "text-center text-[10px] font-bold uppercase",
                     "text-muted-foreground",
                   )}
                 >
@@ -545,7 +543,7 @@ export default function LifecycleManagement() {
 
               <p
                 className={cn(
-                  "select-none text-[10px] font-bold uppercase tracking-widest",
+                  "select-none text-[10px] font-bold uppercase",
                   "text-muted-foreground opacity-0",
                 )}
               >
@@ -650,7 +648,7 @@ export default function LifecycleManagement() {
                 className={cn(
                   "flex items-center gap-2 rounded-2xl border",
                   "border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-xs",
-                  "font-bold uppercase tracking-wider text-emerald-600",
+                  "font-bold uppercase text-emerald-600",
                   "transition-all duration-300 hover:bg-emerald-500",
                   "hover:text-white disabled:opacity-40",
                 )}
@@ -672,7 +670,7 @@ export default function LifecycleManagement() {
                 className={cn(
                   "flex items-center gap-2 rounded-2xl border",
                   "border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs",
-                  "font-bold uppercase tracking-wider text-amber-600",
+                  "font-bold uppercase text-amber-600",
                   "transition-all duration-300 hover:bg-amber-500",
                   "hover:text-white disabled:opacity-40",
                 )}
@@ -758,7 +756,7 @@ export default function LifecycleManagement() {
 
           {pendingAction?.needsYear && (
             <div className="py-2">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <label className="mb-2 block text-xs font-bold uppercase text-muted-foreground">
                 Graduation Year
               </label>
               <Input
@@ -815,7 +813,7 @@ export default function LifecycleManagement() {
 
           {pendingAction?.needsYear && (
             <div className="py-2">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <label className="mb-2 block text-xs font-bold uppercase text-muted-foreground">
                 Graduation Year
               </label>
               <Input

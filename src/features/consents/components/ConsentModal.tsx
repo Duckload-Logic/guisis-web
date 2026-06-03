@@ -8,6 +8,7 @@ type ConsentModalProps = {
   role: string;
   loading?: boolean;
   onAccept: () => Promise<void> | void;
+  onCancel?: () => void;
 };
 
 export default function ConsentModal({
@@ -15,6 +16,7 @@ export default function ConsentModal({
   role,
   loading = false,
   onAccept,
+  onCancel,
 }: ConsentModalProps) {
   const [agreed, setAgreed] = useState(false);
 
@@ -33,8 +35,8 @@ export default function ConsentModal({
     >
       <DialogContent
         className={cn(
-          "max-h-[70vh] w-[95vw] max-w-[640px] overflow-y-auto",
-          "rounded-3xl border-glass-border bg-card p-6 outline-none",
+          "max-h-[70vh] overflow-y-auto",
+          "rounded-xl border-glass-border bg-card p-6 outline-none",
           "sm:w-full sm:p-8",
         )}
         hasCloseButton={false}
@@ -53,7 +55,7 @@ export default function ConsentModal({
         <div className="space-y-5 text-[16px] leading-9 text-foreground">
           <p>
             By clicking{" "}
-            <span className="font-bold text-secondary">“I Agree”</span>, you
+            <span className="font-bold text-primary">“I Agree”</span>, you
             consent to the collection, use, and processing of your personal data
             for legitimate purposes related to this service.
           </p>
@@ -62,8 +64,8 @@ export default function ConsentModal({
             Your information will be handled in accordance with our{" "}
             <a
               className={cn(
-                "cursor-pointer font-bold text-primary transition-colors",
-                "duration-200 hover:text-primary/70",
+                "cursor-pointer font-bold text-secondary underline transition-colors",
+                "duration-200 hover:text-secondary/70",
               )}
               target="_blank"
               href="https://www.pup.edu.ph/privacy"
@@ -71,7 +73,7 @@ export default function ConsentModal({
               Privacy Policy
             </a>{" "}
             and in compliance with the{" "}
-            <span className="font-bold text-secondary">
+            <span className="font-bold text-primary">
               Data Privacy Act of 2012
             </span>
             .
@@ -80,8 +82,8 @@ export default function ConsentModal({
 
         <div
           className={cn(
-            "from-primary-50 via-primary-100 to-primary-50 mt-7",
-            "rounded-2xl border border-glass-border",
+            "via-primary-100 from-primary-50 to-glass-bg",
+            "rounded-xl border border-border",
             "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]",
             "px-5 py-5",
           )}
@@ -140,7 +142,18 @@ export default function ConsentModal({
           </label>
         </div>
 
-        <div className="mt-7 flex justify-end">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          {onCancel ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading}
+              className="min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold"
+            >
+              Sign out
+            </Button>
+          ) : null}
           <Button
             type="button"
             disabled={!agreed || loading}

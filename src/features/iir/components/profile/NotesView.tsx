@@ -1,9 +1,4 @@
-import { useState } from "react";
 import { useMe } from "@/features/users/hooks/useMe";
-import { useParams, useLocation } from "react-router-dom";
-import { unhashId } from "@/lib/hash";
-import { useUserIIR } from "../../hooks";
-import { useToast } from "@/context";
 import SignificantNotes from "@/features/notes/components/SignificantNotes";
 import EmptyState from "./EmptyState";
 

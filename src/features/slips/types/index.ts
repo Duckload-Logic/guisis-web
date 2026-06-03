@@ -20,14 +20,18 @@ export interface SlipCategory {
 export interface SlipStatus {
   id: string;
   name: string;
-  colorKey: string;
 }
 
 export interface SlipStats {
   id: string;
   name: string;
-  colorKey: string;
   count: number;
+}
+
+export interface Ticket {
+  ticketCode: string;
+  isVerified: boolean;
+  verifiedAt?: string;
 }
 
 /**
@@ -44,6 +48,8 @@ export interface Slip {
   category?: SlipCategory;
   status?: SlipStatus;
   studentCorUrl?: string;
+  ticket?: Ticket;
+  hasSignificantNote?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -76,8 +82,10 @@ export interface SlipAttachment {
  */
 export interface PaginatedSlipsResponse {
   slips: Slip[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  meta?: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 }

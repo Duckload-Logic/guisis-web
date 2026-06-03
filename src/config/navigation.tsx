@@ -77,6 +77,11 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       href: "/admin/analytics",
       icon: <TrendingUp size={ICON_SIZE} />,
     },
+    {
+      label: "Academic Settings",
+      href: "/admin/academic-settings",
+      icon: <GraduationCap size={ICON_SIZE} />,
+    },
     // {
     //   label: "Records Lifecycle",
     //   href: "/admin/lifecycle",
@@ -110,12 +115,12 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       icon: <FileText size={ICON_SIZE} />,
     },
     {
-      label: "Security Events",
+      label: "Security Logs",
       href: "/superadmin/security-logs",
       icon: <Shield size={ICON_SIZE} />,
     },
     {
-      label: "Health Monitor",
+      label: "System Logs",
       href: "/superadmin/system-logs",
       icon: <Activity size={ICON_SIZE} />,
     },

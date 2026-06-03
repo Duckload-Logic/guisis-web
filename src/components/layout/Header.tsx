@@ -1,7 +1,6 @@
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import ProfileMenu from "./ProfileMenu";
-import { Settings } from "lucide-react";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { useState } from "react";
 
@@ -39,7 +38,7 @@ export default function Header({
       className={cn(
         "sticky top-0 z-30 flex h-20 items-center justify-between",
         "rounded-3xl rounded-tl-none rounded-tr-none border",
-        "border-glass-border bg-glass-bg px-6 backdrop-blur-lg",
+        "border-glass-border bg-background px-6 shadow-md",
       )}
     >
       <div className="flex items-center gap-3 text-foreground">

@@ -1,9 +1,0 @@
-export { default as SuperAdminDashboard } from "./pages/SuperAdminDashboard";
-export { default as M2MManagement } from "./pages/M2MManagement";
-export { default as UserManagement } from "./pages/UserManagement";
-export { default as AnalyticsOverview } from "./pages/AnalyticsOverview";
-export { default as SecurityLogs } from "./pages/SecurityLogs";
-export { default as SystemLogs } from "./pages/SystemLogs";
-export { default as AuditLogs } from "./pages/AuditLogs";
-export { default as UserActivity } from "./pages/UserActivity";
-export { default as UserSessions } from "./pages/UserSessions";

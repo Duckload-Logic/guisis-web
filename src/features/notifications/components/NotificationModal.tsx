@@ -3,7 +3,6 @@ import {
   Calendar,
   FileText,
   Bell,
-  X,
   User,
   Shield,
   Info,
@@ -19,6 +18,7 @@ import {
   useMarkNotificationRead,
   useNotificationsStream,
 } from "../hooks/useNotifications";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/hooks";
 import { cn } from "@/lib/utils";
@@ -70,6 +70,25 @@ export default function NotificationModal({
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const {
+    isSupported: isPushSupported,
+    permission: pushPermission,
+    isSubscribed: isPushSubscribed,
+    isPending: isPushPending,
+    subscribe: subscribePush,
+  } = usePushNotifications();
+
+  const handleSubscribePush = async () => {
+    try {
+      await subscribePush();
+    } catch (err) {
+      console.error("Failed to subscribe push notifications:", err);
+    }
+  };
+
+  const showPushBanner =
+    isPushSupported && pushPermission === "default" && !isPushSubscribed;
+
   if (!showNotifications) return null;
 
   const notifications = data?.notifications;
@@ -93,15 +112,26 @@ export default function NotificationModal({
     const nType = (notif.type || "").toLowerCase();
 
     if (nType.includes("appointment")) {
-      url = role === "admin" && notif.targetId 
-        ? `/admin/appointments/${notif.targetId}`
-        : `/${role}/appointments`;
+      url =
+        role === "admin" && notif.targetId
+          ? `/admin/appointments/${notif.targetId}`
+          : `/${role}/appointments`;
     } else if (nType.includes("slip")) {
-      url = role === "admin" && notif.targetId
-        ? `/admin/slips/${notif.targetId}`
-        : `/${role}/slips`;
+      url =
+        role === "admin" && notif.targetId
+          ? `/admin/slips/${notif.targetId}`
+          : `/${role}/slips`;
     } else if (nType.includes("user") && role === "admin" && notif.targetId) {
       url = `/admin/student-records/${notif.targetId}`;
+    } else if (
+      nType.includes("system") ||
+      (notif.title || "").toLowerCase().includes("m2m")
+    ) {
+      if (role === "developer") {
+        url = "/developer";
+      } else if (role === "superadmin") {
+        url = "/superadmin/m2m-management";
+      }
     }
 
     if (url) {
@@ -116,6 +146,7 @@ export default function NotificationModal({
       onOpenChange={setShowNotifications}
     >
       <ResponsiveModalContent
+        hasCloseButton={false}
         className={cn(
           "flex h-[85vh] w-full flex-col overflow-hidden border-border",
           "bg-card p-0 shadow-2xl outline-none sm:h-[75vh]",
@@ -179,7 +210,42 @@ export default function NotificationModal({
           </button>
         </div>
 
-        <div className="flex-1 space-y-1 overflow-y-auto scroll-smooth px-3 py-2">
+        <div className={cn(
+          "flex-1 space-y-1 overflow-y-auto scroll-smooth px-3 py-2",
+        )}>
+          {showPushBanner && (
+            <div className={cn(
+              "mx-3 my-2 flex flex-col gap-3 rounded-xl border border-primary/20",
+              "bg-primary/5 p-4 shadow-sm transition hover:bg-primary/10",
+            )}>
+              <div className="flex items-start gap-3">
+                <Bell className="mt-0.5 shrink-0 text-primary" size={18} />
+                <div className="flex-1">
+                  <p className="text-xs font-semibold">
+                    Enable Background Notifications
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Receive urgent status updates on appointments and slips
+                    even when DLL Guidance is closed.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSubscribePush}
+                  disabled={isPushPending}
+                  className={cn(
+                    "rounded-lg bg-primary px-3 py-1 text-xs font-medium",
+                    "text-primary-foreground hover:bg-primary/90",
+                    "transition-colors disabled:opacity-50",
+                  )}
+                >
+                  {isPushPending ? "Enabling..." : "Enable"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Loading notifications...

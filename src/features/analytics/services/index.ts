@@ -32,7 +32,6 @@ export async function GetAdminDashboard(
     });
     return response.data;
   } catch (error: any) {
-    console.error(`[GetAdminDashboard] Fetch Error: ${error.message}`);
     throw error;
   }
 }

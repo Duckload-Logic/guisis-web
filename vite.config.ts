@@ -4,9 +4,17 @@ import svgr from "vite-plugin-svgr";
 import path from "path";
 import tailwindcss from "tailwindcss";
 import autoprefixer from "autoprefixer";
+import unusedCode from "vite-plugin-unused-code";
 
 export default defineConfig({
-  plugins: [react(), svgr()],
+  plugins: [
+    react(),
+    svgr(),
+    unusedCode({
+      patterns: ["src/**/*.*"],
+      failOnHint: true,
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
