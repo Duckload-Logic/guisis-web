@@ -55,7 +55,14 @@ export function useRotateM2MSecret() {
 export function useVerifyM2MClient() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => superadminService.verifyM2MClient(id),
+    mutationFn: ({
+      id,
+      hasPersonalInfoAccess,
+    }: {
+      id: number;
+      hasPersonalInfoAccess: boolean;
+    }) =>
+      superadminService.verifyM2MClient(id, hasPersonalInfoAccess),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.superadmin.m2mClients(false),

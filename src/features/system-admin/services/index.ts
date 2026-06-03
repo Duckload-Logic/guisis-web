@@ -99,12 +99,13 @@ export const PostM2MSecret = async (
  */
 export const PatchVerifyM2MClient = async (
   id: number,
+  hasPersonalInfoAccess: boolean,
   config?: AxiosConfigWithMeta,
 ): Promise<void> => {
   try {
     await apiClient.patch(
       API_ROUTES.superadmin.m2mClients.verify(id),
-      {},
+      { hasPersonalInfoAccess },
       config,
     );
   } catch (error) {

@@ -10,6 +10,7 @@ import { useMe } from "@/features/users/hooks/useMe";
 import { useLogout as useLogoutMutation } from "@/features/auth/hooks";
 import { User, UserRole } from "@/features/users/types/user";
 import { resetSessionUIPreferences } from "@/utils/uiPreferences";
+import { DeletePushSubscribe } from "@/features/notifications/services";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -135,8 +136,27 @@ export const AuthProvider: React.FC<{
   }, [isError]);
 
   const logout = () => {
-  resetSessionUIPreferences();
-  logoutMutation();
+    const performLogout = async () => {
+      try {
+        if (
+          typeof window !== "undefined" &&
+          "serviceWorker" in navigator &&
+          "PushManager" in window
+        ) {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            await DeletePushSubscribe(sub.endpoint);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to delete push subscription on logout:", e);
+      } finally {
+        resetSessionUIPreferences();
+        logoutMutation();
+      }
+    };
+    performLogout();
   };
 
   /**

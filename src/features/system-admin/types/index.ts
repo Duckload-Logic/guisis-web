@@ -7,6 +7,7 @@ export interface M2MClient {
   scopes?: string[];
   isActive: boolean;
   isVerified: boolean;
+  hasPersonalInfoAccess: boolean;
   lastUsedAt?: string;
   expiresAt?: string;
   createdAt: string;
@@ -17,6 +18,7 @@ export interface CreateM2MClientRequest {
   clientDescription: string;
   scopes?: string[];
   expiresAt?: string;
+  hasPersonalInfoAccess?: boolean;
 }
 
 export interface CreateM2MClientResponse extends M2MClient {

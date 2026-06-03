@@ -128,6 +128,7 @@ export default function LogDetails() {
                   </span>
                   <div>
                     <Badge
+                      variant="outline"
                       className={cn(
                         "px-2.5 py-1 text-xs font-semibold",
                         ACTION_BADGE_COLORS[log.action] ||

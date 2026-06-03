@@ -109,7 +109,10 @@ export default function UserSessions() {
             </div>
           </div>
           <div className="text-right">
-            <Badge className="rounded-lg border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-600">
+            <Badge
+              variant="outline"
+              className="rounded-lg border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-600"
+            >
               {sessions?.length || 0} Active Session
               {(sessions?.length || 0) !== 1 ? "s" : ""}
             </Badge>

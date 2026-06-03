@@ -342,7 +342,10 @@ export default function UserManagement() {
         className: "px-6 py-4 font-medium text-foreground",
         render: (entry: WhitelistEntry) => (
           <div className="flex items-center gap-2">
-            <Mail size={14} className="text-muted-foreground" />
+            <Mail
+              size={14}
+              className="text-muted-foreground"
+            />
             {entry.email}
           </div>
         ),
@@ -543,7 +546,10 @@ export default function UserManagement() {
                 User Accounts
               </CardTitle>
               {data && (
-                <Badge className="rounded-lg border border-border bg-card text-muted-foreground">
+                <Badge
+                  variant="outline"
+                  className="rounded-lg border border-border bg-card text-muted-foreground"
+                >
                   Total: {data?.meta?.total}
                 </Badge>
               )}
