@@ -715,11 +715,21 @@ export const PersonalSection = forwardRef<
                 label="Religion"
                 options={religions}
                 value={studentInfo?.personalInfo?.religion?.id || ""}
-                onChange={(val: any) =>
+                onChange={(val: any) => {
+                  const target = religions.find(
+                    (r: any) => r.id === Number(val),
+                  );
                   handleInputChange("student.personalInfo.religion", {
-                    id: val,
-                  })
-                }
+                    id: Number(val),
+                    name: target?.name || "",
+                  });
+                  if (target?.name !== "Others") {
+                    handleInputChange(
+                      "student.personalInfo.otherReligionText",
+                      "",
+                    );
+                  }
+                }}
                 error={errors["student.personalInfo.religion"]}
                 required={isFieldRequired(
                   runtimeSchema,
@@ -727,6 +737,32 @@ export const PersonalSection = forwardRef<
                 )}
               />
             </div>
+            {studentInfo?.personalInfo?.religion?.name === "Others" && (
+              <div className="md:col-span-2">
+                <FormInput
+                  label="Specify Religion"
+                  value={
+                    studentInfo?.personalInfo?.otherReligionText || ""
+                  }
+                  onChange={(val: any) =>
+                    handleInputChange(
+                      "student.personalInfo.otherReligionText",
+                      val,
+                    )
+                  }
+                  error={
+                    errors["student.personalInfo.otherReligionText"]
+                  }
+                  placeholder="Specify religion"
+                  noSpecialCharacters={true}
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.otherReligionText",
+                    studentInfo,
+                  )}
+                />
+              </div>
+            )}
 
             <div className="md:col-span-3">
               <DatePicker
