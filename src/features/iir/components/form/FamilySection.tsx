@@ -78,6 +78,8 @@ const ParentInformationCard = memo(
       const ageDate = new Date(diffMs);
       return Math.abs(ageDate.getUTCFullYear() - 1970);
     };
+    const isNameDisabled =
+      isEditMode && (idx === FATHER_IDX || idx === MOTHER_IDX);
     const isNA =
       person.occupation?.trim().toLowerCase() === "not applicable" ||
       person.occupation?.trim().toLowerCase() === "n/a";
@@ -136,6 +138,7 @@ const ParentInformationCard = memo(
                 handleFieldBlur(`family.relatedPersons.${idx}.firstName`)
               }
               placeholder="First name"
+              disabled={isNameDisabled}
               error={getFieldError(`family.relatedPersons.${idx}.firstName`)}
             />
             <FormInput
@@ -152,6 +155,7 @@ const ParentInformationCard = memo(
                 handleFieldBlur(`family.relatedPersons.${idx}.middleName`)
               }
               placeholder="Middle name"
+              disabled={isNameDisabled}
               error={getFieldError(`family.relatedPersons.${idx}.middleName`)}
             />
             <FormInput
@@ -170,6 +174,7 @@ const ParentInformationCard = memo(
                 handleFieldBlur(`family.relatedPersons.${idx}.lastName`)
               }
               placeholder="Last name"
+              disabled={isNameDisabled}
               error={getFieldError(`family.relatedPersons.${idx}.lastName`)}
             />
           </div>
