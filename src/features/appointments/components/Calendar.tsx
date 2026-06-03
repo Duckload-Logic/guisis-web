@@ -418,7 +418,10 @@ function CalendarContent({
             return (
               <div
                 key={day}
-                className="group relative flex justify-center w-full"
+                className={cn(
+                  "group relative flex w-full aspect-square",
+                  "items-center justify-center",
+                )}
               >
                 <button
                   disabled={isDisabled}
