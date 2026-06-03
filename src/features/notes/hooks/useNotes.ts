@@ -67,6 +67,20 @@ export function useCreateNote(
         });
       }
 
+      // Invalidate related admission slip if applicable
+      if (variables.admissionSlipId) {
+        queryClient.invalidateQueries({
+          queryKey: [
+            ...QUERY_KEYS.slips.all,
+            "byId",
+            variables.admissionSlipId,
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.slips.all,
+        });
+      }
+
       onSuccess?.();
     },
     onError: (error: any) => {
