@@ -155,7 +155,7 @@ curl_close($ch);`,
                 <div
                   className={cn(
                     "min-w-0 space-y-3 rounded-lg border",
-                    "border-white/5 bg-white/5 p-6",
+                    "border-white/5 bg-glass-bg p-6 shadow-md",
                   )}
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -167,7 +167,7 @@ curl_close($ch);`,
                   <div
                     className={cn(
                       "flex items-center justify-between gap-2",
-                      "rounded-lg border border-white/10 bg-black/40 px-3 py-1.5",
+                      "rounded-lg border border-white/10 bg-muted/30 px-3 py-1.5",
                     )}
                   >
                     <code
@@ -195,7 +195,7 @@ curl_close($ch);`,
                 <div
                   className={cn(
                     "min-w-0 space-y-3 rounded-lg border",
-                    "border-white/5 bg-white/5 p-6",
+                    "border-white/5 bg-glass-bg p-6 shadow-md",
                   )}
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary/10 text-secondary">

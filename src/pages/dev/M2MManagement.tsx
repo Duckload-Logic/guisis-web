@@ -17,8 +17,17 @@ import {
   AlertTriangle,
   X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+} from "@/components/ui/responsive-modal";
+import { Button } from "@/components/ui/button";
+import { FormInput } from "@/components/form";
 
 interface M2MClient {
   id: number;
@@ -27,6 +36,7 @@ interface M2MClient {
   clientId: string;
   isActive: boolean;
   isVerified: boolean;
+  hasPersonalInfoAccess: boolean;
   createdAt: string;
 }
 
@@ -35,6 +45,7 @@ const M2MManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newClient, setNewClient] = useState({ name: "", description: "" });
+  const [requestPersonalInfo, setRequestPersonalInfo] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [newSecret, setNewSecret] = useState<{
@@ -120,11 +131,13 @@ const M2MManagement: React.FC = () => {
       await m2mService.createClient({
         clientName: newClient.name,
         clientDescription: newClient.description,
+        hasPersonalInfoAccess: requestPersonalInfo,
       });
       // Skip setting createdClientData to avoid showing the success modal
       // as verification is pending anyway.
       await fetchClients();
       setNewClient({ name: "", description: "" });
+      setRequestPersonalInfo(false);
       setShowCreateModal(false); // Close the creation form
     } catch (err) {
       console.error("Failed to create client", err);
@@ -215,7 +228,7 @@ const M2MManagement: React.FC = () => {
               key={i}
               className={cn(
                 "glass-card flex flex-col rounded-xl",
-                "border border-glass-border p-6 space-y-6",
+                "space-y-6 border border-glass-border p-6",
               )}
             >
               <div className="flex items-start justify-between">
@@ -298,6 +311,29 @@ const M2MManagement: React.FC = () => {
                   <p className="mt-1 line-clamp-2 text-sm font-medium text-muted-foreground">
                     {client.clientDescription || "No description provided."}
                   </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold uppercase " +
+                          "tracking-wider text-muted-foreground",
+                      )}
+                    >
+                      Personal Info:
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] " +
+                          "border font-bold",
+                        client.hasPersonalInfoAccess
+                          ? "border-emerald-500/10 bg-emerald-500/5 " +
+                              "text-emerald-500"
+                          : "border-muted/30 bg-muted/5 " +
+                              "text-muted-foreground",
+                      )}
+                    >
+                      {client.hasPersonalInfoAccess ? "Granted" : "Denied"}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-4 pt-2">
@@ -436,190 +472,238 @@ const M2MManagement: React.FC = () => {
       )}
 
       {/* Create Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-background/80 backdrop-blur-md"
-              onClick={() => setShowCreateModal(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="glass-card relative z-10 w-full max-w-lg space-y-8 border-primary/10 p-10 shadow-2xl"
+      <ResponsiveModal
+        open={showCreateModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowCreateModal(false);
+            setCreatedClientData(null);
+            setShowCreatedSecret(false);
+          }
+        }}
+      >
+        <ResponsiveModalContent
+          hasCloseButton={false}
+          className="max-w-lg p-10"
+        >
+          <ResponsiveModalHeader className="space-y-2 text-left">
+            <ResponsiveModalTitle className="text-3xl tracking-tighter">
+              {createdClientData
+                ? "Client Created Successfully"
+                : "Create M2M Client"}
+            </ResponsiveModalTitle>
+            <ResponsiveModalDescription
+              className={cn("font-medium", "text-muted-foreground")}
             >
-              <div className="space-y-2">
-                <h2 className="text-3xl tracking-tighter">
-                  {createdClientData
-                    ? "Client Created Successfully"
-                    : "Create M2M Client"}
-                </h2>
-                <p className="font-medium text-muted-foreground">
-                  {createdClientData
-                    ? "Please copy your client secret now. For security, we won't show it to you again."
-                    : "Authorize a new machine-to-machine application to integrate with the OGOS platform."}
+              {createdClientData
+                ? "Please copy your client secret now. " +
+                  "For security, we won't show it to you again."
+                : "Authorize a new machine-to-machine application " +
+                  "to integrate with the OGOS platform."}
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
+
+          {createdClientData ? (
+            <div className="animate-in zoom-in-95 space-y-8 duration-300">
+              <div
+                className={cn(
+                  "space-y-6 rounded-[2rem] border",
+                  "border-emerald-500/20 bg-emerald-500/5 p-6",
+                )}
+              >
+                <div className="space-y-2">
+                  <label
+                    className={cn(
+                      "px-1 text-[10px] uppercase",
+                      "tracking-[0.2em] text-muted-foreground/60",
+                    )}
+                  >
+                    Client ID
+                  </label>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl",
+                      "border border-border bg-background p-4 shadow-inner",
+                    )}
+                  >
+                    <code
+                      className={cn(
+                        "flex-1 truncate font-mono text-sm",
+                        "font-bold text-foreground",
+                      )}
+                    >
+                      {createdClientData.client.clientId}
+                    </code>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(
+                          createdClientData.client.clientId,
+                          "created-id",
+                        )
+                      }
+                      className={cn(
+                        "rounded-xl bg-muted/50 p-2",
+                        "text-muted-foreground transition-all",
+                        "hover:text-primary",
+                      )}
+                    >
+                      {copiedId === "created-id" ? (
+                        <Check size={18} />
+                      ) : (
+                        <Copy size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    className={cn(
+                      "px-1 text-[10px] uppercase",
+                      "tracking-[0.2em] text-muted-foreground/60",
+                    )}
+                  >
+                    Client Secret
+                  </label>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-2xl",
+                      "border border-border bg-background p-4 shadow-inner",
+                    )}
+                  >
+                    <input
+                      type={showCreatedSecret ? "text" : "password"}
+                      readOnly
+                      value={createdClientData.secret}
+                      className={cn(
+                        "flex-1 border-none bg-transparent font-mono",
+                        "text-sm font-bold text-emerald-500",
+                        "focus:outline-none",
+                      )}
+                    />
+                    <button
+                      onClick={() => setShowCreatedSecret(!showCreatedSecret)}
+                      className={cn(
+                        "rounded-xl bg-muted/50 p-2",
+                        "text-muted-foreground transition-all",
+                        "hover:text-primary",
+                      )}
+                    >
+                      {showCreatedSecret ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                    <button
+                      onClick={() =>
+                        copyToClipboard(
+                          createdClientData.secret,
+                          "created-secret",
+                        )
+                      }
+                      className={cn(
+                        "rounded-xl bg-emerald-500/10 p-2 font-bold",
+                        "text-emerald-500 transition-all",
+                        "hover:bg-emerald-500/20",
+                      )}
+                    >
+                      {copiedId === "created-secret" ? (
+                        <Check size={18} />
+                      ) : (
+                        <Copy size={18} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  "flex items-start gap-4 rounded-2xl border",
+                  "border-amber-500/20 bg-amber-500/10 p-4",
+                )}
+              >
+                <AlertTriangle
+                  className="shrink-0 text-amber-500"
+                  size={20}
+                />
+                <p
+                  className={cn(
+                    "text-xs font-bold leading-relaxed",
+                    "text-amber-500/90",
+                  )}
+                >
+                  Make sure to store this secret securely. You will not be able
+                  to retrieve it later, though you can always generate a new
+                  one.
                 </p>
               </div>
 
-              {createdClientData ? (
-                <div className="animate-in zoom-in-95 space-y-8 duration-300">
-                  <div className="space-y-6 rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5 p-6">
-                    <div className="space-y-2">
-                      <label className="px-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-                        Client ID
-                      </label>
-                      <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 shadow-inner">
-                        <code className="flex-1 truncate font-mono text-sm font-bold text-foreground">
-                          {createdClientData.client.clientId}
-                        </code>
-                        <button
-                          onClick={() =>
-                            copyToClipboard(
-                              createdClientData.client.clientId,
-                              "created-id",
-                            )
-                          }
-                          className="rounded-xl bg-muted/50 p-2 text-muted-foreground transition-all hover:text-primary"
-                        >
-                          {copiedId === "created-id" ? (
-                            <Check size={18} />
-                          ) : (
-                            <Copy size={18} />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setCreatedClientData(null);
+                  setShowCreatedSecret(false);
+                }}
+                className="btn-primary w-full py-4 text-sm font-bold"
+              >
+                I've copied the secret
+              </button>
+            </div>
+          ) : (
+            <form
+              onSubmit={handleCreate}
+              className="space-y-6"
+            >
+              <div className="space-y-2.5">
+                <FormInput
+                  label="Application Name"
+                  value={newClient.name}
+                  required
+                  onChange={(val) => setNewClient({ ...newClient, name: val })}
+                  placeholder="e.g. Finance Analytics Service"
+                />
+              </div>
+              <div className="space-y-2.5">
+                <FormInput
+                  label="Purpose / Description"
+                  isTextarea
+                  value={newClient.description}
+                  required
+                  onChange={(val) =>
+                    setNewClient({
+                      ...newClient,
+                      description: val,
+                    })
+                  }
+                  placeholder={
+                    "Explain how this application will use the " +
+                    "available student endpoints."
+                  }
+                  maxChars={100}
+                />
+              </div>
 
-                    <div className="space-y-2">
-                      <label className="px-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-                        Client Secret
-                      </label>
-                      <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 shadow-inner">
-                        <input
-                          type={showCreatedSecret ? "text" : "password"}
-                          readOnly
-                          value={createdClientData.secret}
-                          className="flex-1 border-none bg-transparent font-mono text-sm font-bold text-emerald-500 focus:outline-none"
-                        />
-                        <button
-                          onClick={() =>
-                            setShowCreatedSecret(!showCreatedSecret)
-                          }
-                          className="rounded-xl bg-muted/50 p-2 text-muted-foreground transition-all hover:text-primary"
-                        >
-                          {showCreatedSecret ? (
-                            <EyeOff size={18} />
-                          ) : (
-                            <Eye size={18} />
-                          )}
-                        </button>
-                        <button
-                          onClick={() =>
-                            copyToClipboard(
-                              createdClientData.secret,
-                              "created-secret",
-                            )
-                          }
-                          className="rounded-xl bg-emerald-500/10 p-2 font-bold text-emerald-500 transition-all hover:bg-emerald-500/20"
-                        >
-                          {copiedId === "created-secret" ? (
-                            <Check size={18} />
-                          ) : (
-                            <Copy size={18} />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
-                    <AlertTriangle
-                      className="shrink-0 text-amber-500"
-                      size={20}
-                    />
-                    <p className="text-xs font-bold leading-relaxed text-amber-500/90">
-                      Make sure to store this secret securely. You will not be
-                      able to retrieve it later, though you can always generate
-                      a new one.
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setShowCreateModal(false);
-                      setCreatedClientData(null);
-                      setShowCreatedSecret(false);
-                    }}
-                    className="btn-primary w-full py-4 text-sm font-bold"
-                  >
-                    I've copied the secret
-                  </button>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleCreate}
-                  className="space-y-6"
+              <div className="flex w-full justify-end gap-4 pt-6">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
                 >
-                  <div className="space-y-2.5">
-                    <label className="px-1 text-xs font-bold uppercase text-muted-foreground/80">
-                      Application Name{" "}
-                      <span className="ml-1 text-destructive">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newClient.name}
-                      onChange={(e) =>
-                        setNewClient({ ...newClient, name: e.target.value })
-                      }
-                      placeholder="e.g. Finance Analytics Service"
-                      className="input-premium"
-                    />
-                  </div>
-                  <div className="space-y-2.5">
-                    <label className="px-1 text-xs font-bold uppercase text-muted-foreground/80">
-                      Purpose / Description{" "}
-                      <span className="ml-1 text-destructive">*</span>
-                    </label>
-                    <textarea
-                      value={newClient.description}
-                      required
-                      onChange={(e) =>
-                        setNewClient({
-                          ...newClient,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Explain how this application will use the available student endpoints."
-                      className="flex min-h-[120px] w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    />
-                  </div>
-
-                  <div className="flex gap-4 pt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateModal(false)}
-                      className="btn-secondary flex-1"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn-primary flex-1"
-                    >
-                      Generate Client
-                    </button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  type="submit"
+                >
+                  Generate Client
+                </Button>
+              </div>
+            </form>
+          )}
+        </ResponsiveModalContent>
+      </ResponsiveModal>
     </div>
   );
 };

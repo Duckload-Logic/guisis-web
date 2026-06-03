@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,8 @@ export default function M2MManagement() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<M2MClient | null>(null);
   const [rotateTarget, setRotateTarget] = useState<M2MClient | null>(null);
+  const [verifyTarget, setVerifyTarget] = useState<M2MClient | null>(null);
+  const [verifyPersonalInfo, setVerifyPersonalInfo] = useState(false);
 
   const [createdSecret, setCreatedSecret] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -88,8 +91,8 @@ export default function M2MManagement() {
     setIsCreateOpen(true); // Re-use the "secret reveal" modal logic
   };
 
-  const handleVerify = async (id: number) => {
-    await verifyMutation.mutateAsync(id);
+  const handleVerify = async (id: number, hasPersonalInfoAccess: boolean) => {
+    await verifyMutation.mutateAsync({ id, hasPersonalInfoAccess });
   };
 
   const handleReject = async (id: number) => {
@@ -296,6 +299,7 @@ export default function M2MManagement() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
                             <Badge
+                              variant="outline"
                               className={
                                 client.isActive
                                   ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
@@ -305,8 +309,29 @@ export default function M2MManagement() {
                               {client.isActive ? "Active" : "Revoked"}
                             </Badge>
                             {client.isVerified && (
-                              <Badge className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                              <Badge
+                                variant="outline"
+                                className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                              >
                                 Verified
+                              </Badge>
+                            )}
+                            {client.isVerified && (
+                              <Badge
+                                variant="outline"
+                                className={
+                                  client.hasPersonalInfoAccess
+                                    ? "border-purple-500/20 " +
+                                      "bg-purple-500/10 text-purple-700" +
+                                      "dark:text-purple-400"
+                                    : "border-slate-500/20 " +
+                                      "bg-slate-500/10 text-slate-700" +
+                                      "dark:text-slate-400"
+                                }
+                              >
+                                {client.hasPersonalInfoAccess
+                                  ? "PII: Allowed"
+                                  : "PII: Denied"}
                               </Badge>
                             )}
                           </div>
@@ -351,7 +376,12 @@ export default function M2MManagement() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => handleVerify(client.id)}
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
                                       className={
                                         "h-8 w-8 rounded-xl p-0 " +
                                         "text-blue-600" +
@@ -384,6 +414,24 @@ export default function M2MManagement() {
                                   </>
                                 ) : (
                                   <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
+                                      className={
+                                        "h-8 w-8 rounded-xl p-0 " +
+                                        "text-purple-600" +
+                                        "hover:bg-purple-600/10"
+                                      }
+                                      title="Manage Personal Info Access"
+                                    >
+                                      <ShieldCheck size={14} />
+                                    </Button>
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -594,6 +642,67 @@ export default function M2MManagement() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Verify M2M Client Modal */}
+        <Dialog
+          open={!!verifyTarget}
+          onOpenChange={(open) => {
+            if (!open) {
+              setVerifyTarget(null);
+            }
+          }}
+        >
+          <DialogContent className="backdrop-blur-2xl sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Verify M2M Client</DialogTitle>
+              <DialogDescription>
+                Confirm verification for client &quot;
+                {verifyTarget?.clientName}&quot;.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div
+                className={
+                  "flex items-center justify-between " +
+                  "rounded-xl border border-border bg-muted/20 p-4"
+                }
+              >
+                <div className="space-y-0.5">
+                  <label className="text-sm font-bold text-foreground">
+                    Grant Student Personal Info Access
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Allow access to addresses, contacts, and student profiles.
+                  </p>
+                </div>
+                <Switch
+                  checked={verifyPersonalInfo}
+                  onCheckedChange={setVerifyPersonalInfo}
+                  className="min-w-1/2"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => setVerifyTarget(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!verifyTarget) return;
+                  await handleVerify(verifyTarget.id, verifyPersonalInfo);
+                  setVerifyTarget(null);
+                }}
+              >
+                Verify & Grant Access
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
