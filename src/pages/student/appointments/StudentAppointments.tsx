@@ -297,6 +297,7 @@ export default function StudentAppointments() {
                 </Badge>
 
                 <Badge
+                  variant="outline"
                   className={cn(
                     "text-xs hover:brightness-110",
                     getStatusColor(appointment.status?.name),
@@ -625,6 +626,7 @@ export default function StudentAppointments() {
                 >
                   <span>{filter.name}</span>
                   <Badge
+                    variant="outline"
                     className={cn(
                       "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
                       "font-bold transition-all",

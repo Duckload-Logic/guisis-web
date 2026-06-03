@@ -235,6 +235,7 @@ export default function AppointmentList({
 
         <div className="flex flex-col items-end gap-2">
           <Badge
+            variant="outline"
             className={cn(
               "whitespace-nowrap rounded-full border px-3 py-1 " +
                 "text-[9px] font-bold tracking-wide shadow-sm",

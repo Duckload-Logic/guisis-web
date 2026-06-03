@@ -460,12 +460,11 @@ export default function AppointmentDetails() {
               <div className="flex flex-wrap items-center gap-2">
                 {appointment?.status && (
                   <Badge
+                    variant="outline"
                     className={cn(
                       "rounded-full border px-3 py-1 text-[10px] font-bold",
                       "shadow-sm",
-                      STATUS_COLORS[
-                        getStatusColorKey(appointment.status.name)
-                      ],
+                      STATUS_COLORS[getStatusColorKey(appointment.status.name)],
                     )}
                   >
                     {appointment.status.name}

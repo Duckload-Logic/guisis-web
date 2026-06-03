@@ -220,6 +220,7 @@ export default function AppointmentDetails() {
                       </CardTitle>
                     </div>
                     <Badge
+                      variant="outline"
                       className={cn(
                         "px-3 py-1",
                         getStatusColor(appointment?.status?.name),

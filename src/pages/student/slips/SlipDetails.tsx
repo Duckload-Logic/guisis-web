@@ -198,6 +198,7 @@ export default function SlipDetails() {
                       <CardTitle className="text-xl">Slip Overview</CardTitle>
                     </div>
                     <Badge
+                      variant="outline"
                       className={cn(
                         "px-3 py-1",
                         getStatusColor(slip?.status?.name),

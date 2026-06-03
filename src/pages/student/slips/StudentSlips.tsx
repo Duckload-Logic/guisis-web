@@ -299,6 +299,7 @@ export default function StudentSlips() {
                 </Badge>
 
                 <Badge
+                  variant="outline"
                   className={cn(
                     "text-xs hover:opacity-90",
                     getStatusColor(slip.status?.name),
@@ -587,18 +588,18 @@ export default function StudentSlips() {
                       setCurrentPage(1);
                     }}
                     className={cn(
-                      "h-9 rounded-xl px-4 text-xs font-bold transition-all",
+                      "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
                       isActive
-                        ? "shadow-md shadow-primary/10"
+                        ? "shadow-md"
                         : cn(
-                            "border-white/20 bg-white/20 hover:bg-white/40",
-                            "dark:border-white/5 dark:bg-white/[0.02]",
-                            "dark:hover:bg-white/[0.05]",
+                            "border-glass-border bg-glass-bg",
+                            "hover:bg-primary/10 hover:text-primary hover:opacity-90",
                           ),
                     )}
                   >
                     <span>{filter.name}</span>
                     <Badge
+                      variant="outline"
                       className={cn(
                         "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
                         "font-bold transition-all",
