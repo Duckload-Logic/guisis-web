@@ -43,12 +43,11 @@ export function ReportModal({
       const cat =
         type === "appointments"
           ? item.appointmentCategory?.name || "General"
-          : item.category?.name || "Excuse Slip";
+          : item.category?.name || "Admission Slip";
       stats[cat] = (stats[cat] || 0) + 1;
     });
     return stats;
   }, [filteredData, type]);
-
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
