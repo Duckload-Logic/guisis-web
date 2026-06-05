@@ -15,6 +15,7 @@ import StudentSlipDetails from "@/pages/student/slips/SlipDetails";
 import IIRProfile from "@/pages/student/iir/IIRProfile";
 import IIRForm from "@/pages/student/iir/IIRForm";
 import CORManagement from "@/pages/student/CORManagement";
+import StudentFAQ from "@/pages/student/FAQ";
 
 // Admin Feature
 import Dashboard from "@/pages/admin/Dashboard";
@@ -35,7 +36,7 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import RoleSelection from "@/pages/auth/RoleSelection";
 
-// Super Admin Pages (Reverted to stable paths)
+// Super Admin Pages
 import SuperAdminDashboard from "@/pages/superadmin/SuperAdminDashboard";
 import SAM2M from "@/pages/superadmin/M2MManagement";
 import UserManagement from "@/pages/superadmin/UserManagement";
@@ -54,7 +55,6 @@ import Documentation from "@/pages/dev/Documentation";
 import Guides from "@/pages/dev/Guides";
 
 export const routes: RouteObject[] = [
-  // Root route - redirect to login
   {
     path: "/",
     element: (
@@ -65,7 +65,6 @@ export const routes: RouteObject[] = [
     ),
   },
 
-  // Public routes
   {
     path: "/login",
     element: <Login />,
@@ -75,7 +74,6 @@ export const routes: RouteObject[] = [
     element: <Register />,
   },
 
-  // Student routes
   {
     path: "/student",
     element: (
@@ -165,6 +163,10 @@ export const routes: RouteObject[] = [
         ),
       },
       {
+        path: "faqs",
+        element: <StudentFAQ />,
+      },
+      {
         path: "profile",
         element: <Profile />,
       },
@@ -175,7 +177,6 @@ export const routes: RouteObject[] = [
     ],
   },
 
-  // Admin routes
   {
     path: "/admin",
     element: (
@@ -236,11 +237,13 @@ export const routes: RouteObject[] = [
         path: "notifications",
         element: <NotificationsPage />,
       },
-      { path: "academic-settings", element: <AcademicSettings /> },
+      {
+        path: "academic-settings",
+        element: <AcademicSettings />,
+      },
     ],
   },
 
-  // SuperAdmin routes
   {
     path: "/superadmin",
     element: (
@@ -264,7 +267,6 @@ export const routes: RouteObject[] = [
     ],
   },
 
-  // Developer routes
   {
     path: "/developer",
     element: (
@@ -294,6 +296,5 @@ export const routes: RouteObject[] = [
     ),
   },
 
-  // 404
   { path: "*", element: <NotFound /> },
 ];
