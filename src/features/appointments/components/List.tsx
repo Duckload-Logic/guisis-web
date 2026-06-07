@@ -3,18 +3,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination, Table, Column } from "@/components/shared";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
-import {
-  CalendarX,
-  Eye,
-  Tag,
-  User,
-  CalendarDays,
-  Clock,
-  AlertTriangle,
-} from "lucide-react";
+import { CalendarX, Eye, User } from "lucide-react";
 import { useMemo } from "react";
 import { SearchInput } from "@/components/form";
-import { format12HourTime, formatDate } from "@/utils/dateTime";
+import { format12HourTime } from "@/utils/dateTime";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Dropdown } from "@/components/form";
@@ -34,9 +26,22 @@ function getUrgencyValue(apt: Appointment) {
   };
 }
 
+function formatCompactDate(value?: string) {
+  if (!value) return "—";
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "—";
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
   const urgency = getUrgencyValue(appointment);
-  if (!urgency?.label) return null;
+  if (!urgency?.label) return <span className="text-muted-foreground">—</span>;
 
   const level = urgency.key.toLowerCase();
   const tone =
@@ -51,13 +56,12 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
   return (
     <span
       className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-full border",
-        "px-2.5 py-1 text-[10px] uppercase",
+        "inline-flex w-fit items-center rounded-full border",
+        "px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         tone,
       )}
       title={`Urgency level: ${urgency.label}`}
     >
-      <AlertTriangle className="h-3 w-3" />
       {urgency.label}
     </span>
   );
@@ -117,77 +121,74 @@ export default function AppointmentList({
   const columns = useMemo<Column<Appointment>[]>(
     () => [
       {
-        header: "Date",
-        className: "pl-6 pr-2 py-4 text-left",
+        header: "Date Requested",
+        className: "min-w-[150px]",
         render: (apt) => (
-          <div
-            className={cn(
-              "flex h-12 w-12 shrink-0 flex-col items-center",
-              "justify-center rounded-xl border border-white/55",
-              "bg-white/45 shadow-sm backdrop-blur-xl",
-              "dark:border-white/10 dark:bg-white/[0.055]",
-            )}
-          >
-            <span
-              className={cn(
-                "text-[9px] font-bold uppercase",
-                "tracking-wider text-primary",
-              )}
-            >
-              {new Date(apt.whenDate).toLocaleDateString("en-US", {
-                month: "short",
-              })}
-            </span>
-            <span className="text-base font-extrabold text-foreground">
-              {new Date(apt.whenDate).getDate()}
-            </span>
+          <div className="space-y-0.5">
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {formatCompactDate(apt.createdAt)}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Request submitted
+            </p>
           </div>
         ),
       },
       {
-        header: "Student Name",
-        className: "px-4 py-6 text-sm font-bold text-foreground text-left",
+        header: "Appointment Date",
+        className: "min-w-[165px]",
         render: (apt) => (
-          <>
-            {apt.user?.firstName}{" "}
-            {apt.user?.middleName?.[0] ? `${apt.user?.middleName?.[0]}. ` : ""}
-            {apt.user?.lastName}
-          </>
+          <div className="space-y-0.5">
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {formatCompactDate(apt.whenDate)}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {format12HourTime(apt.timeSlot?.time || "") || "No time"}
+            </p>
+          </div>
         ),
       },
       {
-        header: "Time",
-        className:
-          "whitespace-nowrap px-6 py-6 text-xs font-bold " +
-          "text-foreground/80 text-left",
-        render: (apt) => format12HourTime(apt.timeSlot?.time || ""),
+        header: "Student",
+        className: "min-w-[190px]",
+        render: (apt) => (
+          <div className="space-y-0.5">
+            <p className="font-semibold text-foreground">
+              {apt.user?.firstName}{" "}
+              {apt.user?.middleName?.[0]
+                ? `${apt.user?.middleName?.[0]}. `
+                : ""}
+              {apt.user?.lastName}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {apt.studentNumber || apt.user?.email || "Student record"}
+            </p>
+          </div>
+        ),
       },
       {
         header: "Category",
-        className: "px-4 py-4 text-foreground text-left",
+        className: "min-w-[160px]",
         render: (apt) => (
-          <div
+          <span
             className={cn(
-              "flex w-fit items-center gap-2 rounded-full border",
-              "border-border bg-muted/20 px-2.5 py-1",
+              "inline-flex max-w-[170px] items-center rounded-full border",
+              "border-white/25 bg-white/45 px-2.5 py-1 text-xs font-medium",
+              "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
             )}
           >
-            <Tag className="h-3 w-3 text-muted-foreground" />
-            <span className="max-w-[140px] text-nowrap">
-              {apt.appointmentCategory?.name}
-            </span>
-          </div>
+            <span className="truncate">{apt.appointmentCategory?.name}</span>
+          </span>
         ),
       },
       {
         header: "Status",
-        className: "px-4 py-4 text-left",
+        className: "min-w-[130px]",
         render: (apt) => (
           <span
             className={cn(
-              "inline-flex min-w-max whitespace-nowrap rounded-full " +
-                "border px-3 py-1 text-[11px] font-semibold" +
-                "tracking-wide",
+              "inline-flex min-w-max whitespace-nowrap rounded-full border",
+              "px-2.5 py-1 text-[11px] font-semibold tracking-wide",
               STATUS_COLORS[getStatusColorKey(apt.status?.name)],
             )}
           >
@@ -197,7 +198,7 @@ export default function AppointmentList({
       },
       {
         header: "Urgency",
-        className: "px-4 py-4 text-left",
+        className: "min-w-[110px]",
         render: (apt) => <UrgencyCapsule appointment={apt} />,
       },
     ],
@@ -208,97 +209,82 @@ export default function AppointmentList({
     <div
       key={apt.id}
       className={cn(
-        "bg-glass-bg/20 border-glass-border/20 space-y-4 rounded-3xl",
-        "border p-6 shadow-sm backdrop-blur-md transition-all",
-        "duration-300 active:scale-[0.98]",
+        "space-y-3 rounded-2xl border border-white/20 bg-white/45 p-4",
+        "shadow-sm backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
+        "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            "flex items-center gap-3 text-sm font-bold",
-            "text-foreground",
-          )}
-        >
-          <div
-            className={cn(
-              "rounded-xl border border-primary/20",
-              "bg-primary/10 p-2",
-            )}
-          >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <User className="h-4 w-4 text-primary" />
+            <span className="truncate">
+              {apt.user?.firstName} {apt.user?.lastName}
+            </span>
           </div>
-          <span className="tracking-tight">
-            {apt.user?.firstName} {apt.user?.lastName}
-          </span>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+            {apt.appointmentCategory?.name}
+          </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <Badge
-            variant="outline"
-            className={cn(
-              "whitespace-nowrap rounded-full border px-3 py-1 " +
-                "text-[9px] font-bold tracking-wide shadow-sm",
-              STATUS_COLORS[getStatusColorKey(apt.status?.name)],
-            )}
-          >
-            {apt.status?.name}
-          </Badge>
-          <UrgencyCapsule appointment={apt} />
-        </div>
+        <Badge
+          variant="outline"
+          className={cn(
+            "shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1",
+            "text-[10px] font-bold tracking-wide shadow-sm",
+            STATUS_COLORS[getStatusColorKey(apt.status?.name)],
+          )}
+        >
+          {apt.status?.name}
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-[10px] font-bold">
+      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
         <div
           className={cn(
-            "border-glass-border/10 flex items-center gap-2 rounded-xl",
-            "border bg-muted/20 px-3 py-2 text-muted-foreground/80",
+            "rounded-xl border border-white/20 bg-white/40 px-3 py-2",
+            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
-          <CalendarDays className="h-3.5 w-3.5 text-primary/60" />
-          <span>{formatDate(apt.whenDate || "")}</span>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Date Requested
+          </p>
+          <p className="mt-0.5 font-semibold text-foreground">
+            {formatCompactDate(apt.createdAt)}
+          </p>
         </div>
 
         <div
           className={cn(
-            "border-glass-border/10 flex items-center gap-2 rounded-xl",
-            "border bg-muted/20 px-3 py-2 text-muted-foreground/80",
+            "rounded-xl border border-white/20 bg-white/40 px-3 py-2",
+            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
-          <Clock className="h-3.5 w-3.5 text-primary/60" />
-          <span>{format12HourTime(apt.timeSlot?.time || "")}</span>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Appointment Date
+          </p>
+          <p className="mt-0.5 font-semibold text-foreground">
+            {formatCompactDate(apt.whenDate)}
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {format12HourTime(apt.timeSlot?.time || "") || "No time"}
+          </p>
         </div>
       </div>
 
-      <div
-        className={cn(
-          "border-glass-border/10 flex items-center gap-3 rounded-2xl",
-          "border bg-muted/20 px-4 py-3",
-        )}
-      >
-        <Tag className="h-4 w-4 text-primary/60" />
-        <span
-          className={cn(
-            "text-[10px] font-bold tracking-wide",
-            "text-foreground/70",
-          )}
-        >
-          {apt.appointmentCategory?.name}
-        </span>
-      </div>
-
-      <div className="pt-2">
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <UrgencyCapsule appointment={apt} />
         <Button
           variant="outline"
           size="sm"
           onClick={() => onViewClick(apt)}
           className={cn(
-            "h-11 w-full gap-2 rounded-2xl border-primary/20 bg-primary/5",
-            "text-[10px] font-bold tracking-wide text-primary",
+            "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
+            "px-3 text-[11px] font-semibold text-primary",
           )}
         >
           <Eye className="h-3.5 w-3.5" />
-          Access Interface
+          View
         </Button>
       </div>
     </div>
@@ -307,80 +293,57 @@ export default function AppointmentList({
   const emptyState = (
     <div
       className={cn(
-        "flex flex-col items-center justify-center space-y-6",
-        "px-6 py-24 text-center",
+        "flex flex-col items-center justify-center space-y-5",
+        "px-6 py-16 text-center",
       )}
     >
       <div
         className={cn(
-          "border-glass-border/40 animate-pulse rounded-full border",
-          "border-dashed bg-muted/20 p-6",
+          "rounded-full border border-dashed border-white/30",
+          "bg-white/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
         )}
       >
-        <CalendarX className="h-10 w-10 text-muted-foreground/50" />
+        <CalendarX className="h-9 w-9 text-muted-foreground/50" />
       </div>
       <div className="space-y-2">
-        <h3 className="text-xl tracking-tight text-foreground/80">
-          Inbox Empty
+        <h3 className="text-lg font-semibold tracking-tight text-foreground/80">
+          No appointments found
         </h3>
-        <p
-          className={cn(
-            "text-xs font-semibold leading-relaxed tracking-wide",
-            "text-muted-foreground opacity-70",
-          )}
-        >
-          No active records match the current telemetry filters.
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          No active records match the current filters.
         </p>
       </div>
     </div>
   );
 
   const renderDesktopSkeleton = () => (
-    <table
-      className={cn(
-        "w-full border-separate border-spacing-y-3 text-sm",
-        "px-3 py-3",
-      )}
-    >
-      <thead
-        className={cn(
-          "text-[10px] font-bold text-muted-foreground",
-          "opacity-60",
-        )}
-      >
-        <tr>
-          <th className="py-4 pl-6 pr-2 text-left">Date</th>
-          <th className="px-4 py-4 text-left">Student Name</th>
-          <th className="px-6 py-4 text-left">Time</th>
-          <th className="px-4 py-4 text-left">Category</th>
-          <th className="px-4 py-4 text-left">Status</th>
-          <th className="px-4 py-4 text-left">Urgency</th>
+    <table className="w-full border-collapse text-sm">
+      <thead>
+        <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
+          {columns.map((column) => (
+            <th
+              key={column.header}
+              className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
+            >
+              {column.header}
+            </th>
+          ))}
         </tr>
       </thead>
       <tbody>
         {Array.from({ length: 5 }).map((_, idx) => (
           <tr
             key={idx}
-            className="animate-pulse"
+            className="animate-pulse border-b border-white/15 dark:border-white/10"
           >
-            <td className="rounded-l-[20px] py-4 pl-6 pr-2">
-              <Skeleton className="h-12 w-12 rounded-xl" />
-            </td>
-            <td className="px-4 py-6">
-              <Skeleton className="h-4 w-32 rounded" />
-            </td>
-            <td className="px-6 py-6">
-              <Skeleton className="h-4 w-16 rounded" />
-            </td>
-            <td className="px-4 py-4">
-              <Skeleton className="h-6 w-24 rounded-full" />
-            </td>
-            <td className="px-4 py-4">
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </td>
-            <td className="rounded-r-[20px] px-4 py-4">
-              <Skeleton className="h-6 w-24 rounded-full" />
-            </td>
+            {columns.map((column) => (
+              <td
+                key={column.header}
+                className="px-4 py-3"
+              >
+                <Skeleton className="h-4 w-24 rounded" />
+              </td>
+            ))}
           </tr>
         ))}
       </tbody>
@@ -393,25 +356,19 @@ export default function AppointmentList({
         <div
           key={idx}
           className={cn(
-            "bg-glass-bg/20 border-glass-border/20 space-y-4",
-            "animate-pulse rounded-3xl border p-6 shadow-sm",
+            "animate-pulse rounded-2xl border border-white/20",
+            "bg-white/35 p-4 shadow-sm backdrop-blur-xl",
+            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-8 w-8 rounded-xl" />
-              <Skeleton className="h-5 w-28 rounded" />
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <Skeleton className="h-6 w-16 rounded-full" />
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-5 w-36 rounded" />
+            <Skeleton className="h-6 w-16 rounded-full" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-8 w-full rounded-xl" />
-            <Skeleton className="h-8 w-full rounded-xl" />
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
-          <Skeleton className="h-11 w-full rounded-2xl" />
         </div>
       ))}
     </>
@@ -419,38 +376,47 @@ export default function AppointmentList({
 
   return (
     <Card
-      className={`bg-glass-bg/40 hover:bg-glass-bg/50 dark:bg-glass-bg/20 flex flex-col overflow-hidden border-glass-border shadow-md backdrop-blur-2xl transition-all duration-500 lg:col-span-3 ${className || ""}`}
+      className={cn(
+        "flex flex-col overflow-hidden rounded-2xl border border-white/25",
+        "bg-white/45 shadow-md backdrop-blur-2xl transition-all duration-300",
+        "dark:border-white/10 dark:bg-white/[0.04]",
+        className,
+      )}
     >
-      <CardHeader className="border-glass-border/30 space-y-6 border-b bg-muted/10 px-8 py-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1.5 text-left">
-            <h2 className="text-xl font-bold text-foreground/90">{title}</h2>
+      <CardHeader className="space-y-4 border-b border-white/20 bg-white/20 px-5 py-4 dark:border-white/10 dark:bg-white/[0.025]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1 text-left">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              {title}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Date requested and appointment date are shown in one compact table.
+            </p>
           </div>
 
           {!isLoading && appointments.length > 0 && (
             <div
               className={cn(
                 "self-start rounded-full border border-primary/20",
-                "bg-primary/10 px-4 py-1.5 text-[10px] font-bold tracking-wide",
+                "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
                 "text-primary shadow-sm",
               )}
             >
-              {appointments.length} Total Record
-              {appointments.length !== 1 ? "s" : ""}
+              {appointments.length} record{appointments.length !== 1 ? "s" : ""}
             </div>
           )}
         </div>
 
-        <div className="flex w-full flex-col items-center gap-4 sm:flex-row">
+        <div className="flex w-full flex-col items-center gap-3 sm:flex-row">
           <SearchInput
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
-            placeholder="Search student identity..."
-            className="border-glass-border/40 focus:bg-glass-bg/60 w-full rounded-2xl"
+            placeholder="Search student..."
+            className="w-full rounded-xl border-white/30 bg-white/55 backdrop-blur-xl focus:bg-white/70 dark:border-white/10 dark:bg-white/[0.04]"
             hasHeader={false}
           />
 
-          <div className="w-full sm:w-64">
+          <div className="w-full sm:w-60">
             <Dropdown
               options={dropdownOptions}
               value={selectedStatus?.id}
