@@ -1,5 +1,18 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CalendarDays,
+  Clock,
+  FileText,
+  CheckCircle2,
+  ChevronRight,
+  Edit2,
+  RefreshCw,
+  UserPlus,
+  Info,
+} from "lucide-react";
+
 import { useAvailableSlots } from "@/features/appointments/hooks/useLookups";
 import {
   SlotSelector,
@@ -11,21 +24,8 @@ import {
   CreateAppointmentRequest,
 } from "@/features/appointments";
 import Calendar from "@/features/appointments/components/Calendar";
-import {
-  CalendarDays,
-  Clock,
-  FileText,
-  CheckCircle2,
-  ChevronRight,
-  Edit2,
-  CircleChevronLeft,
-  RefreshCw,
-  UserPlus,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
 import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
@@ -44,25 +44,20 @@ export default function CreateAppointment() {
   );
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   const { data: slots, isLoading } = useAvailableSlots(
     selectedDate || undefined,
   );
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const navigate = useNavigate();
+  const { mutate: submit, isPending: isSubmitting } = useSubmitAppointment();
 
-  const {
-    mutate: submit,
-    isPending: isSubmitting,
-    isError,
-  } = useSubmitAppointment();
-
-  // Calculate current step for progress indicator
   const currentStep = !selectedDate ? 1 : !selectedTime ? 2 : 3;
 
   const steps = [
-    { id: 1, label: "Date", icon: CalendarDays },
-    { id: 2, label: "Time", icon: Clock },
-    { id: 3, label: "Details", icon: FileText },
+    { id: 1, label: "Preferred Date", icon: CalendarDays },
+    { id: 2, label: "Preferred Time", icon: Clock },
+    { id: 3, label: "Request Details", icon: FileText },
   ];
 
   const formatSelectedDate = (date: Date) => {
@@ -70,6 +65,7 @@ export default function CreateAppointment() {
       weekday: "short",
       month: "short",
       day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -78,29 +74,63 @@ export default function CreateAppointment() {
       return {
         title: "Schedule Appointment",
         description:
-          "Select your preferred date and time. Please be descriptive about your concern to help our counselor prepare.",
-        badgeText: "New Appointment",
+          "Choose your preferred schedule. Your request is still subject to Guidance Office approval.",
+        badgeText: "Preferred Schedule",
         badgeIcon: <UserPlus className="h-3 w-3" />,
-        isLoading: isLoading,
+        isLoading,
       };
     }, [isLoading]),
   );
 
-  // Calculate max date (2 weeks from now)
   const maxDate = new Date();
   maxDate.setDate(maxDate.getDate() + 14);
 
   return (
     <>
       <div className="min-h-full bg-background">
-        {/* Main Content */}
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-          {/* Compact Progress Bar */}
+          <Card
+            className={cn(
+              "mb-6 overflow-hidden rounded-[24px] border border-white/25",
+              "bg-white/45 shadow-[0_16px_36px_rgba(15,23,42,0.06)]",
+              "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+            )}
+          >
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+                    Preferred Schedule Process
+                  </p>
+                  <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                    Select your preferred appointment date and time
+                  </h2>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    The schedule you choose will be submitted as a request and
+                    will only be final once approved by the Guidance Office.
+                  </p>
+                </div>
+
+                <div
+                  className={cn(
+                    "flex items-start gap-2 rounded-2xl border border-primary/15",
+                    "bg-primary/10 px-3 py-2 text-xs text-primary",
+                  )}
+                >
+                  <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span className="max-w-[220px]">
+                    Preferred schedule is subject to approval.
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="mb-6 w-full">
             <div
               className={cn(
                 "mx-auto flex w-full max-w-xs items-center justify-center",
-                "gap-0 px-2 sm:max-w-md",
+                "gap-0 px-2 sm:max-w-lg",
               )}
             >
               {steps.map((step, index) => {
@@ -111,17 +141,19 @@ export default function CreateAppointment() {
                 return (
                   <div
                     key={step.id}
-                    className="flex items-center"
+                    className="flex flex-1 items-center last:flex-none"
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 ${
+                        className={cn(
+                          "flex h-9 w-9 items-center justify-center rounded-full",
+                          "border transition-all duration-300",
                           isCompleted
-                            ? "bg-primary text-primary-foreground"
+                            ? "border-primary bg-primary text-primary-foreground"
                             : isCurrent
-                              ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                              : "bg-muted text-muted-foreground"
-                        } `}
+                              ? "border-primary bg-primary text-primary-foreground ring-4 ring-primary/15"
+                              : "border-white/25 bg-white/45 text-muted-foreground dark:border-white/10 dark:bg-white/[0.04]",
+                        )}
                       >
                         {isCompleted ? (
                           <CheckCircle2 className="h-4.5 w-4.5" />
@@ -130,21 +162,21 @@ export default function CreateAppointment() {
                         )}
                       </div>
                       <span
-                        className={`mt-1 hidden text-xs font-medium transition-colors sm:block ${
+                        className={cn(
+                          "mt-1 hidden text-xs font-medium transition-colors sm:block",
                           isCurrent || isCompleted
                             ? "text-foreground"
-                            : "text-muted-foreground"
-                        } `}
+                            : "text-muted-foreground",
+                        )}
                       >
                         {step.label}
                       </span>
                     </div>
+
                     {index < steps.length - 1 && (
                       <div
                         className={cn(
-                          "mx-1 h-0.5 flex-1 rounded-full transition-colors",
-                          "min-w-[1.5rem] duration-300 sm:mx-2",
-                          "sm:min-w-[3.5rem]",
+                          "mx-2 h-0.5 flex-1 rounded-full transition-colors duration-300",
                           currentStep > step.id ? "bg-primary" : "bg-border",
                         )}
                       />
@@ -155,21 +187,26 @@ export default function CreateAppointment() {
             </div>
           </div>
 
-          {/* Selected Items Summary Bar */}
           {(selectedDate || selectedTime) && (
-            <Card className="mb-6 border-primary/20 bg-primary/5">
+            <Card
+              className={cn(
+                "mb-6 rounded-2xl border border-white/25 bg-white/45",
+                "shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+              )}
+            >
               <CardContent className="px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   {selectedDate && (
                     <button
+                      type="button"
                       onClick={() => {
                         setSelectedDate(undefined);
                         setSelectedTime(undefined);
                       }}
                       className={cn(
                         "group inline-flex items-center gap-2 rounded-full border",
-                        "border-border bg-background px-3 py-1.5 text-sm font-medium",
-                        "transition-colors hover:bg-muted",
+                        "border-white/25 bg-white/60 px-3 py-1.5 text-sm font-medium",
+                        "transition-colors hover:bg-white/80 dark:border-white/10 dark:bg-white/[0.05]",
                       )}
                     >
                       <CalendarDays className="h-4 w-4 text-primary" />
@@ -177,16 +214,19 @@ export default function CreateAppointment() {
                       <Edit2 className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
                     </button>
                   )}
+
                   {selectedDate && selectedTime && (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   )}
+
                   {selectedTime && (
                     <button
+                      type="button"
                       onClick={() => setSelectedTime(undefined)}
                       className={cn(
                         "group inline-flex items-center gap-2 rounded-full border",
-                        "border-border bg-background px-3 py-1.5 text-sm font-medium",
-                        "transition-colors hover:bg-muted",
+                        "border-white/25 bg-white/60 px-3 py-1.5 text-sm font-medium",
+                        "transition-colors hover:bg-white/80 dark:border-white/10 dark:bg-white/[0.05]",
                       )}
                     >
                       <Clock className="h-4 w-4 text-primary" />
@@ -199,9 +239,7 @@ export default function CreateAppointment() {
             </Card>
           )}
 
-          {/* Single Column Wizard Steps */}
           <div className="space-y-6">
-            {/* Step 1: Calendar */}
             {currentStep === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <Calendar
@@ -214,9 +252,10 @@ export default function CreateAppointment() {
                     setAppointmentFormData((prev) => ({
                       ...prev,
                       whenDate: toISODateString(date),
+                      timeSlot: { id: 0, time: "" },
                     }));
                   }}
-                  title="Select a Date"
+                  title="Select Preferred Date"
                   occupiedDayColor="bg-primary/80"
                   legends={[]}
                   hasHeader
@@ -228,7 +267,6 @@ export default function CreateAppointment() {
               </div>
             )}
 
-            {/* Step 2: Time Slots */}
             {currentStep === 2 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <SlotSelector
@@ -247,21 +285,25 @@ export default function CreateAppointment() {
               </div>
             )}
 
-            {/* Step 3: Details Form */}
             {currentStep === 3 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                {/* Appointment Summary Card */}
-                <Card className="mb-6 border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+                <Card
+                  className={cn(
+                    "mb-6 rounded-2xl border border-emerald-500/20",
+                    "bg-emerald-500/10 shadow-sm backdrop-blur-xl",
+                  )}
+                >
                   <CardContent className="px-5 py-4">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900/30">
-                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
+
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                          Appointment Selected
+                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                          Preferred Schedule Selected
                         </p>
-                        <p className="mt-0.5 text-sm text-green-700 dark:text-green-300">
+                        <p className="mt-1 text-sm leading-6 text-emerald-700/85 dark:text-emerald-300/85">
                           {new Date(
                             appointmentFormData.whenDate,
                           ).toLocaleDateString("en-US", {
@@ -272,7 +314,13 @@ export default function CreateAppointment() {
                           })}{" "}
                           at {appointmentFormData.timeSlot.time}
                         </p>
+                        <p className="mt-1 text-xs leading-5 text-emerald-700/75 dark:text-emerald-300/75">
+                          This is a preferred schedule request. The Guidance
+                          Office may approve or reschedule it depending on
+                          availability.
+                        </p>
                       </div>
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -281,8 +329,8 @@ export default function CreateAppointment() {
                           setSelectedTime(undefined);
                         }}
                         className={cn(
-                          "text-green-700 hover:bg-green-100 hover:text-green-800",
-                          "dark:text-green-300 dark:hover:bg-green-900/30",
+                          "h-8 rounded-xl text-emerald-700 hover:bg-emerald-500/10",
+                          "hover:text-emerald-800 dark:text-emerald-300",
                         )}
                       >
                         Change
@@ -339,14 +387,14 @@ export default function CreateAppointment() {
             exit={{ opacity: 0 }}
             className={cn(
               "fixed inset-0 z-[100] flex flex-col items-center",
-              "justify-center bg-slate-950/40 shadow-md",
+              "justify-center bg-slate-950/40 shadow-md backdrop-blur-sm",
             )}
           >
             <div
               className={cn(
                 "flex w-[calc(100%-2rem)] max-w-sm flex-col items-center",
-                "gap-4 rounded-xl border border-border bg-card p-6",
-                "shadow-2xl backdrop-blur-2xl sm:p-10",
+                "gap-4 rounded-2xl border border-white/20 bg-white/80 p-6",
+                "shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/80 sm:p-10",
               )}
             >
               <div className="relative">
@@ -363,10 +411,11 @@ export default function CreateAppointment() {
               </div>
               <div className="space-y-1 text-center">
                 <h3 className="text-lg font-bold text-foreground">
-                  Scheduling Appointment
+                  Submitting Appointment Request
                 </h3>
                 <p className="max-w-[280px] text-sm text-muted-foreground">
-                  Reserving your slot and creating appointment. Please wait...
+                  Sending your preferred schedule to the Guidance Office. Please
+                  wait...
                 </p>
               </div>
             </div>
