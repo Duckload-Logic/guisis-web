@@ -9,7 +9,7 @@ export const ROLE_ROUTES = {
   admin: "/admin", // Admin role
 } as const;
 
-// Excuse Slip status
+// Admission Slip status
 export const STATUS_COLORS: Record<string, string> = {
   warning:
     "bg-warning-background text-warning-foreground border-warning-foreground",

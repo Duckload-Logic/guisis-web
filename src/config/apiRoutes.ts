@@ -19,7 +19,7 @@ export const API_ROUTES = Object.freeze({
   }),
 
   /**
-   * Slip (Excuse Slip) related endpoints
+   * Slip (Admission Slip) related endpoints
    */
   slips: Object.freeze({
     all: "/slips",

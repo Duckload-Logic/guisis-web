@@ -167,7 +167,7 @@ export default function SignificantNotes({ iirId }: SignificantNotesProps) {
                       }
                       title={
                         note.admissionSlipId
-                          ? "View Related Excuse Slip"
+                          ? "View Related Admission Slip"
                           : "View Related Appointment"
                       }
                     >

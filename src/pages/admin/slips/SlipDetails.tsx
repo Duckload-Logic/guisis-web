@@ -71,7 +71,7 @@ export default function SlipDetails() {
     : "??";
 
   usePageMetadata({
-    title: "Excuse Slip Details",
+    title: "Admission Slip Details",
     description: `Reviewing submission for ${fullName || "Student"}`,
     badgeText: "Admin Management",
     badgeIcon: <FileText className="h-4 w-4" />,
@@ -83,7 +83,7 @@ export default function SlipDetails() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
         <p className="font-medium text-destructive">
-          Error loading excuse slip
+          Error loading admission slip
         </p>
         <Button
           onClick={() => navigate("/admin/slips")}
@@ -99,7 +99,7 @@ export default function SlipDetails() {
   if (!slip && !isLoading) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">Excuse slip not found</p>
+        <p className="text-muted-foreground">Admission slip not found</p>
         <Button
           onClick={() => navigate("/admin/slips")}
           variant="outline"
@@ -739,14 +739,14 @@ export default function SlipDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold">
               {actionType === "approve"
-                ? "Approve Excuse Slip"
+                ? "Approve Admission Slip"
                 : actionType === "reject"
-                  ? "Reject Excuse Slip"
+                  ? "Reject Admission Slip"
                   : "Send for Revision"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
               {actionType === "approve"
-                ? "Are you sure you want to approve this excuse slip? Student will be notified."
+                ? "Are you sure you want to approve this admission slip? Student will be notified."
                 : `Please provide a detailed reason for this ${actionType === "reject" ? "rejection" : "revision"}.`}
             </AlertDialogDescription>
           </AlertDialogHeader>

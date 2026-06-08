@@ -66,7 +66,7 @@ export default function Dashboard() {
     },
     {
       title: "Submit Admission Slip",
-      description: "Upload and track your excuse slip",
+      description: "Upload and track your admission slip",
       icon: FileText,
       href: "/student/slips/submit",
       accent:
