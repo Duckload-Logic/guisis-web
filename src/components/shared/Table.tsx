@@ -46,55 +46,20 @@ export function Table<T>({
   if (isLoading) {
     if (variant === "list" && renderListItem) {
       return (
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-white/20 dark:divide-white/10">
           {Array.from({ length: loadingRows }).map((_, idx) => (
             <div
               key={idx}
-              className="p-4 sm:p-5"
+              className="px-4 py-3 sm:px-5"
             >
-              <div className="flex animate-pulse items-start gap-4">
-                <div
-                  className={cn(
-                    "hidden h-20 w-20 shrink-0 rounded-[18px]",
-                    "bg-slate-200/50 dark:bg-slate-700/50 sm:block",
-                  )}
-                />
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div
-                    className={cn(
-                      "flex flex-col gap-2.5 sm:flex-row",
-                      "sm:items-center sm:justify-between",
-                    )}
-                  >
-                    <div className="flex gap-2">
-                      <div
-                        className={cn(
-                          "h-6 w-24 rounded-full",
-                          "bg-slate-200/50 dark:bg-slate-700/50",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "h-6 w-16 rounded-full",
-                          "bg-slate-200/50 dark:bg-slate-700/50",
-                        )}
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <div
-                        className={cn(
-                          "h-4 w-28 rounded",
-                          "bg-slate-200/50 dark:bg-slate-700/50",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "h-4 w-20 rounded",
-                          "bg-slate-200/50 dark:bg-slate-700/50",
-                        )}
-                      />
-                    </div>
+              <div className="flex animate-pulse items-center gap-4">
+                <Skeleton className="hidden h-10 w-10 shrink-0 rounded-xl sm:block" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <Skeleton className="h-4 w-36 rounded" />
+                    <Skeleton className="h-6 w-20 rounded-full" />
                   </div>
+                  <Skeleton className="h-3 w-52 max-w-full rounded" />
                 </div>
               </div>
             </div>
@@ -105,7 +70,6 @@ export function Table<T>({
 
     return (
       <>
-        {/* Desktop Loading Skeleton */}
         {columns.length > 0 && (
           <div
             className={cn(
@@ -117,16 +81,18 @@ export function Table<T>({
               renderDesktopSkeleton()
             ) : (
               <table
-                className={cn("w-full border-collapse text-sm", tableClassName)}
+                className={cn(
+                  "w-full border-collapse text-sm",
+                  tableClassName,
+                )}
               >
                 <thead>
-                  <tr className="text-muted-foreground opacity-60">
+                  <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
                     {columns.map((col, idx) => (
                       <th
                         key={idx}
                         className={cn(
-                          "border-glass-border/20 border-b",
-                          "px-6 py-4 text-left text-[10px] font-bold",
+                          "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]",
                           col.className,
                         )}
                       >
@@ -139,17 +105,14 @@ export function Table<T>({
                   {Array.from({ length: loadingRows }).map((_, rIdx) => (
                     <tr
                       key={rIdx}
-                      className="animate-pulse"
+                      className="animate-pulse border-b border-white/15 dark:border-white/10"
                     >
                       {columns.map((_, cIdx) => (
                         <td
                           key={cIdx}
-                          className={cn(
-                            "border-glass-border/20 border-b",
-                            "px-6 py-4",
-                          )}
+                          className="px-4 py-3"
                         >
-                          <Skeleton className="h-4 w-20 rounded" />
+                          <Skeleton className="h-4 w-24 rounded" />
                         </td>
                       ))}
                     </tr>
@@ -160,27 +123,24 @@ export function Table<T>({
           </div>
         )}
 
-        {/* Mobile Loading Skeleton */}
         {renderMobileItem && (
-          <div className="block space-y-4 px-4 pb-6 md:hidden">
+          <div className="block space-y-3 px-4 pb-5 md:hidden">
             {renderMobileSkeleton
               ? renderMobileSkeleton()
               : Array.from({ length: 3 }).map((_, idx) => (
                   <div
                     key={idx}
                     className={cn(
-                      "bg-glass-bg/20 border-glass-border/20 space-y-4",
-                      "animate-pulse rounded-3xl border p-6 shadow-sm",
+                      "animate-pulse rounded-2xl border border-white/20",
+                      "bg-white/35 p-4 shadow-sm backdrop-blur-xl",
+                      "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-8 w-8 rounded-xl" />
-                        <Skeleton className="h-5 w-24 rounded" />
-                      </div>
-                      <Skeleton className="h-5 w-16 rounded-full" />
+                    <div className="flex items-center justify-between gap-3">
+                      <Skeleton className="h-5 w-36 rounded" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="mt-3 grid grid-cols-2 gap-3">
                       <Skeleton className="h-8 w-full rounded-xl" />
                       <Skeleton className="h-8 w-full rounded-xl" />
                     </div>
@@ -198,7 +158,7 @@ export function Table<T>({
 
   if (variant === "list" && renderListItem) {
     return (
-      <div className="divide-y divide-border border-y border-border">
+      <div className="divide-y divide-white/20 border-y border-white/20 dark:divide-white/10 dark:border-white/10">
         {data.map((item, idx) => renderListItem(item, idx))}
       </div>
     );
@@ -206,29 +166,23 @@ export function Table<T>({
 
   return (
     <>
-      {/* Desktop Table View */}
       {columns.length > 0 && (
         <div
           className={cn(
-            "hidden overflow-x-auto px-6 pb-6 pt-4 md:block",
+            "hidden overflow-x-auto px-3 py-3 md:block",
             containerClassName,
           )}
         >
           <table
             className={cn("w-full border-collapse text-sm", tableClassName)}
           >
-            <thead
-              className={cn(
-                "text-sm font-bold",
-                "text-muted-foreground opacity-60",
-              )}
-            >
-              <tr>
+            <thead>
+              <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
                 {columns.map((col, idx) => (
                   <th
                     key={idx}
                     className={cn(
-                      "border-glass-border/20 border-b px-6 py-4 text-left",
+                      "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]",
                       col.className,
                     )}
                   >
@@ -248,9 +202,10 @@ export function Table<T>({
                   <tr
                     key={idx}
                     className={cn(
-                      "bg-glass-bg/20",
-                      "group transition-all duration-300",
-                      clickable && "cursor-pointer hover:bg-muted/60",
+                      "border-b border-white/15 bg-white/20 last:border-0",
+                      "transition-colors duration-200 dark:border-white/10 dark:bg-white/[0.025]",
+                      clickable &&
+                        "cursor-pointer hover:bg-white/50 dark:hover:bg-white/[0.06]",
                       typeof rowClassName === "function"
                         ? rowClassName(item, idx)
                         : rowClassName,
@@ -262,9 +217,7 @@ export function Table<T>({
                     {columns.map((col, cIdx) => (
                       <td
                         key={cIdx}
-                        className={cn(
-                          "border-glass-border/20 border-b px-6 py-4",
-                        )}
+                        className="px-4 py-3 align-middle"
                       >
                         {col.render(item, idx)}
                       </td>
@@ -277,9 +230,8 @@ export function Table<T>({
         </div>
       )}
 
-      {/* Mobile Card View */}
       {renderMobileItem && (
-        <div className="block space-y-4 px-4 pb-6 md:hidden">
+        <div className="block space-y-3 px-4 pb-5 md:hidden">
           {data.map((item, idx) => renderMobileItem(item, idx))}
         </div>
       )}

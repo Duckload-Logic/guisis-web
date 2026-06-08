@@ -12,7 +12,6 @@ import {
   CalendarDays,
   CalendarX,
   CheckCircle2,
-  Clock,
   Hourglass,
   Plus,
   RotateCcw,
@@ -253,92 +252,76 @@ export default function StudentAppointments() {
         }}
         onClick={() => navigate(`/student/appointments/${appointment.id}`)}
       >
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              "hidden h-20 w-20 shrink-0 flex-col",
-              "items-center justify-center rounded-[18px] sm:flex",
-              GLASS_INNER,
-            )}
-          >
-            <div
-              className={cn(
-                "mb-1 text-xs font-semibold uppercase text-primary",
-              )}
-            >
-              {new Date(appointment.whenDate).toLocaleDateString("en-US", {
-                month: "short",
-              })}
-            </div>
-
-            <div className="text-2xl font-bold text-primary">
-              {new Date(appointment.whenDate).getDate()}
-            </div>
-          </div>
-
+        <div
+          className={cn(
+            "flex flex-col gap-3 sm:flex-row",
+            "sm:items-start sm:justify-between",
+          )}
+        >
           <div className="min-w-0 flex-1 space-y-2">
-            <div
-              className={cn(
-                "flex flex-col gap-2.5 sm:flex-row",
-                "sm:items-center sm:justify-between",
-              )}
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "border-white/45 bg-white/40 text-xs",
-                    "font-medium backdrop-blur-xl",
-                    "dark:border-white/10 dark:bg-white/[0.05]",
-                  )}
-                >
-                  <Tag className="mr-1 h-3 w-3" />
-                  {appointment.appointmentCategory.name}
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs hover:brightness-110",
-                    getStatusColor(appointment.status?.name),
-                  )}
-                >
-                  {appointment.status?.name}
-                </Badge>
-              </div>
-
-              <div
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
                 className={cn(
-                  "flex flex-wrap items-center gap-4 text-xs",
-                  "text-muted-foreground",
+                  "border-white/45 bg-white/40 text-xs",
+                  "font-medium backdrop-blur-xl",
+                  "dark:border-white/10 dark:bg-white/[0.05]",
                 )}
               >
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span className="sm:hidden">
-                    {formatDate(appointment.whenDate)}
-                  </span>
-                  <span className="hidden sm:inline">
-                    {formatDate(appointment.whenDate)}
-                  </span>
-                </div>
+                <Tag className="mr-1 h-3 w-3" />
+                {appointment.appointmentCategory.name}
+              </Badge>
 
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" />
-                  {format12HourTime(appointment.timeSlot.time)}
-                </div>
-              </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs hover:brightness-110",
+                  getStatusColor(appointment.status?.name),
+                )}
+              >
+                {appointment.status?.name}
+              </Badge>
             </div>
+
             <p
-              className={cn("line-clamp-1 text-xs", "text-muted-foreground/85")}
+              className={cn(
+                "line-clamp-1 text-xs",
+                "text-muted-foreground/85",
+              )}
             >
               {appointment.reason}
+            </p>
+          </div>
+
+          <div
+            className={cn(
+              "flex shrink-0 flex-col gap-1 rounded-2xl border",
+              "border-white/25 bg-white/40 px-3 py-2 text-left",
+              "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+              "sm:min-w-[170px]",
+            )}
+          >
+            <p
+              className={cn(
+                "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
+              )}
+            >
+              Appointment Date
+            </p>
+
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {formatDate(appointment.whenDate)}
+            </p>
+
+            <p className="text-xs text-muted-foreground">
+              {format12HourTime(appointment.timeSlot.time)}
             </p>
           </div>
         </div>
       </div>
     ),
-    [navigate, formatDate, getStatusColor],
+    [navigate, getStatusColor],
   );
 
   const emptyState = useMemo(
@@ -412,10 +395,6 @@ export default function StudentAppointments() {
 
   return (
     <div className="relative isolate space-y-6 overflow-visible">
-      {/* <div className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-72 rounded-full bg-slate-300/10 blur-3xl dark:bg-slate-500/10" />
-      <div className="pointer-events-none absolute right-0 top-10 -z-10 h-80 w-80 rounded-full bg-primary/5 blur-3xl dark:bg-primary/10" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 -z-10 h-72 w-72 rounded-full bg-sky-200/10 blur-3xl dark:bg-sky-400/10" /> */}
-
       {!user?.studentCorUrl ? (
         <Alert
           variant="destructive"
@@ -514,8 +493,7 @@ export default function StudentAppointments() {
                       <p
                         title={stat.name}
                         className={cn(
-                          "whitespace-nowrap text-[11px] font-bold " +
-                            "uppercase",
+                          "whitespace-nowrap text-[11px] font-bold uppercase",
                           statusMeta.label,
                         )}
                       >
@@ -533,9 +511,7 @@ export default function StudentAppointments() {
 
                     <div
                       className={cn(
-                        "flex h-11 w-11 shrink-0 items-center justify-center " +
-                          "rounded-[15px] transition-transform duration-300" +
-                          "group-hover:scale-105",
+                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] transition-transform duration-300 group-hover:scale-105",
                         statusMeta.iconBox,
                       )}
                     >
@@ -553,8 +529,7 @@ export default function StudentAppointments() {
                     <span
                       className={cn(
                         "rounded-full px-3 py-1",
-                        "text-[10px] font-bold uppercase " +
-                          "tracking-[0.16em] text-muted-foreground/85",
+                        "text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/85",
                         GLASS_INNER,
                       )}
                     >
@@ -575,7 +550,6 @@ export default function StudentAppointments() {
             "dark:border-white/10",
           )}
         >
-          {/* Mobile Dropdown */}
           <div className="w-full max-w-xs md:hidden">
             <Dropdown
               label="Appointment Status"
@@ -593,7 +567,6 @@ export default function StudentAppointments() {
             />
           </div>
 
-          {/* Desktop Tabs */}
           <div className="hidden flex-wrap gap-2 md:flex">
             {filterStatuses.map((filter) => {
               const isActive = String(selectedStatus.id) === String(filter.id);
