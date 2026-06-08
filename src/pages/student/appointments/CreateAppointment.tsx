@@ -555,46 +555,52 @@ export default function CreateAppointment() {
                             </div>
 
                             {!activePreferredOption.date && (
-                            <div
-                              className={cn(
-                                "mx-auto w-full max-w-[350px] rounded-[20px]",
-                                "border border-white/25 bg-white/45 p-1.5",
-                                "shadow-sm backdrop-blur-xl",
-                                "dark:border-white/10 dark:bg-white/[0.04]",
-                              )}
-                            >
                               <div
-                                className="origin-top"
-                                style={{ zoom: 0.90 }}
+                                className={cn(
+                                  "mx-auto w-full max-w-[350px] rounded-[20px]",
+                                  "border border-white/25 bg-white/45 p-1.5",
+                                  "shadow-sm backdrop-blur-xl",
+                                  "dark:border-white/10 dark:bg-white/[0.04]",
+                                )}
                               >
-                                <Calendar
-                                  currentMonth={activePreferredOption.month}
-                                  selectedDate={activePreferredOption.date}
-                                  onMonthChange={(month) =>
-                                    updatePreferredOption(activePreferredIndex, {
-                                      month,
-                                    })
-                                  }
-                                  onDateSelect={(date) => {
-                                    updatePreferredOption(activePreferredIndex, {
-                                      date,
-                                      time: undefined,
-                                    });
-                                  }}
-                                  title={`Select Preferred Date - Option ${
-                                    activePreferredIndex + 1
-                                  }`}
-                                  occupiedDayColor="bg-primary/80"
-                                  legends={[]}
-                                  hasHeader
-                                  className="mx-auto w-full max-w-[430px]"
-                                  allowCurrentDate={false}
-                                  allowPastDates={false}
-                                  maxDate={maxDate}
-                                />
+                                <div
+                                  className="origin-top"
+                                  style={{ zoom: 0.78 }}
+                                >
+                                  <Calendar
+                                    currentMonth={activePreferredOption.month}
+                                    selectedDate={activePreferredOption.date}
+                                    onMonthChange={(month) =>
+                                      updatePreferredOption(
+                                        activePreferredIndex,
+                                        {
+                                          month,
+                                        },
+                                      )
+                                    }
+                                    onDateSelect={(date) => {
+                                      updatePreferredOption(
+                                        activePreferredIndex,
+                                        {
+                                          date,
+                                          time: undefined,
+                                        },
+                                      );
+                                    }}
+                                    title={`Select Preferred Date - Option ${
+                                      activePreferredIndex + 1
+                                    }`}
+                                    occupiedDayColor="bg-primary/80"
+                                    legends={[]}
+                                    hasHeader
+                                    className="mx-auto w-full max-w-[430px]"
+                                    allowCurrentDate={false}
+                                    allowPastDates={false}
+                                    maxDate={maxDate}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
                             {activePreferredOption.date &&
                               !activePreferredOption.time && (
@@ -671,51 +677,65 @@ export default function CreateAppointment() {
 
                             {activePreferredOption.date &&
                               activePreferredOption.time && (
-                                <div className="space-y-4">
-                                  <div
-                                    className={cn(
-                                      "rounded-2xl border border-emerald-500/20",
-                                      "bg-emerald-500/10 px-4 py-3 text-sm leading-6",
-                                      "text-emerald-700 dark:text-emerald-300",
-                                    )}
-                                  >
-                                    Option {activePreferredIndex + 1} selected:{" "}
-                                    <span className="font-semibold">
-                                      {formatFullDate(
-                                        activePreferredOption.date,
-                                      )}
-                                    </span>{" "}
-                                    at{" "}
-                                    <span className="font-semibold">
-                                      {activePreferredOption.time.time}
-                                    </span>
-                                    .
-                                  </div>
+                                <div
+                                  className={cn(
+                                    "rounded-2xl border border-emerald-500/20",
+                                    "bg-emerald-500/10 px-4 py-3",
+                                    "text-emerald-700 dark:text-emerald-300",
+                                  )}
+                                >
+                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <p className="text-sm leading-6">
+                                      Option {activePreferredIndex + 1} selected:{" "}
+                                      <span className="font-semibold">
+                                        {formatFullDate(
+                                          activePreferredOption.date,
+                                        )}
+                                      </span>{" "}
+                                      at{" "}
+                                      <span className="font-semibold">
+                                        {activePreferredOption.time.time}
+                                      </span>
+                                      .
+                                    </p>
 
-                                  <div className="flex flex-wrap justify-center gap-2">
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        resetPreferredOption(
-                                          activePreferredIndex,
-                                        )
-                                      }
-                                      className="h-10 rounded-xl"
-                                    >
-                                      Change Date
-                                    </Button>
+                                    <div className="flex shrink-0 flex-wrap gap-1.5">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          resetPreferredOption(
+                                            activePreferredIndex,
+                                          )
+                                        }
+                                        className={cn(
+                                          "h-7 rounded-lg border-emerald-500/20 bg-white/60",
+                                          "px-2.5 text-[10px] font-semibold text-emerald-700",
+                                          "hover:bg-white dark:bg-white/[0.06] dark:text-emerald-300",
+                                        )}
+                                      >
+                                        Change Date
+                                      </Button>
 
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      onClick={() =>
-                                        resetPreferredTime(activePreferredIndex)
-                                      }
-                                      className="h-10 rounded-xl"
-                                    >
-                                      Change Time
-                                    </Button>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          resetPreferredTime(
+                                            activePreferredIndex,
+                                          )
+                                        }
+                                        className={cn(
+                                          "h-7 rounded-lg border-emerald-500/20 bg-white/60",
+                                          "px-2.5 text-[10px] font-semibold text-emerald-700",
+                                          "hover:bg-white dark:bg-white/[0.06] dark:text-emerald-300",
+                                        )}
+                                      >
+                                        Change Time
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -782,10 +802,7 @@ export default function CreateAppointment() {
               )}
             >
               <div className="relative">
-                <RefreshCw
-                  size={48}
-                  className="animate-spin text-primary"
-                />
+                <RefreshCw size={48} className="animate-spin text-primary" />
                 <div
                   className={cn(
                     "absolute inset-0 animate-ping rounded-full",
