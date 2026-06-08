@@ -109,7 +109,7 @@ const faqCategories: FAQCategory[] = [
 ];
 
 export default function FAQ() {
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const [openItem, setOpenItem] = useState<string | null>(null);
 
   const totalQuestions = faqCategories.reduce(
     (sum, category) => sum + category.questions.length,
@@ -172,10 +172,7 @@ export default function FAQ() {
   usePageMetadata(pageMeta);
 
   const toggleItem = (key: string) => {
-    setOpenItems((current) => ({
-      ...current,
-      [key]: !current[key],
-    }));
+    setOpenItem((current) => (current === key ? null : key));
   };
 
   return (
@@ -184,94 +181,94 @@ export default function FAQ() {
 
       <section
         className={cn(
-            "relative overflow-hidden rounded-[20px] border border-white/25",
-            "bg-white/45 p-3.5 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
-            "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
-            "sm:p-4",
+          "relative overflow-hidden rounded-[20px] border border-white/25",
+          "bg-white/45 p-3.5 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
+          "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+          "sm:p-4",
         )}
-        >
+      >
         <div
-            className={cn(
+          className={cn(
             "pointer-events-none absolute -right-16 -top-20 h-32 w-32 rounded-full",
             "bg-primary/10 blur-3xl dark:bg-primary/15",
-            )}
+          )}
         />
 
         <div
-            className={cn(
+          className={cn(
             "pointer-events-none absolute -bottom-20 left-8 h-32 w-32 rounded-full",
             "bg-secondary/20 blur-3xl dark:bg-secondary/10",
-            )}
+          )}
         />
 
         <div className="relative flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-1.5">
+          <div className="space-y-1.5">
             <div
-                className={cn(
+              className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border",
                 "border-primary/15 bg-primary/10 px-2.5 py-0.5 text-[10px]",
                 "font-semibold uppercase tracking-[0.15em] text-primary",
-                )}
+              )}
             >
-                <Sparkles className="h-2.5 w-2.5" />
-                Student Help Desk
+              <Sparkles className="h-2.5 w-2.5" />
+              Student Help Desk
             </div>
 
             <div>
-                <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+              <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
                 Frequently Asked Questions
-                </h2>
+              </h2>
 
-                <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
                 Find simple answers about appointments, admission slips, and IIR.
                 Use the answer button beside each question to open or hide the guide.
-                </p>
+              </p>
             </div>
-            </div>
+          </div>
 
-            <div
+          <div
             className={cn(
-                "grid gap-1.5 rounded-xl border border-white/25 bg-white/45 p-2.5",
-                "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
-                "lg:min-w-[390px]",
+              "grid gap-1.5 rounded-xl border border-white/25 bg-white/45 p-2.5",
+              "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+              "lg:min-w-[390px]",
             )}
-            >
+          >
             {[
-                {
+              {
                 label: "Pick the topic that matches your concern",
                 icon: Search,
-                },
-                {
+              },
+              {
                 label: "Open only the question you need",
                 icon: MessageCircleQuestion,
-                },
-                {
+              },
+              {
                 label: "Check your request status regularly",
                 icon: ShieldCheck,
-                },
+              },
             ].map((item) => (
-                <div
+              <div
                 key={item.label}
                 className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-1.5 py-0.5",
-                    "text-xs text-muted-foreground",
+                  "flex items-center gap-2.5 rounded-lg px-1.5 py-0.5",
+                  "text-xs text-muted-foreground",
                 )}
-                >
+              >
                 <span
-                    className={cn(
+                  className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg",
                     "border border-primary/15 bg-primary/10 text-primary",
-                    )}
+                  )}
                 >
-                    <item.icon className="h-3 w-3" />
+                  <item.icon className="h-3 w-3" />
                 </span>
 
                 <span>{item.label}</span>
-                </div>
+              </div>
             ))}
-            </div>
+          </div>
         </div>
-        </section>
+      </section>
 
       <section className="mt-6 grid gap-5 xl:grid-cols-3">
         {faqCategories.map((category) => (
@@ -331,7 +328,7 @@ export default function FAQ() {
               <div className="space-y-2.5 border-t border-white/25 p-4 dark:border-white/10">
                 {category.questions.map((item, index) => {
                   const key = `${category.title}-${index}`;
-                  const isOpen = !!openItems[key];
+                  const isOpen = openItem === key;
 
                   return (
                     <div
