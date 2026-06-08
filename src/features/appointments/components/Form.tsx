@@ -34,23 +34,24 @@ export default function AppointmentForm({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-2xl border border-white/25 bg-white/45",
-        "shadow-md backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+        "overflow-hidden rounded-[26px] border border-white/25 bg-white/55",
+        "shadow-[0_14px_34px_rgba(15,23,42,0.07)] backdrop-blur-2xl",
+        "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
-      <CardHeader className="border-b border-white/20 bg-white/20 px-5 py-4 dark:border-white/10 dark:bg-white/[0.025]">
-        <CardTitle className="text-lg text-foreground">
+      <CardHeader className="border-b border-white/20 bg-white/25 px-6 py-5 dark:border-white/10 dark:bg-white/[0.025]">
+        <CardTitle className="text-xl font-semibold text-foreground">
           Appointment Request Details
         </CardTitle>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground">
           Fill out your concern category and reason/request first. After this,
           you will be asked to choose your preferred date and preferred time.
         </p>
       </CardHeader>
 
-      <CardContent className="pt-6">
-        <div className="space-y-4">
+      <CardContent className="p-6">
+        <div className="space-y-5">
           <Dropdown
             label="Concern Category"
             value={data?.appointmentCategory?.id}
