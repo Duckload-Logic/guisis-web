@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useAppointment,
@@ -41,6 +41,22 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { data: appointmentStatuses } = useStatuses();
   const { mutateAsync: updateAppointment } = useUpdateAppointment();
+
+  const [selectedSchedule, setSelectedSchedule] = useState<{
+    date: string;
+    timeSlotId: number;
+    timeSlotTime: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (appointment) {
+      setSelectedSchedule({
+        date: appointment.whenDate,
+        timeSlotId: appointment.timeSlot.id,
+        timeSlotTime: appointment.timeSlot.time,
+      });
+    }
+  }, [appointment]);
 
   const [pendingAction, setPendingAction] = useState<{
     type: string;
@@ -206,6 +222,11 @@ export default function AppointmentDetails() {
 
     const payload: any = { status: { id: statusId } };
     if (message) payload.adminNotes = message;
+
+    if (pendingAction.type === "Approve" && selectedSchedule) {
+      payload.whenDate = selectedSchedule.date;
+      payload.timeSlot = { id: selectedSchedule.timeSlotId };
+    }
 
     try {
       await updateAppointment({ id: appointment.id!, data: payload });
@@ -504,39 +525,269 @@ export default function AppointmentDetails() {
                 </div>
               </div>
 
-              {/* Schedule Info Grid */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div
-                  className={cn(
-                    "group relative space-y-2 rounded-xl border bg-muted/5 p-4",
-                    "transition-all duration-300 hover:border-primary/30",
-                  )}
-                >
-                  <div className="flex items-center gap-2 text-muted-foreground/70">
-                    <CalendarDays className="h-4 w-4 text-primary/60" />
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                      Scheduled Date
-                    </span>
+              {/* Schedule Options */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "rounded-lg border border-primary/20",
+                      "bg-primary/10 p-1.5"
+                    )}
+                  >
+                    <CalendarRange className="h-4 w-4 text-primary" />
                   </div>
-                  <p className="text-lg font-bold text-foreground/90">
-                    {formatDate(appointment.whenDate)}
-                  </p>
+                  <h3
+                    className={cn(
+                      "text-xs font-bold uppercase",
+                      "tracking-wider text-foreground/70"
+                    )}
+                  >
+                    {appointment.status?.name === "Pending"
+                      ? "Select Schedule Option to Approve"
+                      : "Scheduled Date & Time"}
+                  </h3>
                 </div>
-                <div
-                  className={cn(
-                    "group relative space-y-2 rounded-xl border bg-muted/5 p-4",
-                    "transition-all duration-300 hover:border-primary/30",
-                  )}
-                >
-                  <div className="flex items-center gap-2 text-muted-foreground/70">
-                    <Clock className="h-4 w-4 text-primary/60" />
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                      Time Slot
-                    </span>
-                  </div>
-                  <p className="text-lg font-bold text-foreground/90">
-                    {format12HourTime(appointment.timeSlot.time)}
-                  </p>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {/* Primary Option */}
+                  <button
+                    type="button"
+                    disabled={appointment.status?.name !== "Pending"}
+                    onClick={() =>
+                      setSelectedSchedule({
+                        date: appointment.whenDate,
+                        timeSlotId: appointment.timeSlot.id,
+                        timeSlotTime: appointment.timeSlot.time,
+                      })
+                    }
+                    className={cn(
+                      "group relative rounded-xl border p-4 text-left",
+                      "transition-all",
+                      selectedSchedule?.date === appointment.whenDate &&
+                      selectedSchedule?.timeSlotId === appointment.timeSlot.id
+                        ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                        : cn(
+                            "border-border bg-muted/5",
+                            "hover:border-primary/20 hover:bg-muted/10"
+                          ),
+                      appointment.status?.name !== "Pending" &&
+                        cn(
+                          "cursor-default opacity-90",
+                          "hover:border-border hover:bg-muted/5"
+                        )
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={cn(
+                          "text-[10px] font-bold uppercase",
+                          "tracking-wider text-primary/80"
+                        )}
+                      >
+                        Primary Schedule
+                      </span>
+                      {selectedSchedule?.date === appointment.whenDate &&
+                        selectedSchedule?.timeSlotId ===
+                          appointment.timeSlot.id && (
+                          <span className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                    </div>
+                    <p className="mt-2 text-sm font-bold text-foreground">
+                      {formatDate(appointment.whenDate)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format12HourTime(appointment.timeSlot.time)}
+                    </p>
+                  </button>
+
+                  {/* Backup 1 */}
+                  {appointment.preferredDate1 &&
+                    appointment.preferredTimeSlot1 && (
+                      <button
+                        type="button"
+                        disabled={appointment.status?.name !== "Pending"}
+                        onClick={() =>
+                          setSelectedSchedule({
+                            date: appointment.preferredDate1!,
+                            timeSlotId: appointment.preferredTimeSlot1!.id,
+                            timeSlotTime: appointment.preferredTimeSlot1!.time,
+                          })
+                        }
+                        className={cn(
+                          "group relative rounded-xl border p-4 text-left",
+                          "transition-all",
+                          selectedSchedule?.date ===
+                            appointment.preferredDate1 &&
+                          selectedSchedule?.timeSlotId ===
+                            appointment.preferredTimeSlot1?.id
+                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                            : cn(
+                                "border-border bg-muted/5",
+                                "hover:border-primary/20 hover:bg-muted/10"
+                              ),
+                          appointment.status?.name !== "Pending" &&
+                            cn(
+                              "cursor-default opacity-90",
+                              "hover:border-border hover:bg-muted/5"
+                            )
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase",
+                              "tracking-wider text-muted-foreground/70"
+                            )}
+                          >
+                            Backup Option 1
+                          </span>
+                          {selectedSchedule?.date ===
+                            appointment.preferredDate1 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot1?.id && (
+                              <span
+                                className={cn(
+                                  "h-2 w-2 rounded-full bg-primary"
+                                )}
+                              />
+                            )}
+                        </div>
+                        <p className="mt-2 text-sm font-bold text-foreground">
+                          {formatDate(appointment.preferredDate1)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format12HourTime(
+                            appointment.preferredTimeSlot1.time
+                          )}
+                        </p>
+                      </button>
+                    )}
+
+                  {/* Backup 2 */}
+                  {appointment.preferredDate2 &&
+                    appointment.preferredTimeSlot2 && (
+                      <button
+                        type="button"
+                        disabled={appointment.status?.name !== "Pending"}
+                        onClick={() =>
+                          setSelectedSchedule({
+                            date: appointment.preferredDate2!,
+                            timeSlotId: appointment.preferredTimeSlot2!.id,
+                            timeSlotTime: appointment.preferredTimeSlot2!.time,
+                          })
+                        }
+                        className={cn(
+                          "group relative rounded-xl border p-4 text-left",
+                          "transition-all",
+                          selectedSchedule?.date ===
+                            appointment.preferredDate2 &&
+                          selectedSchedule?.timeSlotId ===
+                            appointment.preferredTimeSlot2?.id
+                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                            : cn(
+                                "border-border bg-muted/5",
+                                "hover:border-primary/20 hover:bg-muted/10"
+                              ),
+                          appointment.status?.name !== "Pending" &&
+                            cn(
+                              "cursor-default opacity-90",
+                              "hover:border-border hover:bg-muted/5"
+                            )
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase",
+                              "tracking-wider text-muted-foreground/70"
+                            )}
+                          >
+                            Backup Option 2
+                          </span>
+                          {selectedSchedule?.date ===
+                            appointment.preferredDate2 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot2?.id && (
+                              <span
+                                className={cn(
+                                  "h-2 w-2 rounded-full bg-primary"
+                                )}
+                              />
+                            )}
+                        </div>
+                        <p className="mt-2 text-sm font-bold text-foreground">
+                          {formatDate(appointment.preferredDate2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format12HourTime(
+                            appointment.preferredTimeSlot2.time
+                          )}
+                        </p>
+                      </button>
+                    )}
+
+                  {/* Backup 3 */}
+                  {appointment.preferredDate3 &&
+                    appointment.preferredTimeSlot3 && (
+                      <button
+                        type="button"
+                        disabled={appointment.status?.name !== "Pending"}
+                        onClick={() =>
+                          setSelectedSchedule({
+                            date: appointment.preferredDate3!,
+                            timeSlotId: appointment.preferredTimeSlot3!.id,
+                            timeSlotTime: appointment.preferredTimeSlot3!.time,
+                          })
+                        }
+                        className={cn(
+                          "group relative rounded-xl border p-4 text-left",
+                          "transition-all",
+                          selectedSchedule?.date ===
+                            appointment.preferredDate3 &&
+                          selectedSchedule?.timeSlotId ===
+                            appointment.preferredTimeSlot3?.id
+                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                            : cn(
+                                "border-border bg-muted/5",
+                                "hover:border-primary/20 hover:bg-muted/10"
+                              ),
+                          appointment.status?.name !== "Pending" &&
+                            cn(
+                              "cursor-default opacity-90",
+                              "hover:border-border hover:bg-muted/5"
+                            )
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase",
+                              "tracking-wider text-muted-foreground/70"
+                            )}
+                          >
+                            Backup Option 3
+                          </span>
+                          {selectedSchedule?.date ===
+                            appointment.preferredDate3 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot3?.id && (
+                              <span
+                                className={cn(
+                                  "h-2 w-2 rounded-full bg-primary"
+                                )}
+                              />
+                            )}
+                        </div>
+                        <p className="mt-2 text-sm font-bold text-foreground">
+                          {formatDate(appointment.preferredDate3)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format12HourTime(
+                            appointment.preferredTimeSlot3.time
+                          )}
+                        </p>
+                      </button>
+                    )}
                 </div>
               </div>
 

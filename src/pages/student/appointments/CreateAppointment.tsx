@@ -203,15 +203,8 @@ export default function CreateAppointment() {
   };
 
   const handleSubmitAppointment = () => {
-    const finalReason = [
-      appointmentFormData.reason.trim(),
-      "",
-      "Preferred Schedule Details:",
-      buildPreferredScheduleText(),
-    ].join("\n");
-
     const payload: CreateAppointmentRequest = {
-      reason: finalReason,
+      reason: appointmentFormData.reason.trim(),
       whenDate: appointmentFormData.whenDate,
       timeSlot: {
         id: appointmentFormData.timeSlot.id,
@@ -220,6 +213,19 @@ export default function CreateAppointment() {
         id: appointmentFormData.appointmentCategory.id,
       },
     };
+
+    if (preferredOptions[0].date && preferredOptions[0].time?.id) {
+      payload.preferredDate1 = toISODateString(preferredOptions[0].date);
+      payload.preferredTimeSlot1 = { id: preferredOptions[0].time.id };
+    }
+    if (preferredOptions[1].date && preferredOptions[1].time?.id) {
+      payload.preferredDate2 = toISODateString(preferredOptions[1].date);
+      payload.preferredTimeSlot2 = { id: preferredOptions[1].time.id };
+    }
+    if (preferredOptions[2].date && preferredOptions[2].time?.id) {
+      payload.preferredDate3 = toISODateString(preferredOptions[2].date);
+      payload.preferredTimeSlot3 = { id: preferredOptions[2].time.id };
+    }
 
     submit(payload, {
       onSuccess: () => {
