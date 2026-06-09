@@ -67,6 +67,18 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
   );
 }
 
+type SortOrder = "asc" | "desc";
+
+type SortOption = {
+  id: string;
+  name: string;
+};
+
+type OrderOption = {
+  id: SortOrder;
+  name: string;
+};
+
 interface AppointmentListProps {
   title?: string;
   searchTerm?: string;
@@ -75,6 +87,12 @@ interface AppointmentListProps {
   selectedStatus: AppointmentStatus;
   statusCounts: StatusCount[];
   onStatusChange: (status: AppointmentStatus) => void;
+  sortOptions?: SortOption[];
+  selectedSort?: string;
+  onSortChange?: (sortValue: string) => void;
+  orderOptions?: OrderOption[];
+  selectedOrder?: SortOrder;
+  onOrderChange?: (orderValue: SortOrder) => void;
   appointments: Appointment[];
   isLoading?: boolean;
   onViewClick: (apt: Appointment) => void;
@@ -92,6 +110,12 @@ export default function AppointmentList({
   selectedStatus,
   statusCounts,
   onStatusChange,
+  sortOptions = [],
+  selectedSort,
+  onSortChange,
+  orderOptions = [],
+  selectedOrder,
+  onOrderChange,
   appointments,
   isLoading,
   onViewClick,
@@ -407,7 +431,7 @@ export default function AppointmentList({
           )}
         </div>
 
-        <div className="flex w-full flex-col items-center gap-3 sm:flex-row">
+        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
           <SearchInput
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
@@ -416,19 +440,40 @@ export default function AppointmentList({
             hasHeader={false}
           />
 
-          <div className="w-full sm:w-60">
+          <Dropdown
+            label="Status"
+            options={dropdownOptions}
+            value={selectedStatus?.id}
+            onChange={(val) => {
+              const status = statuses.find((s) => String(s.id) === String(val));
+              if (status) onStatusChange(status);
+            }}
+            labelKey="displayName"
+            enabled={!isLoading}
+            formStyle={false}
+          />
+
+          {sortOptions.length > 0 && onSortChange && (
             <Dropdown
-              options={dropdownOptions}
-              value={selectedStatus?.id}
-              onChange={(val) => {
-                const status = statuses.find((s) => s.id === val);
-                if (status) onStatusChange(status);
-              }}
-              labelKey="displayName"
+              label="Sort By"
+              options={sortOptions}
+              value={selectedSort}
+              onChange={(val) => onSortChange(String(val))}
               enabled={!isLoading}
               formStyle={false}
             />
-          </div>
+          )}
+
+          {orderOptions.length > 0 && onOrderChange && (
+            <Dropdown
+              label="Order"
+              options={orderOptions}
+              value={selectedOrder}
+              onChange={(val) => onOrderChange(val as SortOrder)}
+              enabled={!isLoading}
+              formStyle={false}
+            />
+          )}
         </div>
       </CardHeader>
 
@@ -454,3 +499,4 @@ export default function AppointmentList({
     </Card>
   );
 }
+
