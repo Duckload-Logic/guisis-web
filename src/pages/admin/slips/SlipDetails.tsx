@@ -70,6 +70,9 @@ export default function SlipDetails() {
     ? `${slip.user.firstName[0]}${slip.user.lastName[0]}`
     : "??";
 
+  const displayStudentNumber =
+    slip.studentNumber || slip.user?.studentNumber || "N/A";
+
   usePageMetadata({
     title: "Admission Slip Details",
     description: `Reviewing submission for ${fullName || "Student"}`,
@@ -252,7 +255,7 @@ export default function SlipDetails() {
                 {fullName}
               </h2>
               <p className="text-xs font-medium italic text-muted-foreground">
-                {slip.user?.email}
+                {displayStudentNumber}
               </p>
             </div>
 
@@ -328,7 +331,7 @@ export default function SlipDetails() {
                 >
                   <Fingerprint className="h-4 w-4 text-primary/60" />
                   <p className="text-base font-bold text-foreground/80">
-                    {slip.studentNumber || "N/A"}
+                    {displayStudentNumber}
                   </p>
                 </div>
               </div>
@@ -340,7 +343,7 @@ export default function SlipDetails() {
                     "group-hover:text-primary",
                   )}
                 >
-                  Student Email
+                  Admission Slip ID
                 </p>
                 <div
                   className={cn(
@@ -351,7 +354,7 @@ export default function SlipDetails() {
                 >
                   <Building2 className="h-4 w-4 text-primary/60" />
                   <p className="truncate text-base font-bold text-foreground/80">
-                    {slip.user?.email || "N/A"}
+                    {slip.id || "N/A"}
                   </p>
                 </div>
               </div>
