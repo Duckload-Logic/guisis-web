@@ -56,6 +56,7 @@ interface ParentInformationCardProps {
   getFieldError: (path: string) => string | undefined;
   attainmentOptions: any[];
   isEditMode?: boolean;
+  onClear: () => void;
 }
 
 const ParentInformationCard = memo(
@@ -68,6 +69,7 @@ const ParentInformationCard = memo(
     getFieldError,
     attainmentOptions,
     isEditMode = false,
+    onClear,
   }: ParentInformationCardProps) => {
     const person = family?.relatedPersons?.[idx] || {};
     const calculateAge = (dobString: string) => {
@@ -92,6 +94,23 @@ const ParentInformationCard = memo(
       >
         <div className="flex flex-col gap-8">
           <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClear}
+              className={cn(
+                "rounded-lg border px-3 py-1.5 text-[10px]",
+                "font-bold uppercase transition-all duration-300",
+                "border-neutral-200/50 bg-neutral-100/30 text-neutral-500",
+                "hover:bg-destructive/15 hover:text-destructive",
+                "hover:border-destructive/50",
+                "dark:border-white/10 dark:bg-white/5 dark:text-neutral-400",
+                "dark:hover:bg-destructive/20",
+                "dark:hover:text-destructive-foreground",
+              )}
+            >
+              Clear Info
+            </button>
+
             {["Living", "Deceased"].map((status) => {
               const isLiving = status === "Living";
               const isSelected = person.isLiving === isLiving;
@@ -461,6 +480,32 @@ export const FamilySection = forwardRef<
     }
   };
 
+  const handleClearParent = (idx: number) => {
+    const prefix = `family.relatedPersons.${idx}`;
+    handleInputChange(`${prefix}.firstName`, "");
+    handleInputChange(`${prefix}.middleName`, "");
+    handleInputChange(`${prefix}.lastName`, "");
+    handleInputChange(`${prefix}.dateOfBirth`, "");
+    handleInputChange(
+      `${prefix}.educationalAttainment`,
+      { id: 0, name: "" },
+    );
+    handleInputChange(`${prefix}.occupation`, "");
+    handleInputChange(`${prefix}.employerName`, null);
+    handleInputChange(`${prefix}.employerAddress`, null);
+    handleInputChange(`${prefix}.isLiving`, null);
+
+    setErrors((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((key) => {
+        if (key.startsWith(prefix)) {
+          delete updated[key];
+        }
+      });
+      return updated;
+    });
+  };
+
   const getFieldError = (fieldPath: string): string | undefined => {
     const hasError = errors[fieldPath];
     const showError = shouldShowError ? shouldShowError(fieldPath) : true;
@@ -659,6 +704,7 @@ export const FamilySection = forwardRef<
           getFieldError={getFieldError}
           attainmentOptions={attainmentOptions || []}
           isEditMode={isEditMode}
+          onClear={() => handleClearParent(FATHER_IDX)}
         />
       )}
       {subStep === 3 && (
@@ -671,6 +717,7 @@ export const FamilySection = forwardRef<
           getFieldError={getFieldError}
           attainmentOptions={attainmentOptions || []}
           isEditMode={isEditMode}
+          onClear={() => handleClearParent(MOTHER_IDX)}
         />
       )}
 

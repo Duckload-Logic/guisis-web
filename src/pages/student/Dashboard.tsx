@@ -368,14 +368,14 @@ export default function Dashboard() {
       {/* 2. Guidance Services Offered */}
       <section
         className={cn(
-          "mt-6 overflow-hidden rounded-[24px] border border-white/25",
-          "bg-white/45 p-4 shadow-[0_12px_28px_rgba(15,23,42,0.06)]",
+          "mt-7 overflow-hidden rounded-[26px] border border-white/25",
+          "bg-white/45 p-5 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
           "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
-          "sm:p-5",
+          "sm:p-6",
         )}
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
             <p
               className={cn(
                 "inline-flex items-center gap-2 rounded-full border",
@@ -383,22 +383,24 @@ export default function Dashboard() {
                 "font-semibold uppercase tracking-[0.16em] text-primary",
               )}
             >
-              <HeartHandshake className="h-3 w-3" />
+              <HeartHandshake className="h-3.5 w-3.5" />
               Guidance Services
             </p>
 
-            <h2 className="mt-2 text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-              Services Offered
-            </h2>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                Services Offered
+              </h2>
 
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
-              Student support services available through the Guidance Office.
-            </p>
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Student support services available through the Guidance Office.
+              </p>
+            </div>
           </div>
 
           <div
             className={cn(
-              "w-fit rounded-full border border-white/25 bg-white/55 px-3 py-1.5",
+              "w-fit rounded-full border border-white/25 bg-white/55 px-3.5 py-2",
               "text-xs text-muted-foreground shadow-sm backdrop-blur-xl",
               "dark:border-white/10 dark:bg-white/[0.04]",
             )}
@@ -410,30 +412,30 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {guidanceServices.map((service, index) => (
             <article
               key={service.title}
               className={cn(
-                "group rounded-2xl border border-white/25 bg-white/40 p-3",
-                "shadow-[0_6px_16px_rgba(15,23,42,0.04)] backdrop-blur-xl",
+                "group min-h-[132px] rounded-[22px] border border-white/25 bg-white/40 p-4",
+                "shadow-[0_8px_20px_rgba(15,23,42,0.045)] backdrop-blur-xl",
                 "transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/55",
                 "dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]",
               )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex h-full items-start gap-4">
                 <div
                   className={cn(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
                     "border border-white/35 bg-gradient-to-br shadow-sm backdrop-blur-xl",
                     "dark:border-white/10",
                     service.accent,
                   )}
                 >
-                  <service.icon className="h-4 w-4" />
+                  <service.icon className="h-5 w-5" />
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 space-y-1.5">
                   <p
                     className={cn(
                       "text-[10px] font-semibold uppercase tracking-[0.14em]",
@@ -443,11 +445,11 @@ export default function Dashboard() {
                     Service {String(index + 1).padStart(2, "0")}
                   </p>
 
-                  <h3 className="mt-0.5 text-sm font-semibold leading-5 text-foreground">
+                  <h3 className="text-base font-semibold leading-6 text-foreground">
                     {service.title}
                   </h3>
 
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  <p className="text-sm leading-6 text-muted-foreground">
                     {service.description}
                   </p>
                 </div>

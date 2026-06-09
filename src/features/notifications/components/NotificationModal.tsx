@@ -210,23 +210,30 @@ export default function NotificationModal({
           </button>
         </div>
 
-        <div className={cn(
-          "flex-1 space-y-1 overflow-y-auto scroll-smooth px-3 py-2",
-        )}>
+        <div
+          className={cn(
+            "flex-1 space-y-1 overflow-y-auto scroll-smooth px-3 py-2",
+          )}
+        >
           {showPushBanner && (
-            <div className={cn(
-              "mx-3 my-2 flex flex-col gap-3 rounded-xl border border-primary/20",
-              "bg-primary/5 p-4 shadow-sm transition hover:bg-primary/10",
-            )}>
+            <div
+              className={cn(
+                "mx-3 my-2 flex flex-col gap-3 rounded-xl border border-primary/20",
+                "bg-primary/5 p-4 shadow-sm transition hover:bg-primary/10",
+              )}
+            >
               <div className="flex items-start gap-3">
-                <Bell className="mt-0.5 shrink-0 text-primary" size={18} />
+                <Bell
+                  className="mt-0.5 shrink-0 text-primary"
+                  size={18}
+                />
                 <div className="flex-1">
                   <p className="text-xs font-semibold">
                     Enable Background Notifications
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    Receive urgent status updates on appointments and slips
-                    even when DLL Guidance is closed.
+                    Receive urgent status updates even when PUPT-GuiSIS is
+                    closed.
                   </p>
                 </div>
               </div>
