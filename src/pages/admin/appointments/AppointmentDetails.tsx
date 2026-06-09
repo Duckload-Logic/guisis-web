@@ -35,6 +35,49 @@ import RescheduleModal from "@/features/appointments/components/RescheduleModal"
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
 
+function getAppointmentUrgency(appointment?: any) {
+  const raw = appointment?.urgencyLevel ?? appointment?.urgency;
+
+  if (!raw) {
+    return {
+      label: "Medium",
+      description: "Default priority when no urgency level is provided.",
+      className:
+        "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    };
+  }
+
+  const label =
+    typeof raw === "string" ? raw : raw.name || raw.label || "Medium";
+  const normalized = String(label).toLowerCase();
+
+  if (normalized.includes("high") || normalized.includes("urgent")) {
+    return {
+      label: "High",
+      description: "Prioritize this student concern during review and scheduling.",
+      className:
+        "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
+    };
+  }
+
+  if (normalized.includes("low")) {
+    return {
+      label: "Low",
+      description: "Can be handled through the regular appointment queue.",
+      className:
+        "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    };
+  }
+
+  return {
+    label: "Medium",
+    description: "Standard guidance priority for regular processing.",
+    className:
+      "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  };
+}
+
+
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -128,6 +171,8 @@ export default function AppointmentDetails() {
   }
 
   if (!appointment) return null;
+
+  const urgencyInfo = getAppointmentUrgency(appointment);
 
   const getAllowedActions = (statusName: string): string[] => {
     switch (statusName) {
@@ -400,7 +445,7 @@ export default function AppointmentDetails() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 sm:p-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               <div className="group space-y-2 transition-all duration-300">
                 <p
                   className={cn(
@@ -446,6 +491,33 @@ export default function AppointmentDetails() {
                   <p className="truncate text-base font-bold text-foreground/80">
                     {appointment.user?.email || "N/A"}
                   </p>
+                </div>
+              </div>
+
+              <div className="group space-y-2 transition-all duration-300">
+                <p
+                  className={cn(
+                    "text-[10px] font-bold uppercase",
+                    "text-muted-foreground/60 transition-colors",
+                    "group-hover:text-primary",
+                  )}
+                >
+                  Urgency Level
+                </p>
+                <div
+                  className={cn(
+                    "flex items-start gap-3 rounded-xl border p-3",
+                    "shadow-inner transition-all group-hover:border-primary/20",
+                    urgencyInfo.className,
+                  )}
+                >
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-base font-bold">{urgencyInfo.label}</p>
+                    <p className="mt-0.5 text-[11px] font-medium leading-4 opacity-80">
+                      {urgencyInfo.description}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -499,6 +571,16 @@ export default function AppointmentDetails() {
                   )}
                 >
                   {appointment.appointmentCategory.name}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-[10px] font-bold",
+                    "shadow-sm",
+                    urgencyInfo.className,
+                  )}
+                >
+                  Urgency: {urgencyInfo.label}
                 </Badge>
               </div>
             </CardHeader>
@@ -965,3 +1047,4 @@ export default function AppointmentDetails() {
     </div>
   );
 }
+

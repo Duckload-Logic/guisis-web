@@ -32,6 +32,49 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 
+function getAppointmentUrgency(appointment?: any) {
+  const raw = appointment?.urgencyLevel ?? appointment?.urgency;
+
+  if (!raw) {
+    return {
+      label: "Medium",
+      description: "Default priority when no urgency level is provided.",
+      className:
+        "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    };
+  }
+
+  const label =
+    typeof raw === "string" ? raw : raw.name || raw.label || "Medium";
+  const normalized = String(label).toLowerCase();
+
+  if (normalized.includes("high") || normalized.includes("urgent")) {
+    return {
+      label: "High",
+      description: "This appointment should be prioritized by the Guidance Office.",
+      className:
+        "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
+    };
+  }
+
+  if (normalized.includes("low")) {
+    return {
+      label: "Low",
+      description: "This appointment can be handled through the regular queue.",
+      className:
+        "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    };
+  }
+
+  return {
+    label: "Medium",
+    description: "This appointment has a standard guidance priority.",
+    className:
+      "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  };
+}
+
+
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -199,6 +242,7 @@ export default function AppointmentDetails() {
   const isCancellable =
     appointment?.status?.name === "Pending" ||
     appointment?.status?.name === "Scheduled";
+  const urgencyInfo = getAppointmentUrgency(appointment);
 
   return (
     <>
@@ -227,6 +271,12 @@ export default function AppointmentDetails() {
                       )}
                     >
                       {appointment?.status?.name}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn("px-3 py-1", urgencyInfo.className)}
+                    >
+                      Urgency: {urgencyInfo.label}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -268,6 +318,23 @@ export default function AppointmentDetails() {
                           {appointment?.appointmentCategory.name}
                         </Badge>
                       </div>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">
+                        Urgency Level
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <Badge
+                          variant="outline"
+                          className={cn("px-3 py-1", urgencyInfo.className)}
+                        >
+                          {urgencyInfo.label}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] leading-5 text-muted-foreground">
+                        {urgencyInfo.description}
+                      </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold uppercase text-muted-foreground">
@@ -414,3 +481,4 @@ export default function AppointmentDetails() {
     </>
   );
 }
+

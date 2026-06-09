@@ -112,3 +112,4 @@ export interface UseAppointmentsReturn {
   clearError: () => void;
   clearSuccess: () => void;
 }
+

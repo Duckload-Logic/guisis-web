@@ -281,7 +281,12 @@ export async function PatchAppointment(
  */
 export async function PostCancelAppointment(
   id: string,
-  data?: { reason: string },
+  data?: {
+    reason: string;
+    notifyCounselor?: boolean;
+    notifyRoles?: string[];
+    notificationType?: string;
+  },
   config?: AxiosConfigWithMeta,
 ) {
   try {
@@ -315,3 +320,4 @@ export const appointmentService = {
 };
 
 export default appointmentService;
+
