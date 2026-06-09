@@ -86,9 +86,12 @@ export function validateAllSections(
  * @param sectionRef - Ref to the section component
  * @returns Validation result
  */
-export function validateSection(sectionRef: any): SectionValidationResult {
-  if (sectionRef?.current?.validate) {
-    return sectionRef.current.validate();
-  }
-  return { isValid: true, errors: {} };
+export function validateSection(
+	sectionRef: any,
+	step?: number,
+): SectionValidationResult {
+	if (sectionRef?.current?.validate) {
+		return sectionRef.current.validate(step);
+	}
+	return { isValid: true, errors: {} };
 }

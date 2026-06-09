@@ -320,9 +320,24 @@ export default function IIRForm() {
       11: interestsSectionRef,
     };
 
-    const validation = validateSection(sectionRefs[currentSection]);
+    const stepToValidate =
+      currentSection >= 6 && currentSection <= 9
+        ? currentSection - 5
+        : currentSection;
+
+    const validation = validateSection(
+      sectionRefs[currentSection],
+      stepToValidate,
+    );
     if (!validation.isValid) {
       markAllTouched();
+      const raw = validation.errors || {};
+      const total = Object.keys(raw).length;
+      if (total > 0) {
+        setGroupedErrors(groupErrorsBySection(raw));
+        setTotalErrors(total);
+        setIsErrorModalOpen(true);
+      }
       return;
     }
 
