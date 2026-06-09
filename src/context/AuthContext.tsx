@@ -143,7 +143,15 @@ export const AuthProvider: React.FC<{
           "serviceWorker" in navigator &&
           "PushManager" in window
         ) {
-          const reg = await navigator.serviceWorker.ready;
+          const readyPromise = navigator.serviceWorker.ready;
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout")), 1000),
+          );
+          const reg = (await Promise.race([
+            readyPromise,
+            timeoutPromise,
+          ])) as ServiceWorkerRegistration;
+
           const sub = await reg.pushManager.getSubscription();
           if (sub) {
             await DeletePushSubscribe(sub.endpoint);
