@@ -22,10 +22,7 @@ import {
 import { usePageMetadata } from "@/context";
 import { DashboardMetrics } from "@/features/counseling/components/DashboardMetrics";
 import { SlipStatusTracker } from "@/features/counseling/components/SlipStatusTracker";
-import {
-  useGetSlipStats,
-  useGetUrgentSlips,
-} from "@/features/slips/hooks/useSlips";
+import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -66,7 +63,6 @@ export default function Dashboard() {
   const [showDailyTip, setShowDailyTip] = useState(false);
 
   const { data: slipStats, isLoading: isSlipsLoading } = useGetSlipStats();
-  const { data: urgentSlips } = useGetUrgentSlips({ pageSize: 1 });
   const { data: adminAnalytics, isLoading: isAnalyticsLoading } =
     useAdminDashboard();
 
@@ -408,7 +404,6 @@ export default function Dashboard() {
                 slipStats?.find(
                   (slip: any) => slip.name.toLowerCase() === "rejected",
                 )?.count || 0,
-              urgentRequests: urgentSlips?.meta?.total || 0,
             }}
           />
         </div>
@@ -416,3 +411,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
