@@ -68,25 +68,13 @@ export function SlipList({
         header: "Student Name",
         className: "px-6 py-4 text-left",
         render: (slip) => (
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center",
-                "rounded-full bg-primary/10 text-xs font-semibold text-primary",
-                "shadow-inner",
-              )}
-            >
-              {slip.user?.firstName?.[0]}
-              {slip.user?.lastName?.[0]}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-foreground">
-                {slip.user?.firstName} {slip.user?.lastName}
-              </p>
-              <p className="truncate text-[10px] text-muted-foreground opacity-70">
-                {slip.user?.email || "-"}
-              </p>
-            </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-foreground">
+              {slip.user?.firstName} {slip.user?.lastName}
+            </p>
+            <p className="truncate text-[10px] text-muted-foreground opacity-70">
+              {slip.user?.email || "-"}
+            </p>
           </div>
         ),
       },
@@ -231,7 +219,7 @@ export function SlipList({
       </div>
 
       <h3 className="text-lg font-semibold text-foreground">
-        No excuse slips found
+        No admission slips found
       </h3>
 
       <p className="mt-2 max-w-md text-sm text-muted-foreground">

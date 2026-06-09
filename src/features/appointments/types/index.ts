@@ -67,6 +67,12 @@ export interface Appointment {
   studentCorUrl?: string;
   createdAt?: string;
   updatedAt?: string;
+  preferredDate1?: string;
+  preferredTimeSlot1?: TimeSlot;
+  preferredDate2?: string;
+  preferredTimeSlot2?: TimeSlot;
+  preferredDate3?: string;
+  preferredTimeSlot3?: TimeSlot;
 }
 
 /**
@@ -78,6 +84,12 @@ export interface CreateAppointmentRequest {
   whenDate: string;
   timeSlot: { id: number };
   appointmentCategory: { id: number };
+  preferredDate1?: string;
+  preferredTimeSlot1?: { id: number };
+  preferredDate2?: string;
+  preferredTimeSlot2?: { id: number };
+  preferredDate3?: string;
+  preferredTimeSlot3?: { id: number };
 }
 
 /**

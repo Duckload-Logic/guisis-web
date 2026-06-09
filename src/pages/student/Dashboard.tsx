@@ -2,14 +2,24 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useMemo, useState } from "react";
 import {
-  CalendarPlus,
-  FileText,
-  ClipboardList,
-  User,
   ArrowUpRight,
-  LayoutDashboard,
-  Clock,
+  BookOpenCheck,
+  BriefcaseBusiness,
+  CalendarPlus,
   ClipboardCheck,
+  ClipboardList,
+  Clock,
+  FileText,
+  GraduationCap,
+  HandHeart,
+  HeartHandshake,
+  HelpCircle,
+  LayoutDashboard,
+  MessagesSquare,
+  ShieldCheck,
+  SmilePlus,
+  User,
+  UserRoundCheck,
 } from "lucide-react";
 import { useMe } from "@/features/users/hooks/useMe";
 import { useUserIIR } from "@/features/iir/hooks";
@@ -29,6 +39,7 @@ export default function Dashboard() {
 
   const totalSlips =
     slipStats?.reduce((sum: number, s: any) => sum + (s.count || 0), 0) || 0;
+
   const totalAppointments =
     appointmentStats?.reduce(
       (sum: number, s: any) => sum + (s.count || 0),
@@ -36,10 +47,14 @@ export default function Dashboard() {
     ) || 0;
 
   const [isPageLoaded, setIsPageLoaded] = useState(false);
-  useEffect(() => setIsPageLoaded(true), []);
+
+  useEffect(() => {
+    setIsPageLoaded(true);
+  }, []);
 
   const isLoading = isUserLoading || isIIRLoading || !isPageLoaded;
   const iirProfileStatus = iir?.isSubmitted ? "Complete" : "Pending";
+
   const studentQuickActions = [
     {
       title: "Schedule Appointment",
@@ -51,7 +66,7 @@ export default function Dashboard() {
     },
     {
       title: "Submit Admission Slip",
-      description: "Upload and track your excuse slip",
+      description: "Upload and track your admission slip",
       icon: FileText,
       href: "/student/slips/submit",
       accent:
@@ -64,6 +79,84 @@ export default function Dashboard() {
       href: "/student/iir",
       accent:
         "from-rose-500/15 to-red-500/5 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    },
+    {
+      title: "Student FAQs",
+      description: "Read guides for appointments, slips, and IIR",
+      icon: HelpCircle,
+      href: "/student/faqs",
+      accent:
+        "from-amber-500/15 to-yellow-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    },
+  ];
+
+  const guidanceServices = [
+    {
+      title: "Individual Counseling",
+      description:
+        "One-on-one guidance support for personal, emotional, or academic concerns.",
+      icon: MessagesSquare,
+      accent:
+        "from-blue-500/15 to-sky-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    },
+    {
+      title: "Group Guidance Sessions",
+      description:
+        "Student-centered activities and discussions for shared concerns and growth.",
+      icon: UserRoundCheck,
+      accent:
+        "from-purple-500/15 to-violet-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    },
+    {
+      title: "Admission Slip Assistance",
+      description:
+        "Support for reviewing and processing student admission or excuse slip requests.",
+      icon: FileText,
+      accent:
+        "from-emerald-500/15 to-green-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    },
+    {
+      title: "IIR Record Management",
+      description:
+        "Collection and maintenance of student Individual Inventory Record information.",
+      icon: ClipboardList,
+      accent:
+        "from-rose-500/15 to-red-500/5 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    },
+    {
+      title: "Academic Guidance",
+      description:
+        "Guidance support for academic adjustment, school concerns, and student progress.",
+      icon: GraduationCap,
+      accent:
+        "from-cyan-500/15 to-teal-500/5 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+    },
+    {
+      title: "Career and Wellness Support",
+      description:
+        "Encouragement for goal-setting, wellness, decision-making, and future planning.",
+      icon: BriefcaseBusiness,
+      accent:
+        "from-amber-500/15 to-yellow-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    },
+  ];
+
+  const studentReminders = [
+    {
+      title: "Complete your IIR",
+      description:
+        "Keep your student record updated before using major services.",
+      icon: BookOpenCheck,
+    },
+    {
+      title: "Check request statuses",
+      description: "Review your appointment and slip updates regularly.",
+      icon: ShieldCheck,
+    },
+    {
+      title: "Reach out when needed",
+      description: "The Guidance Office is here to support your wellbeing.",
+      icon: HandHeart,
     },
   ];
 
@@ -163,6 +256,7 @@ export default function Dashboard() {
               {totalAppointments}
             </p>
           </div>
+
           <div
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
@@ -233,6 +327,7 @@ export default function Dashboard() {
                   >
                     {item.title}
                   </p>
+
                   <div className="space-y-0.5 sm:space-y-1">
                     <p
                       className={cn(
@@ -242,6 +337,7 @@ export default function Dashboard() {
                     >
                       {item.value}
                     </p>
+
                     <p
                       className={cn(
                         "hidden text-[11px] text-muted-foreground sm:block",
@@ -251,6 +347,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
+
                 <div
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center sm:h-11 sm:w-11",
@@ -268,130 +365,300 @@ export default function Dashboard() {
         ))}
       </section>
 
-      {/* 2. Quick Actions */}
-      <section className="mt-10 space-y-3">
-        <div>
-          <p
-            className={cn(
-              "text-xs font-semibold uppercase",
-              "tracking-[0.18em] text-muted-foreground",
-            )}
-          >
-            Self-Services
-          </p>
-          <h2
-            className={cn(
-              "mt-1 text-xl font-semibold tracking-tight",
-              "text-foreground",
-            )}
-          >
-            Guidance Quick Actions
-          </h2>
-        </div>
-        <div
-          className={cn(
-            "grid grid-cols-1 gap-3",
-            "sm:grid-cols-2 sm:gap-4 md:grid-cols-3",
-          )}
-        >
-          {studentQuickActions.map((action) => (
-            <Link
-              key={action.title}
-              to={action.href}
-              className="group"
+      {/* 2. Guidance Services Offered */}
+      <section
+        className={cn(
+          "mt-7 overflow-hidden rounded-[26px] border border-white/25",
+          "bg-white/45 p-5 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
+          "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+          "sm:p-6",
+        )}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
+            <p
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full border",
+                "border-primary/15 bg-primary/10 px-3 py-1 text-[11px]",
+                "font-semibold uppercase tracking-[0.16em] text-primary",
+              )}
             >
-              {/* Desktop View: Grid Cards */}
-              <div
-                className={cn(
-                  "relative hidden overflow-hidden rounded-[18px] sm:flex",
-                  "border border-white/20 bg-white/45 p-4",
-                  "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-                  "transition-all duration-200 hover:-translate-y-0.5",
-                  "hover:border-primary/25 hover:bg-white/55",
-                  "flex-col dark:border-white/10 dark:bg-white/[0.04]",
-                )}
+              <HeartHandshake className="h-3.5 w-3.5" />
+              Guidance Services
+            </p>
+
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                Services Offered
+              </h2>
+
+              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Student support services available through the Guidance Office.
+              </p>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "w-fit rounded-full border border-white/25 bg-white/55 px-3.5 py-2",
+              "text-xs text-muted-foreground shadow-sm backdrop-blur-xl",
+              "dark:border-white/10 dark:bg-white/[0.04]",
+            )}
+          >
+            <span className="font-semibold text-foreground">
+              {guidanceServices.length}
+            </span>{" "}
+            services
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {guidanceServices.map((service, index) => (
+            <article
+              key={service.title}
+              className={cn(
+                "group min-h-[132px] rounded-[22px] border border-white/25 bg-white/40 p-4",
+                "shadow-[0_8px_20px_rgba(15,23,42,0.045)] backdrop-blur-xl",
+                "transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/55",
+                "dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]",
+              )}
+            >
+              <div className="flex h-full items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
+                    "border border-white/35 bg-gradient-to-br shadow-sm backdrop-blur-xl",
+                    "dark:border-white/10",
+                    service.accent,
+                  )}
+                >
+                  <service.icon className="h-5 w-5" />
+                </div>
+
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <p
+                    className={cn(
+                      "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    Service {String(index + 1).padStart(2, "0")}
+                  </p>
+
+                  <h3 className="text-base font-semibold leading-6 text-foreground">
+                    {service.title}
+                  </h3>
+
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {service.description}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Quick Actions and Student Reminders */}
+      <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
+        <div className="space-y-3">
+          <div>
+            <p
+              className={cn(
+                "text-xs font-semibold uppercase",
+                "tracking-[0.18em] text-muted-foreground",
+              )}
+            >
+              Self-Services
+            </p>
+
+            <h2
+              className={cn(
+                "mt-1 text-xl font-semibold tracking-tight",
+                "text-foreground",
+              )}
+            >
+              Guidance Quick Actions
+            </h2>
+          </div>
+
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-3",
+              "sm:grid-cols-2 sm:gap-4",
+            )}
+          >
+            {studentQuickActions.map((action) => (
+              <Link
+                key={action.title}
+                to={action.href}
+                className="group"
               >
                 <div
                   className={cn(
-                    "pointer-events-none absolute inset-x-0 top-0 h-20",
-                    "bg-gradient-to-br opacity-90",
-                    action.accent,
-                  )}
-                />
-                <div
-                  className={cn(
-                    "relative flex min-h-[120px] flex-col",
-                    "justify-between",
+                    "relative hidden overflow-hidden rounded-[18px] sm:flex",
+                    "border border-white/20 bg-white/45 p-4",
+                    "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
+                    "transition-all duration-200 hover:-translate-y-0.5",
+                    "hover:border-primary/25 hover:bg-white/55",
+                    "flex-col dark:border-white/10 dark:bg-white/[0.04]",
                   )}
                 >
-                  <div className="flex items-start justify-between">
+                  <div
+                    className={cn(
+                      "pointer-events-none absolute inset-x-0 top-0 h-20",
+                      "bg-gradient-to-br opacity-90",
+                      action.accent,
+                    )}
+                  />
+
+                  <div
+                    className={cn(
+                      "relative flex min-h-[120px] flex-col",
+                      "justify-between",
+                    )}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={cn(
+                          "flex h-10 w-10 items-center justify-center",
+                          "rounded-xl border bg-white/70 backdrop-blur-md",
+                          "dark:bg-white/[0.06]",
+                          action.accent,
+                        )}
+                      >
+                        <action.icon className="h-5 w-5" />
+                      </div>
+
+                      <ArrowUpRight
+                        className={cn(
+                          "h-5 w-5 text-muted-foreground transition-all",
+                          "duration-200 group-hover:text-foreground",
+                        )}
+                      />
+                    </div>
+
+                    <div className="pt-4">
+                      <h3 className="text-base font-semibold text-foreground">
+                        {action.title}
+                      </h3>
+
+                      <p className="text-sm text-muted-foreground">
+                        {action.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={cn(
+                    "flex items-center justify-between p-4 sm:hidden",
+                    "rounded-2xl border border-white/20 bg-white/45",
+                    "shadow-[0_4px_12px_rgba(15,23,42,0.04)] backdrop-blur-xl",
+                    "dark:border-white/10 dark:bg-white/[0.04]",
+                  )}
+                >
+                  <div className="flex items-center gap-3">
                     <div
                       className={cn(
-                        "flex h-10 w-10 items-center justify-center",
+                        "flex h-10 w-10 shrink-0 items-center justify-center",
                         "rounded-xl border bg-white/70 backdrop-blur-md",
                         "dark:bg-white/[0.06]",
-                        action.accent.split(" ").pop(),
+                        action.accent,
                       )}
                     >
                       <action.icon className="h-5 w-5" />
                     </div>
-                    <ArrowUpRight
-                      className={cn(
-                        "h-5 w-5 text-muted-foreground transition-all",
-                        "duration-200 group-hover:text-foreground",
-                      )}
-                    />
+
+                    <div className="text-left">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {action.title}
+                      </h3>
+
+                      <p
+                        className={cn(
+                          "text-[11px] text-muted-foreground",
+                          "line-clamp-1",
+                        )}
+                      >
+                        {action.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="pt-4">
-                    <h3 className="text-base font-semibold text-foreground">
-                      {action.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {action.description}
-                    </p>
-                  </div>
+
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <Card
+          className={cn(
+            "overflow-hidden rounded-[24px] border border-white/25 bg-white/45",
+            "shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl",
+            "dark:border-white/10 dark:bg-white/[0.04]",
+          )}
+        >
+          <CardContent className="space-y-4 p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p
+                  className={cn(
+                    "text-xs font-semibold uppercase tracking-[0.18em]",
+                    "text-muted-foreground",
+                  )}
+                >
+                  Reminders
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                  Student Care Notes
+                </h2>
               </div>
 
-              {/* Mobile View: List Items */}
               <div
                 className={cn(
-                  "flex items-center justify-between p-4 sm:hidden",
-                  "rounded-2xl border border-white/20 bg-white/45",
-                  "shadow-[0_4px_12px_rgba(15,23,42,0.04)] backdrop-blur-xl",
-                  "dark:border-white/10 dark:bg-white/[0.04]",
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
+                  "border border-primary/15 bg-primary/10 text-primary",
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <div
+                <SmilePlus className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {studentReminders.map((reminder) => (
+                <div
+                  key={reminder.title}
+                  className={cn(
+                    "flex gap-3 rounded-2xl border border-white/25 bg-white/45 p-4",
+                    "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
+                  )}
+                >
+                  <span
                     className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center",
-                      "rounded-xl border bg-white/70 backdrop-blur-md",
-                      "dark:bg-white/[0.06]",
-                      action.accent.split(" ").pop(),
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                      "border border-primary/15 bg-primary/10 text-primary",
                     )}
                   >
-                    <action.icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
+                    <reminder.icon className="h-4.5 w-4.5" />
+                  </span>
+
+                  <div>
                     <h3 className="text-sm font-semibold text-foreground">
-                      {action.title}
+                      {reminder.title}
                     </h3>
-                    <p
-                      className={cn(
-                        "text-[11px] text-muted-foreground",
-                        "line-clamp-1",
-                      )}
-                    >
-                      {action.description}
+
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {reminder.description}
                     </p>
                   </div>
                 </div>
-                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </div>
-            </Link>
-          ))}
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );

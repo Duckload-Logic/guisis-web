@@ -557,7 +557,7 @@ export default function StudentSlips() {
             {/* Mobile Dropdown */}
             <div className="w-full max-w-xs md:hidden">
               <Dropdown
-                label="Excuse Slip Status"
+                label="Admission Slip Status"
                 options={dropdownOptions}
                 value={selectedStatus.id}
                 onChange={(val) => {

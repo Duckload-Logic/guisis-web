@@ -134,9 +134,9 @@ export function ViewModal({
           )}
         >
           <DialogHeader>
-            <DialogTitle>Excuse Slip Details</DialogTitle>
+            <DialogTitle>Admission Slip Details</DialogTitle>
             <DialogDescription>
-              Review and manage excuse slip submission
+              Review and manage admission slip submission
             </DialogDescription>
           </DialogHeader>
 
@@ -402,14 +402,14 @@ export function ViewModal({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {actionType === "approve"
-                ? "Approve Excuse Slip"
+                ? "Approve Admission Slip"
                 : actionType === "reject"
-                  ? "Reject Excuse Slip"
+                  ? "Reject Admission Slip"
                   : "Send for Revision"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === "approve"
-                ? "Are you sure you want to approve this excuse slip?"
+                ? "Are you sure you want to approve this admission slip?"
                 : "Please provide a reason for this action."}
             </AlertDialogDescription>
           </AlertDialogHeader>

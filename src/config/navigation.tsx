@@ -13,6 +13,7 @@ import {
   Code,
   BookOpen,
   ClipboardList,
+  HelpCircle,
 } from "lucide-react";
 
 export interface NavItem {
@@ -20,6 +21,7 @@ export interface NavItem {
   href: string;
   icon: React.ReactNode;
 }
+
 const ICON_SIZE = "1.25rem";
 
 export const NAV_CONFIG: Record<string, NavItem[]> = {
@@ -47,8 +49,12 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
     {
       label: "COR Management",
       href: "/student/cor-management",
-
       icon: <ClipboardList size={ICON_SIZE} />,
+    },
+    {
+      label: "FAQs",
+      href: "/student/faqs",
+      icon: <HelpCircle size={ICON_SIZE} />,
     },
   ],
   admin: [
@@ -82,11 +88,6 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       href: "/admin/academic-settings",
       icon: <GraduationCap size={ICON_SIZE} />,
     },
-    // {
-    //   label: "Records Lifecycle",
-    //   href: "/admin/lifecycle",
-    //   icon: <GraduationCap size={ICON_SIZE} />,
-    // },
   ],
   superadmin: [
     {
