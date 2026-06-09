@@ -181,28 +181,28 @@ export default function FAQ() {
 
       <section
         className={cn(
-          "relative overflow-hidden rounded-[20px] border border-white/25",
-          "bg-white/45 p-3.5 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
+          "relative overflow-hidden rounded-[22px] border border-white/25",
+          "bg-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
           "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
-          "sm:p-4",
+          "sm:px-5 sm:py-5",
         )}
       >
         <div
           className={cn(
-            "pointer-events-none absolute -right-16 -top-20 h-32 w-32 rounded-full",
+            "pointer-events-none absolute -right-16 -top-20 h-28 w-28 rounded-full",
             "bg-primary/10 blur-3xl dark:bg-primary/15",
           )}
         />
 
         <div
           className={cn(
-            "pointer-events-none absolute -bottom-20 left-8 h-32 w-32 rounded-full",
+            "pointer-events-none absolute -bottom-20 left-8 h-28 w-28 rounded-full",
             "bg-secondary/20 blur-3xl dark:bg-secondary/10",
           )}
         />
 
-        <div className="relative flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-1.5">
+        <div className="relative flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="max-w-2xl space-y-1.5">
             <div
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border",
@@ -215,55 +215,49 @@ export default function FAQ() {
             </div>
 
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+              <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                 Frequently Asked Questions
               </h2>
 
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">
-                Find simple answers about appointments, admission slips, and IIR.
-                Use the answer button beside each question to open or hide the guide.
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
+                Find quick answers about appointments, admission slips, and IIR records.
               </p>
             </div>
           </div>
 
-          <div
-            className={cn(
-              "grid gap-1.5 rounded-xl border border-white/25 bg-white/45 p-2.5",
-              "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
-              "lg:min-w-[390px]",
-            )}
-          >
+          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 xl:max-w-2xl">
             {[
               {
-                label: "Pick the topic that matches your concern",
+                label: "Search your concern",
                 icon: Search,
               },
               {
-                label: "Open only the question you need",
+                label: "Open the guide",
                 icon: MessageCircleQuestion,
               },
               {
-                label: "Check your request status regularly",
+                label: "Check status",
                 icon: ShieldCheck,
               },
             ].map((item) => (
               <div
                 key={item.label}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-1.5 py-0.5",
-                  "text-xs text-muted-foreground",
+                  "flex items-center gap-2 rounded-xl border border-white/25",
+                  "bg-white/45 px-3 py-2 text-xs font-medium text-muted-foreground",
+                  "shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg",
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
                     "border border-primary/15 bg-primary/10 text-primary",
                   )}
                 >
-                  <item.icon className="h-3 w-3" />
+                  <item.icon className="h-3.5 w-3.5" />
                 </span>
 
-                <span>{item.label}</span>
+                <span className="leading-4">{item.label}</span>
               </div>
             ))}
           </div>
