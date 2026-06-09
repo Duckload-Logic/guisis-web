@@ -6,6 +6,7 @@
  */
 
 import React, { createContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMe } from "@/features/users/hooks/useMe";
 import { useLogout as useLogoutMutation } from "@/features/auth/hooks";
 import { User, UserRole } from "@/features/users/types/user";
@@ -30,26 +31,14 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
-/**
- * Timeout duration (ms) to prevent infinite loading
- * If useMe doesn't resolve within this time, force
- * loading state to false to allow redirect to login
- */
 const AUTH_TIMEOUT_MS = 5000;
+const SESSION_EXPIRED_EVENT = "ogos:session-expired";
 
-/**
- * Authentication Provider
- * Wraps app with auth context and triggers bootstrap
- * on successful authentication. Maintains session
- * across page refreshes by deferring redirect until
- * useMe query completes. Includes timeout safeguard
- * to prevent infinite loading on auth failures.
- *
- * @param children - React components to wrap
- */
 export const AuthProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  const navigate = useNavigate();
+  const [sessionExpired, setSessionExpired] = useState(false);
   const isCallbackPage = window.location.pathname === "/auth/callback";
   const isAuthPage =
     window.location.pathname === "/" ||
@@ -67,7 +56,6 @@ export const AuthProvider: React.FC<{
   const { logout: logoutMutation } = useLogoutMutation();
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
-  // Active Role state with persistence
   const [activeRole, setActiveRoleState] = useState<UserRole | null>(() => {
     const saved = localStorage.getItem("active_role");
     try {
@@ -82,10 +70,6 @@ export const AuthProvider: React.FC<{
     localStorage.setItem("active_role", JSON.stringify(role));
   };
 
-  /**
-   * Timeout safeguard: If auth check takes too long,
-   * force loading to false to prevent app lockout
-   */
   useEffect(() => {
     if (status === "pending") {
       const timeoutId = setTimeout(() => {
@@ -102,9 +86,37 @@ export const AuthProvider: React.FC<{
     }
   }, [status]);
 
-  /**
-   * Sync activeRole with user roles
-   */
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      localStorage.removeItem("session_active");
+      localStorage.removeItem("active_role");
+      setActiveRoleState(null);
+      setSessionExpired(true);
+
+      const pathname = window.location.pathname;
+      const isAlreadyOnAuthPage =
+        pathname === "/" ||
+        pathname === "/login" ||
+        pathname === "/register" ||
+        pathname.startsWith("/auth");
+
+      if (!isAlreadyOnAuthPage) {
+        navigate("/login", { replace: true });
+      }
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (status === "success" && user && hasSessionFlag) {
+      setSessionExpired(false);
+    }
+  }, [status, user, hasSessionFlag]);
+
   useEffect(() => {
     if (user && user.roles) {
       const isRoleValid =
@@ -116,7 +128,6 @@ export const AuthProvider: React.FC<{
         } else if (
           !window.location.pathname.startsWith("/auth/role-selection")
         ) {
-          // If multi-role and not on selection page, reset
           setActiveRoleState(null);
           localStorage.removeItem("active_role");
         }
@@ -124,14 +135,12 @@ export const AuthProvider: React.FC<{
     }
   }, [user, activeRole]);
 
-  /**
-   * Clear session flag on error
-   */
   useEffect(() => {
     if (isError) {
       localStorage.removeItem("session_active");
       localStorage.removeItem("active_role");
       setActiveRoleState(null);
+      setSessionExpired(true);
     }
   }, [isError]);
 
@@ -167,15 +176,8 @@ export const AuthProvider: React.FC<{
     performLogout();
   };
 
-  /**
-   * Authentication is true only if query succeeded
-   * and we have a user object
-   */
-  const isAuthenticated = status === "success" && !!user;
+  const isAuthenticated = !sessionExpired && status === "success" && !!user;
 
-  /**
-   * Role identification based on backend-provided roles collection
-   */
   const userRoles =
     user?.roles?.map((r) => r.name.toLowerCase().replace(/\s+/g, "")) || [];
   const isStudent = userRoles.includes("student");
@@ -183,14 +185,6 @@ export const AuthProvider: React.FC<{
   const isSuperAdmin = userRoles.includes("superadmin");
   const isDeveloper = userRoles.includes("developer");
 
-  /**
-   * Loading is true only while query is pending
-   * AND no error has occurred AND timeout hasn't fired
-   * This ensures loading state resolves in all cases:
-   * - Success: status becomes "success"
-   * - Error: status becomes "error"
-   * - Timeout: hasTimedOut becomes true
-   */
   const isAuthLoading = status === "pending" && !isError && !hasTimedOut;
 
   return (
