@@ -32,6 +32,8 @@ import CreateAppointment from "@/pages/student/appointments/CreateAppointment";
 import Profile from "@/pages/shared/Profile";
 import Callback from "@/pages/auth/Callback";
 import NotificationsPage from "@/pages/shared/Notifications";
+import About from "@/pages/shared/About";
+import Contact from "@/pages/shared/Contact";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import RoleSelection from "@/pages/auth/RoleSelection";
@@ -68,6 +70,14 @@ export const routes: RouteObject[] = [
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/about",
+    element: <About />,
+  },
+  {
+    path: "/contact",
+    element: <Contact />,
   },
   {
     path: "/register",

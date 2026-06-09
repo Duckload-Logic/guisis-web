@@ -62,7 +62,7 @@ export default function Dashboard() {
       icon: CalendarPlus,
       href: "/student/appointments/schedule",
       accent:
-        "from-blue-500/15 to-sky-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20",
+        "from-slate-500/15 to-slate-500/5 text-slate-600 dark:text-slate-400 border-slate-500/20",
     },
     {
       title: "Submit Admission Slip",
@@ -97,7 +97,7 @@ export default function Dashboard() {
         "One-on-one guidance support for personal, emotional, or academic concerns.",
       icon: MessagesSquare,
       accent:
-        "from-blue-500/15 to-sky-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20",
+        "from-slate-500/15 to-slate-500/5 text-slate-600 dark:text-slate-400 border-slate-500/20",
     },
     {
       title: "Group Guidance Sessions",
@@ -173,8 +173,8 @@ export default function Dashboard() {
       subtitle: "scheduled sessions",
       icon: Clock,
       iconWrap: cn(
-        "bg-blue-500/10 border-blue-500/20",
-        "text-blue-600 dark:text-blue-400",
+        "bg-slate-500/10 border-slate-500/20",
+        "text-slate-600 dark:text-slate-400",
       ),
     },
     {
