@@ -26,6 +26,8 @@ export interface IDPLoginButtonProps {
    * Optional flag to disable the button
    */
   disabled?: boolean;
+
+  onClick?: () => void;
 }
 
 /**
@@ -35,10 +37,11 @@ export interface IDPLoginButtonProps {
  * @param props - Component props
  * @returns JSX element
  */
-export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
+export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({ 
   onError,
   className = "",
   disabled = false,
+  onClick,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,12 +51,14 @@ export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
    */
   const handleLogin = () => {
     setIsLoading(true);
+    if (onClick) onClick();
 
     // Get API Base URL from environment
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
     // Navigate directly to backend authorization endpoint
-    // This allows the backend to perform a direct 302 redirect to the IDP
+    // Preserve the login page in history so back navigation
+    // returns to the landing page instead of the previous route.
     window.location.assign(`${apiBaseUrl}${API_ROUTES.auth.idpAuthorizeUrl}`);
   };
 
