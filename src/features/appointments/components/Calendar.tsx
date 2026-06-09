@@ -221,7 +221,7 @@ export default function Calendar({
               </CardTitle>
             </CardHeader>
           )}
-          <CardContent className="px-3 pb-5 pt-5">
+          <CardContent className="px-2.5 pb-4 pt-4">
             <CalendarContent
               monthName={monthName}
               handlePrevMonth={handlePrevMonth}
@@ -336,14 +336,14 @@ function CalendarContent({
   return (
     <div className="flex flex-col p-0">
       {/* Month Navigation */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex min-w-0 items-center justify-between gap-2 sm:mb-6">
         <button
           onClick={handlePrevMonth}
           className="rounded p-2 transition-colors hover:bg-muted"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h2 className="min-w-40 text-center text-lg font-semibold">
+        <h2 className="min-w-0 flex-1 text-center text-base font-semibold sm:text-lg">
           {monthName}
         </h2>
         <button
@@ -369,7 +369,7 @@ function CalendarContent({
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {emptyDays.map((_, idx) => (
             <div
               key={`empty-${idx}`}
@@ -386,9 +386,9 @@ function CalendarContent({
             const isDisabled = isDateDisabled(day);
 
             let btnClass = cn(
-              "flex w-full aspect-square max-w-[2.5rem] sm:max-w-[3rem]",
+              "flex w-full aspect-square max-w-[2.25rem] sm:max-w-[3rem]",
               "items-center justify-center text-nowrap rounded-full",
-              "text-sm font-semibold transition-all focus:outline-none",
+              "text-xs font-semibold transition-all focus:outline-none sm:text-sm",
               "focus:ring-1 focus:ring-primary/50",
             );
 
@@ -480,7 +480,7 @@ function CalendarContent({
       </div>
 
       {/* Legend */}
-      <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-4">
+      <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4 sm:mt-8 sm:gap-3">
         {displayLegends.map(({ color, label }) => (
           <div
             key={label}

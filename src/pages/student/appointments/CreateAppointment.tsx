@@ -260,7 +260,7 @@ export default function CreateAppointment() {
   return (
     <>
       <div className="min-h-full bg-background">
-        <div className="mx-auto w-full max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1500px] overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="space-y-5">
             {currentStep === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -399,13 +399,13 @@ export default function CreateAppointment() {
 
                 <div
                   className={cn(
-                    "grid w-full gap-6",
-                    "xl:grid-cols-[minmax(520px,1fr)_minmax(620px,1fr)]",
-                    "2xl:grid-cols-[minmax(560px,1fr)_minmax(720px,1.1fr)]",
+                    "grid w-full min-w-0 gap-5 sm:gap-6",
+                    "xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
+                    "2xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
                     "xl:items-start",
                   )}
                 >
-                  <div className="w-full">
+                  <div className="min-w-0 w-full">
                     <AppointmentForm
                       data={appointmentFormData}
                       onChange={(name: string, value: any) => {
@@ -421,7 +421,7 @@ export default function CreateAppointment() {
                     />
                   </div>
 
-                  <div className="w-full">
+                  <div className="min-w-0 w-full">
                     <Card
                       className={cn(
                         "overflow-hidden rounded-[26px] border",
@@ -431,7 +431,7 @@ export default function CreateAppointment() {
                         "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
                       )}
                     >
-                      <CardContent className="space-y-5 p-5 sm:p-6 lg:p-7">
+                      <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex items-start gap-3">
                             <div
@@ -505,7 +505,7 @@ export default function CreateAppointment() {
 
                         {canShowPreferredProcess && (
                           <>
-                            <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="grid gap-3 md:grid-cols-3">
                               {preferredOptions.map((option, index) => {
                                 const isActive = activePreferredIndex === index;
                                 const isRequired = index === 0;
@@ -520,7 +520,7 @@ export default function CreateAppointment() {
                                       setActivePreferredIndex(index)
                                     }
                                     className={cn(
-                                      "min-h-[96px] rounded-2xl border px-4 py-3 text-left transition-all",
+                                      "min-h-[88px] rounded-2xl border px-3 py-3 text-left transition-all sm:px-4",
                                       isActive
                                         ? "border-primary/30 bg-primary/10 shadow-sm"
                                         : "border-white/25 bg-white/45 hover:bg-white/60",
@@ -563,16 +563,13 @@ export default function CreateAppointment() {
                             {!activePreferredOption.date && (
                               <div
                                 className={cn(
-                                  "mx-auto w-full max-w-[350px] rounded-[20px]",
-                                  "border border-white/25 bg-white/45 p-1.5",
+                                  "mx-auto w-full max-w-full rounded-[20px] sm:max-w-[350px]",
+                                  "border border-white/25 bg-white/45 p-1",
                                   "shadow-sm backdrop-blur-xl",
                                   "dark:border-white/10 dark:bg-white/[0.04]",
                                 )}
                               >
-                                <div
-                                  className="origin-top"
-                                  style={{ zoom: 0.78 }}
-                                >
+                                <div className="origin-top">
                                   <Calendar
                                     currentMonth={activePreferredOption.month}
                                     selectedDate={activePreferredOption.date}
@@ -599,7 +596,7 @@ export default function CreateAppointment() {
                                     occupiedDayColor="bg-primary/80"
                                     legends={[]}
                                     hasHeader
-                                    className="mx-auto w-full max-w-[430px]"
+                                    className="mx-auto w-full max-w-full sm:max-w-[430px]"
                                     allowCurrentDate={false}
                                     allowPastDates={false}
                                     maxDate={maxDate}
@@ -660,7 +657,7 @@ export default function CreateAppointment() {
                                     </CardContent>
                                   </Card>
 
-                                  <div className="rounded-[24px] border border-white/25 bg-white/45 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+                                  <div className="min-w-0 rounded-[24px] border border-white/25 bg-white/45 p-2 dark:border-white/10 dark:bg-white/[0.04] sm:p-3">
                                     <SlotSelector
                                       selectedDate={activePreferredOption.date}
                                       selectedTime={activePreferredOption.time}
