@@ -71,7 +71,7 @@ export default function Landing() {
     {
       title: "Email",
       icon: Mail,
-      description: "Tech Support: duckload7116@gmail.com",
+      description: "Tech Support: ducklogic7116@gmail.com",
       style: cardColors,
     },
     {
@@ -93,7 +93,13 @@ export default function Landing() {
       q: "Can I request guidance support off-campus?",
       a:
         "Yes, the GuiSIS portal allows you to book " +
-        "appointments directly online.",
+        "appointments and request admission slips directly online.",
+    },
+    {
+      q: "How do I create an account?",
+      a:
+        "You must use your official university credentials via the integrated " +
+        "Identity Provider (IDP) login option.",
     },
   ];
 
@@ -104,10 +110,10 @@ export default function Landing() {
     >
       <div
         id="top"
-        className="space-y-20"
+        className="space-y-10"
       >
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-white text-slate-900 dark:bg-black dark:text-white">
+        <section className="relative overflow-hidden rounded-xl bg-glass-bg bg-glass-border text-slate-900 shadow-md">
           <div className="pointer-events-none absolute inset-0 -z-10">
             <div className="absolute left-[15%] top-10 h-72 w-72 rounded-full bg-orange-500/15 blur-3xl" />
             <div className="absolute right-[10%] top-20 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
@@ -167,7 +173,7 @@ export default function Landing() {
         {/* Features Section */}
         <section
           id="features"
-          className="scroll-mt-24 bg-slate-100 text-slate-900 dark:bg-black dark:text-slate-100"
+          className="relative overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
@@ -209,7 +215,7 @@ export default function Landing() {
         {/* About Section */}
         <section
           id="about"
-          className="scroll-mt-24 bg-white text-slate-900 dark:bg-black dark:text-slate-100"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="grid items-start gap-10 lg:grid-cols-2">
@@ -255,7 +261,7 @@ export default function Landing() {
         {/* FAQs Section */}
         <section
           id="faq"
-          className="scroll-mt-24 bg-slate-100 text-slate-900 dark:bg-black dark:text-slate-100"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
@@ -294,7 +300,7 @@ export default function Landing() {
         {/* Contact Section */}
         <section
           id="contact"
-          className="scroll-mt-24 bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">

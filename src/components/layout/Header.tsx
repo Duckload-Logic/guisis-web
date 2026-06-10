@@ -64,88 +64,90 @@ export default function Header({
         </div>
       </div>
 
-      <nav className="hidden items-center justify-center gap-8 md:flex">
-        {isLanding ? (
-          <a
-            href="#top"
-            onClick={(event) => {
-              event.preventDefault();
-              document.getElementById("top")?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-            }}
-            className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-          >
-            Home
-          </a>
-        ) : (
-          <Link
-            to={isLoggedIn && role ? `/${role}` : "/"}
-            className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-          >
-            Home
-          </Link>
-        )}
-        {isLanding ? (
-          <>
+      {!isLoggedIn && (
+        <nav className="hidden items-center justify-center gap-8 md:flex">
+          {isLanding ? (
             <a
-              href="#features"
+              href="#top"
               onClick={(event) => {
                 event.preventDefault();
-                document.getElementById("features")?.scrollIntoView({
+                document.getElementById("top")?.scrollIntoView({
                   behavior: "smooth",
                   block: "start",
                 });
               }}
               className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
             >
-              What We Offer
+              Home
             </a>
-            <a
-              href="#about"
-              onClick={(event) => {
-                event.preventDefault();
-                document.getElementById("about")?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-              }}
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-            >
-              About
-            </a>
-            <a
-              href="#contact"
-              onClick={(event) => {
-                event.preventDefault();
-                document.getElementById("contact")?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-              }}
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-            >
-              Contact
-            </a>
-          </>
-        ) : (
-          <>
+          ) : (
             <Link
-              to="/about"
+              to={isLoggedIn && role ? `/${role}` : "/"}
               className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
             >
-              About
+              Home
             </Link>
-            <Link
-              to="/contact"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-            >
-              Contact Us
-            </Link>
-          </>
-        )}
-      </nav>
+          )}
+          {isLanding ? (
+            <>
+              <a
+                href="#features"
+                onClick={(event) => {
+                  event.preventDefault();
+                  document.getElementById("features")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                What We Offer
+              </a>
+              <a
+                href="#about"
+                onClick={(event) => {
+                  event.preventDefault();
+                  document.getElementById("about")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                About
+              </a>
+              <a
+                href="#contact"
+                onClick={(event) => {
+                  event.preventDefault();
+                  document.getElementById("contact")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
+                }}
+                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                Contact
+              </a>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/about"
+                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              >
+                Contact Us
+              </Link>
+            </>
+          )}
+        </nav>
+      )}
 
       <div className="flex items-center justify-end gap-3">
         <ThemeToggle
