@@ -32,15 +32,19 @@ export default function Login() {
   };
 
   return (
-    <Layout isLoggedIn={false} isLoading={isLoading} showHeader={true}>
-      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-12">
+    <Layout
+      isLoggedIn={false}
+      isLoading={isLoading}
+      showHeader={true}
+    >
+      <div className="flex min-h-[70vh] w-full flex-col items-center justify-center px-4 py-12">
         <div
           className={cn(
             "relative w-full max-w-[450px] overflow-hidden rounded-[30px]",
             "border border-neutral-200/70 bg-white/95 p-8 shadow-2xl",
             "shadow-neutral-900/10 dark:border-white/10",
             "dark:bg-neutral-950/95 dark:shadow-black/40",
-            "dark:backdrop-blur-lg transition-all"
+            "transition-all dark:backdrop-blur-lg",
           )}
         >
           <AuthHeader
@@ -63,14 +67,17 @@ export default function Login() {
                     "bg-yellow-400 text-slate-900",
                     "font-semibold transition-all duration-200",
                     "hover:bg-yellow-500 dark:hover:bg-yellow-500",
-                    "sm:text-base active:scale-[0.98]",
-                    "shadow-[0_4px_12px_rgba(250,204,21,0.3)]"
+                    "active:scale-[0.98] sm:text-base",
+                    "shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
                   )}
                 />
               </div>
             ) : (
               <>
-                <AuthMessages error={error} success="" />
+                <AuthMessages
+                  error={error}
+                  success=""
+                />
                 <LoginForm
                   username={username}
                   password={password}
@@ -89,9 +96,9 @@ export default function Login() {
           <Link
             to="/"
             className={cn(
-              "inline-flex items-center gap-2 text-sm text-neutral-550",
-              "hover:text-amber-500 dark:text-neutral-450",
-              "dark:hover:text-amber-400 transition-colors"
+              "inline-flex items-center gap-2 text-sm text-slate-500",
+              "hover:text-amber-500 dark:text-neutral-400",
+              "dark:hover:text-amber-400 transition-colors",
             )}
           >
             <ArrowLeft className="h-4 w-4" />
