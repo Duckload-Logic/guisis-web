@@ -63,7 +63,10 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [sidebarPinned, setSidebarPinnedInternal] = useState(false);
   const [sidebarHovered, setSidebarHovered] = useState(false);
-  const [darkMode, setDarkModeInternal] = useState(false);
+  const [darkMode, setDarkModeInternal] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(STORAGE_KEYS.DARK_MODE) === "dark";
+  });
   const [grayscale, setGrayscaleInternal] = useState(false);
   const [dyslexiaMode, setDyslexiaModeInternal] = useState(false);
   const [fontScale, setFontScaleInternal] = useState(100);

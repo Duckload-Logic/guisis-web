@@ -14,6 +14,7 @@ export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
         "border-[hsl(var(--border)/0.6)] px-6 py-8 sm:px-8",
         "lg:min-h-full lg:border-b-0 lg:border-r",
         "lg:border-[hsl(var(--border)/0.6)] lg:px-10 lg:py-10",
+        "bg-slate-100 dark:bg-stone-800",
       )}
     >
       <div
@@ -59,11 +60,11 @@ export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
           User Portal
         </div>
 
-        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-foreground">
+        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
           {title}
         </h1>
 
-        <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
+        <p className="mt-4 max-w-md text-base leading-7 text-slate-600 dark:text-slate-300">
           {subtitle}
         </p>
 

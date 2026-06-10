@@ -82,7 +82,19 @@ export default function Layout({
     propsIsLoading !== undefined
       ? propsIsLoading
       : (pageMetadata.isLoading ?? false);
-  const showSubHeader = pageMetadata.showSubHeader !== false;
+
+  const hasSubHeaderContent = Boolean(
+    title ||
+      description ||
+      badgeText ||
+      badgeIcon ||
+      headerActions ||
+      headerStats ||
+      showDate,
+  );
+
+  const showSubHeader =
+    pageMetadata.showSubHeader !== false && hasSubHeaderContent;
 
   const { user, logout, activeRole } = useAuth();
   const location = useLocation();
@@ -205,8 +217,8 @@ export default function Layout({
             <div
               className={cn(
                 "absolute inset-0",
-                "bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.03),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.02),transparent_25%)]",
-                "dark:bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.05),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.03),transparent_25%)]",
+                "bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.03),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.02),transparent_25%)]",
+                "dark:bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.05),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.03),transparent_25%)]",
               )}
             />
           ) : (
@@ -251,21 +263,25 @@ export default function Layout({
               : ""
           }`}
         >
-          <Header
-            title={title}
-            user={user}
-            role={currentRole || ""}
-            handleLogout={handleLogout}
-            getRoleLabel={getRoleLabel}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            isLoggedIn={isLoggedIn}
-          />
+            {showHeader && (
+            <>
+              <Header
+                title={title}
+                user={user}
+                role={currentRole || ""}
+                handleLogout={handleLogout}
+                getRoleLabel={getRoleLabel}
+                showNotifications={showNotifications}
+                setShowNotifications={setShowNotifications}
+                isLoggedIn={isLoggedIn}
+              />
 
-          <NotificationModal
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-          />
+              <NotificationModal
+                showNotifications={showNotifications}
+                setShowNotifications={setShowNotifications}
+              />
+            </>
+          )}
 
           <div className="flex min-h-0 w-full flex-1 flex-col-reverse bg-background md:flex-row">
             {/* <div

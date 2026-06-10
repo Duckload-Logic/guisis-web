@@ -1,8 +1,10 @@
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { IDPLoginButton } from "@/features/auth/components/IDPLoginButton";
 import ProfileMenu from "./ProfileMenu";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const LOGO_SRC = "/logo.svg";
 
@@ -32,12 +34,14 @@ export default function Header({
 }: HeaderProps) {
   const { darkMode, setDarkMode } = useUI();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const location = useLocation();
+  const isLanding = location.pathname === "/login" || location.pathname === "/";
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-20 items-center justify-between",
-        "rounded-3xl rounded-tl-none rounded-tr-none border",
+        "sticky top-0 z-30 grid w-full grid-cols-[auto,1fr,auto] items-center",
+        "h-20 border",
         "border-glass-border bg-background px-6 shadow-md",
       )}
     >
@@ -50,7 +54,7 @@ export default function Header({
             "hover:scale-110",
           )}
         />
-        <div className="hidden flex-col gap-1 text-xs md:flex">
+        <div className="flex flex-col gap-1 text-xs">
           <p className="font-semibold">
             Polytechnic University of the Philippines – Taguig
           </p>
@@ -60,39 +64,107 @@ export default function Header({
         </div>
       </div>
 
-      {isLoggedIn && (
-        <div className="text-center md:block">
-          <p className="text-sm font-medium text-foreground">{title}</p>
-          <p className="text-xs text-foreground/50">
-            Welcome back, {user?.firstName}
-          </p>
-        </div>
-      )}
-
-      <div className="flex items-center gap-3">
-        {isLoggedIn && (
-          <NotificationBell
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-          />
+      <nav className="hidden md:flex items-center justify-center gap-8">
+        {isLanding ? (
+          <a
+            href="#top"
+            onClick={(event) => {
+              event.preventDefault();
+              document.getElementById("top")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+            className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+          >
+            Home
+          </a>
+        ) : (
+          <Link
+            to={isLoggedIn && role ? `/${role}` : "/login"}
+            className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+          >
+            Home
+          </Link>
         )}
+        {isLanding ? (
+          <>
+            <a
+              href="#features"
+              onClick={(event) => {
+                event.preventDefault();
+                document.getElementById("features")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+            >
+              What We Offer
+            </a>
+            <a
+              href="#about"
+              onClick={(event) => {
+                event.preventDefault();
+                document.getElementById("about")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+            >
+              About
+            </a>
+            <a
+              href="#contact"
+              onClick={(event) => {
+                event.preventDefault();
+                document.getElementById("contact")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+            >
+              Contact
+            </a>
+          </>
+        ) : (
+          <>
+            <Link to="/about" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">About</Link>
+            <Link to="/contact" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">Contact Us</Link>
+          </>
+        )}
+      </nav>
 
+      <div className="flex items-center gap-3 justify-end">
         <ThemeToggle
           darkMode={darkMode}
           setDarkMode={setDarkMode}
         />
-        {isLoggedIn && (
-          <div className="hidden md:block">
-            <ProfileMenu
-              firstName={user?.firstName}
-              middleName={user?.middleName}
-              lastName={user?.lastName}
-              roleLabel={getRoleLabel()}
-              role={role}
-              profilePath={`/${role}/profile`}
-              onLogout={handleLogout}
+
+        {!isLoggedIn ? (
+          <IDPLoginButton
+            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:bg-amber-500"
+          />
+        ) : (
+          <>
+            <NotificationBell
+              showNotifications={showNotifications}
+              setShowNotifications={setShowNotifications}
             />
-          </div>
+            <div className="hidden md:block">
+              <ProfileMenu
+                firstName={user?.firstName}
+                middleName={user?.middleName}
+                lastName={user?.lastName}
+                roleLabel={getRoleLabel()}
+                role={role}
+                profilePath={`/${role}/profile`}
+                onLogout={handleLogout}
+              />
+            </div>
+          </>
         )}
       </div>
       <UISettingsModal
