@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 
 export default function Landing() {
   const cardStyle = cn(
-    "rounded-[24px] border p-6 shadow-xl shadow-neutral-200/30",
+    "rounded-xl border p-6 shadow-md shadow-neutral-200/30 h-full",
     "transition duration-300 hover:-translate-y-1 hover:border-amber-500/40",
     "dark:border-neutral-800 dark:bg-neutral-900/90 dark:shadow-black/20",
   );
@@ -71,7 +71,7 @@ export default function Landing() {
     {
       title: "Email",
       icon: Mail,
-      description: "duckload7116@gmail.com",
+      description: "Tech Support: duckload7116@gmail.com",
       style: cardColors,
     },
     {
@@ -180,13 +180,17 @@ export default function Landing() {
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-amber-400/80" />
             </div>
 
-            <div className="mt-12 grid items-start gap-8 lg:grid-cols-3">
+            <div className="mt-12 flex flex-wrap justify-center gap-8">
               {featureCards.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.title}
-                    className={cn(cardStyle, item.style, "flex flex-col gap-4")}
+                    className={cn(
+                      cardStyle,
+                      item.style,
+                      "flex w-full max-w-[380px] flex-col gap-4",
+                    )}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-6 w-6 text-amber-500" />
@@ -302,13 +306,17 @@ export default function Landing() {
               </h2>
             </div>
 
-            <div className="mt-12 grid items-start gap-8 lg:grid-cols-3">
+            <div className="mt-12 flex flex-wrap justify-center gap-8">
               {contactCards.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.title}
-                    className={cn(cardStyle, item.style, "flex flex-col gap-4")}
+                    className={cn(
+                      cardStyle,
+                      item.style,
+                      "flex w-full max-w-[380px] flex-col gap-4",
+                    )}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-6 w-6 text-amber-500" />

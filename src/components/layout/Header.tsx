@@ -64,7 +64,7 @@ export default function Header({
         </div>
       </div>
 
-      <nav className="hidden md:flex items-center justify-center gap-8">
+      <nav className="hidden items-center justify-center gap-8 md:flex">
         {isLanding ? (
           <a
             href="#top"
@@ -75,14 +75,14 @@ export default function Header({
                 block: "start",
               });
             }}
-            className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+            className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
           >
             Home
           </a>
         ) : (
           <Link
             to={isLoggedIn && role ? `/${role}` : "/"}
-            className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+            className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
           >
             Home
           </Link>
@@ -98,7 +98,7 @@ export default function Header({
                   block: "start",
                 });
               }}
-              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
             >
               What We Offer
             </a>
@@ -111,7 +111,7 @@ export default function Header({
                   block: "start",
                 });
               }}
-              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
             >
               About
             </a>
@@ -124,29 +124,37 @@ export default function Header({
                   block: "start",
                 });
               }}
-              className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
             >
               Contact
             </a>
           </>
         ) : (
           <>
-            <Link to="/about" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">About</Link>
-            <Link to="/contact" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">Contact Us</Link>
+            <Link
+              to="/about"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
+              Contact Us
+            </Link>
           </>
         )}
       </nav>
 
-      <div className="flex items-center gap-3 justify-end">
+      <div className="flex items-center justify-end gap-3">
         <ThemeToggle
           darkMode={darkMode}
           setDarkMode={setDarkMode}
         />
 
         {!isLoggedIn ? (
-          <IDPLoginButton
-            className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:bg-amber-500"
-          />
+          <IDPLoginButton className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:bg-amber-500" />
         ) : (
           <>
             <NotificationBell
