@@ -9,6 +9,7 @@ import {
   MapPin,
   ArrowRight,
   HelpCircle,
+  FileText,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -16,11 +17,11 @@ export default function Landing() {
   const cardStyle = cn(
     "rounded-[24px] border p-6 shadow-xl shadow-neutral-200/30",
     "transition duration-300 hover:-translate-y-1 hover:border-amber-500/40",
-    "dark:border-neutral-800 dark:bg-neutral-900/90 dark:shadow-black/20"
+    "dark:border-neutral-800 dark:bg-neutral-900/90 dark:shadow-black/20",
   );
   const cardColors = cn(
     "bg-white/95 border-neutral-200 text-neutral-950",
-    "dark:bg-neutral-900/85 dark:border-neutral-800 dark:text-white"
+    "dark:bg-neutral-900/85 dark:border-neutral-800 dark:text-white",
   );
 
   const featureCards = [
@@ -30,6 +31,14 @@ export default function Landing() {
       description:
         "Schedule and manage counseling sessions with ease using the " +
         "integrated guidance online services system.",
+      style: cardColors,
+    },
+    {
+      title: "Admission Slips",
+      icon: FileText,
+      description:
+        "Submit excuse letters and official documents to acquire " +
+        "admission slips",
       style: cardColors,
     },
     {
@@ -89,8 +98,14 @@ export default function Landing() {
   ];
 
   return (
-    <Layout isLoggedIn={false} showHeader={true}>
-      <div id="top" className="space-y-20">
+    <Layout
+      isLoggedIn={false}
+      showHeader={true}
+    >
+      <div
+        id="top"
+        className="space-y-20"
+      >
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-white text-slate-900 dark:bg-black dark:text-white">
           <div className="pointer-events-none absolute inset-0 -z-10">
@@ -99,7 +114,7 @@ export default function Landing() {
           </div>
 
           <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto space-y-8">
+            <div className="mx-auto max-w-3xl space-y-8 text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-slate-600 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5 dark:text-slate-200">
                 PUP Taguig Portal
               </div>
@@ -125,7 +140,7 @@ export default function Landing() {
                     "rounded-full bg-amber-400 px-8 text-lg font-semibold",
                     "text-slate-950 shadow-xl shadow-amber-400/20",
                     "transition-all duration-300 hover:bg-amber-500",
-                    "hover:-translate-y-0.5 active:scale-[0.98]"
+                    "hover:-translate-y-0.5 active:scale-[0.98]",
                   )}
                 >
                   Proceed to Login
@@ -139,7 +154,7 @@ export default function Landing() {
                     "font-semibold text-slate-900 transition hover:border-slate-400",
                     "hover:bg-slate-200 dark:border-white/15 dark:bg-white/5",
                     "dark:text-white dark:hover:border-white/30",
-                    "dark:hover:bg-white/10"
+                    "dark:hover:bg-white/10",
                   )}
                 >
                   Learn more
@@ -165,7 +180,7 @@ export default function Landing() {
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-amber-400/80" />
             </div>
 
-            <div className="mt-12 grid gap-8 lg:grid-cols-3 items-start">
+            <div className="mt-12 grid items-start gap-8 lg:grid-cols-3">
               {featureCards.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -193,7 +208,7 @@ export default function Landing() {
           className="scroll-mt-24 bg-white text-slate-900 dark:bg-black dark:text-slate-100"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <div className="grid gap-10 lg:grid-cols-2 items-start">
+            <div className="grid items-start gap-10 lg:grid-cols-2">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-amber-500">
                   Why GuiSIS
@@ -202,13 +217,14 @@ export default function Landing() {
                   More than login — a safer gateway for guidance and support.
                 </h2>
                 <p className="mt-6 text-base leading-8 text-slate-600 dark:text-slate-300">
-                  Built for the Polytechnic University of the Philippines Taguig,
-                  GuiSIS is designed to support students with secure access to
-                  academic guidance, counseling services, and official resources.
+                  Built for the Polytechnic University of the Philippines
+                  Taguig, GuiSIS is designed to support students with secure
+                  access to academic guidance, counseling services, and official
+                  resources.
                 </p>
               </div>
 
-              <div className="space-y-4 rounded-[30px] border border-neutral-200/80 bg-white/50 p-8 shadow-xl dark:border-neutral-800 dark:bg-neutral-900/50 backdrop-blur-sm">
+              <div className="space-y-4 rounded-[30px] border border-neutral-200/80 bg-white/50 p-8 shadow-xl backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/50">
                 <div>
                   <h3 className="text-lg font-semibold text-neutral-950 dark:text-white">
                     Secure by default
@@ -248,14 +264,14 @@ export default function Landing() {
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-amber-400/80" />
             </div>
 
-            <div className="mt-12 max-w-3xl mx-auto space-y-6">
+            <div className="mx-auto mt-12 max-w-3xl space-y-6">
               {faqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="p-6 bg-white dark:bg-neutral-900/80 border border-neutral-200 dark:border-neutral-850 rounded-[20px]"
+                  className="dark:border-neutral-850 rounded-[20px] border border-neutral-200 bg-white p-6 dark:bg-neutral-900/80"
                 >
-                  <div className="flex gap-3 items-start">
-                    <HelpCircle className="h-6 w-6 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3">
+                    <HelpCircle className="mt-0.5 h-6 w-6 shrink-0 text-amber-500" />
                     <div>
                       <h4 className="font-semibold text-slate-900 dark:text-white">
                         {faq.q}
@@ -286,7 +302,7 @@ export default function Landing() {
               </h2>
             </div>
 
-            <div className="mt-12 grid gap-8 lg:grid-cols-3 items-start">
+            <div className="mt-12 grid items-start gap-8 lg:grid-cols-3">
               {contactCards.map((item) => {
                 const Icon = item.icon;
                 return (
