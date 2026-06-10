@@ -86,6 +86,40 @@ export function SlipList({
     }));
   }, [statuses, statMap]);
 
+  const handleRequiredSortChange = (value: unknown) => {
+    const nextValue = String(value ?? "").trim();
+
+    if (!nextValue) {
+      return;
+    }
+
+    const isValidSortOption = sortOptions.some(
+      (option) => String(option.id) === nextValue,
+    );
+
+    if (!isValidSortOption) {
+      return;
+    }
+
+    onSortChange?.(nextValue);
+  };
+
+  const handleRequiredOrderChange = (value: unknown) => {
+    if (value !== "asc" && value !== "desc") {
+      return;
+    }
+
+    const isValidOrderOption = orderOptions.some(
+      (option) => option.id === value,
+    );
+
+    if (!isValidOrderOption) {
+      return;
+    }
+
+    onOrderChange?.(value);
+  };
+
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
@@ -382,7 +416,7 @@ export function SlipList({
               label="Sort By"
               options={sortOptions}
               value={selectedSort}
-              onChange={(val) => onSortChange(String(val))}
+              onChange={handleRequiredSortChange}
               enabled={!isLoading}
               formStyle={false}
             />
@@ -393,7 +427,7 @@ export function SlipList({
               label="Order"
               options={orderOptions}
               value={selectedOrder}
-              onChange={(val) => onOrderChange(val as SortOrder)}
+              onChange={handleRequiredOrderChange}
               enabled={!isLoading}
               formStyle={false}
             />
@@ -425,4 +459,3 @@ export function SlipList({
     </Card>
   );
 }
-

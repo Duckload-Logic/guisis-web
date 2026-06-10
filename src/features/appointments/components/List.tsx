@@ -142,6 +142,40 @@ export default function AppointmentList({
     }));
   }, [statuses, statMap]);
 
+  const handleRequiredSortChange = (value: unknown) => {
+    const nextValue = String(value ?? "").trim();
+
+    if (!nextValue) {
+      return;
+    }
+
+    const isValidSortOption = sortOptions.some(
+      (option) => String(option.id) === nextValue,
+    );
+
+    if (!isValidSortOption) {
+      return;
+    }
+
+    onSortChange?.(nextValue);
+  };
+
+  const handleRequiredOrderChange = (value: unknown) => {
+    if (value !== "asc" && value !== "desc") {
+      return;
+    }
+
+    const isValidOrderOption = orderOptions.some(
+      (option) => option.id === value,
+    );
+
+    if (!isValidOrderOption) {
+      return;
+    }
+
+    onOrderChange?.(value);
+  };
+
   const columns = useMemo<Column<Appointment>[]>(
     () => [
       {
@@ -458,7 +492,7 @@ export default function AppointmentList({
               label="Sort By"
               options={sortOptions}
               value={selectedSort}
-              onChange={(val) => onSortChange(String(val))}
+              onChange={handleRequiredSortChange}
               enabled={!isLoading}
               formStyle={false}
             />
@@ -469,7 +503,7 @@ export default function AppointmentList({
               label="Order"
               options={orderOptions}
               value={selectedOrder}
-              onChange={(val) => onOrderChange(val as SortOrder)}
+              onChange={handleRequiredOrderChange}
               enabled={!isLoading}
               formStyle={false}
             />
