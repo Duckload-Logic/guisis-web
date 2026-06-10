@@ -32,7 +32,7 @@ export default function SlotSelector({
       key={slot.id}
       onClick={() => onTimeSelect(slot)}
       disabled={!slot.isAvailable}
-      className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:text-sm ${
+      className={`min-h-10 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:min-h-11 sm:text-sm ${
         selectedTime?.id === slot.id
           ? "bg-primary text-primary-foreground ring-2 ring-primary"
           : slot.isAvailable
@@ -48,11 +48,11 @@ export default function SlotSelector({
 
   return (
     <div className="w-full">
-      <Card className="h-full border border-border bg-card shadow-sm">
-        <CardHeader className="rounded-t-md border-b border-border bg-gradient-to-r from-muted/50 to-muted">
+      <Card className="h-full min-w-0 border border-border bg-card shadow-sm">
+        <CardHeader className="rounded-t-md border-b border-border bg-gradient-to-r from-muted/50 to-muted px-4 py-4 sm:px-6">
           <CardTitle className="text-lg text-foreground">Select Time</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="px-4 pt-4 sm:px-6">
           {selectedDate ? (
             <>
               <p className="mb-4 text-sm font-semibold text-muted-foreground">
@@ -66,8 +66,7 @@ export default function SlotSelector({
                   />
                 </p>
               ) : availableSlots.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  {/* AM Column */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
                   <div className="space-y-3">
                     <div
                       className={cn(
@@ -82,7 +81,7 @@ export default function SlotSelector({
                       </span>
                     </div>
                     {amSlots.length > 0 ? (
-                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-2">
+                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-1 sm:p-2">
                         {amSlots.map(renderSlotButton)}
                       </div>
                     ) : (
@@ -92,7 +91,6 @@ export default function SlotSelector({
                     )}
                   </div>
 
-                  {/* PM Column */}
                   <div className="space-y-3">
                     <div
                       className={cn(
@@ -107,7 +105,7 @@ export default function SlotSelector({
                       </span>
                     </div>
                     {pmSlots.length > 0 ? (
-                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-2">
+                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-1 sm:p-2">
                         {pmSlots.map(renderSlotButton)}
                       </div>
                     ) : (

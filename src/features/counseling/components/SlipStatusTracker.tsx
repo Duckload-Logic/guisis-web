@@ -1,14 +1,13 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface SlipStats {
   pending: number;
   approvedToday: number;
   rejectedToday: number;
-  urgentRequests: number;
 }
 
 interface SlipStatusTrackerProps {
@@ -37,14 +36,6 @@ export function SlipStatusTracker({
       bgColor: "bg-emerald-500/10",
       borderColor: "border-emerald-500/20",
     },
-    {
-      label: "Urgent Action",
-      value: stats.urgentRequests,
-      icon: AlertCircle,
-      color: "text-rose-500",
-      bgColor: "bg-rose-500/10",
-      borderColor: "border-rose-500/20",
-    },
   ];
 
   const navigate = useNavigate();
@@ -54,11 +45,13 @@ export function SlipStatusTracker({
       className={cn("overflow-hidden shadow-md backdrop-blur-md", className)}
     >
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-bold">Admission Slip Tracker</CardTitle>
+        <CardTitle className="text-lg font-bold">
+          Admission Slip Tracker
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="p-6 pt-0">
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {items.map((item, index) => (
             <div
               key={index}
@@ -97,3 +90,4 @@ export function SlipStatusTracker({
     </Card>
   );
 }
+

@@ -41,6 +41,7 @@ export interface Slip {
   id?: string;
   iirId?: string;
   user?: User;
+  studentNumber?: string;
   reason: string;
   dateOfAbsence: string;
   dateNeeded: string;
@@ -58,6 +59,7 @@ export interface Slip {
  * Request payload for creating a slip
  */
 export interface CreateSlipRequest {
+  studentNumber?: string;
   reason: string;
   dateOfAbsence: string;
   dateNeeded: string;
@@ -89,3 +91,4 @@ export interface PaginatedSlipsResponse {
     totalPages: number;
   };
 }
+

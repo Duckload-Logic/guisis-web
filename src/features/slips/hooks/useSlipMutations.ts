@@ -26,6 +26,9 @@ export function useSubmitSlip() {
     mutationFn: async (data: CreateSlipRequest) => {
       const formData = new FormData();
 
+      if (data.studentNumber) {
+        formData.append("studentNumber", data.studentNumber);
+      }
       formData.append("reason", data.reason);
       formData.append("dateOfAbsence", data.dateOfAbsence);
       formData.append("dateNeeded", data.dateNeeded);
@@ -81,6 +84,9 @@ export function useUpdateSlip() {
     }) => {
       const formData = new FormData();
 
+      if (data.studentNumber) {
+        formData.append("studentNumber", data.studentNumber);
+      }
       formData.append("reason", data.reason);
       formData.append("dateOfAbsence", data.dateOfAbsence);
       formData.append("dateNeeded", data.dateNeeded);
@@ -182,3 +188,4 @@ export function useClaimTicket() {
     },
   });
 }
+

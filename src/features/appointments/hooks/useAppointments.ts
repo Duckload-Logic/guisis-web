@@ -133,7 +133,12 @@ export function useCancelAppointment() {
 
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
-      PostCancelAppointment(id, { reason }),
+      PostCancelAppointment(id, {
+        reason,
+        notifyCounselor: true,
+        notifyRoles: ["Counselor", "Admin"],
+        notificationType: "appointment_cancelled",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.appointments.myAppointments,
@@ -150,3 +155,4 @@ export function useCancelAppointment() {
     },
   });
 }
+

@@ -89,7 +89,7 @@ const ParentInformationCard = memo(
     return (
       <SectionContainer
         title={title}
-        description={`Detailed information about your ${title.toLowerCase().replace("'s information", "")}`}
+        description={`If any information is unknown, just leave it blank. Fill only the ${title.toLowerCase().replace("'s information", "")} details you know.`}
         icon={User}
       >
         <div className="flex flex-col gap-8">
@@ -725,7 +725,7 @@ export const FamilySection = forwardRef<
         <div className="flex flex-col gap-10">
           <SectionContainer
             title="Guardian's Information"
-            description="Person who assumes responsibility if parents are unavailable"
+            description="Person who assumes responsibility if parents are unavailable. If any information is unknown, just leave it blank."
             icon={User}
           >
             <div className="flex flex-col gap-8">

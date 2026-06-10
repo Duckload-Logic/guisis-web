@@ -42,12 +42,27 @@ import { format } from "date-fns";
 import { getDateRange, getFilterLabel, type TimeFilter } from "@/utils";
 import { usePageMetadata } from "@/context";
 
+type SortOrder = "asc" | "desc";
+
+const SLIP_SORT_OPTIONS = [
+  { id: "dateNeeded", name: "Nearest date needed" },
+  { id: "dateOfAbsence", name: "Date of absence" },
+  { id: "createdAt", name: "Date submitted" },
+];
+
+const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
+  { id: "asc", name: "Ascending" },
+  { id: "desc", name: "Descending" },
+];
+
 export default function ReviewSlips() {
   const navigate = useNavigate();
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("month");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSort, setSelectedSort] = useState("dateNeeded");
+  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
   const [ticketCode, setTicketCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [pendingSlip, setPendingSlip] = useState<Slip | null>(null);
@@ -60,7 +75,6 @@ export default function ReviewSlips() {
 
   const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
     params: {
-      orderBy: "date_needed",
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
     },
@@ -92,6 +106,8 @@ export default function ReviewSlips() {
         String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
+      sortBy: selectedSort,
+      sortOrder: selectedOrder,
     },
   });
 
@@ -194,42 +210,45 @@ export default function ReviewSlips() {
   return (
     <>
       <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 py-2 duration-300">
-        {/* Ticket Verification Section */}
-        <Card className="bg-glass-bg/20 overflow-hidden shadow-md backdrop-blur-2xl transition-all duration-500">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-inner">
-                  <Ticket className="h-6 w-6" />
+        <Card className="overflow-hidden border-glass-border/40 bg-glass-bg/20 shadow-md backdrop-blur-2xl transition-all duration-500">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-2 text-primary shadow-inner">
+                  <Ticket className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold tracking-tight text-foreground">
-                    On-Site Ticket Verification
+                  <h3 className="text-sm font-bold tracking-tight text-foreground sm:text-base">
+                    On-Site Ticket
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Verify student admission slips by entering their ticket
-                    code.
+                  <p className="text-xs text-muted-foreground">
+                    Enter the ticket code to verify a student slip.
                   </p>
                 </div>
               </div>
 
               <form
                 onSubmit={handleClaimTicket}
-                className="flex h-full flex-1 items-center gap-3 lg:max-w-md"
+                className="flex w-full flex-col gap-2 sm:flex-row md:max-w-md"
               >
                 <FormInput
-                  placeholder="Enter Ticket Code (e.g. SLIP-2026-...)"
+                  placeholder="Ticket code"
                   value={ticketCode}
                   onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
-                  className="border-glass-border/40 bg-glass-bg/40 focus:bg-glass-bg/60 h-full rounded-xl pl-10"
+                  className="h-10 rounded-xl border-glass-border/40 bg-glass-bg/40 focus:bg-glass-bg/60"
                   label={""}
                 />
+
                 <Button
                   type="submit"
-                  disabled={claimTicketMutation.isPending || !ticketCode.trim()}
-                  className="flex h-full items-center gap-2 rounded-xl bg-primary px-6 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+                  disabled={
+                    isVerifying ||
+                    claimTicketMutation.isPending ||
+                    !ticketCode.trim()
+                  }
+                  className="h-10 gap-2 rounded-xl bg-primary px-4 text-sm font-bold shadow-md shadow-primary/15 transition-all hover:scale-[1.02] active:scale-95"
                 >
-                  {claimTicketMutation.isPending ? (
+                  {isVerifying || claimTicketMutation.isPending ? (
                     <Clock3 className="h-4 w-4 animate-spin" />
                   ) : (
                     <ShieldCheck className="h-4 w-4" />
@@ -257,13 +276,24 @@ export default function ReviewSlips() {
             setSelectedStatus(status);
             setCurrentPage(1);
           }}
+          sortOptions={SLIP_SORT_OPTIONS}
+          selectedSort={selectedSort}
+          onSortChange={(sortValue: string) => {
+            setSelectedSort(sortValue);
+            setCurrentPage(1);
+          }}
+          orderOptions={SORT_ORDER_OPTIONS}
+          selectedOrder={selectedOrder}
+          onOrderChange={(orderValue: SortOrder) => {
+            setSelectedOrder(orderValue);
+            setCurrentPage(1);
+          }}
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           totalPages={totalPages}
         />
       </div>
 
-      {/* Verification Modal */}
       <AlertDialog
         open={!!pendingSlip}
         onOpenChange={(open) => !open && setPendingSlip(null)}
@@ -365,7 +395,6 @@ export default function ReviewSlips() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Already Verified Dialog */}
       <AlertDialog
         open={showAlreadyVerified}
         onOpenChange={setShowAlreadyVerified}
@@ -391,7 +420,6 @@ export default function ReviewSlips() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Not Found Dialog */}
       <AlertDialog
         open={showNotFound}
         onOpenChange={setShowNotFound}
@@ -419,3 +447,4 @@ export default function ReviewSlips() {
     </>
   );
 }
+

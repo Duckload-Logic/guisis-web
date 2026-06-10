@@ -64,6 +64,18 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+type SortOrder = "asc" | "desc";
+
+const APPOINTMENT_SORT_OPTIONS = [
+  { id: "whenDate", name: "Nearest appointment date" },
+  { id: "createdAt", name: "Date requested" },
+];
+
+const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
+  { id: "asc", name: "Ascending" },
+  { id: "desc", name: "Descending" },
+];
+
 function getChartColorKey(statusName: string): keyof typeof chartConfig {
   const name = statusName.toLowerCase().trim();
   if (name === "pending") return "pending";
@@ -97,6 +109,8 @@ export default function AppointmentsManagement() {
   const [selectedStatus, setSelectedStatus] =
     useState<AppointmentStatus>(defaultStatus);
 
+  const [selectedSort, setSelectedSort] = useState("whenDate");
+  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
@@ -139,6 +153,8 @@ export default function AppointmentsManagement() {
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
       startDate: getLocalDateString(selectedDate, startDate),
       endDate: getLocalDateString(selectedDate, endDate),
+      orderBy: selectedSort,
+      sortOrder: selectedOrder,
     },
   });
 
@@ -423,7 +439,22 @@ export default function AppointmentsManagement() {
               statuses={statusWithAll || []}
               selectedStatus={selectedStatus}
               statusCounts={statusCounts || []}
-              onStatusChange={setSelectedStatus}
+              onStatusChange={(status) => {
+                setSelectedStatus(status);
+                setCurrentPage(1);
+              }}
+              sortOptions={APPOINTMENT_SORT_OPTIONS}
+              selectedSort={selectedSort}
+              onSortChange={(sortValue: string) => {
+                setSelectedSort(sortValue);
+                setCurrentPage(1);
+              }}
+              orderOptions={SORT_ORDER_OPTIONS}
+              selectedOrder={selectedOrder}
+              onOrderChange={(orderValue: SortOrder) => {
+                setSelectedOrder(orderValue);
+                setCurrentPage(1);
+              }}
               appointments={appointments}
               onViewClick={handleViewAppointment}
               onPageChange={setCurrentPage}

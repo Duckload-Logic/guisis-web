@@ -94,21 +94,20 @@
 
     /* Status Colors */
     --warning-background: 45 100% 90%;
-    --warning-foreground: 40 100% 38%; /* Rich Amber/Gold */
+    --warning-foreground: 40 100% 38%;
 
     --success-background: 142 100% 90%;
-    --success-foreground: 142 100% 30%; /* Deep Emerald */
+    --success-foreground: 142 100% 30%;
 
     --danger-background: 0 100% 92%;
-    --danger-foreground: 0 100% 45%; /* Pure Fire-Engine Red */
+    --danger-foreground: 0 100% 45%;
 
     --info-background: 210 100% 90%;
-    --info-foreground: 210 100% 45%; /* Electric Blue */
+    --info-foreground: 210 100% 45%;
 
-    --notice-background: 280 100% 92%; /* Vibrant Lavender Back */
-    --notice-foreground: 280 100% 45%; /* Electric Purple */
+    --notice-background: 280 100% 92%;
+    --notice-foreground: 280 100% 45%;
 
-    /* Stale (Gray/Neutral) */
     --stale-background: 0 0% 90%;
     --stale-foreground: 0 0% 40%;
 
@@ -168,31 +167,23 @@
     --sidebar-border: 0 0% 30%;
     --sidebar-ring: 0 64% 40%;
 
-    /* --- Bright but Soft Palette --- */
+    --warning-background: 45 40% 20%;
+    --warning-foreground: 45 90% 65%;
 
-    /* Warning (Gold/Amber) */
-    --warning-background: 45 40% 20%; /* Desaturated, lighter amber */
-    --warning-foreground: 45 90% 65%; /* Softened gold */
+    --success-background: 142 35% 18%;
+    --success-foreground: 142 60% 60%;
 
-    /* Success (Emerald) */
-    --success-background: 142 35% 18%; /* Forest moss tone */
-    --success-foreground: 142 60% 60%; /* Sage/Emerald mix */
+    --danger-background: 0 40% 22%;
+    --danger-foreground: 0 80% 70%;
 
-    /* Danger (Red) */
-    --danger-background: 0 40% 22%; /* Muted wine/brick */
-    --danger-foreground: 0 80% 70%; /* Soft coral/salmon red */
+    --info-background: 210 35% 22%;
+    --info-foreground: 212 95% 78%;
 
-    /* Info (Sky Blue) */
-    --info-background: 210 35% 22%; /* Dusty slate blue */
-    --info-foreground: 212 95% 78%; /* Serene sky blue */
+    --notice-background: 280 30% 22%;
+    --notice-foreground: 280 60% 72%;
 
-    /* Notice (Purple) */
-    --notice-background: 280 30% 22%; /* Deep lavender shadow */
-    --notice-foreground: 280 60% 72%; /* Pastel electric purple */
-
-    /* Stale (Gray/Neutral) */
-    --stale-background: 0 0% 25%; /* Neutral dark gray */
-    --stale-foreground: 0 0% 65%; /* Soft muted gray */
+    --stale-background: 0 0% 25%;
+    --stale-foreground: 0 0% 65%;
 
     --shadow-sm:
       0 1px 2px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -333,34 +324,24 @@
   }
 
   input[type="number"] {
-    /* This ensures the field behaves like a number input */
     appearance: textfield;
     -moz-appearance: textfield;
   }
 
-  /* For Chrome, Safari, Edge, and Opera */
   input[type="number"]::-webkit-outer-spin-button,
   input[type="number"]::-webkit-inner-spin-button {
-    /* 1. Remove the default system styling */
     -webkit-appearance: none;
     margin: 0;
-
-    /* 2. Forces transparency */
     background-color: transparent !important;
     background-image: none !important;
-
-    /* 3. Re-enable visibility (since appearance: none might hide them) */
     cursor: pointer;
     display: block;
-    width: 1.5rem; /* Give them a clickable area */
+    width: 1.5rem;
     height: 100%;
-
-    /* Keep your existing transitions */
     opacity: 0.6;
     transition: opacity 0.2s ease;
   }
 
-  /* Show them clearly on hover */
   input[type="number"]:hover::-webkit-inner-spin-button {
     opacity: 1;
   }
@@ -369,6 +350,7 @@
     table-layout: fixed;
     width: 100%;
   }
+
   th,
   td {
     overflow: hidden;
@@ -376,11 +358,10 @@
     white-space: nowrap;
   }
 
-  /* For the Dark Mode icons */
   .dark input[type="number"]::-webkit-inner-spin-button {
     filter: invert(100%) brightness(200%);
   }
-  /* PDS Form Standardization */
+
   .students-label {
     display: block;
     font-size: 1rem;
@@ -487,12 +468,10 @@
     }
   }
 
-  /* Performance Mode: Disables expensive css features */
   .perf-mode * {
     backdrop-filter: none !important;
   }
 
-  /* Custom Scrollbar - Webkit (Chrome, Safari, Edge) */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -514,7 +493,6 @@
     background: hsl(var(--primary-dark));
   }
 
-  /* Firefox Scrollbar */
   * {
     scrollbar-color: hsl(var(--primary)) transparent;
     scrollbar-width: thin;
@@ -529,15 +507,12 @@
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--muted)) inset !important; /* Use theme input color */
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--muted)) inset !important;
     box-shadow: 0 0 0px 1000px hsl(var(--muted)) inset !important;
-    -webkit-text-fill-color: hsl(
-      var(--foreground)
-    ) !important; /* Use theme foreground */
-    transition: background-color 5000s ease-in-out 0s; /* Prevent flash */
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    transition: background-color 5000s ease-in-out 0s;
   }
 
-  /* Sidebar icon tilt animation */
   @keyframes sidebar-tilt {
     0% {
       transform: rotate(0deg);
@@ -558,6 +533,18 @@
 
   .sidebar-icon-tilt:hover svg {
     animation: sidebar-tilt 0.35s ease-in-out;
+  }
+
+  .card-elevated {
+    box-shadow:
+      0 14px 34px rgba(15, 23, 42, 0.1),
+      0 4px 12px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .dark .card-elevated {
+    box-shadow:
+      0 18px 45px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.08) !important;
   }
 
   .dyslexic-mode,

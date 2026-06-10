@@ -39,7 +39,7 @@ export default function AppointmentForm({
         "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
-      <CardHeader className="border-b border-white/20 bg-white/25 px-6 py-5 dark:border-white/10 dark:bg-white/[0.025]">
+      <CardHeader className="border-b border-white/20 bg-white/25 px-4 py-4 dark:border-white/10 dark:bg-white/[0.025] sm:px-6 sm:py-5">
         <CardTitle className="text-xl font-semibold text-foreground">
           Appointment Request Details
         </CardTitle>
@@ -50,7 +50,7 @@ export default function AppointmentForm({
         </p>
       </CardHeader>
 
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="space-y-5">
           <Dropdown
             label="Concern Category"

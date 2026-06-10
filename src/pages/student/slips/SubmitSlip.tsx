@@ -44,6 +44,7 @@ import { StepProgress } from "@/features/slips/components";
 import { AnimationStyles } from "@/components/ui/animations";
 import { CreateSlipRequest } from "@/features/slips/types";
 import { usePageMetadata } from "@/context";
+import { useMe } from "@/features/users/hooks/useMe";
 import { DatePicker, Dropdown } from "@/components/form";
 import FormInput, { CustomTooltip } from "@/components/form/FormInput";
 import { useToast } from "@/context";
@@ -51,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 
 interface SubmitSlipFormState {
+  studentNumber: string;
   dateOfAbsence: string;
   dateNeeded: string;
   reason: string;
@@ -63,6 +65,7 @@ interface SubmitSlipFormState {
 }
 
 const EMPTY_FORM_DATA: SubmitSlipFormState = {
+  studentNumber: "",
   dateOfAbsence: "",
   dateNeeded: "",
   reason: "",
@@ -295,6 +298,7 @@ export default function SubmitSlip() {
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const { triggerToast } = useToast();
+  const { data: me } = useMe({});
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useGetSlipCategories();
@@ -307,6 +311,8 @@ export default function SubmitSlip() {
   useEffect(() => {
     if (isEditMode && existingSlip) {
       setFormData({
+        studentNumber:
+          existingSlip.studentNumber || existingSlip.user?.studentNumber || "",
         dateOfAbsence: existingSlip.dateOfAbsence
           ? new Date(existingSlip.dateOfAbsence).toISOString().split("T")[0]
           : "",
@@ -324,13 +330,27 @@ export default function SubmitSlip() {
     }
   }, [isEditMode, existingSlip]);
 
+  useEffect(() => {
+    if (me?.studentNumber) {
+      setFormData((prev) =>
+        prev.studentNumber
+          ? prev
+          : { ...prev, studentNumber: me.studentNumber || "" },
+      );
+    }
+  }, [me?.studentNumber]);
+
   const steps = [
-    { id: 1, label: "Dates", icon: Calendar },
+    { id: 1, label: "Info & Dates", icon: Calendar },
     { id: 2, label: "Category", icon: Layers },
     { id: 3, label: "Documents", icon: FileUp },
   ];
 
-  const datesComplete = !!(formData.dateOfAbsence && formData.dateNeeded);
+  const datesComplete = !!(
+    formData.studentNumber.trim() &&
+    formData.dateOfAbsence &&
+    formData.dateNeeded
+  );
   const categoryComplete =
     formData.categoryId > 0 && formData.reason.trim() !== "";
 
@@ -493,6 +513,7 @@ export default function SubmitSlip() {
     if (!isFormValid) return;
 
     const payload: CreateSlipRequest = {
+      studentNumber: formData.studentNumber.trim(),
       reason: formData.reason,
       dateOfAbsence: new Date(formData.dateOfAbsence)
         .toISOString()
@@ -631,10 +652,24 @@ export default function SubmitSlip() {
                       <CardTitle className="text-base">Absence Dates</CardTitle>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Tell us when you were absent and when you need approval by
+                      Enter your student number, then tell us when you were absent and when you need approval by
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-5">
+                    <FormInput
+                      label="Student Number"
+                      value={formData.studentNumber}
+                      onChange={(val) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          studentNumber: val,
+                        }))
+                      }
+                      placeholder="e.g. 2022-00000-TG-0"
+                      required
+                      info="Admission slips use your student number for identification, not your student email."
+                    />
+
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <DatePicker

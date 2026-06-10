@@ -35,16 +35,43 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-/**
- * Response Interceptor: Handle errors with precision
- * logging. Extracts handlerName and stepName from
- * config for detailed logs. Attempts token refresh
- * on 401, then rejects if refresh fails to allow
- * AuthProvider to handle session expiration.
- */
-// Module-level state to coordinate concurrent refresh attempts
 let refreshPromise: Promise<void> | null = null;
 let isRefreshLockedOut = false;
+
+const SESSION_EXPIRED_EVENT = "ogos:session-expired";
+
+const clearClientSession = () => {
+  localStorage.removeItem("session_active");
+  localStorage.removeItem("active_role");
+};
+
+const isAuthRequest = (url?: string) => {
+  if (!url) return false;
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/auth/refresh") ||
+    url.includes("/auth/idp/token")
+  );
+};
+
+const redirectToLoginAfterSessionExpiry = () => {
+  if (typeof window === "undefined") return;
+
+  clearClientSession();
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+
+  const pathname = window.location.pathname;
+  const isAlreadyOnAuthPage =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname.startsWith("/auth");
+
+  if (!isAlreadyOnAuthPage) {
+    window.location.replace("/login");
+  }
+};
 
 apiClient.interceptors.response.use(
   (response) => {
@@ -56,7 +83,6 @@ apiClient.interceptors.response.use(
     ) {
       response.data = camelizeKeys(response.data);
 
-      // Handle JSend 'success' pattern: unwrap 'data' payload
       if (
         response.data &&
         typeof response.data === "object" &&
@@ -70,22 +96,12 @@ apiClient.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosConfigWithMeta;
-    const handlerName = originalRequest?.handlerName || "Unknown";
-    const stepName = originalRequest?.stepName || "Request";
-    const errorMsg = error.message || "Unknown error";
 
-    // Log the error with precision format
-
-    // If we are locked out from refreshing, don't even try
     if (isRefreshLockedOut && error.response?.status === 401) {
+      redirectToLoginAfterSessionExpiry();
       return Promise.reject(error);
     }
 
-    // Only attempt refresh if:
-    // - status is 401 (Unauthorized)
-    // - not already retried (prevent infinite loops)
-    // - not the refresh endpoint itself (avoid loops)
-    // - if user is logged in
     if (
       error.response?.status === 401 &&
       !originalRequest?._retry &&
@@ -98,8 +114,6 @@ apiClient.interceptors.response.use(
       }
 
       try {
-        // Handle concurrent refresh: multiple simultaneous 401s
-        // will await the same singleton refresh promise
         if (!refreshPromise) {
           refreshPromise = apiClient
             .post("/auth/refresh")
@@ -110,33 +124,30 @@ apiClient.interceptors.response.use(
             .catch((refreshError) => {
               refreshPromise = null;
               isRefreshLockedOut = true;
-              // Reset lockout after 10s to allow manual retry if needed
+
               setTimeout(() => {
                 isRefreshLockedOut = false;
               }, 10000);
+
               throw refreshError;
             });
         }
 
-        // Await the shared refresh effort (cookies updated by server)
         await refreshPromise;
 
-        // Retry the original request
         if (originalRequest) {
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed – reject to allow AuthProvider
-        // to handle session expiration and redirect
-        const refreshErr = refreshError as AxiosError;
-
+        redirectToLoginAfterSessionExpiry();
         return Promise.reject(refreshError);
       }
     }
 
-    // For all other errors, reject the promise
-    // This ensures useMe query transitions to "error"
-    // state instead of staying in "pending"
+    if (error.response?.status === 401 && !isAuthRequest(originalRequest?.url)) {
+      redirectToLoginAfterSessionExpiry();
+    }
+
     return Promise.reject(error);
   },
 );
@@ -150,14 +161,13 @@ export function getErrorMessage(error: any): string {
 
   const responseData = error.response?.data;
   if (responseData && typeof responseData === "object") {
-    // 1. JSend 'error' pattern: server-side errors
     if (
       responseData.status === "error" &&
       typeof responseData.message === "string"
     ) {
       return capitalizeFirstLetter(responseData.message);
     }
-    // 2. JSend 'fail' pattern: client-side/validation failures
+
     if (responseData.status === "fail" && responseData.data) {
       const data = responseData.data;
       if (typeof data === "object") {
@@ -168,7 +178,6 @@ export function getErrorMessage(error: any): string {
           return capitalizeFirstLetter(data.message);
         }
 
-        // Return the first validation message if it's a map
         const values = Object.values(data);
         if (values.length > 0 && typeof values[0] === "string") {
           return capitalizeFirstLetter(values[0]);
@@ -178,7 +187,6 @@ export function getErrorMessage(error: any): string {
     }
   }
 
-  // Fallback to standard Axios or native Error message
   return (
     capitalizeFirstLetter(error.message) || "An unexpected error occurred."
   );

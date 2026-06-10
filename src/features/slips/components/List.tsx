@@ -11,6 +11,18 @@ import { SlipStatus, SlipStats } from "../types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
+type SortOrder = "asc" | "desc";
+
+type SortOption = {
+  id: string;
+  name: string;
+};
+
+type OrderOption = {
+  id: SortOrder;
+  name: string;
+};
+
 interface SlipListProps {
   title?: string;
   searchTerm?: string;
@@ -19,6 +31,12 @@ interface SlipListProps {
   selectedStatus: SlipStatus;
   statusCounts: SlipStats[];
   onStatusChange: (status: SlipStatus) => void;
+  sortOptions?: SortOption[];
+  selectedSort?: string;
+  onSortChange?: (sortValue: string) => void;
+  orderOptions?: OrderOption[];
+  selectedOrder?: SortOrder;
+  onOrderChange?: (orderValue: SortOrder) => void;
   slips: Slip[];
   isLoading?: boolean;
   onViewClick: (slip: Slip) => void;
@@ -36,6 +54,12 @@ export function SlipList({
   selectedStatus,
   statusCounts,
   onStatusChange,
+  sortOptions = [],
+  selectedSort,
+  onSortChange,
+  orderOptions = [],
+  selectedOrder,
+  onOrderChange,
   slips,
   isLoading = false,
   onViewClick,
@@ -62,6 +86,40 @@ export function SlipList({
     }));
   }, [statuses, statMap]);
 
+  const handleRequiredSortChange = (value: unknown) => {
+    const nextValue = String(value ?? "").trim();
+
+    if (!nextValue) {
+      return;
+    }
+
+    const isValidSortOption = sortOptions.some(
+      (option) => String(option.id) === nextValue,
+    );
+
+    if (!isValidSortOption) {
+      return;
+    }
+
+    onSortChange?.(nextValue);
+  };
+
+  const handleRequiredOrderChange = (value: unknown) => {
+    if (value !== "asc" && value !== "desc") {
+      return;
+    }
+
+    const isValidOrderOption = orderOptions.some(
+      (option) => option.id === value,
+    );
+
+    if (!isValidOrderOption) {
+      return;
+    }
+
+    onOrderChange?.(value);
+  };
+
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
@@ -73,7 +131,7 @@ export function SlipList({
               {slip.user?.firstName} {slip.user?.lastName}
             </p>
             <p className="truncate text-[10px] text-muted-foreground opacity-70">
-              {slip.user?.email || "-"}
+              {slip.studentNumber || slip.user?.studentNumber || "-"}
             </p>
           </div>
         ),
@@ -329,30 +387,51 @@ export function SlipList({
           )}
         </div>
 
-        <div className="flex w-full flex-col items-center gap-4 sm:flex-row">
+        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
           <SearchInput
-            placeholder="Search by student name or reason..."
+            placeholder="Search by student name, number, or reason..."
             searchTerm={searchTerm}
             onSearchChange={onSearchChange!}
             className="border-glass-border/40 focus:bg-glass-bg/60 w-full rounded-2xl"
             hasHeader={false}
           />
 
-          <div className="w-full sm:w-64">
+          <Dropdown
+            label="Status"
+            options={dropdownOptions}
+            value={selectedStatus?.id}
+            onChange={(val) => {
+              const status = statuses.find(
+                (s) => String(s.id) === String(val),
+              );
+              if (status) onStatusChange(status);
+            }}
+            labelKey="displayName"
+            enabled={!isLoading}
+            formStyle={false}
+          />
+
+          {sortOptions.length > 0 && onSortChange && (
             <Dropdown
-              options={dropdownOptions}
-              value={selectedStatus?.id}
-              onChange={(val) => {
-                const status = statuses.find(
-                  (s) => String(s.id) === String(val),
-                );
-                if (status) onStatusChange(status);
-              }}
-              labelKey="displayName"
+              label="Sort By"
+              options={sortOptions}
+              value={selectedSort}
+              onChange={handleRequiredSortChange}
               enabled={!isLoading}
               formStyle={false}
             />
-          </div>
+          )}
+
+          {orderOptions.length > 0 && onOrderChange && (
+            <Dropdown
+              label="Order"
+              options={orderOptions}
+              value={selectedOrder}
+              onChange={handleRequiredOrderChange}
+              enabled={!isLoading}
+              formStyle={false}
+            />
+          )}
         </div>
       </CardHeader>
 
