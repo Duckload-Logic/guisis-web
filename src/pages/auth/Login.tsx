@@ -22,22 +22,11 @@ import { API_ROUTES } from "@/config/apiRoutes";
 export default function Login() {
   const navigate = useNavigate();
   const { login, isLoggingIn: isNativeLoggingIn } = useLogin();
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const isLoading = isNativeLoggingIn || isRedirecting;
-
-  useEffect(() => {
-    if (import.meta.env.VITE_IS_PRODUCTION === "true") {
-      setIsRedirecting(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-      window.location.replace(
-        `${apiBaseUrl}${API_ROUTES.auth.idpAuthorizeUrl}`
-      );
-    }
-  }, []);
+  const isLoading = isNativeLoggingIn;
 
   const handleNativeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
