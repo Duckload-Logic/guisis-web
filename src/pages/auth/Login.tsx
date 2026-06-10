@@ -1,12 +1,54 @@
-import { useState } from "react";
-import { AuthHeader } from "@/features/auth/components";
+import { useState, useEffect } from "react";
+import {
+  AuthHeader,
+  LoginForm,
+  AuthMessages,
+} from "@/features/auth/components";
 import Layout from "@/components/layout/Layout";
 import { cn } from "@/lib/utils";
-import { Calendar, Lock, MessageSquare, LifeBuoy, Mail, MapPin } from "lucide-react";
+import {
+  Calendar,
+  Lock,
+  MessageSquare,
+  LifeBuoy,
+  Mail,
+  MapPin,
+} from "lucide-react";
 import { IDPLoginButton } from "@/features/auth/components/IDPLoginButton";
+import { useNavigate } from "react-router-dom";
+import { useLogin } from "@/features/auth/hooks";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 export default function Login() {
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const navigate = useNavigate();
+  const { login, isLoggingIn: isNativeLoggingIn } = useLogin();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const isLoading = isNativeLoggingIn || isRedirecting;
+
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      setIsRedirecting(true);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+      window.location.replace(
+        `${apiBaseUrl}${API_ROUTES.auth.idpAuthorizeUrl}`
+      );
+    }
+  }, []);
+
+  const handleNativeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    try {
+      await login({ email: username, password });
+      navigate("/auth/callback?type=native");
+    } catch (err: any) {
+      setError(err?.message || "Invalid email or password");
+    }
+  };
 
   const cardStyle = "rounded-[24px] border p-5 shadow-xl shadow-neutral-200/30 transition hover:-translate-y-1 hover:border-amber-500/40 dark:border-neutral-800 dark:bg-neutral-900/90 dark:shadow-black/20";
   const cardColors = "bg-white/95 border-neutral-200 text-neutral-950 dark:bg-neutral-900/85 dark:border-neutral-800 dark:text-white";
@@ -54,7 +96,7 @@ export default function Login() {
   ];
 
   return (
-    <Layout isLoggedIn={false} isLoading={isLoggingIn}>
+    <Layout isLoggedIn={false} isLoading={isLoading}>
       <div id="top" className="space-y-16">
         <section className="relative overflow-hidden bg-white text-slate-900 dark:bg-black dark:text-white">
         <div className="pointer-events-none absolute inset-0 -z-10">
@@ -84,11 +126,15 @@ export default function Login() {
                 </div>
                 <div className="flex flex-col gap-4 sm:flex-row">
                   <IDPLoginButton
-                    disabled={isLoggingIn}
+                    disabled={isLoading}
                     className={cn(
-                      "inline-flex h-14 items-center justify-center rounded-full bg-amber-400 px-8 text-lg font-semibold text-slate-950",
-                      "shadow-xl shadow-black/30 transition-all duration-300 hover:bg-amber-500 hover:-translate-y-0.5 active:scale-[0.98]",
-                      isLoggingIn ? "animate-pulse cursor-wait opacity-80" : ""
+                      "inline-flex h-14 items-center justify-center",
+                      "rounded-full bg-amber-400 px-8 text-lg",
+                      "font-semibold text-slate-950 shadow-xl",
+                      "shadow-black/30 transition-all duration-300",
+                      "hover:bg-amber-500 hover:-translate-y-0.5",
+                      "active:scale-[0.98]",
+                      isLoading ? "animate-pulse cursor-wait opacity-80" : ""
                     )}
                   />
                   <a href="#features" className="inline-flex h-14 items-center justify-center rounded-full border border-slate-300 bg-slate-100 px-8 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-200 dark:border-white/15 dark:bg-white/5 dark:text-white dark:hover:border-white/30 dark:hover:bg-white/10">
@@ -102,13 +148,56 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="relative overflow-hidden rounded-[30px] border border-neutral-200/70 bg-white/95 p-6 shadow-2xl shadow-neutral-900/10 dark:border-white/10 dark:bg-neutral-950/95 dark:shadow-black/40 dark:backdrop-blur-lg lg:self-start lg:max-w-[440px] lg:mx-0 mx-auto">
+              <div
+                className={cn(
+                  "relative overflow-hidden rounded-[30px] border",
+                  "border-neutral-200/70 bg-white/95 p-6 shadow-2xl",
+                  "shadow-neutral-900/10 dark:border-white/10",
+                  "dark:bg-neutral-950/95 dark:shadow-black/40",
+                  "dark:backdrop-blur-lg lg:self-start lg:max-w-[440px]",
+                  "lg:mx-0 mx-auto"
+                )}
+              >
                 <AuthHeader
                   title="Guidance Services Information System"
-                  subtitle="Secure access to guidance services, support, and account tools."
+                  subtitle={
+                    "Secure access to guidance services, " +
+                    "support, and account tools."
+                  }
                 />
-                <div className="mt-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                  <p>Login with your university IDP to continue.</p>
+                <div className="mt-8">
+                  {import.meta.env.PROD ? (
+                    <div className="text-center text-sm text-neutral-500 dark:text-neutral-400">
+                      <p className="mb-4">
+                        Login with your university IDP to continue.
+                      </p>
+                      <IDPLoginButton
+                        disabled={isLoading}
+                        className={cn(
+                          "h-12 w-full rounded-2xl",
+                          "bg-yellow-400 text-slate-900",
+                          "font-semibold transition-colors",
+                          "hover:bg-yellow-500 dark:hover:bg-yellow-500",
+                          "sm:text-base",
+                          "transition-all duration-200",
+                          "shadow-[0_4px_12px_rgba(250,204,21,0.3)]"
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <AuthMessages error={error} success="" />
+                      <LoginForm
+                        username={username}
+                        password={password}
+                        onUsernameChange={setUsername}
+                        onPasswordChange={setPassword}
+                        onSubmit={handleNativeSubmit}
+                        isLoading={isLoading}
+                        onIDPError={setError}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </div>

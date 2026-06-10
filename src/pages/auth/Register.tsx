@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AuthHeader,
   AuthMessages,
@@ -6,8 +6,16 @@ import {
 } from "@/features/auth/components";
 import Layout from "@/components/layout/Layout";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
   const [firstName, setFirstName] = useState("");
   const [middleInitial, setMiddleInitial] = useState("");
   const [surname, setSurname] = useState("");
