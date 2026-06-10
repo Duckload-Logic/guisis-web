@@ -92,7 +92,7 @@ export default function Landing() {
     {
       q: "Can I request guidance support off-campus?",
       a:
-        "Yes, the GuiSIS portal allows you to book virtual or face-to-face " +
+        "Yes, the GuiSIS portal allows you to book " +
         "appointments directly online.",
     },
   ];
