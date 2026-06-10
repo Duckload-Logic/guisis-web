@@ -4,7 +4,7 @@ import { IDPLoginButton } from "@/features/auth/components/IDPLoginButton";
 import ProfileMenu from "./ProfileMenu";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const LOGO_SRC = "/logo.svg";
 
@@ -81,12 +81,7 @@ export default function Header({
               Home
             </a>
           ) : (
-            <Link
-              to={isLoggedIn && role ? `/${role}` : "/"}
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-            >
-              Home
-            </Link>
+            <></>
           )}
           {isLanding ? (
             <>
@@ -131,20 +126,7 @@ export default function Header({
               </a>
             </>
           ) : (
-            <>
-              <Link
-                to="/about"
-                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-              >
-                About
-              </Link>
-              <Link
-                to="/contact"
-                className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
-              >
-                Contact Us
-              </Link>
-            </>
+            <></>
           )}
         </nav>
       )}

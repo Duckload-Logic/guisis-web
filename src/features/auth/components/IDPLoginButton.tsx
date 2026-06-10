@@ -37,7 +37,7 @@ export interface IDPLoginButtonProps {
  * @param props - Component props
  * @returns JSX element
  */
-export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({ 
+export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
   onError,
   className = "",
   disabled = false,
