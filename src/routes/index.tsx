@@ -37,6 +37,7 @@ import Contact from "@/pages/shared/Contact";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import RoleSelection from "@/pages/auth/RoleSelection";
+import Landing from "@/pages/Landing";
 
 // Super Admin Pages
 import SuperAdminDashboard from "@/pages/superadmin/SuperAdminDashboard";
@@ -59,12 +60,7 @@ import Guides from "@/pages/dev/Guides";
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: (
-      <Navigate
-        to="/login"
-        replace
-      />
-    ),
+    element: <Landing />,
   },
 
   {

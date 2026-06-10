@@ -35,7 +35,7 @@ export default function Header({
   const { darkMode, setDarkMode } = useUI();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
-  const isLanding = location.pathname === "/login" || location.pathname === "/";
+  const isLanding = location.pathname === "/";
 
   return (
     <header
@@ -81,7 +81,7 @@ export default function Header({
           </a>
         ) : (
           <Link
-            to={isLoggedIn && role ? `/${role}` : "/login"}
+            to={isLoggedIn && role ? `/${role}` : "/"}
             className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
           >
             Home
