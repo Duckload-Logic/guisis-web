@@ -1,4 +1,5 @@
 import Layout from "@/components/layout/Layout";
+import { API_ROUTES } from "@/config/apiRoutes";
 import { cn } from "@/lib/utils";
 import {
   Calendar,
@@ -14,6 +15,11 @@ import {
 import { Link } from "react-router-dom";
 
 export default function Landing() {
+  const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
+  const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
+
   const cardStyle = cn(
     "rounded-xl border p-6 shadow-md shadow-neutral-200/30",
     "transition duration-300 hover:-translate-y-1 hover:border-amber-500/40",
@@ -53,7 +59,7 @@ export default function Landing() {
       title: "Guidance Support",
       icon: MessageSquare,
       description:
-        "Access help and guidance resources from the PUP guidance office " +
+        "Access help and guidance resources from the PUPT guidance office " +
         "whenever you need assistance.",
       style: cardColors,
     },
@@ -122,36 +128,52 @@ export default function Landing() {
           <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl space-y-8 text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-slate-600 shadow-sm backdrop-blur dark:border-white/15 dark:bg-white/5 dark:text-slate-200">
-                PUP Taguig Portal
+                PUP-Taguig GuiSIS
               </div>
               <div className="space-y-6">
                 <p className="text-sm uppercase tracking-[0.35em] text-amber-600 dark:text-amber-300/90">
-                  Guidance & Advising System
+                  Polytechnic University of the Philippines – Taguig Guidance
+                  Services Information System
                 </p>
                 <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-6xl">
                   Your guidance journey starts with a secure, modern platform.
                 </h1>
                 <p className="text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">
-                  Access counseling, appointments, academic guidance, and " +
-                  "support services through the PUP Guidance Services " +
-                  "Information System.
+                  Request counseling appointments, admission slips, and guidance
+                  services through the PUP Guidance Services Information System.
                 </p>
               </div>
 
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Link
-                  to="/login"
-                  className={cn(
-                    "inline-flex h-14 items-center justify-center gap-2",
-                    "rounded-full bg-amber-400 px-8 text-lg font-semibold",
-                    "text-slate-950 shadow-xl shadow-amber-400/20",
-                    "transition-all duration-300 hover:bg-amber-500",
-                    "hover:-translate-y-0.5 active:scale-[0.98]",
-                  )}
-                >
-                  Proceed to Login
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
+                {isProd ? (
+                  <a
+                    href={loginUrl}
+                    className={cn(
+                      "inline-flex h-14 items-center justify-center gap-2",
+                      "rounded-full bg-amber-400 px-8 text-lg font-semibold",
+                      "text-slate-950 shadow-xl shadow-amber-400/20",
+                      "transition-all duration-300 hover:bg-amber-500",
+                      "hover:-translate-y-0.5 active:scale-[0.98]",
+                    )}
+                  >
+                    Proceed to Login
+                    <ArrowRight className="h-5 w-5" />
+                  </a>
+                ) : (
+                  <Link
+                    to={loginUrl}
+                    className={cn(
+                      "inline-flex h-14 items-center justify-center gap-2",
+                      "rounded-full bg-amber-400 px-8 text-lg font-semibold",
+                      "text-slate-950 shadow-xl shadow-amber-400/20",
+                      "transition-all duration-300 hover:bg-amber-500",
+                      "hover:-translate-y-0.5 active:scale-[0.98]",
+                    )}
+                  >
+                    Proceed to Login
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
+                )}
                 <a
                   href="#features"
                   className={cn(
@@ -173,7 +195,7 @@ export default function Landing() {
         {/* Features Section */}
         <section
           id="features"
-          className="relative overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
+          className="relative overflow-hidden rounded-xl text-slate-900 dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
@@ -215,7 +237,7 @@ export default function Landing() {
         {/* About Section */}
         <section
           id="about"
-          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl text-slate-900 dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="grid items-start gap-10 lg:grid-cols-2">
@@ -261,7 +283,7 @@ export default function Landing() {
         {/* FAQs Section */}
         <section
           id="faq"
-          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl text-slate-900 dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
@@ -300,7 +322,7 @@ export default function Landing() {
         {/* Contact Section */}
         <section
           id="contact"
-          className="relative scroll-mt-24 overflow-hidden rounded-xl bg-black/45 bg-glass-border text-slate-900 shadow-md dark:text-white"
+          className="relative scroll-mt-24 overflow-hidden rounded-xl text-slate-900 dark:text-white"
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
