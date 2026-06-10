@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 
 export default function Landing() {
   const cardStyle = cn(
-    "rounded-xl border p-6 shadow-md shadow-neutral-200/30 h-full",
+    "rounded-xl border p-6 shadow-md shadow-neutral-200/30",
     "transition duration-300 hover:-translate-y-1 hover:border-amber-500/40",
     "dark:border-neutral-800 dark:bg-neutral-900/90 dark:shadow-black/20",
   );
