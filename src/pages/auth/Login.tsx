@@ -30,7 +30,7 @@ export default function Login() {
   const isLoading = isNativeLoggingIn || isRedirecting;
 
   useEffect(() => {
-    if (import.meta.env.PROD) {
+    if (import.meta.env.VITE_IS_PRODUCTION === "true") {
       setIsRedirecting(true);
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
       window.location.replace(
@@ -166,7 +166,7 @@ export default function Login() {
                   }
                 />
                 <div className="mt-8">
-                  {import.meta.env.PROD ? (
+                  {import.meta.env.VITE_IS_PRODUCTION === "true" ? (
                     <div className="text-center text-sm text-neutral-500 dark:text-neutral-400">
                       <p className="mb-4">
                         Login with your university IDP to continue.

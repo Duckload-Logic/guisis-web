@@ -12,7 +12,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (import.meta.env.PROD) {
+    if (import.meta.env.VITE_IS_PRODUCTION === "true") {
       navigate("/", { replace: true });
     }
   }, [navigate]);
