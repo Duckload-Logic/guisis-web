@@ -320,7 +320,7 @@ export default function SubmitSlip() {
           ? new Date(existingSlip.dateNeeded).toISOString().split("T")[0]
           : "",
         reason: existingSlip.reason,
-        categoryId: existingSlip.categoryId,
+        categoryId: existingSlip.category?.id || 0,
         files: {
           excuseLetter: [],
           parentId: [],

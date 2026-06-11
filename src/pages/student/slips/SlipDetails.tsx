@@ -197,15 +197,29 @@ export default function SlipDetails() {
                       </div>
                       <CardTitle className="text-xl">Slip Overview</CardTitle>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "px-3 py-1",
-                        getStatusColor(slip?.status?.name),
+                    <div className="flex flex-wrap items-center gap-2">
+                      {slip?.category && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "px-3 py-1 border-white/45 bg-white/40",
+                            "backdrop-blur-xl dark:border-white/10",
+                            "dark:bg-white/[0.05]",
+                          )}
+                        >
+                          {slip.category.name}
+                        </Badge>
                       )}
-                    >
-                      {slip?.status?.name}
-                    </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "px-3 py-1",
+                          getStatusColor(slip?.status?.name),
+                        )}
+                      >
+                        {slip?.status?.name}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">

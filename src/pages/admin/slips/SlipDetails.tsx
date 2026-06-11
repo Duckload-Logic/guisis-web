@@ -389,6 +389,18 @@ export default function SlipDetails() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {slip.category && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-[10px] font-bold",
+                      "shadow-sm border-white/45 bg-white/40",
+                      "dark:border-white/10 dark:bg-white/[0.05]",
+                    )}
+                  >
+                    {slip.category.name}
+                  </Badge>
+                )}
                 {slip.status && (
                   <Badge
                     variant="outline"
