@@ -65,8 +65,7 @@ export function ReportModal({
           const sName = item.user
             ? `${item.user.lastName}, ${item.user.firstName}`
             : "N/A";
-          const sNum =
-            item.studentNumber || item.user?.studentNumber || "N/A";
+          const sNum = item.studentNumber || item.user?.studentNumber || "N/A";
           const catName = item.appointmentCategory?.name || "N/A";
           const reason = item.reason || "N/A";
           return `
@@ -235,8 +234,8 @@ export function ReportModal({
         </head>
         <body>
           <div class="header">
-            <h1>POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</h1>
-            <h2>Office of Counselling and Guidance</h2>
+            <h1>POLYTECHNIC UNIVERSITY OF THE PHILIPPINES - TAGUIG CAMPUS</h1>
+            <h2>Guidance and Counseling Office</h2>
             <h3>${title}</h3>
             <p style="margin: 5px 0 0; font-size: 12px;">Period: ${period}</p>
           </div>
@@ -247,12 +246,12 @@ export function ReportModal({
             justify-content: space-between;
           ">
             <span>
-              <strong>Generated:</strong>{" "}
-              {new Date().toLocaleString()}
+              <strong>Generated:</strong>${" "}
+              ${new Date().toLocaleString()}
             </span>
             <span>
-              <strong>Total Verified Records:</strong>{" "}
-              {filteredData.length}
+              <strong>Total Verified Records:</strong>${" "}
+              ${filteredData.length}
             </span>
           </div>
           <table class="main-table">
@@ -311,14 +310,7 @@ export function ReportModal({
               <div class="signature-line"></div>
               <div style="font-size: 12px; font-weight: bold;">Prepared By</div>
               <div style="font-size: 10px; color: #666;">
-                Guidance Counselor
-              </div>
-            </div>
-            <div class="signature">
-              <div class="signature-line"></div>
-              <div style="font-size: 12px; font-weight: bold;">Approved By</div>
-              <div style="font-size: 10px; color: #666;">
-                Director of Guidance
+                Head of Guidance and Counseling Office
               </div>
             </div>
           </div>
@@ -355,8 +347,7 @@ export function ReportModal({
         const sName = item.user
           ? `${item.user.lastName}, ${item.user.firstName}`
           : "N/A";
-        const sNum =
-          item.studentNumber || item.user?.studentNumber || "N/A";
+        const sNum = item.studentNumber || item.user?.studentNumber || "N/A";
         const catName = item.appointmentCategory?.name || "N/A";
         const reason = item.reason || "N/A";
         return [
@@ -421,11 +412,9 @@ export function ReportModal({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
     >
-      <DialogContent
-        className="max-w-4xl max-h-[85vh] flex flex-col p-6 rounded-2xl"
-      >
+      <DialogContent className="flex max-h-[85vh] max-w-4xl flex-col rounded-2xl p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-xl">
             <FileText className="h-5 w-5 text-primary" />
             Monthly Report Preview
           </DialogTitle>
@@ -436,16 +425,16 @@ export function ReportModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto my-4 space-y-6 pr-1">
+        <div className="my-4 flex-1 space-y-6 overflow-y-auto pr-1">
           {/* Header section */}
-          <div className="text-center space-y-1 py-4 border-b border-border">
-            <h1 className="font-bold text-base tracking-wide text-foreground">
+          <div className="space-y-1 border-b border-border py-4 text-center">
+            <h1 className="text-base font-bold tracking-wide text-foreground">
               POLYTECHNIC UNIVERSITY OF THE PHILIPPINES
             </h1>
             <p className="text-xs text-muted-foreground">
               Office of Counselling and Guidance
             </p>
-            <p className="font-semibold text-sm pt-2 text-foreground">
+            <p className="pt-2 text-sm font-semibold text-foreground">
               {type === "appointments"
                 ? "Monthly Counseling Logbook - Appointments"
                 : "Monthly Logbook - Verified Admission Slips"}
@@ -456,36 +445,30 @@ export function ReportModal({
           </div>
 
           {/* Table Preview */}
-          <div className="border border-border rounded-lg overflow-hidden">
-            <table className="w-full text-xs text-left border-collapse">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="bg-muted/50 border-b border-border">
+                <tr className="border-b border-border bg-muted/50">
                   <th
                     className={
                       "p-3 font-semibold " +
-                      "text-muted-foreground w-12 text-center"
+                      "w-12 text-center text-muted-foreground"
                     }
                   >
                     #
                   </th>
                   {type === "appointments" ? (
                     <>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-28"
-                      >
+                      <th className="w-28 p-3 font-semibold text-muted-foreground">
                         Date
                       </th>
                       <th className="p-3 font-semibold text-muted-foreground">
                         Student Name
                       </th>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-32"
-                      >
+                      <th className="w-32 p-3 font-semibold text-muted-foreground">
                         Student Number
                       </th>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-36"
-                      >
+                      <th className="w-36 p-3 font-semibold text-muted-foreground">
                         Category
                       </th>
                       <th className="p-3 font-semibold text-muted-foreground">
@@ -494,22 +477,16 @@ export function ReportModal({
                     </>
                   ) : (
                     <>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-36"
-                      >
+                      <th className="w-36 p-3 font-semibold text-muted-foreground">
                         Date of Absence
                       </th>
                       <th className="p-3 font-semibold text-muted-foreground">
                         Student Name
                       </th>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-32"
-                      >
+                      <th className="w-32 p-3 font-semibold text-muted-foreground">
                         Student Number
                       </th>
-                      <th
-                        className="p-3 font-semibold text-muted-foreground w-32"
-                      >
+                      <th className="w-32 p-3 font-semibold text-muted-foreground">
                         Ticket Code
                       </th>
                       <th className="p-3 font-semibold text-muted-foreground">
@@ -520,7 +497,7 @@ export function ReportModal({
                   <th
                     className={
                       "p-3 font-semibold " +
-                      "text-muted-foreground w-20 text-center"
+                      "w-20 text-center text-muted-foreground"
                     }
                   >
                     Status
@@ -573,8 +550,7 @@ export function ReportModal({
                         <td className="p-3 text-foreground">{col5}</td>
                         <td
                           className={
-                            "p-3 text-muted-foreground " +
-                            "max-w-xs truncate"
+                            "p-3 text-muted-foreground " + "max-w-xs truncate"
                           }
                         >
                           {item.reason}
@@ -582,9 +558,9 @@ export function ReportModal({
                         <td className="p-3 text-center">
                           <span
                             className={
-                              "px-2 py-0.5 rounded-full text-[10px] " +
-                              "font-medium bg-emerald-500/10 " +
-                              "text-emerald-500 border border-emerald-500/20"
+                              "rounded-full px-2 py-0.5 text-[10px] " +
+                              "bg-emerald-500/10 font-medium" +
+                              "border border-emerald-500/20 text-emerald-500"
                             }
                           >
                             {type === "appointments" ? "Completed" : "Verified"}
@@ -601,14 +577,13 @@ export function ReportModal({
           {/* Statistical Summary section */}
           <div
             className={
-              "bg-muted/30 border border-border " +
-              "p-4 rounded-xl space-y-3"
+              "border border-border bg-muted/30 " + "space-y-3 rounded-xl p-4"
             }
           >
             <h3
               className={
-                "font-semibold text-xs tracking-wider " +
-                "text-muted-foreground uppercase"
+                "text-xs font-semibold tracking-wider " +
+                "uppercase text-muted-foreground"
               }
             >
               Statistical Summary
@@ -616,7 +591,7 @@ export function ReportModal({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div
                 className={
-                  "flex justify-between items-center py-1 " +
+                  "flex items-center justify-between py-1 " +
                   "border-b border-border/50"
                 }
               >
@@ -626,7 +601,7 @@ export function ReportModal({
                 </span>
               </div>
               <div className="col-span-2 space-y-1">
-                <p className="text-xs text-muted-foreground font-medium pt-1">
+                <p className="pt-1 text-xs font-medium text-muted-foreground">
                   Breakdown by Category:
                 </p>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
@@ -634,7 +609,7 @@ export function ReportModal({
                     <div
                       key={cat}
                       className={
-                        "flex justify-between py-1 border-b " +
+                        "flex justify-between border-b py-1 " +
                         "border-border/20"
                       }
                     >

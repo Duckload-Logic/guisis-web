@@ -71,7 +71,7 @@ export default function SlipDetails() {
     : "??";
 
   const displayStudentNumber =
-    slip.studentNumber || slip.user?.studentNumber || "N/A";
+    slip?.studentNumber || slip?.user?.studentNumber || "N/A";
 
   usePageMetadata({
     title: "Admission Slip Details",
