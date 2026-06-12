@@ -55,8 +55,11 @@ export default function Header({
           )}
         />
         <div className="flex flex-col gap-1 text-xs">
-          <p className="font-semibold">
+          <p className="font-semibold hidden sm:block">
             Polytechnic University of the Philippines – Taguig
+          </p>
+          <p className="font-semibold sm:hidden">
+            PUP Taguig
           </p>
           <p className="text-foreground/50">
             Guidance Services Information System
@@ -138,7 +141,11 @@ export default function Header({
         />
 
         {!isLoggedIn ? (
-          <IDPLoginButton className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-sm transition-all hover:bg-amber-500" />
+          <IDPLoginButton className={cn(
+            "rounded-full bg-primary px-5 py-2 text-sm font-semibold",
+            "text-primary-foreground shadow-sm transition-all",
+            "hover:bg-primary-dark",
+          )} />
         ) : (
           <>
             <NotificationBell
