@@ -5,9 +5,6 @@ import {
   ClipboardList,
   FileText,
   HelpCircle,
-  MessageCircleQuestion,
-  Search,
-  ShieldCheck,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -109,7 +106,7 @@ const faqCategories: FAQCategory[] = [
 ];
 
 export default function FAQ() {
-  const [openItem, setOpenItem] = useState<string | null>(null);
+  const [openItems, setOpenItems] = useState<Record<string, number | null>>({});
 
   const totalQuestions = faqCategories.reduce(
     (sum, category) => sum + category.questions.length,
@@ -171,8 +168,12 @@ export default function FAQ() {
 
   usePageMetadata(pageMeta);
 
-  const toggleItem = (key: string) => {
-    setOpenItem((current) => (current === key ? null : key));
+  const toggleItem = (categoryTitle: string, questionIndex: number) => {
+    setOpenItems((current) => ({
+      ...current,
+      [categoryTitle]:
+        current[categoryTitle] === questionIndex ? null : questionIndex,
+    }));
   };
 
   return (
@@ -201,198 +202,166 @@ export default function FAQ() {
           )}
         />
 
-        <div className="relative flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="max-w-2xl space-y-1.5">
-            <div
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border",
-                "border-primary/15 bg-primary/10 px-2.5 py-0.5 text-[10px]",
-                "font-semibold uppercase tracking-[0.15em] text-primary",
-              )}
-            >
-              <Sparkles className="h-2.5 w-2.5" />
-              Student Help Desk
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                Frequently Asked Questions
-              </h2>
-
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
-                Find quick answers about appointments, admission slips, and IIR records.
-              </p>
-            </div>
+        <div className="relative max-w-3xl space-y-1.5">
+          <div
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border",
+              "border-primary/15 bg-primary/10 px-2.5 py-0.5 text-[10px]",
+              "font-semibold uppercase tracking-[0.15em] text-primary",
+            )}
+          >
+            <Sparkles className="h-2.5 w-2.5" />
+            Student Help Desk
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 xl:max-w-2xl">
-            {[
-              {
-                label: "Search your concern",
-                icon: Search,
-              },
-              {
-                label: "Open the guide",
-                icon: MessageCircleQuestion,
-              },
-              {
-                label: "Check status",
-                icon: ShieldCheck,
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl border border-white/25",
-                  "bg-white/45 px-3 py-2 text-xs font-medium text-muted-foreground",
-                  "shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-                    "border border-primary/15 bg-primary/10 text-primary",
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                </span>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Frequently Asked Questions
+            </h2>
 
-                <span className="leading-4">{item.label}</span>
-              </div>
-            ))}
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
+              Find quick answers about appointments, admission slips, and IIR
+              records.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="mt-6 grid gap-5 xl:grid-cols-3">
-        {faqCategories.map((category) => (
-          <Card
-            key={category.title}
-            className={cn(
-              "overflow-hidden rounded-[26px] border border-white/25",
-              "bg-white/55 shadow-[0_16px_36px_rgba(15,23,42,0.06)]",
-              "backdrop-blur-xl transition-all duration-200",
-              "dark:border-white/10 dark:bg-white/[0.04]",
-            )}
-          >
-            <CardContent className="p-0">
-              <div className="relative overflow-hidden p-5">
-                <div
-                  className={cn(
-                    "pointer-events-none absolute inset-0 bg-gradient-to-br",
-                    category.gradient,
-                  )}
-                />
+      <section className="mt-6 grid items-start gap-5 xl:grid-cols-3">
+        {faqCategories.map((category) => {
+          const isCategoryOpen =
+            openItems[category.title] !== null &&
+            openItems[category.title] !== undefined;
 
-                <div className="relative flex items-start gap-4">
+          return (
+            <Card
+              key={category.title}
+              className={cn(
+                "overflow-hidden rounded-[26px] border border-white/25",
+                "bg-white/55 shadow-[0_16px_36px_rgba(15,23,42,0.06)]",
+                "backdrop-blur-xl transition-all duration-200",
+                "dark:border-white/10 dark:bg-white/[0.04]",
+                isCategoryOpen ? "h-auto min-h-[335px]" : "h-[335px]",
+              )}
+            >
+              <CardContent className="flex h-full flex-col p-0">
+                <div className="relative min-h-[130px] overflow-hidden p-5">
                   <div
                     className={cn(
-                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
-                      "border shadow-sm backdrop-blur-xl",
-                      category.iconStyle,
+                      "pointer-events-none absolute inset-0 bg-gradient-to-br",
+                      category.gradient,
                     )}
-                  >
-                    <category.icon className="h-5 w-5" />
-                  </div>
+                  />
 
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-lg font-semibold text-foreground">
-                        {category.title}
-                      </h3>
-
-                      <span
-                        className={cn(
-                          "rounded-full border border-white/30 bg-white/55 px-2.5 py-1",
-                          "text-[11px] font-medium text-muted-foreground",
-                          "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
-                        )}
-                      >
-                        {category.questions.length} questions
-                      </span>
-                    </div>
-
-                    <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-                      {category.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 border-t border-white/25 p-4 dark:border-white/10">
-                {category.questions.map((item, index) => {
-                  const key = `${category.title}-${index}`;
-                  const isOpen = openItem === key;
-
-                  return (
+                  <div className="relative flex items-start gap-4">
                     <div
-                      key={item.question}
                       className={cn(
-                        "overflow-hidden rounded-2xl border transition-all duration-200",
-                        isOpen
-                          ? "border-primary/20 bg-primary/[0.04] shadow-sm"
-                          : "border-white/25 bg-white/45 hover:border-white/40 hover:bg-white/65",
-                        "dark:border-white/10 dark:bg-white/[0.035]",
-                        "dark:hover:bg-white/[0.06]",
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                        "border shadow-sm backdrop-blur-xl",
+                        category.iconStyle,
                       )}
                     >
-                      <button
-                        type="button"
-                        onClick={() => toggleItem(key)}
-                        aria-expanded={isOpen}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-3 px-4 py-3",
-                          "text-left transition-colors",
-                        )}
-                      >
-                        <p className="min-w-0 flex-1 text-sm font-semibold leading-6 text-foreground">
-                          {item.question}
-                        </p>
+                      <category.icon className="h-5 w-5" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {category.title}
+                        </h3>
 
                         <span
                           className={cn(
-                            "inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2.5",
-                            "text-[11px] font-semibold transition-all duration-200",
-                            isOpen
-                              ? "border-primary/25 bg-primary/10 text-primary"
-                              : "border-white/30 bg-white/80 text-muted-foreground hover:bg-white hover:text-foreground",
-                            "dark:border-white/10 dark:bg-white/[0.07]",
+                            "rounded-full border border-white/30 bg-white/55 px-2.5 py-1",
+                            "text-[11px] font-medium text-muted-foreground",
+                            "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
                           )}
                         >
-                          {isOpen ? "Hide" : "Show"}
-                          <ChevronDown
-                            className={cn(
-                              "h-3 w-3 transition-transform duration-200",
-                              isOpen && "rotate-180",
-                            )}
-                          />
+                          {category.questions.length} questions
                         </span>
-                      </button>
+                      </div>
 
-                      {isOpen && (
-                        <div className="px-4 pb-4">
-                          <div
+                      <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                        {category.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-1 flex-col gap-1.5 border-t border-white/25 p-4 dark:border-white/10">
+                  {category.questions.map((item, index) => {
+                    const isOpen = openItems[category.title] === index;
+
+                    return (
+                      <div
+                        key={item.question}
+                        className={cn(
+                          "overflow-hidden rounded-2xl border transition-all duration-200",
+                          isOpen
+                            ? "border-primary/20 bg-primary/[0.04] shadow-sm"
+                            : "border-white/25 bg-white/45 hover:border-white/40 hover:bg-white/65",
+                          "dark:border-white/10 dark:bg-white/[0.035]",
+                          "dark:hover:bg-white/[0.06]",
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleItem(category.title, index)}
+                          aria-expanded={isOpen}
+                          className={cn(
+                            "flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-2",
+                            "text-left transition-colors",
+                          )}
+                        >
+                          <p className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-5 text-foreground">
+                            {item.question}
+                          </p>
+
+                          <span
                             className={cn(
-                              "rounded-xl border border-white/25 bg-white/65",
-                              "px-4 py-3 text-sm leading-6 text-muted-foreground",
-                              "shadow-sm backdrop-blur-xl",
-                              "dark:border-white/10 dark:bg-white/[0.05]",
+                              "inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2.5",
+                              "text-[11px] font-semibold transition-all duration-200",
+                              isOpen
+                                ? "border-primary/25 bg-primary/10 text-primary"
+                                : "border-white/30 bg-white/80 text-muted-foreground hover:bg-white hover:text-foreground",
+                              "dark:border-white/10 dark:bg-white/[0.07]",
                             )}
                           >
-                            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-                              Answer
-                            </p>
-                            {item.answer}
+                            {isOpen ? "Hide" : "Show"}
+                            <ChevronDown
+                              className={cn(
+                                "h-3 w-3 transition-transform duration-200",
+                                isOpen && "rotate-180",
+                              )}
+                            />
+                          </span>
+                        </button>
+
+                        {isOpen && (
+                          <div className="px-4 pb-4">
+                            <div
+                              className={cn(
+                                "rounded-xl border border-white/25 bg-white/65",
+                                "px-4 py-3 text-sm leading-6 text-muted-foreground",
+                                "shadow-sm backdrop-blur-xl",
+                                "dark:border-white/10 dark:bg-white/[0.05]",
+                              )}
+                            >
+                              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                                Answer
+                              </p>
+                              {item.answer}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </section>
 
       <section
