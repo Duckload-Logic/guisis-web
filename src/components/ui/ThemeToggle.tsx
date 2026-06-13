@@ -11,8 +11,8 @@ export default function ThemeToggle({ darkMode, setDarkMode }: Props) {
     <button
       onClick={() => setDarkMode(!darkMode)}
       className={cn(
-        "rounded-lg p-2 text-foreground transition-colors",
-        "duration-300 hover:bg-muted/30",
+        "rounded-lg p-2 text-foreground/70 transition-colors",
+        "duration-300 hover:text-foreground",
       )}
     >
       {darkMode ? <Sun size={18} /> : <Moon size={18} />}

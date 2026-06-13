@@ -12,13 +12,16 @@ import {
   HelpCircle,
   FileText,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export default function Landing() {
   const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
   const apiBase = import.meta.env.VITE_API_BASE_URL;
   const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
   const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
+
+  const navigate = useNavigate();
 
   const cardStyle = cn(
     "rounded-xl border p-6 shadow-md border-border bg-card",
@@ -108,99 +111,91 @@ export default function Landing() {
         className="space-y-10"
       >
         {/* Hero Section */}
-        <section className={cn(
-          "relative overflow-hidden rounded-xl border border-glass-border",
-          "bg-glass-bg text-foreground shadow-md bg-grid",
-        )}>
+        <section
+          className={cn(
+            "relative overflow-hidden rounded-xl border border-glass-border",
+            "bg-glass-bg text-foreground shadow-md",
+            "bg-grid",
+          )}
+        >
           {/* Ambient Glows */}
           <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className={cn(
-              "absolute left-[10%] top-10 h-72 w-72 rounded-full",
-              "bg-primary/10 blur-3xl animate-glow",
-            )} />
-            <div className={cn(
-              "absolute right-[10%] bottom-10 h-72 w-72 rounded-full",
-              "bg-secondary/10 blur-3xl animate-glow [animation-delay:2s]",
-            )} />
+            <div
+              className={cn(
+                "absolute left-[10%] top-10 h-72 w-72 rounded-full",
+                "animate-glow bg-primary/40 blur-3xl dark:bg-primary/30",
+              )}
+            />
+            <div
+              className={cn(
+                "absolute bottom-10 right-[10%] h-72 w-72 rounded-full",
+                "animate-glow bg-secondary/40 blur-3xl [animation-delay:2s] dark:bg-secondary/30",
+              )}
+            />
           </div>
 
           <div className="relative mx-auto max-w-7xl px-4 py-12 sm:py-20 lg:py-24">
             <div className="mx-auto max-w-3xl space-y-6 text-center">
-              <div className={cn(
-                "inline-flex items-center gap-2 rounded-full border",
-                "border-border bg-background/50 px-4 py-1.5 text-xs",
-                "font-semibold uppercase tracking-[0.2em] sm:tracking-[0.35em]",
-                "text-muted-foreground shadow-sm backdrop-blur",
-              )}>
+              <div
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full border",
+                  "border-border bg-background/50 px-4 py-1.5 text-xs",
+                  "font-semibold uppercase tracking-[0.2em] sm:tracking-[0.35em]",
+                  "text-muted-foreground shadow-sm backdrop-blur",
+                )}
+              >
                 PUP-Taguig GuiSIS
               </div>
               <div className="space-y-4">
-                <p className={cn(
-                  "text-xs sm:text-sm font-bold uppercase tracking-[0.15em]",
-                  "sm:tracking-[0.25em] text-secondary",
-                )}>
+                <p
+                  className={cn(
+                    "text-xs font-bold uppercase tracking-[0.15em] sm:text-sm",
+                    "text-secondary sm:tracking-[0.25em]",
+                  )}
+                >
                   Polytechnic University of the Philippines – Taguig
                 </p>
-                <h1 className={cn(
-                  "text-2xl sm:text-4xl lg:text-5xl font-extrabold",
-                  "tracking-tight text-foreground leading-tight",
-                )}>
+                <h1
+                  className={cn(
+                    "text-2xl font-extrabold sm:text-4xl lg:text-5xl",
+                    "leading-tight tracking-tight text-foreground",
+                  )}
+                >
                   Your guidance journey starts with a{" "}
-                  <span className="text-gradient">secure, modern platform</span>.
+                  <span className="text-gradient">secure, modern platform</span>
+                  .
                 </h1>
-                <p className={cn(
-                  "text-sm sm:text-base md:text-lg leading-relaxed",
-                  "text-muted-foreground max-w-2xl mx-auto",
-                )}>
+                <p
+                  className={cn(
+                    "text-sm leading-relaxed sm:text-base md:text-lg",
+                    "mx-auto max-w-2xl text-muted-foreground",
+                  )}
+                >
                   Request counseling appointments, admission slips, and guidance
                   services through the PUP Guidance Services Information System.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 {isProd ? (
-                  <a
-                    href={loginUrl}
-                    className={cn(
-                      "inline-flex h-12 w-full sm:w-auto items-center",
-                      "justify-center gap-2 rounded-lg bg-primary px-8",
-                      "text-base font-semibold text-primary-foreground",
-                      "shadow-lg shadow-primary/20 transition-all duration-300",
-                      "hover:bg-primary-dark hover:-translate-y-0.5",
-                      "active:scale-[0.98]",
-                    )}
-                  >
+                  <Button onClick={() => window.open(loginUrl, "_self")}>
                     Proceed to Login
                     <ArrowRight className="h-5 w-5" />
-                  </a>
+                  </Button>
                 ) : (
-                  <Link
-                    to={loginUrl}
-                    className={cn(
-                      "inline-flex h-12 w-full sm:w-auto items-center",
-                      "justify-center gap-2 rounded-lg bg-primary px-8",
-                      "text-base font-semibold text-primary-foreground",
-                      "shadow-lg shadow-primary/20 transition-all duration-300",
-                      "hover:bg-primary-dark hover:-translate-y-0.5",
-                      "active:scale-[0.98]",
-                    )}
-                  >
+                  <Button onClick={() => navigate(loginUrl)}>
                     Proceed to Login
                     <ArrowRight className="h-5 w-5" />
-                  </Link>
+                  </Button>
                 )}
-                <a
-                  href="#features"
-                  className={cn(
-                    "inline-flex h-12 w-full sm:w-auto items-center",
-                    "justify-center rounded-lg border border-input",
-                    "bg-background px-8 text-sm font-semibold",
-                    "text-foreground transition hover:bg-accent",
-                    "hover:-translate-y-0.5 active:scale-[0.98]",
-                  )}
+                <Button
+                  onClick={() =>
+                    document.getElementById("features")?.scrollIntoView()
+                  }
+                  variant="outline"
                 >
                   Learn more
-                </a>
+                </Button>
               </div>
             </div>
           </div>
@@ -213,13 +208,15 @@ export default function Landing() {
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className={cn(
-                "text-xs sm:text-sm font-bold uppercase",
-                "tracking-[0.2em] text-secondary",
-              )}>
+              <p
+                className={cn(
+                  "text-xs font-bold uppercase sm:text-sm",
+                  "tracking-[0.2em] text-secondary",
+                )}
+              >
                 What we offer
               </p>
-              <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">
+              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
                 A modern guidance online services system built for support.
               </h2>
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
@@ -234,12 +231,12 @@ export default function Landing() {
                     className={cardStyle}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <div className="rounded-lg bg-primary/10 p-2 text-primary">
                         <Icon className="h-6 w-6" />
                       </div>
                       <h3 className="text-lg font-semibold">{item.title}</h3>
                     </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground mt-2">
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
                   </div>
@@ -257,16 +254,18 @@ export default function Landing() {
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="grid items-center gap-10 lg:grid-cols-2">
               <div className="space-y-4">
-                <p className={cn(
-                  "text-xs sm:text-sm font-bold uppercase",
-                  "tracking-[0.2em] text-secondary",
-                )}>
+                <p
+                  className={cn(
+                    "text-xs font-bold uppercase sm:text-sm",
+                    "tracking-[0.2em] text-secondary",
+                  )}
+                >
                   Why GuiSIS
                 </p>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
                   More than login — a safer gateway for guidance and support.
                 </h2>
-                <p className="text-sm sm:text-base leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                   Built for the Polytechnic University of the Philippines
                   Taguig, GuiSIS is designed to support students with secure
                   access to academic guidance, counseling services, and official
@@ -274,15 +273,17 @@ export default function Landing() {
                 </p>
               </div>
 
-              <div className={cn(
-                "space-y-6 rounded-2xl border border-border bg-card",
-                "p-6 sm:p-8 shadow-md",
-              )}>
+              <div
+                className={cn(
+                  "space-y-6 rounded-2xl border border-border bg-card",
+                  "p-6 shadow-md sm:p-8",
+                )}
+              >
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-foreground">
                     Secure by default
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     Only authenticated students and staff can access the system,
                     with all sessions routed through the university IDP.
                   </p>
@@ -291,7 +292,7 @@ export default function Landing() {
                   <h3 className="text-lg font-semibold text-foreground">
                     Easy navigation
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     A clean, modern interface gives you fast access to guidance
                     resources, appointments, and support contacts.
                   </p>
@@ -308,13 +309,15 @@ export default function Landing() {
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className={cn(
-                "text-xs sm:text-sm font-bold uppercase",
-                "tracking-[0.2em] text-secondary",
-              )}>
+              <p
+                className={cn(
+                  "text-xs font-bold uppercase sm:text-sm",
+                  "tracking-[0.2em] text-secondary",
+                )}
+              >
                 FAQ
               </p>
-              <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">
+              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
                 Frequently Asked Questions
               </h2>
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
@@ -333,16 +336,20 @@ export default function Landing() {
                   <div className="flex items-start gap-3">
                     <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                     <div className="space-y-1">
-                      <h4 className={cn(
-                        "font-semibold text-foreground",
-                        "text-sm sm:text-base",
-                      )}>
+                      <h4
+                        className={cn(
+                          "font-semibold text-foreground",
+                          "text-sm sm:text-base",
+                        )}
+                      >
                         {faq.q}
                       </h4>
-                      <p className={cn(
-                        "text-xs sm:text-sm text-muted-foreground",
-                        "leading-relaxed",
-                      )}>
+                      <p
+                        className={cn(
+                          "text-xs text-muted-foreground sm:text-sm",
+                          "leading-relaxed",
+                        )}
+                      >
                         {faq.a}
                       </p>
                     </div>
@@ -363,13 +370,15 @@ export default function Landing() {
         >
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <p className={cn(
-                "text-xs sm:text-sm font-bold uppercase",
-                "tracking-[0.2em] text-secondary",
-              )}>
+              <p
+                className={cn(
+                  "text-xs font-bold uppercase sm:text-sm",
+                  "tracking-[0.2em] text-secondary",
+                )}
+              >
                 Get in touch
               </p>
-              <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Contact us for support and access help.
               </h2>
               <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
@@ -384,12 +393,12 @@ export default function Landing() {
                     className={cardStyle}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <div className="rounded-lg bg-primary/10 p-2 text-primary">
                         <Icon className="h-6 w-6" />
                       </div>
                       <h3 className="text-lg font-semibold">{item.title}</h3>
                     </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground mt-2">
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
                   </div>
