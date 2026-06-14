@@ -81,6 +81,16 @@ export const HealthSection = forwardRef<
   const handleInputChange = (fieldPath: string, value: any) => {
     onChange(fieldPath, value);
 
+    if (fieldPath.endsWith("HasProblem") && value === false) {
+      const detailsKey = fieldPath.replace("HasProblem", "Details");
+      onChange(detailsKey, "");
+      setErrors((prev: FormErrors) => {
+        const updated = { ...prev };
+        delete updated[detailsKey];
+        return updated;
+      });
+    }
+
     // Instant validation
     const fieldRules = healthValidationSchema[fieldPath];
     if (fieldRules) {
@@ -124,10 +134,25 @@ export const HealthSection = forwardRef<
 
     if (existingIndex >= 0) {
       // Update existing consultation
-      consultations[existingIndex] = {
-        ...consultations[existingIndex],
-        [field === "consulted" ? "hasConsulted" : field]: value,
-      };
+      if (field === "consulted" && value === false) {
+        consultations[existingIndex] = {
+          ...consultations[existingIndex],
+          hasConsulted: false,
+          whenDate: null,
+          forWhat: null,
+        };
+        setErrors((prev: FormErrors) => {
+          const updated = { ...prev };
+          delete updated[`_consultations.${professionalType}.whenDate`];
+          delete updated[`_consultations.${professionalType}.forWhat`];
+          return updated;
+        });
+      } else {
+        consultations[existingIndex] = {
+          ...consultations[existingIndex],
+          [field === "consulted" ? "hasConsulted" : field]: value,
+        };
+      }
     } else if (field === "consulted" || (value !== "" && value !== null)) {
       // Create a new record for any consulted click (yes or no)
       // or non-empty text fields
