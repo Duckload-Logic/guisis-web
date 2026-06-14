@@ -150,7 +150,7 @@ export function RoleManagementModal({
             <Button
               type="submit"
               disabled={isUpdating || selectedRoles.length === 0 || !reason}
-              className="rounded-xl bg-primary text-primary-foreground hover:brightness-110"
+              className="rounded-xl bg-primary/75 text-primary-foreground hover:bg-primary"
             >
               {isUpdating ? "Updating..." : "Save Changes"}
             </Button>

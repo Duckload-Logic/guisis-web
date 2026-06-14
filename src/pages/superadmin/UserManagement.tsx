@@ -510,8 +510,7 @@ export default function UserManagement() {
                   "duration-300 hover:text-foreground",
                   roleFilter === role.roleId
                     ? "bg-secondary text-secondary-foreground " +
-                        "hover:bg-secondary hover:text-secondary-foreground" +
-                        "hover:brightness-125"
+                        "hover:bg-secondary hover:text-secondary-foreground"
                     : "hover:bg-white/10",
                 )}
               >
@@ -525,8 +524,8 @@ export default function UserManagement() {
           <Button
             onClick={() => setIsWhitelistOpen(true)}
             className={cn(
-              "h-10 rounded-xl bg-primary text-primary-foreground",
-              "flex items-center gap-2 hover:brightness-110",
+              "h-10 rounded-xl bg-primary/75 text-primary-foreground",
+              "flex items-center gap-2 hover:bg-primary",
             )}
           >
             <UserPlus size={16} />

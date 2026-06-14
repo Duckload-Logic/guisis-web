@@ -275,7 +275,7 @@ export default function StudentAppointments() {
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-xs hover:brightness-110",
+                  "text-xs brightness-75 hover:brightness-100",
                   getStatusColor(appointment.status?.name),
                 )}
               >
@@ -284,10 +284,7 @@ export default function StudentAppointments() {
             </div>
 
             <p
-              className={cn(
-                "line-clamp-1 text-xs",
-                "text-muted-foreground/85",
-              )}
+              className={cn("line-clamp-1 text-xs", "text-muted-foreground/85")}
             >
               {appointment.reason}
             </p>
