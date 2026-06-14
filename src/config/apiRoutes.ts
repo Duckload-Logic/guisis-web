@@ -249,8 +249,11 @@ export const API_ROUTES = Object.freeze({
     me: "/notifications/me",
     stream: "/notifications/me/stream",
     markAsRead: (id: string) => `/notifications/${id}/read`,
+    markAllAsRead: "/notifications/me/read",
+    markAllAsTouched: "/notifications/me/touched",
     push: Object.freeze({
       subscribe: "/notifications/push/subscribe",
     }),
   }),
 });
+
