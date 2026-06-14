@@ -652,6 +652,14 @@ export const InterestsSection = forwardRef<
   const sharedRole = extraActivities[0]?.role || "Member";
   const sharedRoleSpec = extraActivities[0]?.roleSpecification || "";
 
+  const otherExtraActivityItem = (interests?.activities || [])
+    .map((activity: Activity, origIdx: number) => ({ activity, origIdx }))
+    .find(
+      (item: { activity: Activity; origIdx: number }) =>
+        !isAcademicActivity(item.activity) &&
+        isOtherName(item.activity.activityOption.name),
+    );
+
   return (
     <SectionContainer
       title="Interests & Activities"
@@ -979,70 +987,40 @@ export const InterestsSection = forwardRef<
                     Organization Details & Role:
                   </h5>
 
-                  <div
-                    className={cn(
-                      "rounded-xl border border-glass-border/40",
-                      "bg-glass-bg/25 overflow-hidden",
-                    )}
-                  >
-                    {(interests.activities || [])
-                      .map((activity: Activity, origIdx: number) => ({
-                        activity,
-                        origIdx,
-                      }))
-                      .filter(
-                        (item: { activity: Activity; origIdx: number }) =>
-                          !isAcademicActivity(item.activity),
-                      )
-                      .map((item: { activity: Activity; origIdx: number }) => {
-                        const activity = item.activity;
-                        const origIdx = item.origIdx;
-                        const isOther = isOtherName(
-                          activity.activityOption.name,
-                        );
-
-                        return (
-                          <div
-                            key={activity.activityOption.id}
-                            className={cn(
-                              "p-5 border-b border-glass-border/10",
-                              "last:border-b-0",
-                            )}
-                          >
-                            {!isOther && (
-                              <div
-                                className={cn(
-                                  "font-bold text-sm text-foreground",
-                                )}
-                              >
-                                {activity.activityOption.name}
-                              </div>
-                            )}
-                            {isOther && (
-                              <div className="max-w-md">
-                                <FormInput
-                                  label="Other Organization"
-                                  value={activity.otherSpecification || ""}
-                                  onChange={(val: string) =>
-                                    updateActivityOtherSpecification(
-                                      activity.activityOption.id,
-                                      false,
-                                      val,
-                                    )
-                                  }
-                                  placeholder="e.g. Red Cross Youth"
-                                  error={getFieldError(
-                                    `interests.activities.${origIdx}` +
-                                      ".otherSpecification",
-                                  )}
-                                  required={true}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                  </div>
+                  {/* Other Organization Input */}
+                  {otherExtraActivityItem && (
+                    <div
+                      className={cn(
+                        "rounded-xl border border-glass-border/40",
+                        "bg-glass-bg/25 p-5",
+                      )}
+                    >
+                      <div className="max-w-md">
+                        <FormInput
+                          label="Other Organization"
+                          value={
+                            otherExtraActivityItem.activity
+                              .otherSpecification || ""
+                          }
+                          onChange={(val: string) =>
+                            updateActivityOtherSpecification(
+                              otherExtraActivityItem.activity
+                                .activityOption.id,
+                              false,
+                              val,
+                            )
+                          }
+                          placeholder="e.g. Red Cross Youth"
+                          error={getFieldError(
+                            `interests.activities.` +
+                              `${otherExtraActivityItem.origIdx}` +
+                              ".otherSpecification",
+                          )}
+                          required={true}
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Single Shared Role Selection */}
                   <div
