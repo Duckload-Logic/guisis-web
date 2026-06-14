@@ -124,10 +124,25 @@ export const HealthSection = forwardRef<
 
     if (existingIndex >= 0) {
       // Update existing consultation
-      consultations[existingIndex] = {
-        ...consultations[existingIndex],
-        [field === "consulted" ? "hasConsulted" : field]: value,
-      };
+      if (field === "consulted" && value === false) {
+        consultations[existingIndex] = {
+          ...consultations[existingIndex],
+          hasConsulted: false,
+          whenDate: null,
+          forWhat: null,
+        };
+        setErrors((prev: FormErrors) => {
+          const updated = { ...prev };
+          delete updated[`_consultations.${professionalType}.whenDate`];
+          delete updated[`_consultations.${professionalType}.forWhat`];
+          return updated;
+        });
+      } else {
+        consultations[existingIndex] = {
+          ...consultations[existingIndex],
+          [field === "consulted" ? "hasConsulted" : field]: value,
+        };
+      }
     } else if (field === "consulted" || (value !== "" && value !== null)) {
       // Create a new record for any consulted click (yes or no)
       // or non-empty text fields
@@ -310,7 +325,16 @@ export const HealthSection = forwardRef<
                             : ""
                       }
                       onChange={(val) => {
-                        handleInputChange(item.yesKey, val === "yes");
+                        const isYes = val === "yes";
+                        handleInputChange(item.yesKey, isYes);
+                        if (!isYes) {
+                          onChange(item.detailsKey, "");
+                          setErrors((prev: FormErrors) => {
+                            const updated = { ...prev };
+                            delete updated[item.detailsKey];
+                            return updated;
+                          });
+                        }
                       }}
                       columns={2}
                     />

@@ -269,9 +269,18 @@ export const EducationSection = forwardRef<
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <button
                 type="button"
-                onClick={() =>
-                  handleInputChange("education.natureOfSchooling", "Continuous")
-                }
+                onClick={() => {
+                  handleInputChange(
+                    "education.natureOfSchooling",
+                    "Continuous",
+                  );
+                  onChange("education.interruptedDetails", "");
+                  setErrors((prev: FormErrors) => {
+                    const updated = { ...prev };
+                    delete updated["education.interruptedDetails"];
+                    return updated;
+                  });
+                }}
                 className={cn(
                   "flex items-center justify-between rounded-xl border p-4",
                   "transition-all duration-300",

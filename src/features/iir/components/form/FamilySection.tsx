@@ -411,6 +411,15 @@ export const FamilySection = forwardRef<
       handleInputChange("family.background.employedSiblings", 0);
       handleInputChange("family.background.ordinalPosition", 1);
       handleInputChange("family.background.siblingSupportTypes", []);
+      setErrors((prev: FormErrors) => {
+        const updated = { ...prev };
+        delete updated["family.background.brothers"];
+        delete updated["family.background.sisters"];
+        delete updated["family.background.employedSiblings"];
+        delete updated["family.background.ordinalPosition"];
+        delete updated["family.background.siblingSupportTypes"];
+        return updated;
+      });
     } else {
       handleInputChange("family.background.brothers", "");
       handleInputChange("family.background.sisters", "");
@@ -537,6 +546,20 @@ export const FamilySection = forwardRef<
                 handleInputChange("family.background.parentalStatus", {
                   id: Number(val),
                 });
+                const selected = parentalStatusOptions?.find(
+                  (opt: any) => String(opt.id) === String(val),
+                );
+                const isOther =
+                  selected?.name?.toLowerCase() === "other" ||
+                  selected?.text?.toLowerCase() === "other";
+                if (!isOther) {
+                  onChange("family.background.parentalStatusOther", "");
+                  setErrors((prev: FormErrors) => {
+                    const updated = { ...prev };
+                    delete updated["family.background.parentalStatusOther"];
+                    return updated;
+                  });
+                }
               }}
               columns={2}
             />
@@ -639,10 +662,21 @@ export const FamilySection = forwardRef<
                           : ""
                     }
                     onChange={(val) => {
+                      const isYes = val === "yes";
                       handleInputChange(
                         "family.background.isSharingRoom",
-                        val === "yes",
+                        isYes,
                       );
+                      if (!isYes) {
+                        onChange("family.background.roomSharingDetails", "");
+                        setErrors((prev: FormErrors) => {
+                          const updated = { ...prev };
+                          delete updated[
+                            "family.background.roomSharingDetails"
+                          ];
+                          return updated;
+                        });
+                      }
                     }}
                     columns={2}
                   />
@@ -1219,12 +1253,24 @@ export const FamilySection = forwardRef<
                         );
                         if (val !== "others") {
                           handleInputChange(
-                            "family.finance.monthlyFamilyIncomeRange.otherSpecification",
+                            "family.finance.monthlyFamilyIncomeRange" +
+                              ".otherSpecification",
                             "",
                           );
                           setOtherTouched(false);
+                          setErrors((prev: FormErrors) => {
+                            const updated = { ...prev };
+                            delete updated[
+                              "family.finance.monthlyFamilyIncomeRange" +
+                                ".otherSpecification"
+                            ];
+                            return updated;
+                          });
                         } else {
-                          setTimeout(() => otherInputRef.current?.focus(), 0);
+                          setTimeout(
+                            () => otherInputRef.current?.focus(),
+                            0,
+                          );
                         }
                       }}
                       options={monthlyFamilyIncomeRanges}

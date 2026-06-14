@@ -728,6 +728,11 @@ export const PersonalSection = forwardRef<
                       "student.personalInfo.otherReligionText",
                       "",
                     );
+                    setErrors((prev: FormErrors) => {
+                      const updated = { ...prev };
+                      delete updated["student.personalInfo.otherReligionText"];
+                      return updated;
+                    });
                   }
                 }}
                 error={errors["student.personalInfo.religion"]}
@@ -923,7 +928,27 @@ export const PersonalSection = forwardRef<
               checked={studentInfo?.personalInfo?.isEmployed || false}
               onCheckedChange={(checked: boolean | "indeterminate") => {
                 const isChecked = checked === true;
-                handleInputChange("student.personalInfo.isEmployed", isChecked);
+                handleInputChange(
+                  "student.personalInfo.isEmployed",
+                  isChecked,
+                );
+                if (!isChecked) {
+                  onChange("student.personalInfo.employerName", null);
+                  onChange("student.personalInfo.employerAddress", null);
+                  onChange(
+                    "student.personalInfo.employerContactNumber",
+                    null,
+                  );
+                  setErrors((prev: FormErrors) => {
+                    const updated = { ...prev };
+                    delete updated["student.personalInfo.employerName"];
+                    delete updated["student.personalInfo.employerAddress"];
+                    delete updated[
+                      "student.personalInfo.employerContactNumber"
+                    ];
+                    return updated;
+                  });
+                }
               }}
               info={cn(
                 "Mark this if you're currently working.",
