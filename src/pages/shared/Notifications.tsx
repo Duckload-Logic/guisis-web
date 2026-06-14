@@ -1,5 +1,16 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertTriangle,
+  Bell,
+  Calendar,
+  CheckCircle,
+  FileText,
+  Info,
+  Shield,
+  User,
+  type LucideIcon,
+} from "lucide-react";
 import { usePageMetadata, useAuth } from "@/context";
 import {
   Card,
@@ -9,52 +20,118 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Calendar,
-  FileText,
-  Bell,
-  User,
-  Shield,
-  Info,
-  CheckCircle,
-  AlertTriangle,
-} from "lucide-react";
+import { Pagination } from "@/components/shared/Pagination";
 import { cn } from "@/lib/utils";
 import {
   useGetNotifications,
+  useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotificationsStream,
 } from "@/features/notifications/hooks/useNotifications";
+import type { NotificationEntry } from "@/features/notifications/types";
 
-// Simple relative time formatter
-function formatTimeAgo(dateString: string) {
+const PAGE_SIZE = 10;
+
+type NotificationIconTone = "blue" | "purple" | "green" | "red";
+
+function formatNotificationTime(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+  if (Number.isNaN(seconds)) return "Recently";
   if (seconds < 60) return "Just now";
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
+
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
+
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
 
   return date.toLocaleDateString();
 }
 
-// Icon mapper
-function getIconForType(type: string) {
-  const t = type.toLowerCase();
-  if (t.includes("appointment")) return { icon: Calendar, color: "blue" };
-  if (t.includes("slip")) return { icon: FileText, color: "purple" };
-  if (t.includes("user")) return { icon: User, color: "green" };
-  if (t.includes("security") || t.includes("auth"))
+function getIconForNotificationType(type: string): {
+  icon: LucideIcon;
+  color: NotificationIconTone;
+} {
+  const normalizedType = type.toLowerCase();
+
+  if (normalizedType.includes("appointment")) {
+    return { icon: Calendar, color: "blue" };
+  }
+  if (normalizedType.includes("slip")) {
+    return { icon: FileText, color: "purple" };
+  }
+  if (normalizedType.includes("user")) {
+    return { icon: User, color: "green" };
+  }
+  if (normalizedType.includes("security") || normalizedType.includes("auth")) {
     return { icon: Shield, color: "red" };
-  if (t.includes("error") || t.includes("failed"))
+  }
+  if (normalizedType.includes("error") || normalizedType.includes("failed")) {
     return { icon: AlertTriangle, color: "red" };
-  if (t.includes("success")) return { icon: CheckCircle, color: "green" };
+  }
+  if (normalizedType.includes("success")) {
+    return { icon: CheckCircle, color: "green" };
+  }
+
   return { icon: Info, color: "blue" };
+}
+
+function getNotificationIconClass(color: NotificationIconTone) {
+  const colors: Record<NotificationIconTone, string> = {
+    blue: "bg-blue-500/10 text-blue-500",
+    purple: "bg-purple-500/10 text-purple-500",
+    green: "bg-green-500/10 text-green-500",
+    red: "bg-red-500/10 text-red-500",
+  };
+
+  return colors[color];
+}
+
+function getRolePath(roleName?: string) {
+  const role = roleName?.toLowerCase().replace(/\s+/g, "") || "student";
+  if (role === "admin" || role === "counselor") return "admin";
+  if (role === "superadmin") return "superadmin";
+  if (role === "developer") return "developer";
+  return "student";
+}
+
+function getNotificationTargetUrl(
+  notification: NotificationEntry,
+  roleName?: string,
+) {
+  const rolePath = getRolePath(roleName);
+  const nType = (notification.type || "").toLowerCase();
+  const title = (notification.title || "").toLowerCase();
+  const adminLikeRole = rolePath === "admin";
+
+  if (nType.includes("appointment")) {
+    return adminLikeRole && notification.targetId
+      ? `/admin/appointments/${notification.targetId}`
+      : `/${rolePath}/appointments`;
+  }
+
+  if (nType.includes("slip")) {
+    return adminLikeRole && notification.targetId
+      ? `/admin/slips/${notification.targetId}`
+      : `/${rolePath}/slips`;
+  }
+
+  if (nType.includes("user") && adminLikeRole && notification.targetId) {
+    return `/admin/student-records/${notification.targetId}`;
+  }
+
+  if (nType.includes("system") || title.includes("m2m")) {
+    if (rolePath === "developer") return "/developer";
+    if (rolePath === "superadmin") return "/superadmin/m2m-management";
+  }
+
+  return "";
 }
 
 export default function NotificationsPage() {
@@ -65,105 +142,100 @@ export default function NotificationsPage() {
   });
 
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [page, setPage] = useState(1);
   useNotificationsStream();
-  const { data, isLoading } = useGetNotifications();
+
+  const queryParams = useMemo(
+    () => ({
+      page,
+      pageSize: PAGE_SIZE,
+      unreadOnly: filter === "unread",
+    }),
+    [filter, page],
+  );
+
+  const { data, isLoading, isFetching } = useGetNotifications(queryParams);
   const markRead = useMarkNotificationRead();
-  const { user } = useAuth();
+  const markAllRead = useMarkAllNotificationsRead();
+  const { user, activeRole } = useAuth();
   const navigate = useNavigate();
 
-  const notifications = data?.notifications || [];
-  const displayList = notifications.filter((n) =>
-    filter === "all" ? true : !n.isRead,
-  );
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  useEffect(() => {
+    setPage(1);
+  }, [filter]);
 
-  const handleMarkAllRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
-    await Promise.allSettled(unreadIds.map((id) => markRead.mutateAsync(id)));
+  useEffect(() => {
+    if (data?.totalPages && page > data.totalPages) {
+      setPage(Math.max(data.totalPages, 1));
+    }
+  }, [data?.totalPages, page]);
+
+  const notifications = data?.notifications || [];
+  const unreadCount = data?.unreadCount || 0;
+  const totalPages = Math.max(data?.totalPages || 1, 1);
+  const currentPage = data?.page || page;
+  const roleName = activeRole?.name || user?.roles?.[0]?.name || "student";
+
+  const handleMarkAllRead = () => {
+    if (unreadCount === 0 || markAllRead.isPending) return;
+    markAllRead.mutate();
   };
 
-  const handleNotificationClick = (notif: any) => {
-    if (!notif.isRead && !markRead.isPending) {
-      markRead.mutate(notif.id);
+  const handleNotificationClick = (notification: NotificationEntry) => {
+    if (!notification.isRead && !markRead.isPending) {
+      markRead.mutate(notification.id);
     }
 
-    const role = user?.roles?.[0]?.name?.toLowerCase() || "student";
-    let url = "";
-    const nType = (notif.type || "").toLowerCase();
-
-    if (nType.includes("appointment")) {
-      url = role === "admin" && notif.targetId 
-        ? `/admin/appointments/${notif.targetId}`
-        : `/${role}/appointments`;
-    } else if (nType.includes("slip")) {
-      url = role === "admin" && notif.targetId
-        ? `/admin/slips/${notif.targetId}`
-        : `/${role}/slips`;
-    } else if (nType.includes("user") && role === "admin" && notif.targetId) {
-      url = `/admin/student-records/${notif.targetId}`;
-    }
-
+    const url = getNotificationTargetUrl(notification, roleName);
     if (url) {
       navigate(url);
     }
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-4 md:p-6">
-      <Card className="border-border shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-              <Bell className="h-5 w-5 text-primary" />
+    <div className="mx-auto w-full max-w-5xl space-y-4 px-0 py-2 sm:space-y-6 sm:p-4 md:p-6">
+      <Card className="overflow-hidden border-border shadow-sm">
+        <CardHeader className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+              <Bell className="h-5 w-5 shrink-0 text-primary" />
               Recent Notifications
             </CardTitle>
-            <CardDescription className="mt-1">
+            <CardDescription className="mt-1 text-sm leading-relaxed">
               Stay up to date with the latest activities and alerts.
             </CardDescription>
           </div>
+
           {unreadCount > 0 && (
             <Button
+              type="button"
               onClick={handleMarkAllRead}
-              disabled={markRead.isPending}
+              disabled={markAllRead.isPending}
+              className="min-h-11 w-full sm:w-auto"
             >
-              Mark all as read
+              {markAllRead.isPending ? "Marking..." : "Mark all as read"}
             </Button>
           )}
         </CardHeader>
 
-        <div className="flex gap-4 border-b border-border px-6 pt-2 text-sm">
-          <button
+        <div className="flex gap-2 border-b border-border px-4 py-3 text-sm sm:px-6">
+          <FilterButton
+            active={filter === "all"}
             onClick={() => setFilter("all")}
-            className={cn(
-              "pb-3 font-medium transition-colors",
-              filter === "all"
-                ? "relative text-primary after:absolute after:-bottom-[1px] after:left-0 after:h-[2px] after:w-full after:bg-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
           >
             All
-          </button>
-          <button
+          </FilterButton>
+          <FilterButton
+            active={filter === "unread"}
             onClick={() => setFilter("unread")}
-            className={cn(
-              "flex items-center gap-2 pb-3 font-medium transition-colors",
-              filter === "unread"
-                ? "relative text-primary after:absolute after:-bottom-[1px] after:left-0 after:h-[2px] after:w-full after:bg-primary"
-                : "text-muted-foreground hover:text-foreground"
-            )}
           >
             Unread
-            {unreadCount > 0 && filter === "all" && (
-              <span
-                className={cn(
-                  "flex h-5 min-w-[20px] items-center justify-center",
-                  "rounded-full bg-red-500 px-1 text-[10px] text-white",
-                )}
-              >
-                {unreadCount}
+            {unreadCount > 0 && (
+              <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
-          </button>
+          </FilterButton>
         </div>
 
         <CardContent className="p-0">
@@ -172,71 +244,123 @@ export default function NotificationsPage() {
               <div className="p-8 text-center text-sm text-muted-foreground">
                 Loading notifications...
               </div>
-            ) : displayList.length === 0 ? (
+            ) : notifications.length === 0 ? (
               <div className="p-12 text-center text-sm text-muted-foreground">
                 No {filter === "unread" ? "unread " : ""}notifications found.
               </div>
             ) : (
-              displayList.map((notif) => {
-                const { icon: Icon, color } = getIconForType(notif.type || "");
-                const colors: Record<string, string> = {
-                  blue: "text-blue-500 bg-blue-500/10",
-                  purple: "text-purple-500 bg-purple-500/10",
-                  green: "text-green-500 bg-green-500/10",
-                  red: "text-red-500 bg-red-500/10",
-                };
-                const colorClass = colors[color] || colors.blue;
-
-                return (
-                  <div
-                    key={notif.id}
-                    onClick={() => handleNotificationClick(notif)}
-                    className={cn(
-                      "group flex cursor-pointer items-start gap-4 p-5 transition-colors duration-200 hover:bg-muted/40 sm:px-6",
-                      !notif.isRead ? "bg-muted/10" : "opacity-75"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full transition-colors",
-                        !notif.isRead ? "bg-red-500 shadow-sm" : "bg-transparent"
-                      )}
-                    />
-
-                    <div className={cn("shrink-0 rounded-xl p-2.5", colorClass)}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-
-                    <div className="min-w-0 flex-1 pr-4">
-                      <p
-                        className={cn(
-                          "text-sm sm:text-base",
-                          !notif.isRead
-                            ? "font-semibold text-foreground"
-                            : "font-medium text-muted-foreground"
-                        )}
-                      >
-                        {notif.title}
-                      </p>
-                      <p
-                        className={cn(
-                          "mt-1 line-clamp-2 text-sm leading-relaxed",
-                          "text-muted-foreground sm:line-clamp-none",
-                        )}
-                      >
-                        {notif.message}
-                      </p>
-                      <p className="mt-2 text-xs font-medium text-muted-foreground">
-                        {formatTimeAgo(notif.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="px-2 py-1 sm:px-3"
+                >
+                  <NotificationItem
+                    notification={notification}
+                    onClick={handleNotificationClick}
+                  />
+                </div>
+              ))
             )}
           </div>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              isLoading={isFetching}
+              className="border-t border-border px-4 sm:px-6"
+            />
+          )}
         </CardContent>
       </Card>
     </div>
   );
 }
+
+function FilterButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative inline-flex min-h-11 items-center rounded-lg px-3 font-medium",
+        "transition-colors focus-visible:outline-none focus-visible:ring-2",
+        "focus-visible:ring-ring",
+        active
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function NotificationItem({
+  notification,
+  onClick,
+}: {
+  notification: NotificationEntry;
+  onClick: (notification: NotificationEntry) => void;
+}) {
+  const { icon: Icon, color } = getIconForNotificationType(
+    notification.type || "",
+  );
+  const unread = !notification.isRead;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(notification)}
+      className={cn(
+        "group flex min-h-11 w-full cursor-pointer items-start text-left",
+        "gap-3 rounded-xl p-4 transition-colors duration-200 hover:bg-muted/60",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        unread ? "bg-primary/5" : "opacity-75",
+      )}
+    >
+      <span
+        className={cn(
+          "mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full transition-colors",
+          unread ? "bg-red-500 shadow-sm" : "bg-transparent",
+        )}
+      />
+
+      <div
+        className={cn(
+          "shrink-0 rounded-xl p-2.5",
+          getNotificationIconClass(color),
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "line-clamp-1 text-sm sm:text-base",
+            unread ? "font-semibold text-foreground" : "font-medium",
+          )}
+        >
+          {notification.title}
+        </p>
+        <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground sm:line-clamp-none">
+          {notification.message}
+        </p>
+        <p className="mt-2 text-xs font-medium text-muted-foreground">
+          {formatNotificationTime(notification.createdAt)}
+        </p>
+      </div>
+    </button>
+  );
+}
+
