@@ -46,15 +46,7 @@ export const familyValidationSchema: FieldValidationSchema = {
   ],
 
   "family.finance.monthlyFamilyIncomeRange": [
-    {
-      type: "required",
-      validate: (value: any) => {
-        return (
-          value?.id !== undefined && value?.id !== null && value?.id !== ""
-        );
-      },
-      message: "Monthly family income range is required",
-    },
+    commonRules.required("Monthly family income range"),
   ],
   "family.finance.monthlyFamilyIncomeRange.otherSpecification": [
     {
