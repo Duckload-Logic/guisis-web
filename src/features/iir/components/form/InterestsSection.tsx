@@ -940,14 +940,18 @@ export const InterestsSection = forwardRef<
                             )}
                           >
                             <div className="space-y-3">
-                              <div className="font-bold text-sm text-foreground pt-2">
-                                {isOther
-                                  ? "Other Organization"
-                                  : activity.activityOption.name}
-                              </div>
+                              {!isOther && (
+                                <div
+                                  className={cn(
+                                    "font-bold text-sm text-foreground",
+                                  )}
+                                >
+                                  {activity.activityOption.name}
+                                </div>
+                              )}
                               {isOther && (
                                 <FormInput
-                                  label=""
+                                  label="Other Organization"
                                   value={activity.otherSpecification || ""}
                                   onChange={(val: string) =>
                                     updateActivityOtherSpecification(
