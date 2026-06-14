@@ -187,24 +187,26 @@ const FormInput = forwardRef<
 
     return (
       <div className={`space-y-2 ${className}`}>
-        <div
-          className={cn(
-            "flex max-h-10 items-start justify-between gap-1",
-            "text-sm font-medium text-card-foreground",
-          )}
-        >
-          <div className="flex items-center gap-1">
-            {info && <CustomTooltip content={info} />}
-            <span>{label}</span>
-            {required && <span className="text-red-500">*</span>}
+        {(label || (isTextboxType && maxChars)) && (
+          <div
+            className={cn(
+              "flex max-h-10 items-start justify-between gap-1",
+              "text-sm font-medium text-card-foreground",
+            )}
+          >
+            <div className="flex items-center gap-1">
+              {info && <CustomTooltip content={info} />}
+              {label && <span>{label}</span>}
+              {required && label && <span className="text-red-500">*</span>}
+            </div>
+            {isTextboxType && maxChars && (
+              <span className="text-xs font-semibold text-muted-foreground">
+                {charCount}/{maxChars}
+              </span>
+            )}
           </div>
-          {isTextboxType && maxChars && (
-            <span className="text-xs font-semibold text-muted-foreground">
-              {charCount}/{maxChars}
-            </span>
-          )}
-        </div>
-        <div className={cn("flex", prefix ? "gap-0" : "gap-2")}>
+        )}
+        <div className={cn("flex items-start", prefix ? "gap-0" : "gap-2")}>
           {prefix && (
             <div
               className={cn(
@@ -304,6 +306,16 @@ const FormInput = forwardRef<
               </div>
             )}
           </div>
+          {required && !label && (
+            <span
+              className={cn(
+                "text-red-500 font-bold px-1",
+                isTextboxType ? "pt-3" : "h-11 flex items-center",
+              )}
+            >
+              *
+            </span>
+          )}
         </div>
         {(error || internalError) && (
           <p
