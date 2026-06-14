@@ -658,7 +658,12 @@ export const InterestsSection = forwardRef<
                 >
                   Academic Club Roles & Details:
                 </h5>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div
+                  className={cn(
+                    "rounded-xl border border-glass-border/40",
+                    "bg-glass-bg/25 overflow-hidden",
+                  )}
+                >
                   {(interests.activities || [])
                     .map((activity: Activity, origIdx: number) => ({
                       activity,
@@ -674,88 +679,87 @@ export const InterestsSection = forwardRef<
                       const isOther = isOtherName(
                         activity.activityOption.name,
                       );
+                      const isOtherRole = activity.role === "Other";
+
                       return (
                         <div
                           key={activity.activityOption.id}
                           className={cn(
-                            "flex flex-col gap-4 rounded-xl border",
-                            "border-glass-border/40 bg-muted/10 p-5",
-                            "backdrop-blur-glass transition-all duration-300",
-                            "hover:border-primary/20",
+                            "grid grid-cols-1 gap-4 p-5 items-start border-b",
+                            "border-glass-border/10 last:border-b-0",
+                            isOtherRole
+                              ? "md:grid-cols-[1.5fr_1.2fr_1.2fr]"
+                              : "md:grid-cols-[1.5fr_2.4fr]",
                           )}
                         >
-                          <div
-                            className={cn(
-                              "font-semibold text-sm",
-                              "text-neutral-800 dark:text-neutral-200",
-                            )}
-                          >
-                            {isOther
-                              ? "Other Academic Club"
-                              : activity.activityOption.name}
-                          </div>
-
-                          {isOther && (
-                            <FormInput
-                              label="Please specify club name"
-                              value={activity.otherSpecification || ""}
-                              onChange={(val: string) =>
-                                updateActivityOtherSpecification(
-                                  activity.activityOption.id,
-                                  true,
-                                  val,
-                                )
-                              }
-                              noSpecialCharacters={true}
-                              placeholder="e.g. Journalism Club"
-                              error={getFieldError(
-                                `interests.activities.${origIdx}.otherSpecification`,
-                              )}
-                              required={true}
-                            />
-                          )}
-
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <Dropdown
-                              label="Role"
-                              options={[
-                                { id: "Member", name: "Member" },
-                                { id: "Officer", name: "Officer" },
-                                { id: "Other", name: "Other (Specify)" },
-                              ]}
-                              value={activity.role || "Member"}
-                              onChange={(val: string) =>
-                                updateActivityRole(
-                                  activity.activityOption.id,
-                                  true,
-                                  val,
-                                )
-                              }
-                              error={getFieldError(
-                                `interests.activities.${origIdx}.role`,
-                              )}
-                              required={true}
-                            />
-
-                            {activity.role === "Other" && (
+                          <div className="space-y-3">
+                            <div className="font-bold text-sm text-foreground pt-2">
+                              {isOther
+                                ? "Other Academic Club"
+                                : activity.activityOption.name}
+                            </div>
+                            {isOther && (
                               <FormInput
-                                label="Specify Role"
-                                value={activity.roleSpecification || ""}
+                                label=""
+                                value={activity.otherSpecification || ""}
                                 onChange={(val: string) =>
-                                  updateActivityRoleSpecification(
+                                  updateActivityOtherSpecification(
                                     activity.activityOption.id,
                                     true,
                                     val,
                                   )
                                 }
-                                placeholder="e.g. Vice President"
+                                noSpecialCharacters={true}
+                                placeholder="e.g. Journalism Club"
                                 error={getFieldError(
-                                  `interests.activities.${origIdx}.roleSpecification`,
+                                  `interests.activities.${origIdx}` +
+                                    ".otherSpecification",
                                 )}
                                 required={true}
                               />
                             )}
                           </div>
+
+                          <Dropdown
+                            label="Role"
+                            options={[
+                              { id: "Member", name: "Member" },
+                              { id: "Officer", name: "Officer" },
+                              { id: "Other", name: "Other (Specify)" },
+                            ]}
+                            value={activity.role || "Member"}
+                            onChange={(val: string) =>
+                              updateActivityRole(
+                                activity.activityOption.id,
+                                true,
+                                val,
+                              )
+                            }
+                            error={getFieldError(
+                              `interests.activities.${origIdx}.role`,
+                            )}
+                            required={true}
+                          />
+
+                          {isOtherRole && (
+                            <FormInput
+                              label="Specify Role"
+                              value={activity.roleSpecification || ""}
+                              onChange={(val: string) =>
+                                updateActivityRoleSpecification(
+                                  activity.activityOption.id,
+                                  true,
+                                  val,
+                                )
+                              }
+                              placeholder="e.g. Vice President"
+                              error={getFieldError(
+                                `interests.activities.${origIdx}` +
+                                  ".roleSpecification",
+                              )}
+                              required={true}
+                            />
+                          )}
                         </div>
                       );
                     })}
@@ -973,7 +977,12 @@ export const InterestsSection = forwardRef<
                   >
                     Organization Roles & Details:
                   </h5>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div
+                    className={cn(
+                      "rounded-xl border border-glass-border/40",
+                      "bg-glass-bg/25 overflow-hidden",
+                    )}
+                  >
                     {(interests.activities || [])
                       .map((activity: Activity, origIdx: number) => ({
                         activity,
@@ -989,88 +998,86 @@ export const InterestsSection = forwardRef<
                         const isOther = isOtherName(
                           activity.activityOption.name,
                         );
-                        const errPath = (k: string) =>
-                          `interests.activities.${origIdx}.${k}`;
+                        const isOtherRole = activity.role === "Other";
 
                         return (
                           <div
                             key={activity.activityOption.id}
                             className={cn(
-                              "flex flex-col gap-4 rounded-xl border",
-                              "border-glass-border/40 bg-muted/10 p-5",
-                              "backdrop-blur-glass transition-all duration-300",
-                              "hover:border-primary/20",
+                              "grid grid-cols-1 gap-4 p-5 items-start border-b",
+                              "border-glass-border/10 last:border-b-0",
+                              isOtherRole
+                                ? "md:grid-cols-[1.5fr_1.2fr_1.2fr]"
+                                : "md:grid-cols-[1.5fr_2.4fr]",
                             )}
                           >
-                            <div
-                              className={cn(
-                                "font-semibold text-sm",
-                                "text-neutral-800 dark:text-neutral-200",
-                              )}
-                            >
-                              {isOther
-                                ? "Other Organization"
-                                : activity.activityOption.name}
-                            </div>
-
-                            {isOther && (
-                              <FormInput
-                                label="Please specify organization details"
-                                value={activity.otherSpecification || ""}
-                                onChange={(val: string) =>
-                                  updateActivityOtherSpecification(
-                                    activity.activityOption.id,
-                                    false,
-                                    val,
-                                  )
-                                }
-                                placeholder="e.g. Red Cross Youth"
-                                error={getFieldError(
-                                  errPath("otherSpecification"),
-                                )}
-                                required={true}
-                              />
-                            )}
-
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                              <Dropdown
-                                label="Role"
-                                options={[
-                                  { id: "Member", name: "Member" },
-                                  { id: "Officer", name: "Officer" },
-                                  { id: "Other", name: "Other (Specify)" },
-                                ]}
-                                value={activity.role || "Member"}
-                                onChange={(val: string) =>
-                                  updateActivityRole(
-                                    activity.activityOption.id,
-                                    false,
-                                    val,
-                                  )
-                                }
-                                error={getFieldError(errPath("role"))}
-                                required={true}
-                              />
-
-                              {activity.role === "Other" && (
+                            <div className="space-y-3">
+                              <div className="font-bold text-sm text-foreground pt-2">
+                                {isOther
+                                  ? "Other Organization"
+                                  : activity.activityOption.name}
+                              </div>
+                              {isOther && (
                                 <FormInput
-                                  label="Specify Role"
-                                  value={activity.roleSpecification || ""}
+                                  label=""
+                                  value={activity.otherSpecification || ""}
                                   onChange={(val: string) =>
-                                    updateActivityRoleSpecification(
+                                    updateActivityOtherSpecification(
                                       activity.activityOption.id,
                                       false,
                                       val,
                                     )
                                   }
-                                  placeholder="e.g. President"
+                                  placeholder="e.g. Red Cross Youth"
                                   error={getFieldError(
-                                    errPath("roleSpecification"),
+                                    `interests.activities.${origIdx}` +
+                                      ".otherSpecification",
                                   )}
                                   required={true}
                                 />
                               )}
                             </div>
+
+                            <Dropdown
+                              label="Role"
+                              options={[
+                                { id: "Member", name: "Member" },
+                                { id: "Officer", name: "Officer" },
+                                { id: "Other", name: "Other (Specify)" },
+                              ]}
+                              value={activity.role || "Member"}
+                              onChange={(val: string) =>
+                                updateActivityRole(
+                                  activity.activityOption.id,
+                                  false,
+                                  val,
+                                )
+                              }
+                              error={getFieldError(
+                                `interests.activities.${origIdx}.role`,
+                              )}
+                              required={true}
+                            />
+
+                            {isOtherRole && (
+                              <FormInput
+                                label="Specify Role"
+                                value={activity.roleSpecification || ""}
+                                onChange={(val: string) =>
+                                  updateActivityRoleSpecification(
+                                    activity.activityOption.id,
+                                    false,
+                                    val,
+                                  )
+                                }
+                                placeholder="e.g. President"
+                                error={getFieldError(
+                                  `interests.activities.${origIdx}` +
+                                    ".roleSpecification",
+                                )}
+                                required={true}
+                              />
+                            )}
                           </div>
                         );
                       })}
