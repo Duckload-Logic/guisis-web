@@ -16,8 +16,13 @@ export const familyValidationSchema: FieldValidationSchema = {
     {
       type: "required",
       validate: (value: any) => {
+        const id = value?.id;
         return (
-          value?.id !== undefined && value?.id !== null && value?.id !== ""
+          id !== undefined &&
+          id !== null &&
+          id !== "" &&
+          id !== 0 &&
+          id !== "0"
         );
       },
       message: "Parental status is required",
@@ -103,8 +108,13 @@ export const familyValidationSchema: FieldValidationSchema = {
     {
       type: "required",
       validate: (value: any) => {
+        const id = value?.id;
         return (
-          value?.id !== undefined && value?.id !== null && value?.id !== ""
+          id !== undefined &&
+          id !== null &&
+          id !== "" &&
+          id !== 0 &&
+          id !== "0"
         );
       },
       message: "Nature of residence is required",

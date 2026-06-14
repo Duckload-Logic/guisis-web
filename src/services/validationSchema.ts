@@ -24,10 +24,17 @@ export const commonRules = {
         return value?.trim().length > 0;
       }
       if (typeof value === "object" && value !== null) {
-        return (
-          (value.id !== undefined && value.id !== null && value.id !== "") ||
-          (value.code !== undefined && value.code !== null && value.code !== "")
-        );
+        const hasId =
+          value.id !== undefined &&
+          value.id !== null &&
+          value.id !== "" &&
+          value.id !== 0 &&
+          value.id !== "0";
+        const hasCode =
+          value.code !== undefined &&
+          value.code !== null &&
+          value.code !== "";
+        return hasId || hasCode;
       }
       return value !== undefined && value !== null && value !== "";
     },
