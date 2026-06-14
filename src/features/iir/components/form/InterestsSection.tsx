@@ -335,11 +335,17 @@ export const InterestsSection = forwardRef<
       }
 
       if (option) {
+        const extraActivities = currentActivities.filter(
+          (a: Activity) => !isAcademicActivity(a),
+        );
+        const existingRole = extraActivities[0]?.role || "Member";
+        const existingRoleSpec = extraActivities[0]?.roleSpecification || "";
+
         currentActivities.push({
           activityOption: { ...option, isAcademic },
           otherSpecification: "",
-          role: "Member",
-          roleSpecification: "",
+          role: isAcademic ? "Member" : existingRole,
+          roleSpecification: isAcademic ? "" : existingRoleSpec,
         });
       }
     }
@@ -473,6 +479,64 @@ export const InterestsSection = forwardRef<
     });
   };
 
+  const updateAllExtracurricularRoles = (role: string) => {
+    const currentActivities = (interests?.activities || []).map(
+      (a: Activity) => {
+        const isAcad = isAcademicActivity(a);
+        if (!isAcad) {
+          return {
+            ...a,
+            role,
+            roleSpecification: role === "Other" ? a.roleSpecification : "",
+          };
+        }
+        return a;
+      },
+    );
+    handleInputChange("interests.activities", currentActivities);
+
+    const actErrors = checkActivitiesAndRoles({
+      ...interests,
+      activities: currentActivities,
+    });
+    setErrors((prev: FormErrors) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((k) => {
+        if (k.startsWith("interests.activities.")) {
+          delete updated[k];
+        }
+      });
+      return { ...updated, ...actErrors };
+    });
+  };
+
+  const updateAllExtracurricularRoleSpecs = (spec: string) => {
+    const currentActivities = (interests?.activities || []).map(
+      (a: Activity) => {
+        const isAcad = isAcademicActivity(a);
+        if (!isAcad) {
+          return { ...a, roleSpecification: spec };
+        }
+        return a;
+      },
+    );
+    handleInputChange("interests.activities", currentActivities);
+
+    const actErrors = checkActivitiesAndRoles({
+      ...interests,
+      activities: currentActivities,
+    });
+    setErrors((prev: FormErrors) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((k) => {
+        if (k.startsWith("interests.activities.")) {
+          delete updated[k];
+        }
+      });
+      return { ...updated, ...actErrors };
+    });
+  };
+
   const getHobby = (rank: number) =>
     interests?.hobbies?.find((h: Hobby) => h.priorityRank === rank)
       ?.hobbyName || "";
@@ -578,6 +642,15 @@ export const InterestsSection = forwardRef<
   const hasOrgsSelected = (interests?.activities || []).some(
     (a: Activity) => !isAcademicActivity(a),
   );
+
+  const extraActivities = (interests?.activities || []).filter(
+    (a: Activity) => !isAcademicActivity(a),
+  );
+  const firstExtraOrigIdx = (interests?.activities || []).findIndex(
+    (a: Activity) => !isAcademicActivity(a),
+  );
+  const sharedRole = extraActivities[0]?.role || "Member";
+  const sharedRoleSpec = extraActivities[0]?.roleSpecification || "";
 
   return (
     <SectionContainer
@@ -893,7 +966,7 @@ export const InterestsSection = forwardRef<
               ).length > 0 && (
                 <div
                   className={cn(
-                    "mt-8 space-y-4 border-t border-glass-border/20 pt-6",
+                    "mt-8 space-y-6 border-t border-glass-border/20 pt-6",
                     "animate-in fade-in duration-300",
                   )}
                 >
@@ -903,8 +976,9 @@ export const InterestsSection = forwardRef<
                       "text-neutral-400 dark:text-neutral-500",
                     )}
                   >
-                    Organization Roles & Details:
+                    Organization Details & Role:
                   </h5>
+
                   <div
                     className={cn(
                       "rounded-xl border border-glass-border/40",
@@ -926,30 +1000,26 @@ export const InterestsSection = forwardRef<
                         const isOther = isOtherName(
                           activity.activityOption.name,
                         );
-                        const isOtherRole = activity.role === "Other";
 
                         return (
                           <div
                             key={activity.activityOption.id}
                             className={cn(
-                              "grid grid-cols-1 gap-4 p-5 items-start border-b",
-                              "border-glass-border/10 last:border-b-0",
-                              isOtherRole
-                                ? "md:grid-cols-[1.5fr_1.2fr_1.2fr]"
-                                : "md:grid-cols-[1.5fr_2.4fr]",
+                              "p-5 border-b border-glass-border/10",
+                              "last:border-b-0",
                             )}
                           >
-                            <div className="space-y-3">
-                              {!isOther && (
-                                <div
-                                  className={cn(
-                                    "font-bold text-sm text-foreground",
-                                  )}
-                                >
-                                  {activity.activityOption.name}
-                                </div>
-                              )}
-                              {isOther && (
+                            {!isOther && (
+                              <div
+                                className={cn(
+                                  "font-bold text-sm text-foreground",
+                                )}
+                              >
+                                {activity.activityOption.name}
+                              </div>
+                            )}
+                            {isOther && (
+                              <div className="max-w-md">
                                 <FormInput
                                   label="Other Organization"
                                   value={activity.otherSpecification || ""}
@@ -967,52 +1037,66 @@ export const InterestsSection = forwardRef<
                                   )}
                                   required={true}
                                 />
-                              )}
-                            </div>
-
-                            <Dropdown
-                              label="Role"
-                              options={[
-                                { id: "Member", name: "Member" },
-                                { id: "Officer", name: "Officer" },
-                                { id: "Other", name: "Other (Specify)" },
-                              ]}
-                              value={activity.role || "Member"}
-                              onChange={(val: string) =>
-                                updateActivityRole(
-                                  activity.activityOption.id,
-                                  false,
-                                  val,
-                                )
-                              }
-                              error={getFieldError(
-                                `interests.activities.${origIdx}.role`,
-                              )}
-                              required={true}
-                            />
-
-                            {isOtherRole && (
-                              <FormInput
-                                label="Specify Role"
-                                value={activity.roleSpecification || ""}
-                                onChange={(val: string) =>
-                                  updateActivityRoleSpecification(
-                                    activity.activityOption.id,
-                                    false,
-                                    val,
-                                  )
-                                }
-                                placeholder="e.g. President"
-                                error={getFieldError(
-                                  `interests.activities.${origIdx}` +
-                                    ".roleSpecification",
-                                )}
-                                required={true}
-                              />
+                              </div>
                             )}
                           </div>
                         );
                       })}
+                  </div>
+
+                  {/* Single Shared Role Selection */}
+                  <div
+                    className={cn(
+                      "rounded-xl border border-glass-border/40",
+                      "bg-glass-bg/25 p-5 space-y-4",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "grid grid-cols-1 gap-4",
+                        sharedRole === "Other"
+                          ? "sm:grid-cols-2"
+                          : "sm:grid-cols-1 max-w-xs",
+                      )}
+                    >
+                      <Dropdown
+                        label="Role"
+                        options={[
+                          { id: "Member", name: "Member" },
+                          { id: "Officer", name: "Officer" },
+                          { id: "Other", name: "Other (Specify)" },
+                        ]}
+                        value={sharedRole}
+                        onChange={updateAllExtracurricularRoles}
+                        error={
+                          firstExtraOrigIdx !== -1
+                            ? getFieldError(
+                                "interests.activities." +
+                                  `${firstExtraOrigIdx}.role`,
+                              )
+                            : undefined
+                        }
+                        required={true}
+                      />
+
+                      {sharedRole === "Other" && (
+                        <FormInput
+                          label="Specify Role"
+                          value={sharedRoleSpec}
+                          onChange={updateAllExtracurricularRoleSpecs}
+                          placeholder="e.g. President"
+                          error={
+                            firstExtraOrigIdx !== -1
+                              ? getFieldError(
+                                  `interests.activities.${firstExtraOrigIdx}` +
+                                    ".roleSpecification",
+                                )
+                              : undefined
+                          }
+                          required={true}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
