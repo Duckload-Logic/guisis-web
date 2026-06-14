@@ -126,15 +126,17 @@ const checkActivitiesAndRoles = (interests: any): FormErrors => {
       }
     }
 
-    const role = (a.role || "").trim();
-    if (!role) {
-      localErrors[`interests.activities.${index}.role`] =
-        "Please select your role.";
-    } else if (role === "Other") {
-      const roleSpec = (a.roleSpecification || "").trim();
-      if (!roleSpec) {
-        localErrors[`interests.activities.${index}.roleSpecification`] =
-          "Please specify your role.";
+    if (!isAcademic) {
+      const role = (a.role || "").trim();
+      if (!role) {
+        localErrors[`interests.activities.${index}.role`] =
+          "Please select your role.";
+      } else if (role === "Other") {
+        const roleSpec = (a.roleSpecification || "").trim();
+        if (!roleSpec) {
+          localErrors[`interests.activities.${index}.roleSpecification`] =
+            "Please specify your role.";
+        }
       }
     }
   });
@@ -641,8 +643,9 @@ export const InterestsSection = forwardRef<
               />
             </div>
 
-            {interests?.activities?.filter((a: Activity) =>
-              isAcademicActivity(a),
+            {interests?.activities?.filter(
+              (a: Activity) =>
+                isAcademicActivity(a) && isOtherName(a.activityOption.name),
             ).length > 0 && (
               <div
                 className={cn(
@@ -650,120 +653,45 @@ export const InterestsSection = forwardRef<
                   "animate-in fade-in duration-300",
                 )}
               >
-                <h5
-                  className={cn(
-                    "text-xs font-bold uppercase tracking-wider",
-                    "text-neutral-400 dark:text-neutral-500",
-                  )}
-                >
-                  Academic Club Roles & Details:
-                </h5>
-                <div
-                  className={cn(
-                    "rounded-xl border border-glass-border/40",
-                    "bg-glass-bg/25 overflow-hidden",
-                  )}
-                >
-                  {(interests.activities || [])
-                    .map((activity: Activity, origIdx: number) => ({
-                      activity,
-                      origIdx,
-                    }))
-                    .filter(
-                      (item: { activity: Activity; origIdx: number }) =>
-                        isAcademicActivity(item.activity),
-                    )
-                    .map((item: { activity: Activity; origIdx: number }) => {
-                      const activity = item.activity;
-                      const origIdx = item.origIdx;
-                      const isOther = isOtherName(
-                        activity.activityOption.name,
-                      );
-                      const isOtherRole = activity.role === "Other";
-
-                      return (
-                        <div
-                          key={activity.activityOption.id}
-                          className={cn(
-                            "grid grid-cols-1 gap-4 p-5 items-start border-b",
-                            "border-glass-border/10 last:border-b-0",
-                            isOtherRole
-                              ? "md:grid-cols-[1.5fr_1.2fr_1.2fr]"
-                              : "md:grid-cols-[1.5fr_2.4fr]",
+                {(interests.activities || [])
+                  .map((activity: Activity, origIdx: number) => ({
+                    activity,
+                    origIdx,
+                  }))
+                  .filter(
+                    (item: { activity: Activity; origIdx: number }) =>
+                      isAcademicActivity(item.activity) &&
+                      isOtherName(item.activity.activityOption.name),
+                  )
+                  .map((item: { activity: Activity; origIdx: number }) => {
+                    const activity = item.activity;
+                    const origIdx = item.origIdx;
+                    return (
+                      <div
+                        key={activity.activityOption.id}
+                        className="max-w-md"
+                      >
+                        <FormInput
+                          label="Please specify club name"
+                          value={activity.otherSpecification || ""}
+                          onChange={(val: string) =>
+                            updateActivityOtherSpecification(
+                              activity.activityOption.id,
+                              true,
+                              val,
+                            )
+                          }
+                          noSpecialCharacters={true}
+                          placeholder="e.g. Journalism Club"
+                          error={getFieldError(
+                            `interests.activities.${origIdx}` +
+                              ".otherSpecification",
                           )}
-                        >
-                          <div className="space-y-3">
-                            <div className="font-bold text-sm text-foreground pt-2">
-                              {isOther
-                                ? "Other Academic Club"
-                                : activity.activityOption.name}
-                            </div>
-                            {isOther && (
-                              <FormInput
-                                label=""
-                                value={activity.otherSpecification || ""}
-                                onChange={(val: string) =>
-                                  updateActivityOtherSpecification(
-                                    activity.activityOption.id,
-                                    true,
-                                    val,
-                                  )
-                                }
-                                noSpecialCharacters={true}
-                                placeholder="e.g. Journalism Club"
-                                error={getFieldError(
-                                  `interests.activities.${origIdx}` +
-                                    ".otherSpecification",
-                                )}
-                                required={true}
-                              />
-                            )}
-                          </div>
-
-                          <Dropdown
-                            label="Role"
-                            options={[
-                              { id: "Member", name: "Member" },
-                              { id: "Officer", name: "Officer" },
-                              { id: "Other", name: "Other (Specify)" },
-                            ]}
-                            value={activity.role || "Member"}
-                            onChange={(val: string) =>
-                              updateActivityRole(
-                                activity.activityOption.id,
-                                true,
-                                val,
-                              )
-                            }
-                            error={getFieldError(
-                              `interests.activities.${origIdx}.role`,
-                            )}
-                            required={true}
-                          />
-
-                          {isOtherRole && (
-                            <FormInput
-                              label="Specify Role"
-                              value={activity.roleSpecification || ""}
-                              onChange={(val: string) =>
-                                updateActivityRoleSpecification(
-                                  activity.activityOption.id,
-                                  true,
-                                  val,
-                                )
-                              }
-                              placeholder="e.g. Vice President"
-                              error={getFieldError(
-                                `interests.activities.${origIdx}` +
-                                  ".roleSpecification",
-                              )}
-                              required={true}
-                            />
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
+                          required={true}
+                        />
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </div>
