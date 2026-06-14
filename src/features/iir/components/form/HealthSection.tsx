@@ -81,6 +81,16 @@ export const HealthSection = forwardRef<
   const handleInputChange = (fieldPath: string, value: any) => {
     onChange(fieldPath, value);
 
+    if (fieldPath.endsWith("HasProblem") && value === false) {
+      const detailsKey = fieldPath.replace("HasProblem", "Details");
+      onChange(detailsKey, "");
+      setErrors((prev: FormErrors) => {
+        const updated = { ...prev };
+        delete updated[detailsKey];
+        return updated;
+      });
+    }
+
     // Instant validation
     const fieldRules = healthValidationSchema[fieldPath];
     if (fieldRules) {
