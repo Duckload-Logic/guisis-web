@@ -10,6 +10,7 @@ export default function ThemeToggle({ darkMode, setDarkMode }: Props) {
   return (
     <button
       onClick={() => setDarkMode(!darkMode)}
+      aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
         "rounded-lg p-2 text-foreground/70 transition-colors",
         "duration-300 hover:text-foreground",

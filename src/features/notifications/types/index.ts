@@ -8,7 +8,14 @@ export interface NotificationEntry {
   message: string;
   type: string;
   isRead: boolean;
+  isTouched: boolean;
   createdAt: string;
+}
+
+export interface ListNotificationsParams {
+  page?: number;
+  pageSize?: number;
+  unreadOnly?: boolean;
 }
 
 export interface ListNotificationsResponse {
@@ -17,4 +24,7 @@ export interface ListNotificationsResponse {
   page: number;
   pageSize: number;
   totalPages: number;
+  unreadCount: number;
+  untouchedCount: number;
 }
+
