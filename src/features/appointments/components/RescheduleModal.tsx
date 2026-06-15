@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 import { useAvailableSlots } from "@/features/appointments/hooks";
 import { Dropdown, FormInput } from "@/components/form";
@@ -17,7 +18,11 @@ import { format12HourTime, toISODateString } from "@/utils/dateTime";
 interface RescheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (newDate: string, newTimeSlotId: number) => void;
+  onConfirm: (
+    newDate: string,
+    newTimeSlotId: number,
+    reason: string,
+  ) => void;
   currentDate: string;
   currentTimeSlotId: number;
 }
@@ -67,9 +72,23 @@ export default function RescheduleModal({
     setSelectedSlotId(undefined);
   }, [selectedDateStr]);
 
+  const [reason, setReason] = useState<string>("");
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setReason("");
+      setError("");
+    }
+  }, [isOpen]);
+
   const handleConfirm = () => {
     if (!selectedDateStr || !selectedSlotId) return;
-    onConfirm(selectedDateStr, selectedSlotId);
+    if (!reason.trim()) {
+      setError("Reason for reschedule is required");
+      return;
+    }
+    onConfirm(selectedDateStr, selectedSlotId, reason);
   };
 
   return (
@@ -114,6 +133,26 @@ export default function RescheduleModal({
             value={selectedSlotId}
             onChange={(val) => setSelectedSlotId(Number(val))}
           />
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Reason for Reschedule <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              placeholder="Enter details for rescheduling..."
+              value={reason}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (e.target.value.trim()) setError("");
+              }}
+              className="min-h-[80px]"
+            />
+            {error && (
+              <p className="text-xs text-red-500">
+                {error}
+              </p>
+            )}
+          </div>
         </div>
 
         <DialogFooter>
