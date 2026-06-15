@@ -117,9 +117,10 @@ export default function IIRProfile() {
           disabled={isDownloading}
           className={cn(
             "group flex h-10 w-10 items-center justify-center rounded-xl",
-            "border border-emerald-500/20 p-0 transition-colors",
+            "border border-emerald-500/20 p-0",
             "hover:bg-emerald-500/10 disabled:opacity-50",
             "disabled:hover:bg-transparent",
+            "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
           )}
           title="Download PDF"
         >
@@ -139,8 +140,9 @@ export default function IIRProfile() {
             }
             className={cn(
               "group flex h-10 w-10 items-center justify-center rounded-xl",
-              "border border-primary/20 p-0 transition-colors",
+              "border border-primary/20 p-0",
               "hover:bg-primary/10",
+              "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
             )}
             title="Edit IIR profile"
           >
@@ -257,12 +259,25 @@ export default function IIRProfile() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-
-      <div className="mt-4 flex w-full flex-col gap-8">
+        <div 
+        className={cn(
+          "mx-auto mt-4 flex w-full flex-col gap-8", 
+          "px-4 sm:px-6 md:px-8"                     
+        )}
+        >
         <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
-          <BioCard data={studentData?.student} />
+          
+          <div 
+            className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
+            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+          >
+            <BioCard data={studentData?.student} />
+          </div>
 
-          <div className="flex h-full flex-col gap-0 xl:col-span-3">
+          <div 
+            className="animate-fade-in-up flex h-full flex-col gap-0 xl:col-span-3"
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+          >
             <InfoNavigation
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -275,6 +290,7 @@ export default function IIRProfile() {
               iirId={finalIirId}
             />
           </div>
+
         </div>
       </div>
 

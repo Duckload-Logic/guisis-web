@@ -366,8 +366,7 @@ export function SlipList({
     <Card
       className={`bg-glass-bg/40 hover:bg-glass-bg/50 flex flex-col overflow-hidden border-glass-border shadow-md backdrop-blur-2xl transition-all duration-500 ${className || ""}`}
     >
-      <CardHeader className="border-glass-border/30 space-y-6 border-b bg-muted/10 px-8 py-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <CardHeader className="border-glass-border/30 space-y-4 border-b bg-muted/10 px-6 py-5 sm:px-8">        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1.5 text-left">
             <h2 className="text-xl font-bold tracking-tight text-foreground/90">
               {title}
@@ -387,14 +386,20 @@ export function SlipList({
           )}
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-          <SearchInput
-            placeholder="Search by student name, number, or reason..."
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange!}
-            className="border-glass-border/40 focus:bg-glass-bg/60 w-full rounded-2xl"
-            hasHeader={false}
-          />
+        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px] lg:items-end">
+          
+        <div className="flex w-full flex-col">
+            <label className="mb-2 text-left text-sm font-medium text-foreground/80">
+              Search:
+            </label>
+            <SearchInput
+              placeholder="Search by student name, number, or reason..."
+              searchTerm={searchTerm}
+              onSearchChange={onSearchChange!}
+              className="w-full rounded-2xl border-glass-border/40 focus:bg-glass-bg/60"
+              hasHeader={false}
+            />
+          </div>
 
           <Dropdown
             label="Status"

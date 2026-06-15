@@ -411,11 +411,13 @@ export default function StudentSlips() {
     <>
       <AnimationStyles />
 
-      <div className="relative isolate space-y-6 overflow-visible">
-        {/* <div className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-72 rounded-full bg-slate-300/10 blur-3xl dark:bg-slate-500/10" />
-        <div className="pointer-events-none absolute right-0 top-10 -z-10 h-80 w-80 rounded-full bg-primary/5 blur-3xl dark:bg-primary/10" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 -z-10 h-72 w-72 rounded-full bg-emerald-200/10 blur-3xl dark:bg-emerald-400/10" /> */}
-
+      <div 
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-6", // Forces full width uniformity
+          "px-4 sm:px-6 md:px-8",                   // Matches standard padding
+          "relative isolate overflow-visible"
+        )}
+      >
         {!user?.studentCorUrl ? (
           <Alert
             variant="destructive"

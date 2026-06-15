@@ -276,56 +276,68 @@ export default function AnalyticsPage() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-      <div className="animate-in fade-in space-y-8 duration-700">
+      <div 
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "px-4 sm:px-6 md:px-8",
+        )}
+      >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column: Gender Distribution Chart */}
-          <ChartCard
-            title="Gender Distribution"
-            description="Total student body split"
-            className="lg:col-span-1"
+          <div 
+            className="lg:col-span-1 animate-fade-in-up"
+            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
-            <ChartContainer
-              config={genderDistributionConfig}
-              className="mx-auto aspect-square max-h-[300px]"
+            <ChartCard
+              title="Gender Distribution"
+              description="Total student body split"
             >
-              <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie
-                  data={data?.genderDistribution ?? []}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="total"
-                  nameKey="category"
-                  isAnimationActive={false}
-                >
-                  {(data?.genderDistribution ?? []).map((gender) => (
-                    <Cell
-                      key={gender.category}
-                      fill={
-                        gender.category === "Male"
-                          ? "var(--color-Male)"
-                          : "var(--color-Female)"
-                      }
-                    />
-                  ))}
-                </Pie>
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  iconType="circle"
-                />
-              </PieChart>
-            </ChartContainer>
-          </ChartCard>
+              <ChartContainer
+                config={genderDistributionConfig}
+                className="mx-auto aspect-square max-h-[300px]"
+              >
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Pie
+                    data={data?.genderDistribution ?? []}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="total"
+                    nameKey="category"
+                    isAnimationActive={false}
+                  >
+                    {(data?.genderDistribution ?? []).map((gender) => (
+                      <Cell
+                        key={gender.category}
+                        fill={
+                          gender.category === "Male"
+                            ? "var(--color-Male)"
+                            : "var(--color-Female)"
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    iconType="circle"
+                  />
+                </PieChart>
+              </ChartContainer>
+            </ChartCard>
+          </div>
 
           {/* Right Columns: KPIs */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
+          <div 
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2 animate-fade-in-up"
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+          >
             <KPICard
               title="Total Population"
               value={data?.totalStudents?.toLocaleString() ?? "0"}

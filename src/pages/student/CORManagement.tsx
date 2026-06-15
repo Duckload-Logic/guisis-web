@@ -141,21 +141,23 @@ export default function CORManagement() {
   const corUrl = user?.studentCorUrl;
   const isPdf = corUrl?.toLowerCase().endsWith(".pdf");
 
-  return (
-    <div
-      className={cn(
-        "animate-in fade-in slide-in-from-bottom-4 duration-700",
-        "w-full max-w-4xl mx-auto space-y-6 pb-12",
+  return(
+      <div
+        className={cn(
+        "w-full mx-auto pb-12", 
         "px-4 sm:px-6 md:px-8",
-      )}
-    >
+        )}
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"></div>
       <Card
         className={cn(
           "flex h-[400px] flex-col overflow-hidden rounded-xl",
           "border-border bg-card shadow-md backdrop-blur-md",
           "dark:bg-card/45 sm:h-[750px]",
+          "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
         )}
-      >
+        style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+        >
         <CardHeader
           className={cn(
             "shrink-0 border-b border-border/10 bg-muted/30 p-5",

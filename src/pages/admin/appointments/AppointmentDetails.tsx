@@ -304,747 +304,755 @@ export default function AppointmentDetails() {
     }
   };
 
-  return (
-    <div
-      className={cn(
-        "animate-in fade-in slide-in-from-bottom-6 duration-700",
-        "mx-auto w-full max-w-5xl space-y-6 px-4 pb-12",
-        "sm:px-6 md:px-8",
-      )}
-    >
-      {needsSignificantNote && (
-        <div
-          className={cn(
-            "animate-in zoom-in-95 flex flex-col items-center",
-            "justify-between gap-4 rounded-xl border border-primary/20",
-            "bg-primary/10 p-6 shadow-md backdrop-blur-xl duration-500",
-            "sm:flex-row",
-          )}
-        >
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl border border-primary/30 bg-primary/20 p-3">
-              <StickyNote className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold tracking-tight text-foreground">
-                Record Significant Note
-              </h3>
-              <p className="text-xs font-medium text-muted-foreground">
-                This completed appointment requires a significant note for the
-                student's records.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() =>
-              navigate(
-                `/admin/student-records/${appointment.iirId}?addNote=true&appointmentId=${appointment.id}`,
-              )
-            }
+ return (
+    <>
+      <div
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "px-4 sm:px-6 md:px-8",
+        )}
+      >
+        {needsSignificantNote && (
+          <div
             className={cn(
-              "h-11 rounded-xl bg-primary px-6 font-bold text-white",
-              "shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]",
-              "hover:bg-primary/90",
+              "animate-fade-in-up flex flex-col items-center",
+              "justify-between gap-4 rounded-xl border border-primary/20",
+              "bg-primary/10 p-6 shadow-md backdrop-blur-xl",
+              "sm:flex-row",
             )}
+            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
-            Add Note Now
-          </Button>
-        </div>
-      )}
-
-      {/* Top Row: Identity & Information */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Identity Card */}
-        <Card
-          className={cn(
-            "group relative overflow-hidden",
-            "border-border bg-glass-bg shadow-md lg:col-span-1",
-          )}
-        >
-          <CardContent
-            className={cn(
-              "relative z-10 flex flex-col items-center",
-              "space-y-4 p-6 text-center",
-            )}
-          >
-            <Avatar
+            <div className="flex items-center gap-4">
+              <div className="rounded-2xl border border-primary/30 bg-primary/20 p-3">
+                <StickyNote className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold tracking-tight text-foreground">
+                  Record Significant Note
+                </h3>
+                <p className="text-xs font-medium text-muted-foreground">
+                  This completed appointment requires a significant note for the
+                  student's records.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() =>
+                navigate(
+                  `/admin/student-records/${appointment.iirId}?addNote=true&appointmentId=${appointment.id}`,
+                )
+              }
               className={cn(
-                "relative z-10 h-20 w-20 border-2",
-                "border-border shadow-md",
+                "h-11 rounded-xl bg-primary px-6 font-bold text-white",
+                "shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5",
+                "hover:bg-primary/90 hover:shadow-xl",
               )}
             >
-              <AvatarImage
-                src={appointment.user?.profilePicture}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-muted/50 text-2xl font-bold uppercase text-foreground/80">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+              Add Note Now
+            </Button>
+          </div>
+        )}
 
-            <div className="space-y-1">
-              <h2 className="text-lg font-bold leading-tight tracking-tight text-foreground/90">
-                {fullName}
-              </h2>
-              <p className="text-xs font-medium italic text-muted-foreground">
-                {appointment.user?.email}
-              </p>
-            </div>
-
-            <div className="grid w-full grid-cols-1 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+        {/* Top Row: Identity & Information (Wave 1) */}
+        <div 
+          className="grid grid-cols-1 gap-6 lg:grid-cols-3 animate-fade-in-up"
+          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+        >
+          {/* Identity Card */}
+          <Card
+            className={cn(
+              "group relative overflow-hidden",
+              "border-border bg-glass-bg shadow-md lg:col-span-1",
+            )}
+          >
+            <CardContent
+              className={cn(
+                "relative z-10 flex flex-col items-center",
+                "space-y-4 p-6 text-center",
+              )}
+            >
+              <Avatar
                 className={cn(
-                  "group/btn w-full gap-2 rounded-xl border-primary/20",
-                  "bg-primary/5 font-bold text-primary transition-all",
-                  "duration-300 hover:bg-primary hover:text-white",
+                  "relative z-10 h-20 w-20 border-2",
+                  "border-border shadow-md",
                 )}
-                onClick={() =>
-                  navigate(`/admin/student-records/${appointment.iirId}`)
-                }
               >
-                <User className="h-3.5 w-3.5" />
-                Access Record
-              </Button>
-              {appointment.studentCorUrl && (
+                <AvatarImage
+                  src={appointment.user?.profilePicture}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-muted/50 text-2xl font-bold uppercase text-foreground/80">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="space-y-1">
+                <h2 className="text-lg font-bold leading-tight tracking-tight text-foreground/90">
+                  {fullName}
+                </h2>
+                <p className="text-xs font-medium italic text-muted-foreground">
+                  {appointment.user?.email}
+                </p>
+              </div>
+
+              <div className="grid w-full grid-cols-1 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className={cn(
                     "group/btn w-full gap-2 rounded-xl border-primary/20",
                     "bg-primary/5 font-bold text-primary transition-all",
-                    "duration-300 hover:bg-primary hover:text-white",
+                    "duration-300 hover:bg-primary hover:text-white hover:-translate-y-0.5",
                   )}
-                  onClick={() => setShowCorPreview(true)}
+                  onClick={() =>
+                    navigate(`/admin/student-records/${appointment.iirId}`)
+                  }
                 >
-                  <FileText className="h-3.5 w-3.5" />
-                  View COR
+                  <User className="h-3.5 w-3.5" />
+                  Access Record
                 </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* General Information Card */}
-        <Card className="border-border bg-glass-bg shadow-md lg:col-span-2">
-          <CardHeader
-            className={cn(
-              "flex flex-row items-center justify-between",
-              "border-b bg-muted/5 p-5 sm:p-6",
-            )}
-          >
-            <CardTitle
-              className={cn(
-                "flex items-center gap-2.5 text-lg font-bold",
-                "tracking-tight",
-              )}
-            >
-              <ShieldUser className="h-5 w-5 text-primary" />
-              Personal Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 sm:p-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              <div className="group space-y-2 transition-all duration-300">
-                <p
-                  className={cn(
-                    "text-[10px] font-bold uppercase",
-                    "text-muted-foreground/60 transition-colors",
-                    "group-hover:text-primary",
-                  )}
-                >
-                  Student Number
-                </p>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl",
-                    "border bg-muted/15 p-3 shadow-inner transition-all",
-                    "group-hover:border-primary/20",
-                  )}
-                >
-                  <Fingerprint className="h-4 w-4 text-primary/60" />
-                  <p className="text-base font-bold text-foreground/80">
-                    {appointment?.studentNumber || "N/A"}
-                  </p>
-                </div>
+                {appointment.studentCorUrl && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "group/btn w-full gap-2 rounded-xl border-primary/20",
+                      "bg-primary/5 font-bold text-primary transition-all",
+                      "duration-300 hover:bg-primary hover:text-white hover:-translate-y-0.5",
+                    )}
+                    onClick={() => setShowCorPreview(true)}
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    View COR
+                  </Button>
+                )}
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="group space-y-2 transition-all duration-300">
-                <p
-                  className={cn(
-                    "text-[10px] font-bold uppercase",
-                    "text-muted-foreground/60 transition-colors",
-                    "group-hover:text-primary",
-                  )}
-                >
-                  Student email
-                </p>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl",
-                    "border bg-muted/15 p-3 shadow-inner transition-all",
-                    "group-hover:border-primary/20",
-                  )}
-                >
-                  <Building2 className="h-4 w-4 text-primary/60" />
-                  <p className="truncate text-base font-bold text-foreground/80">
-                    {appointment.user?.email || "N/A"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="group space-y-2 transition-all duration-300">
-                <p
-                  className={cn(
-                    "text-[10px] font-bold uppercase",
-                    "text-muted-foreground/60 transition-colors",
-                    "group-hover:text-primary",
-                  )}
-                >
-                  Urgency Level
-                </p>
-                <div
-                  className={cn(
-                    "flex items-start gap-3 rounded-xl border p-3",
-                    "shadow-inner transition-all group-hover:border-primary/20",
-                    urgencyInfo.className,
-                  )}
-                >
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-base font-bold">{urgencyInfo.label}</p>
-                    <p className="mt-0.5 text-[11px] font-medium leading-4 opacity-80">
-                      {urgencyInfo.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Content Row: Session Details & Actions */}
-      <div className="grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12">
-        {/* Left: Session Details (Col-span 8) */}
-        <div className="space-y-6 lg:col-span-8">
-          <Card className="h-full overflow-hidden border-border bg-glass-bg shadow-md">
+          {/* General Information Card */}
+          <Card className="border-border bg-glass-bg shadow-md lg:col-span-2">
             <CardHeader
               className={cn(
                 "flex flex-row items-center justify-between",
                 "border-b bg-muted/5 p-5 sm:p-6",
               )}
             >
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl border border-primary/20 bg-primary/10 p-2.5">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg font-bold tracking-tight">
-                    Session Context
-                  </CardTitle>
-                  <p className="font-mono text-[10px] text-muted-foreground">
-                    ID: {appointment.id?.substring(0, 8)}
+              <CardTitle
+                className={cn(
+                  "flex items-center gap-2.5 text-lg font-bold",
+                  "tracking-tight",
+                )}
+              >
+                <ShieldUser className="h-5 w-5 text-primary" />
+                Personal Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="group space-y-2 transition-all duration-300">
+                  <p
+                    className={cn(
+                      "text-[10px] font-bold uppercase",
+                      "text-muted-foreground/60 transition-colors",
+                      "group-hover:text-primary",
+                    )}
+                  >
+                    Student Number
                   </p>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl",
+                      "border bg-muted/15 p-3 shadow-inner transition-all",
+                      "group-hover:border-primary/20",
+                    )}
+                  >
+                    <Fingerprint className="h-4 w-4 text-primary/60" />
+                    <p className="text-base font-bold text-foreground/80">
+                      {appointment?.studentNumber || "N/A"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group space-y-2 transition-all duration-300">
+                  <p
+                    className={cn(
+                      "text-[10px] font-bold uppercase",
+                      "text-muted-foreground/60 transition-colors",
+                      "group-hover:text-primary",
+                    )}
+                  >
+                    Student email
+                  </p>
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl",
+                      "border bg-muted/15 p-3 shadow-inner transition-all",
+                      "group-hover:border-primary/20",
+                    )}
+                  >
+                    <Building2 className="h-4 w-4 text-primary/60" />
+                    <p className="truncate text-base font-bold text-foreground/80">
+                      {appointment.user?.email || "N/A"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="group space-y-2 transition-all duration-300">
+                  <p
+                    className={cn(
+                      "text-[10px] font-bold uppercase",
+                      "text-muted-foreground/60 transition-colors",
+                      "group-hover:text-primary",
+                    )}
+                  >
+                    Urgency Level
+                  </p>
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border p-3",
+                      "shadow-inner transition-all group-hover:border-primary/20",
+                      urgencyInfo.className,
+                    )}
+                  >
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base font-bold">{urgencyInfo.label}</p>
+                      <p className="mt-0.5 text-[11px] font-medium leading-4 opacity-80">
+                        {urgencyInfo.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                {appointment?.status && (
+        {/* Content Row: Session Details & Actions (Wave 2) */}
+        <div 
+          className="grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12 animate-fade-in-up"
+          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
+        >
+          {/* Left: Session Details (Col-span 8) */}
+          <div className="space-y-6 lg:col-span-8">
+            <Card className="h-full overflow-hidden border-border bg-glass-bg shadow-md">
+              <CardHeader
+                className={cn(
+                  "flex flex-row items-center justify-between",
+                  "border-b bg-muted/5 p-5 sm:p-6",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-2.5">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-bold tracking-tight">
+                      Session Context
+                    </CardTitle>
+                    <p className="font-mono text-[10px] text-muted-foreground">
+                      ID: {appointment.id?.substring(0, 8)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {appointment?.status && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-[10px] font-bold",
+                        "shadow-sm",
+                        STATUS_COLORS[getStatusColorKey(appointment.status.name)],
+                      )}
+                    >
+                      {appointment.status.name}
+                    </Badge>
+                  )}
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "rounded-full border border-primary/20 bg-primary/10 px-3",
+                      "py-1 text-[10px] font-bold text-primary",
+                    )}
+                  >
+                    {appointment.appointmentCategory.name}
+                  </Badge>
                   <Badge
                     variant="outline"
                     className={cn(
                       "rounded-full border px-3 py-1 text-[10px] font-bold",
                       "shadow-sm",
-                      STATUS_COLORS[getStatusColorKey(appointment.status.name)],
+                      urgencyInfo.className,
                     )}
                   >
-                    {appointment.status.name}
+                    Urgency: {urgencyInfo.label}
                   </Badge>
-                )}
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "rounded-full border border-primary/20 bg-primary/10 px-3",
-                    "py-1 text-[10px] font-bold text-primary",
-                  )}
-                >
-                  {appointment.appointmentCategory.name}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-[10px] font-bold",
-                    "shadow-sm",
-                    urgencyInfo.className,
-                  )}
-                >
-                  Urgency: {urgencyInfo.label}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 p-5 sm:p-6">
-              {/* Reason for Appointment Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-1.5">
-                    <MessageSquare className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">
-                    Reason for Appointment
-                  </h3>
                 </div>
-
-                <div
-                  className={cn(
-                    "rounded-xl border bg-muted/15 p-5 shadow-inner",
-                  )}
-                >
-                  <p className="text-sm font-medium italic leading-relaxed text-foreground/80">
-                    "{appointment.reason || "No specific reason provided."}"
-                  </p>
-                </div>
-              </div>
-
-              {/* Schedule Options */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      "rounded-lg border border-primary/20",
-                      "bg-primary/10 p-1.5"
-                    )}
-                  >
-                    <CalendarRange className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3
-                    className={cn(
-                      "text-xs font-bold uppercase",
-                      "tracking-wider text-foreground/70"
-                    )}
-                  >
-                    {appointment.status?.name === "Pending"
-                      ? "Select Schedule Option to Approve"
-                      : "Scheduled Date & Time"}
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {/* Primary Option */}
-                  <button
-                    type="button"
-                    disabled={appointment.status?.name !== "Pending"}
-                    onClick={() =>
-                      setSelectedSchedule({
-                        date: appointment.whenDate,
-                        timeSlotId: appointment.timeSlot.id,
-                        timeSlotTime: appointment.timeSlot.time,
-                      })
-                    }
-                    className={cn(
-                      "group relative rounded-xl border p-4 text-left",
-                      "transition-all",
-                      selectedSchedule?.date === appointment.whenDate &&
-                      selectedSchedule?.timeSlotId === appointment.timeSlot.id
-                        ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                        : cn(
-                            "border-border bg-muted/5",
-                            "hover:border-primary/20 hover:bg-muted/10"
-                          ),
-                      appointment.status?.name !== "Pending" &&
-                        cn(
-                          "cursor-default opacity-90",
-                          "hover:border-border hover:bg-muted/5"
-                        )
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={cn(
-                          "text-[10px] font-bold uppercase",
-                          "tracking-wider text-primary/80"
-                        )}
-                      >
-                        Primary Schedule
-                      </span>
-                      {selectedSchedule?.date === appointment.whenDate &&
-                        selectedSchedule?.timeSlotId ===
-                          appointment.timeSlot.id && (
-                          <span className="h-2 w-2 rounded-full bg-primary" />
-                        )}
+              </CardHeader>
+              <CardContent className="space-y-6 p-5 sm:p-6">
+                {/* Reason for Appointment Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg border border-primary/20 bg-primary/10 p-1.5">
+                      <MessageSquare className="h-3.5 w-3.5 text-primary" />
                     </div>
-                    <p className="mt-2 text-sm font-bold text-foreground">
-                      {formatDate(appointment.whenDate)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format12HourTime(appointment.timeSlot.time)}
-                    </p>
-                  </button>
-
-                  {/* Backup 1 */}
-                  {appointment.preferredDate1 &&
-                    appointment.preferredTimeSlot1 && (
-                      <button
-                        type="button"
-                        disabled={appointment.status?.name !== "Pending"}
-                        onClick={() =>
-                          setSelectedSchedule({
-                            date: appointment.preferredDate1!,
-                            timeSlotId: appointment.preferredTimeSlot1!.id,
-                            timeSlotTime: appointment.preferredTimeSlot1!.time,
-                          })
-                        }
-                        className={cn(
-                          "group relative rounded-xl border p-4 text-left",
-                          "transition-all",
-                          selectedSchedule?.date ===
-                            appointment.preferredDate1 &&
-                          selectedSchedule?.timeSlotId ===
-                            appointment.preferredTimeSlot1?.id
-                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                            : cn(
-                                "border-border bg-muted/5",
-                                "hover:border-primary/20 hover:bg-muted/10"
-                              ),
-                          appointment.status?.name !== "Pending" &&
-                            cn(
-                              "cursor-default opacity-90",
-                              "hover:border-border hover:bg-muted/5"
-                            )
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold uppercase",
-                              "tracking-wider text-muted-foreground/70"
-                            )}
-                          >
-                            Backup Option 1
-                          </span>
-                          {selectedSchedule?.date ===
-                            appointment.preferredDate1 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot1?.id && (
-                              <span
-                                className={cn(
-                                  "h-2 w-2 rounded-full bg-primary"
-                                )}
-                              />
-                            )}
-                        </div>
-                        <p className="mt-2 text-sm font-bold text-foreground">
-                          {formatDate(appointment.preferredDate1)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format12HourTime(
-                            appointment.preferredTimeSlot1.time
-                          )}
-                        </p>
-                      </button>
-                    )}
-
-                  {/* Backup 2 */}
-                  {appointment.preferredDate2 &&
-                    appointment.preferredTimeSlot2 && (
-                      <button
-                        type="button"
-                        disabled={appointment.status?.name !== "Pending"}
-                        onClick={() =>
-                          setSelectedSchedule({
-                            date: appointment.preferredDate2!,
-                            timeSlotId: appointment.preferredTimeSlot2!.id,
-                            timeSlotTime: appointment.preferredTimeSlot2!.time,
-                          })
-                        }
-                        className={cn(
-                          "group relative rounded-xl border p-4 text-left",
-                          "transition-all",
-                          selectedSchedule?.date ===
-                            appointment.preferredDate2 &&
-                          selectedSchedule?.timeSlotId ===
-                            appointment.preferredTimeSlot2?.id
-                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                            : cn(
-                                "border-border bg-muted/5",
-                                "hover:border-primary/20 hover:bg-muted/10"
-                              ),
-                          appointment.status?.name !== "Pending" &&
-                            cn(
-                              "cursor-default opacity-90",
-                              "hover:border-border hover:bg-muted/5"
-                            )
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold uppercase",
-                              "tracking-wider text-muted-foreground/70"
-                            )}
-                          >
-                            Backup Option 2
-                          </span>
-                          {selectedSchedule?.date ===
-                            appointment.preferredDate2 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot2?.id && (
-                              <span
-                                className={cn(
-                                  "h-2 w-2 rounded-full bg-primary"
-                                )}
-                              />
-                            )}
-                        </div>
-                        <p className="mt-2 text-sm font-bold text-foreground">
-                          {formatDate(appointment.preferredDate2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format12HourTime(
-                            appointment.preferredTimeSlot2.time
-                          )}
-                        </p>
-                      </button>
-                    )}
-
-                  {/* Backup 3 */}
-                  {appointment.preferredDate3 &&
-                    appointment.preferredTimeSlot3 && (
-                      <button
-                        type="button"
-                        disabled={appointment.status?.name !== "Pending"}
-                        onClick={() =>
-                          setSelectedSchedule({
-                            date: appointment.preferredDate3!,
-                            timeSlotId: appointment.preferredTimeSlot3!.id,
-                            timeSlotTime: appointment.preferredTimeSlot3!.time,
-                          })
-                        }
-                        className={cn(
-                          "group relative rounded-xl border p-4 text-left",
-                          "transition-all",
-                          selectedSchedule?.date ===
-                            appointment.preferredDate3 &&
-                          selectedSchedule?.timeSlotId ===
-                            appointment.preferredTimeSlot3?.id
-                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                            : cn(
-                                "border-border bg-muted/5",
-                                "hover:border-primary/20 hover:bg-muted/10"
-                              ),
-                          appointment.status?.name !== "Pending" &&
-                            cn(
-                              "cursor-default opacity-90",
-                              "hover:border-border hover:bg-muted/5"
-                            )
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold uppercase",
-                              "tracking-wider text-muted-foreground/70"
-                            )}
-                          >
-                            Backup Option 3
-                          </span>
-                          {selectedSchedule?.date ===
-                            appointment.preferredDate3 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot3?.id && (
-                              <span
-                                className={cn(
-                                  "h-2 w-2 rounded-full bg-primary"
-                                )}
-                              />
-                            )}
-                        </div>
-                        <p className="mt-2 text-sm font-bold text-foreground">
-                          {formatDate(appointment.preferredDate3)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format12HourTime(
-                            appointment.preferredTimeSlot3.time
-                          )}
-                        </p>
-                      </button>
-                    )}
-                </div>
-              </div>
-
-              {appointment.adminNotes && (
-                <div className="border-t border-border/50 pt-6">
-                  <div className="mb-4 flex items-center gap-2">
-                    <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-1.5">
-                      <ShieldUser className="h-4 w-4 text-orange-500" />
-                    </div>
-                    <h3 className="text-xs font-bold uppercase text-orange-500">
-                      Counselor Remarks
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">
+                      Reason for Appointment
                     </h3>
                   </div>
+
                   <div
                     className={cn(
-                      "rounded-xl border border-orange-500/10 bg-orange-500/[0.02]",
-                      "p-5 shadow-inner",
+                      "rounded-xl border bg-muted/15 p-5 shadow-inner",
                     )}
                   >
-                    <p className="text-sm italic leading-relaxed text-foreground/80">
-                      {appointment.adminNotes}
+                    <p className="text-sm font-medium italic leading-relaxed text-foreground/80">
+                      "{appointment.reason || "No specific reason provided."}"
                     </p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Right: Actions & Timeline (Col-span 4) */}
-        <div className="space-y-6 lg:col-span-4">
-          <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
-            <CardHeader className="border-b bg-muted/5 p-5">
-              <CardTitle className="flex items-center gap-2.5 text-base font-bold tracking-tight">
-                <ShieldUser className="h-4 w-4 text-primary" />
-                Administrative Controls
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5">
-              {allowedActions.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                  {allowedActions.map((action) => (
-                    <Button
-                      key={action}
-                      onClick={() => handleActionClick(action)}
+                {/* Schedule Options */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div
                       className={cn(
-                        actionColor(action),
-                        "group/action h-11 w-full items-center justify-between",
-                        "rounded-xl border border-white/10 px-4 shadow-sm",
-                        "transition-all duration-300 hover:shadow-md",
+                        "rounded-lg border border-primary/20",
+                        "bg-primary/10 p-1.5"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        {actionIcon(action)}
-                        <span className="text-xs font-bold">{action}</span>
-                      </div>
-                      <ArrowLeft
-                        className={cn(
-                          "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
-                          "transition-all duration-300",
-                          "group-hover/action:translate-x-0 group-hover/action:opacity-100",
-                        )}
-                      />
-                    </Button>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  className={cn(
-                    "space-y-3 rounded-xl border border-dashed py-8 text-center",
-                  )}
-                >
-                  <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-3">
-                    <CheckCircle className="h-6 w-6 text-primary/60" />
+                      <CalendarRange className="h-4 w-4 text-primary" />
+                    </div>
+                    <h3
+                      className={cn(
+                        "text-xs font-bold uppercase",
+                        "tracking-wider text-foreground/70"
+                      )}
+                    >
+                      {appointment.status?.name === "Pending"
+                        ? "Select Schedule Option to Approve"
+                        : "Scheduled Date & Time"}
+                    </h3>
                   </div>
-                  <p className="text-xs font-bold italic text-muted-foreground/60">
-                    All set! No pending tasks.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
-            <CardHeader className="border-b bg-muted/5 p-5">
-              <CardTitle
-                className={cn(
-                  "flex items-center gap-2 text-[10px] font-bold",
-                  "uppercase tracking-wider text-muted-foreground",
-                )}
-              >
-                <Clock3 className="h-3.5 w-3.5" />
-                Audit Trail
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 p-5">
-              <div className="group flex items-start gap-4">
-                <div className="relative mt-1">
-                  <div
-                    className={cn(
-                      "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full border-2",
-                      "border-primary bg-background shadow-sm",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "absolute left-1/2 top-3.5 h-10 w-0.5 bg-border",
-                      "-translate-x-1/2 group-last:hidden",
-                    )}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-bold text-foreground/80">
-                    Request Initialized
-                  </p>
-                  <p
-                    className={cn(
-                      "w-fit rounded-full border bg-muted/30",
-                      "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
-                    )}
-                  >
-                    {formatDate(appointment.createdAt || "")}
-                  </p>
-                </div>
-              </div>
-              {appointment.updatedAt &&
-                appointment.updatedAt !== appointment.createdAt && (
-                  <div className="group flex items-start gap-4">
-                    <div className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-blue-500 bg-background shadow-sm" />
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-foreground/80">
-                        System Activity Recorded
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {/* Primary Option */}
+                    <button
+                      type="button"
+                      disabled={appointment.status?.name !== "Pending"}
+                      onClick={() =>
+                        setSelectedSchedule({
+                          date: appointment.whenDate,
+                          timeSlotId: appointment.timeSlot.id,
+                          timeSlotTime: appointment.timeSlot.time,
+                        })
+                      }
+                      className={cn(
+                        "group relative rounded-xl border p-4 text-left",
+                        "transition-all",
+                        selectedSchedule?.date === appointment.whenDate &&
+                        selectedSchedule?.timeSlotId === appointment.timeSlot.id
+                          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
+                          : cn(
+                              "border-border bg-muted/5",
+                              "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                            ),
+                        appointment.status?.name !== "Pending" &&
+                          cn(
+                            "cursor-default opacity-90",
+                            "hover:border-border hover:bg-muted/5 hover:translate-y-0"
+                          )
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold uppercase",
+                            "tracking-wider text-primary/80"
+                          )}
+                        >
+                          Primary Schedule
+                        </span>
+                        {selectedSchedule?.date === appointment.whenDate &&
+                          selectedSchedule?.timeSlotId ===
+                            appointment.timeSlot.id && (
+                            <span className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                      </div>
+                      <p className="mt-2 text-sm font-bold text-foreground">
+                        {formatDate(appointment.whenDate)}
                       </p>
-                      <p
-                        className={cn(
-                          "w-fit rounded-full border bg-muted/30",
-                          "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
-                        )}
-                      >
-                        {formatDate(appointment.updatedAt)}
+                      <p className="text-xs text-muted-foreground">
+                        {format12HourTime(appointment.timeSlot.time)}
+                      </p>
+                    </button>
+
+                    {/* Backup 1 */}
+                    {appointment.preferredDate1 &&
+                      appointment.preferredTimeSlot1 && (
+                        <button
+                          type="button"
+                          disabled={appointment.status?.name !== "Pending"}
+                          onClick={() =>
+                            setSelectedSchedule({
+                              date: appointment.preferredDate1!,
+                              timeSlotId: appointment.preferredTimeSlot1!.id,
+                              timeSlotTime: appointment.preferredTimeSlot1!.time,
+                            })
+                          }
+                          className={cn(
+                            "group relative rounded-xl border p-4 text-left",
+                            "transition-all",
+                            selectedSchedule?.date ===
+                              appointment.preferredDate1 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot1?.id
+                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
+                              : cn(
+                                  "border-border bg-muted/5",
+                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                ),
+                            appointment.status?.name !== "Pending" &&
+                              cn(
+                                "cursor-default opacity-90",
+                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
+                              )
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-[10px] font-bold uppercase",
+                                "tracking-wider text-muted-foreground/70"
+                              )}
+                            >
+                              Backup Option 1
+                            </span>
+                            {selectedSchedule?.date ===
+                              appointment.preferredDate1 &&
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot1?.id && (
+                                <span
+                                  className={cn(
+                                    "h-2 w-2 rounded-full bg-primary"
+                                  )}
+                                />
+                              )}
+                          </div>
+                          <p className="mt-2 text-sm font-bold text-foreground">
+                            {formatDate(appointment.preferredDate1)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format12HourTime(
+                              appointment.preferredTimeSlot1.time
+                            )}
+                          </p>
+                        </button>
+                      )}
+
+                    {/* Backup 2 */}
+                    {appointment.preferredDate2 &&
+                      appointment.preferredTimeSlot2 && (
+                        <button
+                          type="button"
+                          disabled={appointment.status?.name !== "Pending"}
+                          onClick={() =>
+                            setSelectedSchedule({
+                              date: appointment.preferredDate2!,
+                              timeSlotId: appointment.preferredTimeSlot2!.id,
+                              timeSlotTime: appointment.preferredTimeSlot2!.time,
+                            })
+                          }
+                          className={cn(
+                            "group relative rounded-xl border p-4 text-left",
+                            "transition-all",
+                            selectedSchedule?.date ===
+                              appointment.preferredDate2 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot2?.id
+                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
+                              : cn(
+                                  "border-border bg-muted/5",
+                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                ),
+                            appointment.status?.name !== "Pending" &&
+                              cn(
+                                "cursor-default opacity-90",
+                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
+                              )
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-[10px] font-bold uppercase",
+                                "tracking-wider text-muted-foreground/70"
+                              )}
+                            >
+                              Backup Option 2
+                            </span>
+                            {selectedSchedule?.date ===
+                              appointment.preferredDate2 &&
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot2?.id && (
+                                <span
+                                  className={cn(
+                                    "h-2 w-2 rounded-full bg-primary"
+                                  )}
+                                />
+                              )}
+                          </div>
+                          <p className="mt-2 text-sm font-bold text-foreground">
+                            {formatDate(appointment.preferredDate2)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format12HourTime(
+                              appointment.preferredTimeSlot2.time
+                            )}
+                          </p>
+                        </button>
+                      )}
+
+                    {/* Backup 3 */}
+                    {appointment.preferredDate3 &&
+                      appointment.preferredTimeSlot3 && (
+                        <button
+                          type="button"
+                          disabled={appointment.status?.name !== "Pending"}
+                          onClick={() =>
+                            setSelectedSchedule({
+                              date: appointment.preferredDate3!,
+                              timeSlotId: appointment.preferredTimeSlot3!.id,
+                              timeSlotTime: appointment.preferredTimeSlot3!.time,
+                            })
+                          }
+                          className={cn(
+                            "group relative rounded-xl border p-4 text-left",
+                            "transition-all",
+                            selectedSchedule?.date ===
+                              appointment.preferredDate3 &&
+                            selectedSchedule?.timeSlotId ===
+                              appointment.preferredTimeSlot3?.id
+                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
+                              : cn(
+                                  "border-border bg-muted/5",
+                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                ),
+                            appointment.status?.name !== "Pending" &&
+                              cn(
+                                "cursor-default opacity-90",
+                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
+                              )
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={cn(
+                                "text-[10px] font-bold uppercase",
+                                "tracking-wider text-muted-foreground/70"
+                              )}
+                            >
+                              Backup Option 3
+                            </span>
+                            {selectedSchedule?.date ===
+                              appointment.preferredDate3 &&
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot3?.id && (
+                                <span
+                                  className={cn(
+                                    "h-2 w-2 rounded-full bg-primary"
+                                  )}
+                                />
+                              )}
+                          </div>
+                          <p className="mt-2 text-sm font-bold text-foreground">
+                            {formatDate(appointment.preferredDate3)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format12HourTime(
+                              appointment.preferredTimeSlot3.time
+                            )}
+                          </p>
+                        </button>
+                      )}
+                  </div>
+                </div>
+
+                {appointment.adminNotes && (
+                  <div className="border-t border-border/50 pt-6">
+                    <div className="mb-4 flex items-center gap-2">
+                      <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-1.5">
+                        <ShieldUser className="h-4 w-4 text-orange-500" />
+                      </div>
+                      <h3 className="text-xs font-bold uppercase text-orange-500">
+                        Counselor Remarks
+                      </h3>
+                    </div>
+                    <div
+                      className={cn(
+                        "rounded-xl border border-orange-500/10 bg-orange-500/[0.02]",
+                        "p-5 shadow-inner",
+                      )}
+                    >
+                      <p className="text-sm italic leading-relaxed text-foreground/80">
+                        {appointment.adminNotes}
                       </p>
                     </div>
                   </div>
                 )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right: Actions & Timeline (Col-span 4) */}
+          <div className="space-y-6 lg:col-span-4">
+            <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
+              <CardHeader className="border-b bg-muted/5 p-5">
+                <CardTitle className="flex items-center gap-2.5 text-base font-bold tracking-tight">
+                  <ShieldUser className="h-4 w-4 text-primary" />
+                  Administrative Controls
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5">
+                {allowedActions.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {allowedActions.map((action) => (
+                      <Button
+                        key={action}
+                        onClick={() => handleActionClick(action)}
+                        className={cn(
+                          actionColor(action),
+                          "group/action h-11 w-full items-center justify-between",
+                          "rounded-xl border border-white/10 px-4 shadow-sm",
+                          "transition-all duration-300 hover:shadow-md hover:-translate-y-0.5",
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          {actionIcon(action)}
+                          <span className="text-xs font-bold">{action}</span>
+                        </div>
+                        <ArrowLeft
+                          className={cn(
+                            "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
+                            "transition-all duration-300",
+                            "group-hover/action:translate-x-0 group-hover/action:opacity-100",
+                          )}
+                        />
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "space-y-3 rounded-xl border border-dashed py-8 text-center",
+                    )}
+                  >
+                    <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-3">
+                      <CheckCircle className="h-6 w-6 text-primary/60" />
+                    </div>
+                    <p className="text-xs font-bold italic text-muted-foreground/60">
+                      All set! No pending tasks.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
+              <CardHeader className="border-b bg-muted/5 p-5">
+                <CardTitle
+                  className={cn(
+                    "flex items-center gap-2 text-[10px] font-bold",
+                    "uppercase tracking-wider text-muted-foreground",
+                  )}
+                >
+                  <Clock3 className="h-3.5 w-3.5" />
+                  Audit Trail
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 p-5">
+                <div className="group flex items-start gap-4">
+                  <div className="relative mt-1">
+                    <div
+                      className={cn(
+                        "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full border-2",
+                        "border-primary bg-background shadow-sm",
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "absolute left-1/2 top-3.5 h-10 w-0.5 bg-border",
+                        "-translate-x-1/2 group-last:hidden",
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-foreground/80">
+                      Request Initialized
+                    </p>
+                    <p
+                      className={cn(
+                        "w-fit rounded-full border bg-muted/30",
+                        "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
+                      )}
+                    >
+                      {formatDate(appointment.createdAt || "")}
+                    </p>
+                  </div>
+                </div>
+                {appointment.updatedAt &&
+                  appointment.updatedAt !== appointment.createdAt && (
+                    <div className="group flex items-start gap-4">
+                      <div className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-blue-500 bg-background shadow-sm" />
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-foreground/80">
+                          System Activity Recorded
+                        </p>
+                        <p
+                          className={cn(
+                            "w-fit rounded-full border bg-muted/30",
+                            "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
+                          )}
+                        >
+                          {formatDate(appointment.updatedAt)}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
 
-      <ActionConfirmModal
-        isOpen={!!pendingAction}
-        onClose={() => setPendingAction(null)}
-        onConfirm={handleConfirmAction}
-        action={pendingAction?.type || ""}
-        requiresMessage={pendingAction?.requiresMessage || false}
-      />
-
-      {showReschedule && (
-        <RescheduleModal
-          isOpen={showReschedule}
-          onClose={() => setShowReschedule(false)}
-          onConfirm={handleRescheduleConfirm}
-          currentDate={appointment.whenDate}
-          currentTimeSlotId={appointment.timeSlot.id}
+        <ActionConfirmModal
+          isOpen={!!pendingAction}
+          onClose={() => setPendingAction(null)}
+          onConfirm={handleConfirmAction}
+          action={pendingAction?.type || ""}
+          requiresMessage={pendingAction?.requiresMessage || false}
         />
-      )}
 
-      {/* COR Preview Modal */}
-      <CORPreviewDialog
-        isOpen={showCorPreview}
-        onClose={() => setShowCorPreview(false)}
-        fileUrl={appointment.studentCorUrl}
-        studentName={fullName}
-      />
-    </div>
+        {showReschedule && (
+          <RescheduleModal
+            isOpen={showReschedule}
+            onClose={() => setShowReschedule(false)}
+            onConfirm={handleRescheduleConfirm}
+            currentDate={appointment.whenDate}
+            currentTimeSlotId={appointment.timeSlot.id}
+          />
+        )}
+
+        {/* COR Preview Modal */}
+        <CORPreviewDialog
+          isOpen={showCorPreview}
+          onClose={() => setShowCorPreview(false)}
+          fileUrl={appointment.studentCorUrl}
+          studentName={fullName}
+        />
+      </div>
+    </>
   );
 }
 

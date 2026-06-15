@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   useAppointments,
   useAppointmentsStats,
@@ -156,79 +157,97 @@ export default function AppointmentLogs() {
     );
   }, [appointmentStatusesWithAll, statusFilter]);
 
-  return (
-    <div className="space-y-6">
-      {/* Filters Section */}
-      <Card
-        className={
-          "bg-glass-bg/40 border-glass-border " + "shadow-md backdrop-blur-md"
-        }
+return (
+    <>
+      <div 
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "px-4 sm:px-6 md:px-8",
+        )}
       >
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            Filter by Date
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Dropdown
-              label="Year"
-              options={yearsList}
-              value={selectedYear.id}
-              onChange={handleYearChange}
-            />
-            <Dropdown
-              label="Month"
-              options={monthsList}
-              value={selectedMonth.id}
-              onChange={handleMonthChange}
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              onClick={handleGenerateReport}
-              disabled={isReportLoading}
-              className="flex items-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              {isReportLoading ? "Generating..." : "Generate Monthly Report"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Filters Section */}
+        <div 
+          className="animate-fade-in-up" 
+          style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+        >
+          <Card
+            className={cn(
+              "bg-glass-bg/40 border-glass-border shadow-md",
+              "backdrop-blur-md transition-all duration-300 hover:shadow-lg",
+            )}
+          >
+            <CardHeader className="border-border/40 border-b bg-muted/20 px-6 py-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
+                <Calendar className="h-5 w-5 text-primary" />
+                Filter by Date
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Dropdown
+                  label="Year"
+                  options={yearsList}
+                  value={selectedYear.id}
+                  onChange={handleYearChange}
+                />
+                <Dropdown
+                  label="Month"
+                  options={monthsList}
+                  value={selectedMonth.id}
+                  onChange={handleMonthChange}
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={isReportLoading}
+                  className="flex items-center gap-2 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <FileText className="h-4 w-4" />
+                  {isReportLoading ? "Generating..." : "Generate Monthly Report"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Appointments List */}
-      <AppointmentList
-        title="Session Archives"
-        appointments={appointments}
-        isLoading={isLoading}
-        onViewClick={handleViewAppointment}
-        searchTerm={searchTerm}
-        onSearchChange={(value: string) => {
-          setSearchTerm(value);
-          setCurrentPage(1);
-        }}
-        statuses={appointmentStatusesWithAll as any}
-        selectedStatus={currentSelectedStatus as any}
-        statusCounts={appointmentStats}
-        onStatusChange={(status) => {
-          setStatusFilter(status.id);
-          setCurrentPage(1);
-        }}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        totalPages={totalPages}
-      />
+        {/* Appointments List Section */}
+        <div 
+          className="animate-fade-in-up" 
+          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+        >
+          <AppointmentList
+            title="Session Archives"
+            appointments={appointments}
+            isLoading={isLoading}
+            onViewClick={handleViewAppointment}
+            searchTerm={searchTerm}
+            onSearchChange={(value: string) => {
+              setSearchTerm(value);
+              setCurrentPage(1);
+            }}
+            statuses={appointmentStatusesWithAll as any}
+            selectedStatus={currentSelectedStatus as any}
+            statusCounts={appointmentStats}
+            onStatusChange={(status) => {
+              setStatusFilter(status.id);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            totalPages={totalPages}
+          />
+        </div>
 
-      <ReportModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        type="appointments"
-        monthName={selectedMonth.name}
-        yearName={selectedYear.name}
-        data={reportData}
-      />
-    </div>
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          type="appointments"
+          monthName={selectedMonth.name}
+          yearName={selectedYear.name}
+          data={reportData}
+        />
+      </div>
+    </>
   );
 }
