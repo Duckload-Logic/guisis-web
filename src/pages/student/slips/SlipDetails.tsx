@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,70 @@ import { format } from "date-fns";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { formatDate, format12HourTime } from "@/utils/dateTime";
+
+interface AuditTrailEntry {
+  timestamp: string;
+  status: string;
+  remarks: string;
+}
+
+const formatAuditTimestamp = (tsStr: string): string => {
+  if (!tsStr) return "";
+  const isoStr = tsStr.replace(" ", "T");
+  const dateObj = new Date(isoStr);
+  if (isNaN(dateObj.getTime())) return tsStr;
+
+  const dateFormatted = formatDate(dateObj);
+  const timeFormatted = format12HourTime(isoStr).replace(" ", "");
+  return `${dateFormatted} ${timeFormatted}`;
+};
+
+const parseAuditTrail = (adminNotes?: string): AuditTrailEntry[] => {
+  if (!adminNotes) return [];
+  const entries: AuditTrailEntry[] = [];
+  const blocks = adminNotes.split("------------------------------");
+
+  for (let block of blocks) {
+    block = block.trim();
+    if (!block) continue;
+
+    const lines = block.split("\n");
+    const headerLine = lines[0];
+    const match = headerLine.match(/^\[(.*?)\]\s+STATUS:\s+(.*)$/i);
+
+    if (match) {
+      const timestamp = match[1];
+      const status = match[2];
+      let remarks = "";
+
+      const rest = lines.slice(1).join("\n").trim();
+      if (rest) {
+        if (rest.startsWith("Remarks:")) {
+          const remMatch = rest.match(/^Remarks:\s*([\s\S]*?)$/i);
+          if (remMatch) {
+            remarks = remMatch[1].trim();
+          }
+        } else {
+          remarks = rest;
+        }
+      }
+
+      entries.push({
+        timestamp: formatAuditTimestamp(timestamp),
+        status,
+        remarks,
+      });
+    } else {
+      entries.push({
+        timestamp: "",
+        status: "Note Added",
+        remarks: block,
+      });
+    }
+  }
+  return entries;
+};
 
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +92,10 @@ export default function SlipDetails() {
 
   const { data: slip, isLoading, isError } = useGetSlipById(id || "");
   const { data: attachments = [] } = useGetSlipAttachments(id || "");
+
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(slip?.adminNotes);
+  }, [slip?.adminNotes]);
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
@@ -278,20 +347,62 @@ export default function SlipDetails() {
                 </CardContent>
               </Card>
 
-              {slip?.adminNotes && (
-                <Card className="border-border/60 bg-amber-50/10 shadow-md dark:bg-amber-950/5">
-                  <CardHeader className="border-b border-border/30 py-4">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-amber-500" />
-                      <CardTitle className="text-sm">
-                        Guidance Feedback
-                      </CardTitle>
-                    </div>
+              {auditEntries.length > 0 && (
+                <Card className="border-border bg-glass-bg shadow-md">
+                  <CardHeader className="border-b bg-muted/5 p-5">
+                    <CardTitle
+                      className={cn(
+                        "flex items-center gap-2 text-[10px] font-bold",
+                        "uppercase tracking-wider text-muted-foreground",
+                      )}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Guidance Feedback / Audit Trail
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="py-5">
-                    <p className="text-sm font-medium leading-relaxed text-foreground/90">
-                      {slip.adminNotes}
-                    </p>
+                  <CardContent className="space-y-6 p-5">
+                    {auditEntries.map((entry, idx) => (
+                      <div key={idx} className="group flex items-start gap-4">
+                        <div className="relative mt-1">
+                          <div
+                            className={cn(
+                              "relative z-10 h-3.5 w-3.5 shrink-0",
+                              "rounded-full border-2",
+                              entry.status.toUpperCase().includes("PENDING")
+                                ? "border-amber-500 bg-background shadow-sm"
+                                : entry.status.toUpperCase().includes("APPROVED") ||
+                                  entry.status.toUpperCase().includes("COMPLETED")
+                                ? "border-emerald-500 bg-background shadow-sm"
+                                : entry.status.toUpperCase().includes("REJECTED") ||
+                                  entry.status.toUpperCase().includes("REVISION")
+                                ? "border-red-500 bg-background shadow-sm"
+                                : "border-primary bg-background shadow-sm"
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                              "-translate-x-1/2 group-last:hidden",
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-foreground/80">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {entry.timestamp}
+                            </p>
+                          )}
+                          {entry.remarks && (
+                            <p className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed">
+                              {entry.remarks}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
@@ -400,50 +511,7 @@ export default function SlipDetails() {
                 </Card>
               )}
 
-              <Card className="border-0 bg-muted/40 shadow-md backdrop-blur-sm">
-                <CardHeader className="border-b border-border/40 pb-3">
-                  <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-                    Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5 pt-4">
-                  <div className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="h-2 w-2 rounded-full bg-primary" />
-                      <div className="h-10 w-0.5 bg-border" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium">Submitted</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {slip?.createdAt
-                          ? format(
-                              new Date(slip.createdAt),
-                              "MMM d, yyyy · h:mm a",
-                            )
-                          : "---"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`h-2 w-2 rounded-full ${slip?.updatedAt !== slip?.createdAt ? "bg-primary" : "bg-muted"}`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium">Last Activity</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {slip?.updatedAt
-                          ? format(
-                              new Date(slip.updatedAt),
-                              "MMM d, yyyy · h:mm a",
-                            )
-                          : "---"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+
 
               <div className="px-2">
                 <p className="text-[10px] text-muted-foreground">

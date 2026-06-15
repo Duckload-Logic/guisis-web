@@ -41,6 +41,7 @@ import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { usePageMetadata } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
+import { formatDate, format12HourTime } from "@/utils/dateTime";
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
@@ -53,24 +54,12 @@ interface AuditTrailEntry {
 const formatAuditTimestamp = (tsStr: string): string => {
   if (!tsStr) return "";
   const isoStr = tsStr.replace(" ", "T");
-  const date = new Date(isoStr);
-  if (isNaN(date.getTime())) return tsStr;
+  const dateObj = new Date(isoStr);
+  if (isNaN(dateObj.getTime())) return tsStr;
 
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
-  const month = months[date.getMonth()];
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  let hours = date.getHours();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-
-  return `${month} ${day}, ${year} ${hours}:${minutes}${ampm}`;
+  const dateFormatted = formatDate(dateObj);
+  const timeFormatted = format12HourTime(isoStr).replace(" ", "");
+  return `${dateFormatted} ${timeFormatted}`;
 };
 
 const parseAuditTrail = (adminNotes?: string): AuditTrailEntry[] => {

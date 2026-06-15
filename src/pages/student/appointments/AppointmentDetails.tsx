@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useAppointment,
@@ -31,6 +31,79 @@ import { useToast } from "@/context";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { formatDate, format12HourTime } from "@/utils/dateTime";
+
+interface AuditTrailEntry {
+  timestamp: string;
+  status: string;
+  remarks: string;
+  details?: string;
+}
+
+const formatAuditTimestamp = (tsStr: string): string => {
+  if (!tsStr) return "";
+  const isoStr = tsStr.replace(" ", "T");
+  const dateObj = new Date(isoStr);
+  if (isNaN(dateObj.getTime())) return tsStr;
+
+  const dateFormatted = formatDate(dateObj);
+  const timeFormatted = format12HourTime(isoStr).replace(" ", "");
+  return `${dateFormatted} ${timeFormatted}`;
+};
+
+const parseAuditTrail = (adminNotes?: string): AuditTrailEntry[] => {
+  if (!adminNotes) return [];
+  const entries: AuditTrailEntry[] = [];
+  const blocks = adminNotes.split("------------------------------");
+
+  for (let block of blocks) {
+    block = block.trim();
+    if (!block) continue;
+
+    const lines = block.split("\n");
+    const headerLine = lines[0];
+    const match = headerLine.match(/^\[(.*?)\]\s+STATUS:\s+(.*)$/i);
+
+    if (match) {
+      const timestamp = match[1];
+      const status = match[2];
+      let remarks = "";
+      let details = "";
+
+      const rest = lines.slice(1).join("\n").trim();
+      if (rest) {
+        if (rest.startsWith("Remarks:")) {
+          const remMatch = rest.match(
+            /^Remarks:\s*([\s\S]*?)(?:\nRescheduled from|$)/i,
+          );
+          if (remMatch) {
+            remarks = remMatch[1].trim();
+          }
+          const detIdx = rest.indexOf("Rescheduled from");
+          if (detIdx !== -1) {
+            details = rest.substring(detIdx).trim();
+          }
+        } else {
+          remarks = rest;
+        }
+      }
+
+      entries.push({
+        timestamp: formatAuditTimestamp(timestamp),
+        status,
+        remarks,
+        details,
+      });
+    } else {
+      entries.push({
+        timestamp: "",
+        status: "Note Added",
+        remarks: block,
+      });
+    }
+  }
+  return entries;
+};
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
@@ -83,6 +156,10 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useCancelAppointment();
+
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(appointment?.adminNotes);
+  }, [appointment?.adminNotes]);
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
@@ -362,20 +439,81 @@ export default function AppointmentDetails() {
                 </CardContent>
               </Card>
 
-              {appointment?.adminNotes && (
-                <Card className="border-border/60 bg-amber-50/10 shadow-md dark:bg-amber-950/5">
-                  <CardHeader className="py-4">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-amber-500" />
-                      <CardTitle className="text-sm">
-                        Counselor Remarks
-                      </CardTitle>
-                    </div>
+              {auditEntries.length > 0 && (
+                <Card className="border-border bg-glass-bg shadow-md">
+                  <CardHeader className="border-b bg-muted/5 p-5">
+                    <CardTitle
+                      className={cn(
+                        "flex items-center gap-2 text-[10px] font-bold",
+                        "uppercase tracking-wider text-muted-foreground",
+                      )}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Counselor Remarks / Audit Trail
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="pb-5 pt-0">
-                    <p className="text-sm italic leading-relaxed text-foreground/90">
-                      {appointment.adminNotes}
-                    </p>
+                  <CardContent className="space-y-6 p-5">
+                    {auditEntries.map((entry, idx) => (
+                      <div key={idx} className="group flex items-start gap-4">
+                        <div className="relative mt-1">
+                          <div
+                            className={cn(
+                              "relative z-10 h-3.5 w-3.5 shrink-0",
+                              "rounded-full border-2",
+                              entry.status.toUpperCase().includes("PENDING")
+                                ? "border-amber-500 bg-background shadow-sm"
+                                : entry.status.toUpperCase().includes(
+                                    "APPROVED"
+                                  ) ||
+                                  entry.status.toUpperCase().includes(
+                                    "COMPLETED"
+                                  ) ||
+                                  entry.status.toUpperCase().includes(
+                                    "SCHEDULED"
+                                  )
+                                ? "border-emerald-500 bg-background shadow-sm"
+                                : entry.status.toUpperCase().includes(
+                                    "REJECTED"
+                                  ) ||
+                                  entry.status.toUpperCase().includes(
+                                    "CANCELLED"
+                                  ) ||
+                                  entry.status.toUpperCase().includes(
+                                    "CANCELED"
+                                  )
+                                ? "border-red-500 bg-background shadow-sm"
+                                : "border-primary bg-background shadow-sm"
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                              "-translate-x-1/2 group-last:hidden",
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-foreground/80">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {entry.timestamp}
+                            </p>
+                          )}
+                          {entry.remarks && (
+                            <p className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed">
+                              {entry.remarks}
+                            </p>
+                          )}
+                          {entry.details && (
+                            <p className="text-[10px] italic text-muted-foreground">
+                              {entry.details}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
