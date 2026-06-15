@@ -487,7 +487,7 @@ export default function AppointmentList({
                   type="text"
                   value={searchTerm ?? ""}
                   onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search student..."
+                  placeholder="Search by student name, number, or reason..."
                   spellCheck={false}
                   autoComplete="off"
                   className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
