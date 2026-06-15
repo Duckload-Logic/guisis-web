@@ -69,6 +69,7 @@ type SortOrder = "asc" | "desc";
 const APPOINTMENT_SORT_OPTIONS = [
   { id: "whenDate", name: "Nearest appointment date" },
   { id: "createdAt", name: "Date requested" },
+  { id: "urgencyLevel", name: "Urgency level" },
 ];
 
 const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
@@ -447,6 +448,11 @@ export default function AppointmentsManagement() {
               selectedSort={selectedSort}
               onSortChange={(sortValue: string) => {
                 setSelectedSort(sortValue);
+
+                if (sortValue === "urgencyLevel") {
+                  setSelectedOrder("desc");
+                }
+
                 setCurrentPage(1);
               }}
               orderOptions={SORT_ORDER_OPTIONS}
