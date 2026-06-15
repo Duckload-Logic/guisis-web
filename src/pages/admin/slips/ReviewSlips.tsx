@@ -18,7 +18,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FormInput } from "@/components/form";
 import { useToast } from "@/context";
-import { cn } from "@/lib/utils";
 
 import {
   useGetSlipStats,
@@ -210,114 +209,96 @@ export default function ReviewSlips() {
 
   return (
     <>
-      <div 
-        className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-12",
-          "px-4 sm:px-6 md:px-8",
-        )}
-      >
-        {/* On-Site Ticket Verification Section */}
-        <div 
-          className="animate-fade-in-up" 
-          style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-        >
-          <Card className="overflow-hidden border-glass-border/40 bg-glass-bg/20 shadow-md backdrop-blur-2xl transition-all duration-500">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-primary/10 p-2.5 text-primary shadow-inner">
-                    <Ticket className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold tracking-tight text-foreground sm:text-lg">
-                      On-Site Ticket
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Enter the ticket code to verify a student slip.
-                    </p>
-                  </div>
+      <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 py-2 duration-300">
+        <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-md backdrop-blur-2xl transition-all duration-300 dark:border-white/10 dark:bg-white/[0.04]">
+          <CardContent className="p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-2 text-primary shadow-inner">
+                  <Ticket className="h-5 w-5" />
                 </div>
-
-                <form
-                  onSubmit={handleClaimTicket}
-                  className="flex w-full flex-col gap-3 sm:flex-row md:max-w-md"
-                >
-                  <FormInput
-                    placeholder="Ticket code"
-                    value={ticketCode}
-                    onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
-                    className="h-11 rounded-xl border-glass-border/40 bg-glass-bg/40 focus:bg-glass-bg/60"
-                    label={""}
-                  />
-
-                  <Button
-                    type="submit"
-                    disabled={
-                      isVerifying ||
-                      claimTicketMutation.isPending ||
-                      !ticketCode.trim()
-                    }
-                    className="h-11 gap-2 rounded-xl bg-primary px-6 text-sm font-bold shadow-md shadow-primary/15 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:scale-95"
-                  >
-                    {isVerifying || claimTicketMutation.isPending ? (
-                      <Clock3 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ShieldCheck className="h-4 w-4" />
-                    )}
-                    Verify
-                  </Button>
-                </form>
+                <div>
+                  <h3 className="text-sm font-bold tracking-tight text-foreground sm:text-base">
+                    On-Site Ticket
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the ticket code to verify a student slip.
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Submitted Admission Slips List */}
-        <div 
-          className="animate-fade-in-up" 
-          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
-        >
-          <SlipList
-            slips={slips}
-            isLoading={isLoading}
-            onViewClick={handleViewSlip}
-            searchTerm={searchTerm}
-            onSearchChange={(value: string) => {
-              setSearchTerm(value);
-              setCurrentPage(1);
-            }}
-            statuses={statusWithAll as any}
-            selectedStatus={selectedStatus as any}
-            statusCounts={slipStats || []}
-            onStatusChange={(status: SlipStatus) => {
-              setSelectedStatus(status);
-              setCurrentPage(1);
-            }}
-            sortOptions={SLIP_SORT_OPTIONS}
-            selectedSort={selectedSort}
-            onSortChange={(sortValue: string) => {
-              setSelectedSort(sortValue);
-              setCurrentPage(1);
-            }}
-            orderOptions={SORT_ORDER_OPTIONS}
-            selectedOrder={selectedOrder}
-            onOrderChange={(orderValue: SortOrder) => {
-              setSelectedOrder(orderValue);
-              setCurrentPage(1);
-            }}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            totalPages={totalPages}
-          />
-        </div>
+              <form
+                onSubmit={handleClaimTicket}
+                className="flex w-full flex-col gap-2 sm:flex-row md:max-w-md"
+              >
+                <FormInput
+                  placeholder="Ticket code"
+                  value={ticketCode}
+                  onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
+                  className="h-10 rounded-xl border-border/70 bg-background/70 focus:bg-background dark:border-white/10 dark:bg-white/[0.04]"
+                  label={""}
+                />
+
+                <Button
+                  type="submit"
+                  disabled={
+                    isVerifying ||
+                    claimTicketMutation.isPending ||
+                    !ticketCode.trim()
+                  }
+                  className="h-10 gap-2 rounded-xl bg-primary px-4 text-sm font-bold shadow-md shadow-primary/15 transition-all hover:scale-[1.02] active:scale-95"
+                >
+                  {isVerifying || claimTicketMutation.isPending ? (
+                    <Clock3 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4" />
+                  )}
+                  Verify
+                </Button>
+              </form>
+            </div>
+          </CardContent>
+        </Card>
+
+        <SlipList
+          slips={slips}
+          isLoading={isLoading}
+          onViewClick={handleViewSlip}
+          searchTerm={searchTerm}
+          onSearchChange={(value: string) => {
+            setSearchTerm(value);
+            setCurrentPage(1);
+          }}
+          statuses={statusWithAll as any}
+          selectedStatus={selectedStatus as any}
+          statusCounts={slipStats || []}
+          onStatusChange={(status: SlipStatus) => {
+            setSelectedStatus(status);
+            setCurrentPage(1);
+          }}
+          sortOptions={SLIP_SORT_OPTIONS}
+          selectedSort={selectedSort}
+          onSortChange={(sortValue: string) => {
+            setSelectedSort(sortValue);
+            setCurrentPage(1);
+          }}
+          orderOptions={SORT_ORDER_OPTIONS}
+          selectedOrder={selectedOrder}
+          onOrderChange={(orderValue: SortOrder) => {
+            setSelectedOrder(orderValue);
+            setCurrentPage(1);
+          }}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          totalPages={totalPages}
+        />
       </div>
 
-      {/* --- Modals remain unchanged --- */}
       <AlertDialog
         open={!!pendingSlip}
         onOpenChange={(open) => !open && setPendingSlip(null)}
       >
-        <AlertDialogContent className="border-glass-border/40 max-w-md bg-background/80 shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent className="max-w-md border-border/70 bg-background/95 shadow-2xl backdrop-blur-2xl dark:border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-3 text-xl font-bold">
               <div className="rounded-xl bg-primary/10 p-2 text-primary">
@@ -332,7 +313,7 @@ export default function ReviewSlips() {
           </AlertDialogHeader>
 
           {pendingSlip && (
-            <div className="border-glass-border/30 bg-glass-bg/20 my-4 space-y-4 rounded-2xl border p-5 shadow-inner">
+            <div className="my-4 space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-5 shadow-inner dark:border-white/10">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
@@ -385,7 +366,7 @@ export default function ReviewSlips() {
                 <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
                   Reason
                 </p>
-                <div className="border-glass-border/20 rounded-xl border bg-muted/30 p-3 shadow-sm">
+                <div className="rounded-xl border border-border/70 bg-muted/30 p-3 shadow-sm dark:border-white/10">
                   <p className="line-clamp-3 text-xs italic leading-relaxed text-foreground/80">
                     "{pendingSlip.reason}"
                   </p>
