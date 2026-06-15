@@ -888,28 +888,6 @@ export default function AppointmentDetails() {
                   </div>
                 </div>
 
-                {appointment.adminNotes && (
-                  <div className="border-t border-border/50 pt-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="rounded-lg border border-orange-500/20 bg-orange-500/10 p-1.5">
-                        <ShieldUser className="h-4 w-4 text-orange-500" />
-                      </div>
-                      <h3 className="text-xs font-bold uppercase text-orange-500">
-                        Counselor Remarks
-                      </h3>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-xl border border-orange-500/10 bg-orange-500/[0.02]",
-                        "p-5 shadow-inner",
-                      )}
-                    >
-                      <p className="text-sm italic leading-relaxed text-foreground/80">
-                        {appointment.adminNotes}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
