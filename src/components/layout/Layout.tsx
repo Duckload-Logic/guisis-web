@@ -307,10 +307,10 @@ export default function Layout({
                 ref={scrollRef}
                 className={cn(
                   "relative z-10 flex max-h-full flex-col",
-                  "overflow-y-auto overflow-x-hidden pb-12",
+                  "overflow-y-auto overflow-x-hidden pb-20 md:pb-12",
                 )}
               >
-                <main className="flex-1 p-4 md:p-6 lg:p-8">
+                <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
                   {showHeader && showSubHeader && (
                     <SubHeader
                       title={title || ""}
@@ -361,3 +361,4 @@ export default function Layout({
     </ErrorBoundary>
   );
 }
+

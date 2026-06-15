@@ -53,7 +53,8 @@ export default function Header({
     <header
       className={cn(
         "sticky top-0 z-30 grid w-full grid-cols-[auto,1fr,auto] items-center",
-        "h-20 border border-glass-border bg-background px-6 shadow-md",
+        "h-16 border-b border-glass-border bg-background px-3 shadow-md",
+        "sm:h-20 sm:border sm:px-6",
       )}
     >
       <div className="flex items-center gap-3 text-foreground">
@@ -61,19 +62,19 @@ export default function Header({
           src={LOGO_SRC}
           alt="Logo"
           className={cn(
-            "h-12 w-12 rounded-full transition-transform duration-200",
-            "hover:scale-110",
+            "h-10 w-10 rounded-full transition-transform duration-200",
+            "hover:scale-110 sm:h-12 sm:w-12",
           )}
         />
-        <div className="flex flex-col gap-0.5 text-xs">
+        <div className="min-w-0 flex flex-col gap-0.5 text-xs">
           <p className="hidden font-semibold sm:block">
             Polytechnic University of the Philippines – Taguig
           </p>
-          <p className="font-semibold sm:hidden">PUP Taguig</p>
+          <p className="truncate font-semibold sm:hidden">PUP Taguig</p>
           <p className="hidden text-foreground/50 sm:block">
             Guidance Services Information System
           </p>
-          <p className="text-foreground/50 sm:hidden">GuiSIS</p>
+          <p className="truncate text-foreground/50 sm:hidden">GuiSIS</p>
         </div>
       </div>
 
@@ -173,6 +174,7 @@ export default function Header({
               showNotifications={showNotifications}
               setShowNotifications={setShowNotifications}
             />
+
             <div className="hidden md:block">
               <ProfileMenu
                 firstName={user?.firstName}
@@ -255,3 +257,4 @@ export default function Header({
     </header>
   );
 }
+

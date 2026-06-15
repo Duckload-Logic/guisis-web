@@ -40,7 +40,7 @@ function NavItem({
       <Link
         to={item.href}
         onClick={onClick}
-        className={`group flex flex-col items-center p-2 ${
+        className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
           active ? "text-primary" : "text-muted-foreground"
         }`}
       >
@@ -206,7 +206,7 @@ export default function Navigation({
                 setDrawerMode("menu");
                 setOpenDrawer(true);
               }}
-              className={`group flex flex-col items-center p-2 ${
+              className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
                 isOverflowActive ? "text-primary" : "text-muted-foreground"
               }`}
             >
@@ -217,7 +217,7 @@ export default function Navigation({
                 setDrawerMode("settings");
                 setOpenDrawer(true);
               }}
-              className={`group flex flex-col items-center p-2 ${
+              className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
                 location.pathname.includes(SETTINGS_HREF)
                   ? "text-primary"
                   : "text-muted-foreground"
@@ -536,3 +536,4 @@ function MobileSettingsContent({
     </div>
   );
 }
+

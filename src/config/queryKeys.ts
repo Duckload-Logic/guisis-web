@@ -140,6 +140,8 @@ export const QUERY_KEYS = {
   notifications: {
     all: ["notifications"] as const,
     me: ["notifications", "me"] as const,
+    list: (params?: unknown) =>
+      ["notifications", "me", params ?? {}] as const,
   },
 
   /**
