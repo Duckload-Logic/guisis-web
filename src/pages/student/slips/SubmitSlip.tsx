@@ -652,7 +652,8 @@ export default function SubmitSlip() {
                       <CardTitle className="text-base">Absence Dates</CardTitle>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Enter your student number, then tell us when you were absent and when you need approval by
+                      Enter your student number, then tell us when you were
+                      absent and when you need approval by
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-5">
@@ -670,7 +671,7 @@ export default function SubmitSlip() {
                       info="Admission slips use your student number for identification, not your student email."
                     />
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 pb-4">
                       <div className="space-y-1.5">
                         <DatePicker
                           label="Date of Absence"
