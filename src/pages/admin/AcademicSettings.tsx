@@ -7,6 +7,7 @@ import {
 } from "@/features/student-core/services/academicSettingsService";
 import { useToast, usePageMetadata } from "@/context/hooks";
 import Dropdown from "@/components/form/Dropdown";
+import { cn } from "@/lib/utils";
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
@@ -112,19 +113,22 @@ export default function AcademicSettings() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div
-          className={
-            "flex h-12 w-12 shrink-0 items-center justify-center " +
-            "rounded-2xl bg-primary/10"
-          }
-        >
+    <div 
+      className={cn(
+        "mx-auto flex w-full max-w-4xl flex-col space-y-8 pb-12",
+        "px-4 sm:px-6 md:px-8",
+      )}
+    >
+      {/* Header (Wave 1) */}
+      <div 
+        className="flex items-start gap-4 animate-fade-in-up"
+        style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
           <GraduationCap className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="mt-0.5 text-sm text-muted-foreground">
+          <h1 className="mt-0.5 text-sm font-medium text-muted-foreground max-w-2xl leading-relaxed">
             Set the current active school year and term. All student COR uploads
             will be automatically validated against this setting by the OCR
             service.
@@ -132,18 +136,21 @@ export default function AcademicSettings() {
         </div>
       </div>
 
-      {/* Current active banner */}
+      {/* Current active banner (Wave 2) */}
       {!isLoading && current && (
         <div
-          className={
-            "flex items-center gap-3 rounded-xl border border-primary/20 " +
-            "bg-primary/5 px-4 py-3"
-          }
+          className={cn(
+            "flex items-center gap-3 rounded-2xl border border-primary/20",
+            "bg-primary/5 px-5 py-4 shadow-sm animate-fade-in-up",
+          )}
+          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
         >
-          <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
+          <div className="rounded-full bg-primary/10 p-1.5">
+            <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
+          </div>
           <p className="text-sm font-medium">
             Active setting:&nbsp;
-            <span className="text-primary">
+            <span className="text-primary font-bold tracking-tight">
               {current.currentYearStart}–{current.currentYearEnd}{" "}
               {TERM_LABELS[current.currentTerm]}
             </span>
@@ -151,35 +158,38 @@ export default function AcademicSettings() {
         </div>
       )}
 
-      {/* Form card */}
+      {/* Form card (Wave 3) */}
       <div
-        className={
-          "rounded-2xl border border-border bg-card " +
-          "space-y-5 px-6 py-5 shadow-sm"
-        }
+        className={cn(
+          "rounded-3xl border border-border bg-glass-bg/40 backdrop-blur-2xl",
+          "space-y-6 px-6 py-8 sm:px-8 shadow-md animate-fade-in-up",
+        )}
+        style={{ animationDelay: "0.15s", animationFillMode: "both" }}
       >
-        {/* School year start */}
-        <Dropdown
-          id="yearStart"
-          label="School Year Start"
-          options={yearOptions}
-          value={yearStart}
-          onChange={(val) => setYearStart(Number(val))}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* School year start */}
+          <Dropdown
+            id="yearStart"
+            label="School Year Start"
+            options={yearOptions}
+            value={yearStart}
+            onChange={(val) => setYearStart(Number(val))}
+          />
 
-        {/* School year end — derived, read-only */}
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium">
-            School Year End
-            <span className="ml-1 text-xs text-muted-foreground">(auto)</span>
-          </label>
-          <div
-            className={
-              "w-full rounded-lg border border-border/50 bg-muted " +
-              "px-3 py-2 text-sm text-muted-foreground"
-            }
-          >
-            {yearEnd}
+          {/* School year end — derived, read-only */}
+          <div className="space-y-2">
+            <label className="block text-sm font-bold text-foreground/80">
+              School Year End
+              <span className="ml-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground opacity-70">(auto)</span>
+            </label>
+            <div
+              className={cn(
+                "w-full rounded-xl border border-border/50 bg-muted/30 shadow-inner",
+                "px-4 py-2.5 text-sm font-semibold text-muted-foreground",
+              )}
+            >
+              {yearEnd}
+            </div>
           </div>
         </div>
 
@@ -194,82 +204,87 @@ export default function AcademicSettings() {
 
         {/* Warning notice */}
         <div
-          className={
-            "flex gap-2 rounded-lg border border-yellow-500/20 " +
-            "bg-yellow-500/5 px-3 py-2.5"
-          }
+          className={cn(
+            "flex gap-3 rounded-xl border border-yellow-500/20",
+            "bg-yellow-500/5 px-4 py-4 mt-6",
+          )}
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500" />
-          <p className="text-xs text-muted-foreground">
-            Changing this setting immediately affects how the OCR service
+          <div className="rounded-full bg-yellow-500/10 p-1.5 h-fit mt-0.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
+          </div>
+          <p className="text-xs font-medium leading-relaxed text-muted-foreground">
+            <strong className="text-yellow-600">Warning:</strong> Changing this setting immediately affects how the OCR service
             validates COR uploads. CORs that do not match the active school year
             and term will be marked as unvalidated.
           </p>
         </div>
 
         {/* Save button */}
-        <button
-          id="btn-open-confirm-dialog"
-          disabled={!isDirty || isLoading}
-          onClick={() => {
-            setConfirmText("");
-            setDialogOpen(true);
-          }}
-          className={
-            "w-full rounded-xl bg-primary py-2.5 text-sm font-semibold " +
-            "text-primary-foreground transition-all" +
-            "hover:bg-primary/90 active:scale-[.98]" +
-            "disabled:cursor-not-allowed disabled:opacity-40"
-          }
-        >
-          Save Changes
-        </button>
+        <div className="pt-4 border-t border-border/50">
+          <button
+            id="btn-open-confirm-dialog"
+            disabled={!isDirty || isLoading}
+            onClick={() => {
+              setConfirmText("");
+              setDialogOpen(true);
+            }}
+            className={cn(
+              "w-full sm:w-auto sm:min-w-[200px] float-right rounded-xl bg-primary py-3 px-6 text-sm font-bold",
+              "text-primary-foreground shadow-md shadow-primary/20 transition-all duration-300",
+              "hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg active:scale-95",
+              "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-md",
+            )}
+          >
+            Save Changes
+          </button>
+          <div className="clear-both"></div>
+        </div>
       </div>
 
       {/* ── Confirmation Dialog ────────────────────────────────────────── */}
       {dialogOpen && (
         <div
-          className={
-            "fixed inset-0 z-50 flex items-center justify-center " +
-            "bg-black/60 backdrop-blur-sm"
-          }
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center",
+            "bg-black/60 backdrop-blur-sm animate-in fade-in duration-200",
+          )}
         >
           <div
-            className={
-              "w-full max-w-md rounded-2xl border border-border " +
-              "bg-card p-8 shadow-2xl"
-            }
+            className={cn(
+              "w-full max-w-md rounded-3xl border border-border/50",
+              "bg-background/95 p-8 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200",
+            )}
           >
             {/* Dialog header */}
-            <div className="mb-5 flex items-center gap-3">
+            <div className="mb-6 flex items-center gap-4">
               <div
-                className={
-                  "flex h-10 w-10 items-center justify-center " +
-                  "rounded-full bg-yellow-500/15"
-                }
+                className={cn(
+                  "flex h-12 w-12 items-center justify-center",
+                  "rounded-2xl bg-yellow-500/15 border border-yellow-500/20",
+                )}
               >
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangle className="h-6 w-6 text-yellow-600" />
               </div>
               <div>
-                <h2 className="text-base font-semibold">
+                <h2 className="text-lg font-bold tracking-tight">
                   Confirm Setting Change
                 </h2>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   This action affects COR validation system-wide.
                 </p>
               </div>
             </div>
 
-            <p className="mb-4 text-sm text-muted-foreground">
+            <p className="mb-4 text-sm font-medium text-foreground/80 leading-relaxed">
               You are about to set the active academic period to:
             </p>
-            <p className="mb-5 rounded-lg bg-muted px-3 py-2 text-sm font-semibold">
+            <p className="mb-6 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 text-center text-lg tracking-tight font-bold text-primary">
               {expectedConfirm}
             </p>
-            <p className="mb-2 text-sm text-muted-foreground">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
               To confirm, type exactly:
             </p>
-            <p className="mb-3 rounded bg-muted px-2 py-1 font-mono text-xs">
+            <p className="mb-4 w-fit select-all rounded-lg bg-muted/50 border px-3 py-1.5 font-mono text-sm font-semibold">
               {expectedConfirm}
             </p>
             <input
@@ -278,13 +293,13 @@ export default function AcademicSettings() {
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="Type the confirmation string…"
-              className={
-                "mb-5 w-full rounded-lg border bg-background px-3 " +
-                "py-2 text-sm focus:outline-none focus:ring-2" +
-                (confirmMatch
-                  ? "border-green-500 focus:ring-green-500"
-                  : "border-border focus:ring-primary")
-              }
+              className={cn(
+                "mb-6 w-full rounded-xl border bg-background/50 px-4",
+                "py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2",
+                confirmMatch
+                  ? "border-green-500 focus:ring-green-500/50 bg-green-500/5"
+                  : "border-border focus:ring-primary/50",
+              )}
             />
 
             <div className="flex gap-3">
@@ -294,10 +309,10 @@ export default function AcademicSettings() {
                   setDialogOpen(false);
                   setConfirmText("");
                 }}
-                className={
-                  "flex-1 rounded-xl border border-border py-2.5 " +
-                  "text-sm font-medium transition-all hover:bg-muted"
-                }
+                className={cn(
+                  "flex-1 rounded-xl border border-border/60 py-3",
+                  "text-sm font-bold transition-all hover:bg-muted/50 hover:border-border active:scale-95",
+                )}
               >
                 Cancel
               </button>
@@ -305,12 +320,12 @@ export default function AcademicSettings() {
                 id="btn-submit-confirm"
                 disabled={!confirmMatch || mutation.isPending}
                 onClick={() => mutation.mutate()}
-                className={
-                  "flex-1 rounded-xl bg-primary py-2.5 text-sm " +
-                  "font-semibold text-primary-foreground transition-all" +
-                  "hover:bg-primary/90 active:scale-[.98]" +
-                  "disabled:cursor-not-allowed disabled:opacity-40"
-                }
+                className={cn(
+                  "flex-1 rounded-xl bg-primary py-3 text-sm shadow-md",
+                  "font-bold text-primary-foreground transition-all duration-300",
+                  "hover:bg-primary/90 hover:shadow-lg active:scale-95",
+                  "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-md",
+                )}
               >
                 {mutation.isPending ? "Saving…" : "Confirm Update"}
               </button>

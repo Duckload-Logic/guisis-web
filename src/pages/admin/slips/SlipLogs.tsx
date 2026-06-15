@@ -17,6 +17,7 @@ import { usePageMetadata } from "@/context";
 import { Button } from "@/components/ui/button";
 import { ReportModal } from "@/components/shared/ReportModal";
 import { slipService } from "@/features/slips/services";
+import { cn } from "@/lib/utils";
 
 export default function SlipLogs() {
   const navigate = useNavigate();
@@ -148,76 +149,95 @@ export default function SlipLogs() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div 
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "px-4 sm:px-6 md:px-8",
+        )}
+      >
         {/* Filters Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Filter by Date
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Dropdown
-                label="Year"
-                options={yearsList}
-                value={selectedYear.id}
-                onChange={handleYearChange}
-              />
-              <Dropdown
-                label="Month"
-                options={monthsList}
-                value={selectedMonth.id}
-                onChange={handleMonthChange}
-              />
-            </div>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button
-                onClick={handleGenerateReport}
-                disabled={isReportLoading}
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                {isReportLoading ? "Generating..." : "Generate Monthly Report"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div 
+          className="animate-fade-in-up" 
+          style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+        >
+          <Card
+            className={cn(
+              "bg-glass-bg/40 border-glass-border shadow-md",
+              "backdrop-blur-md transition-all duration-300 hover:shadow-lg",
+            )}
+          >
+            <CardHeader className="border-border/40 border-b bg-muted/20 px-6 py-4">
+              <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
+                <Calendar className="h-5 w-5 text-primary" />
+                Filter by Date
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Dropdown
+                  label="Year"
+                  options={yearsList}
+                  value={selectedYear.id}
+                  onChange={handleYearChange}
+                />
+                <Dropdown
+                  label="Month"
+                  options={monthsList}
+                  value={selectedMonth.id}
+                  onChange={handleMonthChange}
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={isReportLoading}
+                  className="flex items-center gap-2 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <FileText className="h-4 w-4" />
+                  {isReportLoading ? "Generating..." : "Generate Monthly Report"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Slips List */}
+        {/* Slips List Section */}
+        <div 
+          className="animate-fade-in-up" 
+          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+        >
+          <SlipList
+            title="Submission Details"
+            slips={slips}
+            isLoading={isLoading}
+            onViewClick={handleViewSlip}
+            searchTerm={searchTerm}
+            onSearchChange={(value: string) => {
+              setSearchTerm(value);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            totalPages={totalPages}
+            statuses={[]}
+            // @ts-ignore
+            selectedStatus={undefined}
+            statusCounts={[]}
+            onStatusChange={function (status: SlipStatus): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
+        </div>
 
-        <SlipList
-          title="Submission Details"
-          slips={slips}
-          isLoading={isLoading}
-          onViewClick={handleViewSlip}
-          searchTerm={searchTerm}
-          onSearchChange={(value: string) => {
-            setSearchTerm(value);
-            setCurrentPage(1);
-          }}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          totalPages={totalPages}
-          statuses={[]}
-          // @ts-ignore
-          selectedStatus={undefined}
-          statusCounts={[]}
-          onStatusChange={function (status: SlipStatus): void {
-            throw new Error("Function not implemented.");
-          }}
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          type="slips"
+          monthName={selectedMonth.name}
+          yearName={selectedYear.name}
+          data={reportData}
         />
       </div>
-
-      <ReportModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        type="slips"
-        monthName={selectedMonth.name}
-        yearName={selectedYear.name}
-        data={reportData}
-      />
     </>
   );
 }

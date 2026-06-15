@@ -127,14 +127,11 @@ export default function FAQ() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
+              "animate-fade-in-up" // <-- ADD THIS
             )}
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }} // <-- ADD THIS
           >
-            <p
-              className={cn(
-                "text-center text-[11px] font-medium uppercase",
-                "tracking-[0.18em] text-muted-foreground",
-              )}
-            >
+            <p className={cn("text-center text-[11px] font-medium uppercase", "tracking-[0.18em] text-muted-foreground")}>
               Topics
             </p>
             <p className="mt-1 text-center text-2xl font-bold text-foreground">
@@ -146,14 +143,11 @@ export default function FAQ() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
+              "animate-fade-in-up" // <-- ADD THIS
             )}
+            style={{ animationDelay: "0.15s", animationFillMode: "both" }} // <-- ADD THIS
           >
-            <p
-              className={cn(
-                "text-center text-[11px] font-medium uppercase",
-                "tracking-[0.18em] text-muted-foreground",
-              )}
-            >
+            <p className={cn("text-center text-[11px] font-medium uppercase", "tracking-[0.18em] text-muted-foreground")}>
               FAQs
             </p>
             <p className="mt-1 text-center text-2xl font-bold text-foreground">
@@ -173,7 +167,7 @@ export default function FAQ() {
       ...current,
       [categoryTitle]:
         current[categoryTitle] === questionIndex ? null : questionIndex,
-    }));
+    }));  
   };
 
   return (
@@ -182,10 +176,10 @@ export default function FAQ() {
 
       <section
         className={cn(
-          "relative overflow-hidden rounded-[22px] border border-white/25",
-          "bg-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
-          "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
-          "sm:px-5 sm:py-5",
+          // "relative overflow-hidden rounded-[22px] border border-white/25",
+          // "bg-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
+          // "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+          // "sm:px-5 sm:py-5",
         )}
       >
         <div
@@ -203,7 +197,7 @@ export default function FAQ() {
         />
 
         <div className="relative max-w-3xl space-y-1.5">
-          <div
+          {/* <div
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border",
               "border-primary/15 bg-primary/10 px-2.5 py-0.5 text-[10px]",
@@ -212,9 +206,9 @@ export default function FAQ() {
           >
             <Sparkles className="h-2.5 w-2.5" />
             Student Help Desk
-          </div>
+          </div> */}
 
-          <div>
+          {/* <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
               Frequently Asked Questions
             </h2>
@@ -223,12 +217,12 @@ export default function FAQ() {
               Find quick answers about appointments, admission slips, and IIR
               records.
             </p>
-          </div>
+          </div> */}
         </div>
       </section>
 
       <section className="mt-6 grid items-start gap-5 xl:grid-cols-3">
-        {faqCategories.map((category) => {
+        {faqCategories.map((category, index) => {
           const isCategoryOpen =
             openItems[category.title] !== null &&
             openItems[category.title] !== undefined;
@@ -239,10 +233,13 @@ export default function FAQ() {
               className={cn(
                 "overflow-hidden rounded-[26px] border border-white/25",
                 "bg-white/55 shadow-[0_16px_36px_rgba(15,23,42,0.06)]",
-                "backdrop-blur-xl transition-all duration-200",
+                "backdrop-blur-xl transition-all duration-300", 
+                "hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
+                "animate-fade-in-up",
                 "dark:border-white/10 dark:bg-white/[0.04]",
                 isCategoryOpen ? "h-auto min-h-[335px]" : "h-[335px]",
               )}
+              style={{ animationDelay: `${0.05 * (index + 1)}s`, animationFillMode: "both" }} 
             >
               <CardContent className="flex h-full flex-col p-0">
                 <div className="relative min-h-[130px] overflow-hidden p-5">
