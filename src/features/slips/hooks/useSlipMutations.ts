@@ -102,6 +102,10 @@ export function useUpdateSlip() {
         formData.append("medicalCert", file);
       });
 
+      data.keepFileIds?.forEach((fileId) => {
+        formData.append("keepFileIds", fileId);
+      });
+
       return PatchSlip(id, formData, {
         handlerName: "useUpdateSlip",
         stepName: "Update Slip",
