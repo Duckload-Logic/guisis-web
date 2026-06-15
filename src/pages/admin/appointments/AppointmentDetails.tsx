@@ -293,6 +293,7 @@ export default function AppointmentDetails() {
   const handleRescheduleConfirm = async (
     newDate: string,
     newTimeSlotId: number,
+    reason: string,
   ) => {
     try {
       await updateAppointment({
@@ -300,6 +301,8 @@ export default function AppointmentDetails() {
         data: {
           whenDate: newDate,
           timeSlot: { id: newTimeSlotId },
+          status: { id: 6 }, // Rescheduled status ID
+          adminNotes: reason,
         } as any,
       });
       setShowReschedule(false);
