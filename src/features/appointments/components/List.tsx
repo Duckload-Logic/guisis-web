@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination, Table, Column } from "@/components/shared";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
-import { CalendarX, Eye, User } from "lucide-react";
+import { CalendarX, Eye, Search, User, X } from "lucide-react";
 import { useMemo } from "react";
-import { SearchInput } from "@/components/form";
 import { format12HourTime } from "@/utils/dateTime";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -433,13 +432,19 @@ export default function AppointmentList({
         className,
       )}
     >
-      <CardHeader className="space-y-4 border-b border-border/70 bg-muted/20 px-5 py-4 dark:border-white/10 dark:bg-white/[0.025]">
+      <CardHeader
+        className={cn(
+          "space-y-4 border-b border-border/70 px-5 py-5",
+          "bg-gradient-to-br from-muted/30 via-background/70 to-background",
+          "dark:border-white/10 dark:from-white/[0.04] dark:via-white/[0.025] dark:to-transparent",
+        )}
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Student details, date requested, and appointment date are shown in
               one compact table.
             </p>
@@ -458,49 +463,86 @@ export default function AppointmentList({
           )}
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-          <SearchInput
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
-            placeholder="Search student..."
-            className="w-full rounded-xl border-border/70 bg-background/70 backdrop-blur-xl focus-within:border-primary/50 dark:border-white/10 dark:bg-white/[0.04]"
-            hasHeader={false}
-          />
+        <div
+          className={cn(
+            "rounded-2xl border border-border/60 bg-background/70 p-3 shadow-sm",
+            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
+          )}
+        >
+          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                Search
+              </label>
+              <div
+                className={cn(
+                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
+                  "bg-muted/50 px-3 shadow-sm transition-all duration-200",
+                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
+                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                )}
+              >
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchTerm ?? ""}
+                  onChange={(event) => onSearchChange?.(event.target.value)}
+                  placeholder="Search student..."
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange?.("")}
+                    className={cn(
+                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
+                      "text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
+                    )}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
 
-          <Dropdown
-            label="Status"
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              const status = statuses.find((s) => String(s.id) === String(val));
-              if (status) onStatusChange(status);
-            }}
-            labelKey="displayName"
-            enabled={!isLoading}
-            formStyle={false}
-          />
-
-          {sortOptions.length > 0 && onSortChange && (
             <Dropdown
-              label="Sort By"
-              options={sortOptions}
-              value={selectedSort}
-              onChange={handleRequiredSortChange}
+              label="Status"
+              options={dropdownOptions}
+              value={selectedStatus?.id}
+              onChange={(val) => {
+                const status = statuses.find((s) => String(s.id) === String(val));
+                if (status) onStatusChange(status);
+              }}
+              labelKey="displayName"
               enabled={!isLoading}
               formStyle={false}
             />
-          )}
 
-          {orderOptions.length > 0 && onOrderChange && (
-            <Dropdown
-              label="Order"
-              options={orderOptions}
-              value={selectedOrder}
-              onChange={handleRequiredOrderChange}
-              enabled={!isLoading}
-              formStyle={false}
-            />
-          )}
+            {sortOptions.length > 0 && onSortChange && (
+              <Dropdown
+                label="Sort By"
+                options={sortOptions}
+                value={selectedSort}
+                onChange={handleRequiredSortChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+
+            {orderOptions.length > 0 && onOrderChange && (
+              <Dropdown
+                label="Order"
+                options={orderOptions}
+                value={selectedOrder}
+                onChange={handleRequiredOrderChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+          </div>
         </div>
       </CardHeader>
 
