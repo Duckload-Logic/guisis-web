@@ -63,6 +63,7 @@ export interface Appointment {
   status?: AppointmentStatus;
   urgencyLevel?: string | { id?: number; name?: string; colorKey?: string };
   urgency?: string | { id?: number; name?: string; colorKey?: string };
+  urgencyScore?: number;
   hasSignificantNote?: boolean;
   studentCorUrl?: string;
   createdAt?: string;
