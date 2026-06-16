@@ -15,7 +15,7 @@ export interface ValidationResult {
 
 // invalidate inputs with special characters
 // Matches anything that is NOT: alphanumeric, space, period, comma, or hyphen
-export const SPECIAL_CHARS_REGEX = /[^a-zA-Z0-9\s.,-]/;
+export const SPECIAL_CHARS_REGEX = /[^a-zA-Z0-9\s.,'"?!()\/ -]/;
 
 /**
  * Checks if a string contains special characters

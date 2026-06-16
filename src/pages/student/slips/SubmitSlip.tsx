@@ -930,6 +930,7 @@ export default function SubmitSlip() {
                         "Guidance Office. Use the mic icon to " +
                         "dictate your reason."
                       }
+                      maxChars={500}
                     />
 
                     <div className="mt-4 flex gap-3">
