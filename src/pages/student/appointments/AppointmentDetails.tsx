@@ -52,7 +52,8 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("high") || normalized.includes("urgent")) {
     return {
       label: "High",
-      description: "This appointment should be prioritized by the Guidance Office.",
+      description:
+        "This appointment should be prioritized by the Guidance Office.",
       className:
         "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
     };
@@ -75,7 +76,6 @@ function getAppointmentUrgency(appointment?: any) {
   };
 }
 
-
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -97,18 +97,23 @@ export default function AppointmentDetails() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  usePageMetadata({
-    title: "Appointment Details",
-    description: "View and manage your scheduled counseling appointment.",
-    badgeText: appointment?.status?.name || "Loading",
-    badgeIcon:
-      appointment?.status?.name === "Approved" ? (
-        <FileCheck className="h-4 w-4" />
-      ) : (
-        <Calendar className="h-4 w-4" />
-      ),
-    isLoading: isLoading,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Appointment Details",
+        description: "View and manage your scheduled counseling appointment.",
+        badgeText: appointment?.status?.name || "Loading",
+        badgeIcon:
+          appointment?.status?.name === "Approved" ? (
+            <FileCheck className="h-4 w-4" />
+          ) : (
+            <Calendar className="h-4 w-4" />
+          ),
+        isLoading: isLoading,
+      }),
+      [appointment?.status?.name, isLoading],
+    ),
+  );
 
   const handleCancel = () => {
     if (!id || !cancelReason.trim()) return;
@@ -382,7 +387,10 @@ export default function AppointmentDetails() {
                   </CardHeader>
                   <CardContent className="space-y-6 p-5">
                     {auditEntries.map((entry, idx) => (
-                      <div key={idx} className="group flex items-start gap-4">
+                      <div
+                        key={idx}
+                        className="group flex items-start gap-4"
+                      >
                         <div className="relative mt-1">
                           <div
                             className={cn(
@@ -390,27 +398,27 @@ export default function AppointmentDetails() {
                               "rounded-full border-2",
                               entry.status.toUpperCase().includes("PENDING")
                                 ? "border-amber-500 bg-background shadow-sm"
-                                : entry.status.toUpperCase().includes(
-                                    "APPROVED"
-                                  ) ||
-                                  entry.status.toUpperCase().includes(
-                                    "COMPLETED"
-                                  ) ||
-                                  entry.status.toUpperCase().includes(
-                                    "SCHEDULED"
-                                  )
-                                ? "border-emerald-500 bg-background shadow-sm"
-                                : entry.status.toUpperCase().includes(
-                                    "REJECTED"
-                                  ) ||
-                                  entry.status.toUpperCase().includes(
-                                    "CANCELLED"
-                                  ) ||
-                                  entry.status.toUpperCase().includes(
-                                    "CANCELED"
-                                  )
-                                ? "border-red-500 bg-background shadow-sm"
-                                : "border-primary bg-background shadow-sm"
+                                : entry.status
+                                      .toUpperCase()
+                                      .includes("APPROVED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("COMPLETED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("SCHEDULED")
+                                  ? "border-emerald-500 bg-background shadow-sm"
+                                  : entry.status
+                                        .toUpperCase()
+                                        .includes("REJECTED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("CANCELLED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("CANCELED")
+                                    ? "border-red-500 bg-background shadow-sm"
+                                    : "border-primary bg-background shadow-sm",
                             )}
                           />
                           <div
@@ -430,7 +438,7 @@ export default function AppointmentDetails() {
                             </p>
                           )}
                           {entry.remarks && (
-                            <p className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed">
+                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
                               {entry.remarks}
                             </p>
                           )}
@@ -547,4 +555,3 @@ export default function AppointmentDetails() {
     </>
   );
 }
-

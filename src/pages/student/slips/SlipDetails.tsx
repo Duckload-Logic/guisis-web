@@ -39,14 +39,19 @@ export default function SlipDetails() {
     return STATUS_COLORS[key] || "bg-muted text-muted-foreground";
   };
 
-  usePageMetadata({
-    title: "Admission Slip Details",
-    description:
-      "Detailed view of your submitted admission slip and counselor feedback.",
-    badgeText: slip?.status?.name || "Loading",
-    badgeIcon: <FileCheck className="h-4 w-4" />,
-    isLoading: isLoading,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Admission Slip Details",
+        description:
+          "Detailed view of your submitted slip and counselor feedback.",
+        badgeText: slip?.status?.name || "Loading",
+        badgeIcon: <FileCheck className="h-4 w-4" />,
+        isLoading: isLoading,
+      }),
+      [slip?.status?.name, isLoading],
+    ),
+  );
 
   const handleEdit = () => {
     if (!id) return;
