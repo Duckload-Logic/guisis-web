@@ -136,7 +136,9 @@ export function SlipList({
               {slip.user?.firstName} {slip.user?.lastName}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              {slip.studentNumber || slip.user?.studentNumber || "Student record"}
+              {slip.studentNumber ||
+                slip.user?.studentNumber ||
+                "Student record"}
             </p>
           </div>
         ),
@@ -430,7 +432,7 @@ export function SlipList({
                   type="text"
                   value={searchTerm ?? ""}
                   onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by student name, number, or reason..."
+                  placeholder="Search by name, email, or student number...."
                   spellCheck={false}
                   autoComplete="off"
                   className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"

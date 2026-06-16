@@ -43,16 +43,15 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
   if (!urgency?.label) return <span className="text-muted-foreground">—</span>;
 
   const level = urgency.key.toLowerCase();
-  const tone =
-    level.includes("critical")
-      ? "border-red-700/25 bg-red-700/10 text-red-700 dark:text-red-300"
-      : level.includes("high") || level.includes("urgent")
-        ? "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-300"
-        : level.includes("medium") || level.includes("moderate")
-          ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-          : level.includes("low")
-            ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-            : "border-primary/20 bg-primary/10 text-primary";
+  const tone = level.includes("critical")
+    ? "border-red-700/25 bg-red-700/10 text-red-700 dark:text-red-300"
+    : level.includes("high") || level.includes("urgent")
+      ? "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-300"
+      : level.includes("medium") || level.includes("moderate")
+        ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+        : level.includes("low")
+          ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+          : "border-primary/20 bg-primary/10 text-primary";
 
   return (
     <span
@@ -487,7 +486,7 @@ export default function AppointmentList({
                   type="text"
                   value={searchTerm ?? ""}
                   onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by student name, number, or reason..."
+                  placeholder="Search by name, email, or student number..."
                   spellCheck={false}
                   autoComplete="off"
                   className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
@@ -513,7 +512,9 @@ export default function AppointmentList({
               options={dropdownOptions}
               value={selectedStatus?.id}
               onChange={(val) => {
-                const status = statuses.find((s) => String(s.id) === String(val));
+                const status = statuses.find(
+                  (s) => String(s.id) === String(val),
+                );
                 if (status) onStatusChange(status);
               }}
               labelKey="displayName"
