@@ -17,11 +17,11 @@ import {
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
-import { format } from "date-fns";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { parseAuditTrail } from "@/utils/auditTrail";
+import { formatDate } from "@/utils";
 
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
@@ -208,7 +208,7 @@ export default function SlipDetails() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "px-3 py-1 border-white/45 bg-white/40",
+                            "border-white/45 bg-white/40 px-3 py-1",
                             "backdrop-blur-xl dark:border-white/10",
                             "dark:bg-white/[0.05]",
                           )}
@@ -237,12 +237,7 @@ export default function SlipDetails() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {slip?.dateOfAbsence
-                            ? format(
-                                new Date(slip.dateOfAbsence),
-                                "MMMM d, yyyy",
-                              )
-                            : "---"}
+                          {formatDate(slip?.dateOfAbsence || "")}
                         </span>
                       </div>
                     </div>
@@ -253,9 +248,7 @@ export default function SlipDetails() {
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {slip?.dateNeeded
-                            ? format(new Date(slip.dateNeeded), "MMMM d, yyyy")
-                            : "---"}
+                          {formatDate(slip?.dateNeeded || "")}
                         </span>
                       </div>
                     </div>
@@ -276,8 +269,8 @@ export default function SlipDetails() {
                       Reason provided
                     </p>
                     <div className="rounded-lg border border-border/40 bg-muted/50 p-4">
-                      <p className="whitespace-pre-wrap text-sm italic leading-relaxed text-foreground/80">
-                        "{slip?.reason}"
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                        {slip?.reason}
                       </p>
                     </div>
                   </div>
@@ -299,7 +292,10 @@ export default function SlipDetails() {
                   </CardHeader>
                   <CardContent className="space-y-6 p-5">
                     {auditEntries.map((entry, idx) => (
-                      <div key={idx} className="group flex items-start gap-4">
+                      <div
+                        key={idx}
+                        className="group flex items-start gap-4"
+                      >
                         <div className="relative mt-1">
                           <div
                             className={cn(
@@ -307,13 +303,21 @@ export default function SlipDetails() {
                               "rounded-full border-2",
                               entry.status.toUpperCase().includes("PENDING")
                                 ? "border-amber-500 bg-background shadow-sm"
-                                : entry.status.toUpperCase().includes("APPROVED") ||
-                                  entry.status.toUpperCase().includes("COMPLETED")
-                                ? "border-emerald-500 bg-background shadow-sm"
-                                : entry.status.toUpperCase().includes("REJECTED") ||
-                                  entry.status.toUpperCase().includes("REVISION")
-                                ? "border-red-500 bg-background shadow-sm"
-                                : "border-primary bg-background shadow-sm"
+                                : entry.status
+                                      .toUpperCase()
+                                      .includes("APPROVED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("COMPLETED")
+                                  ? "border-emerald-500 bg-background shadow-sm"
+                                  : entry.status
+                                        .toUpperCase()
+                                        .includes("REJECTED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("REVISION")
+                                    ? "border-red-500 bg-background shadow-sm"
+                                    : "border-primary bg-background shadow-sm",
                             )}
                           />
                           <div
@@ -333,7 +337,7 @@ export default function SlipDetails() {
                             </p>
                           )}
                           {entry.remarks && (
-                            <p className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed">
+                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
                               {entry.remarks}
                             </p>
                           )}
@@ -448,9 +452,14 @@ export default function SlipDetails() {
                 </Card>
               )}
 
-
-
               <div className="px-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Requested At
+                </p>
+                <p className="break-all font-mono text-[10px]">
+                  {formatDate(slip?.createdAt)}
+                </p>
+
                 <p className="text-[10px] text-muted-foreground">
                   Reference ID
                 </p>
