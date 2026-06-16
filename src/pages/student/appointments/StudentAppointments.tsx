@@ -21,11 +21,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  LAYOUT_STYLES,
-  STATUS_COLORS,
-  getStatusColorKey,
-} from "@/config/constants";
+import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
 import {
   Appointment,
   AppointmentStatus,
@@ -234,7 +230,23 @@ export default function StudentAppointments() {
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
-    return STATUS_COLORS[key] || STATUS_COLORS.secondary;
+
+    switch (key) {
+      case "warning":
+        return "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
+      case "info":
+        return "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
+      case "success":
+        return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
+      case "danger":
+        return "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
+      case "notice":
+        return "border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200";
+      case "stale":
+        return "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200";
+      default:
+        return "border-border bg-muted/40 text-muted-foreground";
+    }
   };
 
   const renderListItem = useCallback(
@@ -275,7 +287,8 @@ export default function StudentAppointments() {
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-xs brightness-75 hover:brightness-100",
+                  "min-h-6 rounded-full px-3 py-1 text-xs font-semibold leading-none",
+                  "shadow-sm [overflow-wrap:normal] [word-break:normal]",
                   getStatusColor(appointment.status?.name),
                 )}
               >

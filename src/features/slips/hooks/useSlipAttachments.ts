@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { slipService, GetSlipAttachmentDownload } from "../services";
 import { QUERY_KEYS } from "@/config/queryKeys";
 import { CACHE_TIMING } from "@/config/constants";
 
 /**
- * Hook to fetch metadata for all attachments of a specific slip
+ * Hook to fetch metadata for all attachments of a specific slip.
  */
 export function useGetSlipAttachments(slipId?: string) {
   return useQuery({
@@ -18,20 +18,41 @@ export function useGetSlipAttachments(slipId?: string) {
   });
 }
 
+const readBlobError = async (blob: Blob) => {
+  try {
+    const text = await blob.text();
+    if (!text) return null;
+
+    try {
+      const parsed = JSON.parse(text);
+      return parsed?.error || parsed?.message || text;
+    } catch {
+      return text;
+    }
+  } catch {
+    return null;
+  }
+};
+
 /**
- * Hook to handle downloading of attachments
+ * Hook to handle downloading admission slip attachments.
  */
 export function useDownloadAttachment() {
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<
+    string | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
+
+  const clearError = () => setError(null);
 
   const downloadAttachment = async (
     slipId: string,
     attachmentId: string,
     fileName?: string,
   ) => {
-    setIsDownloading(true);
+    setDownloadingAttachmentId(attachmentId);
     setError(null);
+
     try {
       const blob = await GetSlipAttachmentDownload(slipId, attachmentId, {
         handlerName: "useDownloadAttachment",
@@ -39,41 +60,51 @@ export function useDownloadAttachment() {
       });
 
       if (!blob) {
-        throw new Error("Download failed: No response from server");
+        throw new Error("Download failed. No file was returned by the server.");
+      }
+
+      if (blob.type.includes("application/json")) {
+        const message = await readBlobError(blob);
+        throw new Error(message || "Download failed.");
       }
 
       if (blob.size === 0) {
-        try {
-          const text = await blob.text();
-          const errorData = JSON.parse(text);
-          throw new Error(errorData.error || "Server returned empty file");
-        } catch {
-          throw new Error("Download failed: Empty file received");
-        }
+        const message = await readBlobError(blob);
+        throw new Error(message || "Download failed. Empty file received.");
       }
 
       const url = window.URL.createObjectURL(blob);
-      const link = document.body.appendChild(document.createElement("a"));
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName || `attachment-${attachmentId}`);
+      link.download = fileName || `attachment-${attachmentId}`;
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
       link.click();
-
-      setTimeout(() => {
-        link.parentNode?.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      }, 100);
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to download");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to download this attachment. Please try again.",
+      );
     } finally {
-      setIsDownloading(false);
+      setDownloadingAttachmentId(null);
     }
   };
 
-  return { downloadAttachment, isDownloading, error };
+  return {
+    downloadAttachment,
+    downloadingAttachmentId,
+    isDownloading: downloadingAttachmentId !== null,
+    error,
+    clearError,
+  };
 }
 
 /**
- * Hook to fetch and provide a preview URL for an attachment
+ * Hook to fetch an authorized object URL for previewing an attachment.
+ * It only runs when both IDs are provided, so file cards do not auto-download.
  */
 export function useGetAttachmentPreview(
   slipId?: string,
@@ -84,38 +115,62 @@ export function useGetAttachmentPreview(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let nextPreviewUrl: string | null = null;
+    let isMounted = true;
+
     if (!slipId || !attachmentId) {
       setPreviewUrl(null);
-      return;
+      setError(null);
+      setIsLoading(false);
+      return undefined;
     }
 
     const fetchPreview = async () => {
       setIsLoading(true);
       setError(null);
+      setPreviewUrl(null);
+
       try {
         const blob = await GetSlipAttachmentDownload(slipId, attachmentId, {
           handlerName: "useGetAttachmentPreview",
-          stepName: "Download Attachment",
+          stepName: "Preview Attachment",
         });
 
-        if (!blob || blob.size === 0) {
-          throw new Error("Failed to load attachment");
+        if (!blob) {
+          throw new Error("Preview failed. No file was returned by the server.");
         }
 
-        const url = URL.createObjectURL(blob);
-        setPreviewUrl(url);
+        if (blob.type.includes("application/json")) {
+          const message = await readBlobError(blob);
+          throw new Error(message || "Preview failed.");
+        }
+
+        if (blob.size === 0) {
+          const message = await readBlobError(blob);
+          throw new Error(message || "Preview failed. Empty file received.");
+        }
+
+        nextPreviewUrl = window.URL.createObjectURL(blob);
+        if (isMounted) setPreviewUrl(nextPreviewUrl);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setPreviewUrl(null);
+        if (isMounted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load attachment preview.",
+          );
+          setPreviewUrl(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchPreview();
 
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      isMounted = false;
+      if (nextPreviewUrl) window.URL.revokeObjectURL(nextPreviewUrl);
     };
   }, [slipId, attachmentId]);
 

@@ -12,15 +12,23 @@ export const ROLE_ROUTES = {
 // Admission Slip status
 export const STATUS_COLORS: Record<string, string> = {
   warning:
-    "bg-warning-background text-warning-foreground border-warning-foreground",
+    "border-amber-300 bg-amber-50 text-amber-700 " +
+    "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200",
   danger:
-    "bg-danger-background text-danger-foreground border-danger-foreground",
+    "border-rose-300 bg-rose-50 text-rose-700 " +
+    "dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200",
   success:
-    "bg-success-background text-success-foreground border-success-foreground",
-  info: "bg-info-background text-info-foreground border-info-foreground",
-  stale: "bg-stale-background text-stale-foreground border-stale-foreground",
+    "border-emerald-300 bg-emerald-50 text-emerald-700 " +
+    "dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200",
+  info:
+    "border-sky-300 bg-sky-50 text-sky-700 " +
+    "dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200",
+  stale:
+    "border-slate-300 bg-slate-50 text-slate-700 " +
+    "dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200",
   notice:
-    "bg-notice-background text-notice-foreground border-notice-foreground",
+    "border-violet-300 bg-violet-50 text-violet-700 " +
+    "dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200",
 } as const;
 
 /**

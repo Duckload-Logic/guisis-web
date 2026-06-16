@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AvailableTimeSlotView, TimeSlot } from "../types";
-import { Sun, Moon } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Spinner } from "@/components/shared";
 import { format12HourTime } from "@/utils/dateTime";
 import { cn } from "@/lib/utils";
@@ -20,114 +21,106 @@ export default function SlotSelector({
   loading,
   onTimeSelect,
 }: TimeSlotselectorProps) {
-  const getHour = (time24: string) => {
-    return Number(time24.split(":")[0]);
-  };
+  const getHour = (time24: string) => Number(time24.split(":")[0]);
 
   const amSlots = availableSlots.filter((slot) => getHour(slot.time) < 12);
   const pmSlots = availableSlots.filter((slot) => getHour(slot.time) >= 12);
 
-  const renderSlotButton = (slot: AvailableTimeSlotView) => (
-    <button
-      key={slot.id}
-      onClick={() => onTimeSelect(slot)}
-      disabled={!slot.isAvailable}
-      className={`min-h-10 rounded-lg px-2 py-2 text-xs font-medium transition-colors sm:min-h-11 sm:text-sm ${
-        selectedTime?.id === slot.id
-          ? "bg-primary text-primary-foreground ring-2 ring-primary"
-          : slot.isAvailable
-            ? "bg-muted text-foreground hover:bg-muted/80 hover:ring-2 hover:ring-primary/50"
-            : "cursor-not-allowed bg-muted/50 text-muted-foreground"
-      }`}
-      aria-label={`Select ${slot.time}`}
-      aria-pressed={selectedTime?.id === slot.id}
-    >
-      {format12HourTime(slot.time)}
-    </button>
+  const renderSlotButton = (slot: AvailableTimeSlotView) => {
+    const isSelected = selectedTime?.id === slot.id;
+
+    return (
+      <button
+        key={slot.id}
+        type="button"
+        onClick={() => onTimeSelect(slot)}
+        disabled={!slot.isAvailable}
+        className={cn(
+          "min-h-10 rounded-xl border px-2 py-2 text-xs font-semibold",
+          "transition-all duration-200 sm:min-h-11 sm:text-sm",
+          "focus:outline-none focus:ring-2 focus:ring-primary/30",
+          isSelected
+            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+            : slot.isAvailable
+              ? "border-border bg-background text-foreground hover:border-primary/40 hover:bg-muted/50"
+              : "cursor-not-allowed border-border/60 bg-muted/30 text-muted-foreground/50",
+        )}
+        aria-label={`Select ${format12HourTime(slot.time)}`}
+        aria-pressed={isSelected}
+      >
+        {format12HourTime(slot.time)}
+      </button>
+    );
+  };
+
+  const renderSlotGroup = (
+    label: string,
+    slots: AvailableTimeSlotView[],
+    icon: ReactNode,
+  ) => (
+    <div className="min-w-0 space-y-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
+        {icon}
+        <span>{label}</span>
+        <span className="text-xs font-normal text-muted-foreground">
+          ({slots.length} slots)
+        </span>
+      </div>
+
+      {slots.length > 0 ? (
+        <div className="grid grid-cols-2 gap-2">{slots.map(renderSlotButton)}</div>
+      ) : (
+        <p className="rounded-xl border border-dashed border-border/70 bg-muted/20 py-4 text-center text-sm text-muted-foreground">
+          No {label.toLowerCase()} slots
+        </p>
+      )}
+    </div>
   );
 
   return (
-    <div className="w-full">
-      <Card className="h-full min-w-0 border border-border bg-card shadow-sm">
-        <CardHeader className="rounded-t-md border-b border-border bg-gradient-to-r from-muted/50 to-muted px-4 py-4 sm:px-6">
-          <CardTitle className="text-lg text-foreground">Select Time</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pt-4 sm:px-6">
-          {selectedDate ? (
-            <>
-              <p className="mb-4 text-sm font-semibold text-muted-foreground">
-                {selectedDate.toDateString()}
-              </p>
-              {loading ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">
-                  <Spinner
-                    size="sm"
-                    message="Loading available slots"
-                  />
-                </p>
-              ) : availableSlots.length > 0 ? (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
-                  <div className="space-y-3">
-                    <div
-                      className={cn(
-                        "flex items-center gap-2 text-sm font-semibold text-amber-600",
-                        "dark:text-amber-400",
-                      )}
-                    >
-                      <Sun className="h-4 w-4" />
-                      <span>Morning</span>
-                      <span className="text-xs font-normal text-muted-foreground">
-                        ({amSlots.length} slots)
-                      </span>
-                    </div>
-                    {amSlots.length > 0 ? (
-                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-1 sm:p-2">
-                        {amSlots.map(renderSlotButton)}
-                      </div>
-                    ) : (
-                      <p className="rounded-lg bg-muted/30 py-4 text-center text-sm text-muted-foreground">
-                        No morning slots
-                      </p>
-                    )}
-                  </div>
+    <Card className="h-full min-w-0 overflow-hidden rounded-2xl border border-border bg-glass-bg shadow-md">
+      <CardHeader className="border-b border-border/60 bg-muted/30 px-4 py-4 sm:px-5">
+        <CardTitle className="text-base font-bold tracking-tight text-foreground sm:text-lg">
+          Select Time
+        </CardTitle>
+      </CardHeader>
 
-                  <div className="space-y-3">
-                    <div
-                      className={cn(
-                        "flex items-center gap-2 text-sm font-semibold",
-                        "text-indigo-600 dark:text-indigo-400",
-                      )}
-                    >
-                      <Moon className="h-4 w-4" />
-                      <span>Afternoon</span>
-                      <span className="text-xs font-normal text-muted-foreground">
-                        ({pmSlots.length} slots)
-                      </span>
-                    </div>
-                    {pmSlots.length > 0 ? (
-                      <div className="grid max-h-64 grid-cols-2 gap-2 overflow-y-auto p-1 sm:p-2">
-                        {pmSlots.map(renderSlotButton)}
-                      </div>
-                    ) : (
-                      <p className="rounded-lg bg-muted/30 py-4 text-center text-sm text-muted-foreground">
-                        No afternoon slots
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="py-8 text-center text-sm text-muted-foreground">
-                  No available slots for this date
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Select a date to see available times
+      <CardContent className="p-4 sm:p-5">
+        {selectedDate ? (
+          <>
+            <p className="mb-4 text-sm font-semibold text-muted-foreground">
+              {selectedDate.toDateString()}
             </p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+
+            {loading ? (
+              <div className="flex min-h-40 items-center justify-center text-sm text-muted-foreground">
+                <Spinner size="sm" message="Loading available slots" />
+              </div>
+            ) : availableSlots.length > 0 ? (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+                {renderSlotGroup(
+                  "Morning",
+                  amSlots,
+                  <Sun className="h-4 w-4 text-amber-500" />,
+                )}
+                {renderSlotGroup(
+                  "Afternoon",
+                  pmSlots,
+                  <Moon className="h-4 w-4 text-indigo-500" />,
+                )}
+              </div>
+            ) : (
+              <p className="rounded-xl border border-dashed border-border/70 bg-muted/20 py-8 text-center text-sm text-muted-foreground">
+                No available slots for this date
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="rounded-xl border border-dashed border-border/70 bg-muted/20 py-8 text-center text-sm text-muted-foreground">
+            Select a date to see available times
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
