@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  Calendar,
   FileCheck2,
   FileClock,
   FilePenLine,
@@ -249,9 +248,9 @@ export default function StudentSlips() {
       <div
         key={slip.id}
         className={cn(
-          "animate-fade-in-up cursor-pointer p-4",
-          "transition-colors duration-200 hover:bg-muted/50",
-          "sm:p-5",
+          "animate-fade-in-up cursor-pointer px-4 py-5",
+          "transition-colors duration-200 hover:bg-muted/45",
+          "sm:px-5 sm:py-6",
         )}
         style={{
           animationDelay: `${0.05 * (index + 1)}s`,
@@ -259,87 +258,85 @@ export default function StudentSlips() {
         }}
         onClick={() => navigate(`/student/slips/${slip.id}`)}
       >
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              "hidden h-20 w-20 shrink-0 flex-col items-center",
-              "justify-center rounded-[18px] sm:flex",
-              GLASS_INNER,
-            )}
-          >
-            <div
-              className={cn(
-                "mb-2 flex h-10 w-10 items-center justify-center",
-                "rounded-xl border border-primary/15 bg-primary/10",
-                "text-primary backdrop-blur-md",
-              )}
-            >
-              <FileText className="h-5 w-5" />
-            </div>
-          </div>
-
+        <div
+          className={cn(
+            "flex min-h-[88px] flex-col gap-4",
+            "lg:flex-row lg:items-center lg:justify-between",
+          )}
+        >
           <div className="min-w-0 flex-1 space-y-2">
-            <div
-              className={cn(
-                "flex flex-col gap-2.5 sm:flex-row",
-                "sm:items-center sm:justify-between",
-              )}
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "border-white/45 bg-white/40 text-xs",
-                    "font-medium backdrop-blur-xl",
-                    "dark:border-white/10 dark:bg-white/[0.05]",
-                  )}
-                >
-                  <Tag className="mr-1 h-3 w-3" />
-                  {slip.category?.name}
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "min-h-6 whitespace-nowrap rounded-full px-3 py-1",
-                    "text-xs font-semibold leading-none shadow-sm",
-                    "[overflow-wrap:normal] [word-break:normal]",
-                    getStatusColor(slip.status?.name),
-                  )}
-                >
-                  {slip.status?.name}
-                </Badge>
-              </div>
-
-              <div
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
                 className={cn(
-                  "flex flex-col gap-1 text-xs",
-                  "text-muted-foreground sm:flex-row",
-                  "sm:items-center sm:gap-3",
+                  "inline-flex min-h-6 items-center rounded-full border",
+                  "border-border/70 bg-muted/30 px-3 py-1 text-xs",
+                  "font-medium text-foreground shadow-sm backdrop-blur-xl",
+                  "dark:border-white/10 dark:bg-white/[0.05]",
+                  "[overflow-wrap:normal] [word-break:normal]",
                 )}
               >
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>Absence: {formatDate(slip.dateOfAbsence)}</span>
-                </div>
-
-                <span
-                  className={cn("hidden text-muted-foreground/40", "sm:inline")}
-                >
-                  •
+                <Tag className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
+                <span className="max-w-[180px] truncate">
+                  {slip.category?.name || "-"}
                 </span>
+              </Badge>
 
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>Needed: {formatDate(slip.dateNeeded)}</span>
-                </div>
-              </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "inline-flex min-h-6 items-center whitespace-nowrap rounded-full border",
+                  "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+                  "[overflow-wrap:normal] [word-break:normal]",
+                  getStatusColor(slip.status?.name),
+                )}
+              >
+                {slip.status?.name || "-"}
+              </Badge>
             </div>
-            <p
-              className={cn("line-clamp-1 text-xs", "text-muted-foreground/85")}
-            >
+
+            <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground/85">
               {slip.reason}
             </p>
+          </div>
+
+          <div
+            className={cn(
+              "grid w-full shrink-0 gap-3 rounded-2xl border border-border/70",
+              "bg-muted/25 px-4 py-3 text-left shadow-sm backdrop-blur-xl",
+              "dark:border-white/10 dark:bg-white/[0.04]",
+              "sm:grid-cols-2 lg:w-[420px]",
+            )}
+          >
+            <div className="min-w-0">
+              <p
+                className={cn(
+                  "text-[11px] font-bold uppercase tracking-[0.16em]",
+                  "text-muted-foreground",
+                )}
+              >
+                Absence Date
+              </p>
+
+              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground">
+                {formatDate(slip.dateOfAbsence)}
+              </p>
+            </div>
+
+            <div className="min-w-0 sm:border-l sm:border-border/60 sm:pl-3 dark:sm:border-white/10">
+              <p
+                className={cn(
+                  "text-[11px] font-bold uppercase tracking-[0.16em]",
+                  "text-muted-foreground",
+                )}
+              >
+                Date Needed
+              </p>
+
+              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground">
+                {formatDate(slip.dateNeeded)}
+              </p>
+            </div>
           </div>
         </div>
       </div>
