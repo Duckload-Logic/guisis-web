@@ -272,9 +272,14 @@ export default function AppointmentDetails() {
 
     payload.adminNotes = message || "";
 
+    // Always send the current schedule so the backend does not
+    // misdetect a schedule change and trigger the reschedule guard.
     if (pendingAction.type === "Approve" && selectedSchedule) {
       payload.whenDate = selectedSchedule.date;
       payload.timeSlot = { id: selectedSchedule.timeSlotId };
+    } else {
+      payload.whenDate = appointment.whenDate;
+      payload.timeSlot = { id: appointment.timeSlot.id };
     }
 
     try {
