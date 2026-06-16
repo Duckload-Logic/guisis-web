@@ -29,7 +29,12 @@ const optionalNumericString = z
  */
 const dateString = z
   .string()
-  .refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format" });
+  .refine((val) => !isNaN(Date.parse(val)), {
+    message: "Invalid date format",
+  })
+  .refine((val) => new Date(val) <= new Date(), {
+    message: "Date of birth cannot be in the future",
+  });
 
 /**
  * Helper validator for optional date strings
@@ -38,6 +43,9 @@ const optionalDateString = z
   .string()
   .refine((val) => val === "" || !isNaN(Date.parse(val)), {
     message: "Invalid date format",
+  })
+  .refine((val) => val === "" || new Date(val) <= new Date(), {
+    message: "Date of birth cannot be in the future",
   })
   .optional();
 
@@ -208,7 +216,7 @@ const relatedPersonSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   middleName: z.string().nullable(),
   lastName: z.string().min(1, "Last name is required"),
-  dateOfBirth: z.string(),
+  dateOfBirth: dateString,
   educationalAttainment: z.object({
     id: z.number().min(1, "Educational attainment is required"),
     name: z.string().optional(),
