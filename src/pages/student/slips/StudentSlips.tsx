@@ -301,7 +301,9 @@ export default function StudentSlips() {
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-xs hover:opacity-90",
+                    "min-h-6 whitespace-nowrap rounded-full px-3 py-1",
+                    "text-xs font-semibold leading-none shadow-sm",
+                    "[overflow-wrap:normal] [word-break:normal]",
                     getStatusColor(slip.status?.name),
                   )}
                 >
@@ -641,3 +643,4 @@ export default function StudentSlips() {
     </>
   );
 }
+
