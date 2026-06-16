@@ -269,7 +269,8 @@ export default function AppointmentDetails() {
     if (!statusId) return false;
 
     const payload: any = { status: { id: statusId } };
-    if (message) payload.adminNotes = message;
+
+    payload.adminNotes = message || "";
 
     if (pendingAction.type === "Approve" && selectedSchedule) {
       payload.whenDate = selectedSchedule.date;
