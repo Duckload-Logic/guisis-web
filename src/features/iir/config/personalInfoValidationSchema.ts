@@ -134,10 +134,7 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
       message: "Employer address is required if employed",
     },
   ],
-  "student.personalInfo.employerContactNumber": [
-    commonRules.phone(),
-  ],
-
+  "student.personalInfo.employerContactNumber": [commonRules.phone()],
 
   // Emergency Contact
   "student.personalInfo.emergencyContact.firstName": [
@@ -218,7 +215,7 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
 
   // Addresses – Residential
   "student.addresses.1.address.region": [
-    commonRules.required("Region (Residential)"),
+    commonRules.required("Region (Permanent)"),
   ],
   "student.addresses.1.address.province": [
     {
@@ -234,16 +231,16 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
         }
         return true;
       },
-      message: "Province (Residential) is required",
+      message: "Province (Permanent) is required",
     },
   ],
   "student.addresses.1.address.city": [
-    commonRules.required("City/Municipality (Residential)"),
+    commonRules.required("City/Municipality (ResidentPermanential)"),
   ],
   "student.addresses.1.address.barangay": [
-    commonRules.required("Barangay (Residential)"),
+    commonRules.required("Barangay (Permanent)"),
   ],
   "student.addresses.1.address.streetDetail": [
-    commonRules.noSpecialChars("Street (Residential)"),
+    commonRules.noSpecialChars("Street (Permanent)"),
   ],
 };
