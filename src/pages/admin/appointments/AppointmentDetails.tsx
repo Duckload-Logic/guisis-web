@@ -6,8 +6,6 @@ import {
   useUpdateAppointment,
 } from "@/features/appointments/hooks";
 import {
-  CalendarDays,
-  Clock,
   User,
   FileText,
   Calendar,
@@ -55,7 +53,8 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("high") || normalized.includes("urgent")) {
     return {
       label: "High",
-      description: "Prioritize this student concern during review and scheduling.",
+      description:
+        "Prioritize this student concern during review and scheduling.",
       className:
         "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
     };
@@ -77,7 +76,6 @@ function getAppointmentUrgency(appointment?: any) {
       "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   };
 }
-
 
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
@@ -312,7 +310,7 @@ export default function AppointmentDetails() {
     }
   };
 
- return (
+  return (
     <>
       <div
         className={cn(
@@ -362,8 +360,8 @@ export default function AppointmentDetails() {
         )}
 
         {/* Top Row: Identity & Information (Wave 1) */}
-        <div 
-          className="grid grid-cols-1 gap-6 lg:grid-cols-3 animate-fade-in-up"
+        <div
+          className="animate-fade-in-up grid grid-cols-1 gap-6 lg:grid-cols-3"
           style={{ animationDelay: "0.10s", animationFillMode: "both" }}
         >
           {/* Identity Card */}
@@ -410,7 +408,7 @@ export default function AppointmentDetails() {
                   className={cn(
                     "group/btn w-full gap-2 rounded-xl border-primary/20",
                     "bg-primary/5 font-bold text-primary transition-all",
-                    "duration-300 hover:bg-primary hover:text-white hover:-translate-y-0.5",
+                    "duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-white",
                   )}
                   onClick={() =>
                     navigate(`/admin/student-records/${appointment.iirId}`)
@@ -426,7 +424,7 @@ export default function AppointmentDetails() {
                     className={cn(
                       "group/btn w-full gap-2 rounded-xl border-primary/20",
                       "bg-primary/5 font-bold text-primary transition-all",
-                      "duration-300 hover:bg-primary hover:text-white hover:-translate-y-0.5",
+                      "duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-white",
                     )}
                     onClick={() => setShowCorPreview(true)}
                   >
@@ -538,8 +536,8 @@ export default function AppointmentDetails() {
         </div>
 
         {/* Content Row: Session Details & Actions (Wave 2) */}
-        <div 
-          className="grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12 animate-fade-in-up"
+        <div
+          className="animate-fade-in-up grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12"
           style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           {/* Left: Session Details (Col-span 8) */}
@@ -572,7 +570,9 @@ export default function AppointmentDetails() {
                       className={cn(
                         "rounded-full border px-3 py-1 text-[10px] font-bold",
                         "shadow-sm",
-                        STATUS_COLORS[getStatusColorKey(appointment.status.name)],
+                        STATUS_COLORS[
+                          getStatusColorKey(appointment.status.name)
+                        ],
                       )}
                     >
                       {appointment.status.name}
@@ -628,7 +628,7 @@ export default function AppointmentDetails() {
                     <div
                       className={cn(
                         "rounded-lg border border-primary/20",
-                        "bg-primary/10 p-1.5"
+                        "bg-primary/10 p-1.5",
                       )}
                     >
                       <CalendarRange className="h-4 w-4 text-primary" />
@@ -636,7 +636,7 @@ export default function AppointmentDetails() {
                     <h3
                       className={cn(
                         "text-xs font-bold uppercase",
-                        "tracking-wider text-foreground/70"
+                        "tracking-wider text-foreground/70",
                       )}
                     >
                       {appointment.status?.name === "Pending"
@@ -661,24 +661,25 @@ export default function AppointmentDetails() {
                         "group relative rounded-xl border p-4 text-left",
                         "transition-all",
                         selectedSchedule?.date === appointment.whenDate &&
-                        selectedSchedule?.timeSlotId === appointment.timeSlot.id
+                          selectedSchedule?.timeSlotId ===
+                            appointment.timeSlot.id
                           ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
                           : cn(
                               "border-border bg-muted/5",
-                              "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                              "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
                             ),
                         appointment.status?.name !== "Pending" &&
                           cn(
                             "cursor-default opacity-90",
-                            "hover:border-border hover:bg-muted/5 hover:translate-y-0"
-                          )
+                            "hover:translate-y-0 hover:border-border hover:bg-muted/5",
+                          ),
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span
                           className={cn(
                             "text-[10px] font-bold uppercase",
-                            "tracking-wider text-primary/80"
+                            "tracking-wider text-primary/80",
                           )}
                         >
                           Primary Schedule
@@ -707,7 +708,8 @@ export default function AppointmentDetails() {
                             setSelectedSchedule({
                               date: appointment.preferredDate1!,
                               timeSlotId: appointment.preferredTimeSlot1!.id,
-                              timeSlotTime: appointment.preferredTimeSlot1!.time,
+                              timeSlotTime:
+                                appointment.preferredTimeSlot1!.time,
                             })
                           }
                           className={cn(
@@ -715,25 +717,25 @@ export default function AppointmentDetails() {
                             "transition-all",
                             selectedSchedule?.date ===
                               appointment.preferredDate1 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot1?.id
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot1?.id
                               ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
                               : cn(
                                   "border-border bg-muted/5",
-                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
                                 ),
                             appointment.status?.name !== "Pending" &&
                               cn(
                                 "cursor-default opacity-90",
-                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
-                              )
+                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
+                              ),
                           )}
                         >
                           <div className="flex items-center justify-between">
                             <span
                               className={cn(
                                 "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70"
+                                "tracking-wider text-muted-foreground/70",
                               )}
                             >
                               Backup Option 1
@@ -744,7 +746,7 @@ export default function AppointmentDetails() {
                                 appointment.preferredTimeSlot1?.id && (
                                 <span
                                   className={cn(
-                                    "h-2 w-2 rounded-full bg-primary"
+                                    "h-2 w-2 rounded-full bg-primary",
                                   )}
                                 />
                               )}
@@ -754,7 +756,7 @@ export default function AppointmentDetails() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format12HourTime(
-                              appointment.preferredTimeSlot1.time
+                              appointment.preferredTimeSlot1.time,
                             )}
                           </p>
                         </button>
@@ -770,7 +772,8 @@ export default function AppointmentDetails() {
                             setSelectedSchedule({
                               date: appointment.preferredDate2!,
                               timeSlotId: appointment.preferredTimeSlot2!.id,
-                              timeSlotTime: appointment.preferredTimeSlot2!.time,
+                              timeSlotTime:
+                                appointment.preferredTimeSlot2!.time,
                             })
                           }
                           className={cn(
@@ -778,25 +781,25 @@ export default function AppointmentDetails() {
                             "transition-all",
                             selectedSchedule?.date ===
                               appointment.preferredDate2 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot2?.id
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot2?.id
                               ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
                               : cn(
                                   "border-border bg-muted/5",
-                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
                                 ),
                             appointment.status?.name !== "Pending" &&
                               cn(
                                 "cursor-default opacity-90",
-                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
-                              )
+                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
+                              ),
                           )}
                         >
                           <div className="flex items-center justify-between">
                             <span
                               className={cn(
                                 "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70"
+                                "tracking-wider text-muted-foreground/70",
                               )}
                             >
                               Backup Option 2
@@ -807,7 +810,7 @@ export default function AppointmentDetails() {
                                 appointment.preferredTimeSlot2?.id && (
                                 <span
                                   className={cn(
-                                    "h-2 w-2 rounded-full bg-primary"
+                                    "h-2 w-2 rounded-full bg-primary",
                                   )}
                                 />
                               )}
@@ -817,7 +820,7 @@ export default function AppointmentDetails() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format12HourTime(
-                              appointment.preferredTimeSlot2.time
+                              appointment.preferredTimeSlot2.time,
                             )}
                           </p>
                         </button>
@@ -833,7 +836,8 @@ export default function AppointmentDetails() {
                             setSelectedSchedule({
                               date: appointment.preferredDate3!,
                               timeSlotId: appointment.preferredTimeSlot3!.id,
-                              timeSlotTime: appointment.preferredTimeSlot3!.time,
+                              timeSlotTime:
+                                appointment.preferredTimeSlot3!.time,
                             })
                           }
                           className={cn(
@@ -841,25 +845,25 @@ export default function AppointmentDetails() {
                             "transition-all",
                             selectedSchedule?.date ===
                               appointment.preferredDate3 &&
-                            selectedSchedule?.timeSlotId ===
-                              appointment.preferredTimeSlot3?.id
+                              selectedSchedule?.timeSlotId ===
+                                appointment.preferredTimeSlot3?.id
                               ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
                               : cn(
                                   "border-border bg-muted/5",
-                                  "hover:border-primary/20 hover:bg-muted/10 hover:-translate-y-0.5"
+                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
                                 ),
                             appointment.status?.name !== "Pending" &&
                               cn(
                                 "cursor-default opacity-90",
-                                "hover:border-border hover:bg-muted/5 hover:translate-y-0"
-                              )
+                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
+                              ),
                           )}
                         >
                           <div className="flex items-center justify-between">
                             <span
                               className={cn(
                                 "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70"
+                                "tracking-wider text-muted-foreground/70",
                               )}
                             >
                               Backup Option 3
@@ -870,7 +874,7 @@ export default function AppointmentDetails() {
                                 appointment.preferredTimeSlot3?.id && (
                                 <span
                                   className={cn(
-                                    "h-2 w-2 rounded-full bg-primary"
+                                    "h-2 w-2 rounded-full bg-primary",
                                   )}
                                 />
                               )}
@@ -880,14 +884,13 @@ export default function AppointmentDetails() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format12HourTime(
-                              appointment.preferredTimeSlot3.time
+                              appointment.preferredTimeSlot3.time,
                             )}
                           </p>
                         </button>
                       )}
                   </div>
                 </div>
-
               </CardContent>
             </Card>
           </div>
@@ -912,7 +915,7 @@ export default function AppointmentDetails() {
                           actionColor(action),
                           "group/action h-11 w-full items-center justify-between",
                           "rounded-xl border border-white/10 px-4 shadow-sm",
-                          "transition-all duration-300 hover:shadow-md hover:-translate-y-0.5",
+                          "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
                         )}
                       >
                         <div className="flex items-center gap-3">
@@ -960,7 +963,10 @@ export default function AppointmentDetails() {
               </CardHeader>
               <CardContent className="space-y-6 p-5">
                 {auditEntries.map((entry, idx) => (
-                  <div key={idx} className="group flex items-start gap-4">
+                  <div
+                    key={idx}
+                    className="group flex items-start gap-4"
+                  >
                     <div className="relative mt-1">
                       <div
                         className={cn(
@@ -968,21 +974,17 @@ export default function AppointmentDetails() {
                           "rounded-full border-2",
                           entry.status.toUpperCase().includes("RESCHEDULED")
                             ? "border-amber-500 bg-background shadow-sm"
-                            : entry.status.toUpperCase().includes(
-                                "APPROVED"
-                              ) ||
-                              entry.status.toUpperCase().includes(
-                                "COMPLETED"
-                              )
-                            ? "border-emerald-500 bg-background shadow-sm"
-                            : entry.status.toUpperCase().includes(
-                                "REJECTED"
-                              ) ||
-                              entry.status.toUpperCase().includes(
-                                "CANCELLED"
-                              )
-                            ? "border-red-500 bg-background shadow-sm"
-                            : "border-primary bg-background shadow-sm",
+                            : entry.status.toUpperCase().includes("APPROVED") ||
+                                entry.status.toUpperCase().includes("COMPLETED")
+                              ? "border-emerald-500 bg-background shadow-sm"
+                              : entry.status
+                                    .toUpperCase()
+                                    .includes("REJECTED") ||
+                                  entry.status
+                                    .toUpperCase()
+                                    .includes("CANCELLED")
+                                ? "border-red-500 bg-background shadow-sm"
+                                : "border-primary bg-background shadow-sm",
                         )}
                       />
                       <div
@@ -1084,4 +1086,3 @@ export default function AppointmentDetails() {
     </>
   );
 }
-
