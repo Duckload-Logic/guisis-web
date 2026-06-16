@@ -235,7 +235,7 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
     },
   ],
   "student.addresses.1.address.city": [
-    commonRules.required("City/Municipality (ResidentPermanential)"),
+    commonRules.required("City/Municipality (Permanent)"),
   ],
   "student.addresses.1.address.barangay": [
     commonRules.required("Barangay (Permanent)"),
