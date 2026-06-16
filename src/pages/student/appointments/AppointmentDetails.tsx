@@ -33,6 +33,11 @@ import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { parseAuditTrail } from "@/utils/auditTrail";
 
+
+const APPOINTMENT_PILL_CLASS =
+  "inline-flex h-7 items-center rounded-full border px-3 text-[11px] " +
+  "font-semibold leading-none";
+
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
 
@@ -262,35 +267,37 @@ export default function AppointmentDetails() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Left Column: Primary Details */}
             <div className="space-y-6 md:col-span-2">
-              <Card className="border-0 bg-card/60 shadow-lg backdrop-blur-md">
-                <CardHeader className="border-b border-border/60 pb-4">
-                  <div className="flex items-center justify-between">
+              <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
+                <CardHeader className="border-b border-border/60 bg-muted/25 px-4 py-4 sm:px-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-primary/10 p-2">
                         <Calendar className="h-5 w-5 text-primary" />
                       </div>
-                      <CardTitle className="text-xl">
+                      <CardTitle className="text-base font-semibold leading-tight sm:text-lg">
                         Appointment Information
                       </CardTitle>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "px-3 py-1",
-                        getStatusColor(appointment?.status?.name),
-                      )}
-                    >
-                      {appointment?.status?.name}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn("px-3 py-1", urgencyInfo.className)}
-                    >
-                      Urgency: {urgencyInfo.label}
-                    </Badge>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          APPOINTMENT_PILL_CLASS,
+                          getStatusColor(appointment?.status?.name),
+                        )}
+                      >
+                        {appointment?.status?.name}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn(APPOINTMENT_PILL_CLASS, urgencyInfo.className)}
+                      >
+                        Urgency: {urgencyInfo.label}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-6 pt-6">
+                <CardContent className="space-y-6 p-4 sm:p-5">
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div className="space-y-1">
                       <p className="text-xs font-semibold uppercase text-muted-foreground">
@@ -324,7 +331,13 @@ export default function AppointmentDetails() {
                         Category
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            APPOINTMENT_PILL_CLASS,
+                            "border-border/70 bg-muted/45 text-foreground",
+                          )}
+                        >
                           {appointment?.appointmentCategory.name}
                         </Badge>
                       </div>
@@ -337,7 +350,7 @@ export default function AppointmentDetails() {
                         <AlertCircle className="h-4 w-4 text-muted-foreground" />
                         <Badge
                           variant="outline"
-                          className={cn("px-3 py-1", urgencyInfo.className)}
+                          className={cn(APPOINTMENT_PILL_CLASS, urgencyInfo.className)}
                         >
                           {urgencyInfo.label}
                         </Badge>
@@ -457,13 +470,13 @@ export default function AppointmentDetails() {
 
             {/* Right Column: Actions & Metadata */}
             <div className="space-y-6">
-              <Card className="border-0 bg-glass-bg shadow-md">
-                <CardHeader className="border-b border-border/40 pb-3">
+              <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
+                <CardHeader className="border-b border-border/60 bg-muted/25 px-4 py-4 sm:px-5">
                   <CardTitle className="text-sm font-semibold uppercase">
                     Management
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 pt-4">
+                <CardContent className="space-y-4 p-4 sm:p-5">
                   {isCancellable ? (
                     <div className="space-y-3">
                       <p className="text-xs text-muted-foreground">

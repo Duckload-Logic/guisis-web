@@ -20,7 +20,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
 import { toISODateString } from "@/utils";
@@ -303,7 +303,7 @@ export default function CreateAppointment() {
 
   return (
     <>
-      <div className="min-h-full bg-background">
+      <div className="min-h-full">
         <div className="mx-auto w-full max-w-[1500px] overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="space-y-5">
             {currentStep === 1 && (
@@ -339,8 +339,8 @@ export default function CreateAppointment() {
               <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 duration-300">
                 <Card
                   className={cn(
-                    "rounded-2xl border border-white/25 bg-white/45",
-                    "shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+                    "rounded-2xl border border-border bg-glass-bg",
+                    "shadow-md backdrop-blur-xl",
                   )}
                 >
                   <CardContent className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -405,9 +405,8 @@ export default function CreateAppointment() {
               <div className="animate-in fade-in slide-in-from-bottom-4 space-y-5 duration-300">
                 <div
                   className={cn(
-                    "flex flex-col gap-3 rounded-2xl border border-white/25",
-                    "bg-white/45 p-4 shadow-sm backdrop-blur-xl",
-                    "dark:border-white/10 dark:bg-white/[0.04]",
+                    "flex flex-col gap-3 rounded-2xl border border-border",
+                    "bg-glass-bg p-4 shadow-md backdrop-blur-xl",
                     "lg:flex-row lg:items-center lg:justify-between",
                   )}
                 >
@@ -471,62 +470,62 @@ export default function CreateAppointment() {
                   <div className="min-w-0 w-full">
                     <Card
                       className={cn(
-                        "overflow-hidden rounded-[26px] border",
+                        "overflow-hidden rounded-2xl border bg-glass-bg",
                         canShowPreferredProcess
-                          ? "border-primary/20 bg-white/60 shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
-                          : "border-dashed border-muted-foreground/25 bg-muted/20",
-                        "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+                          ? "border-border shadow-md"
+                          : "border-dashed border-border/70 shadow-sm",
+                        "backdrop-blur-xl",
                       )}
                     >
-                      <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-6 lg:p-7">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="flex items-start gap-3">
-                            <div
+                      <CardHeader className="border-b border-border/60 bg-muted/30 px-4 py-4 sm:px-5">
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+                              canShowPreferredProcess
+                                ? "border-primary/15 bg-primary/10 text-primary"
+                                : "border-muted-foreground/20 bg-muted text-muted-foreground",
+                            )}
+                          >
+                            {canShowPreferredProcess ? (
+                              <CheckCircle2 className="h-4.5 w-4.5" />
+                            ) : (
+                              <LockKeyhole className="h-4.5 w-4.5" />
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p
                               className={cn(
-                                "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
+                                "text-xs font-semibold uppercase tracking-[0.14em]",
                                 canShowPreferredProcess
-                                  ? "border-primary/15 bg-primary/10 text-primary"
-                                  : "border-muted-foreground/20 bg-muted text-muted-foreground",
+                                  ? "text-primary"
+                                  : "text-muted-foreground",
                               )}
                             >
-                              {canShowPreferredProcess ? (
-                                <CheckCircle2 className="h-5 w-5" />
-                              ) : (
-                                <LockKeyhole className="h-5 w-5" />
-                              )}
-                            </div>
+                              Preferred Schedule
+                            </p>
 
-                            <div>
-                              <p
-                                className={cn(
-                                  "text-xs font-semibold uppercase tracking-[0.16em]",
-                                  canShowPreferredProcess
-                                    ? "text-primary"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                Preferred Schedule
-                              </p>
+                            <CardTitle className="mt-1 text-base font-bold tracking-tight text-foreground sm:text-lg">
+                              Choose Up to 3 Preferred Schedules
+                            </CardTitle>
 
-                              <h3 className="text-xl font-semibold leading-7 text-foreground">
-                                Choose Up to 3 Preferred Schedules
-                              </h3>
-
-                              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                                Select at least one preferred schedule. Option 1
-                                is required, while Options 2 and 3 are optional
-                                backup schedules.
-                              </p>
-                            </div>
+                            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                              Select at least one preferred schedule. Option 1 is
+                              required, while Options 2 and 3 are optional backup
+                              schedules.
+                            </p>
                           </div>
                         </div>
+                      </CardHeader>
 
+                      <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-5">
                         {!canShowPreferredProcess && (
                           <div
                             className={cn(
-                              "flex min-h-[260px] flex-col items-center justify-center rounded-[24px]",
-                              "border border-dashed border-primary/20 bg-white/45 px-6 py-10 text-center",
-                              "shadow-inner backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+                              "flex min-h-[260px] flex-col items-center justify-center rounded-2xl",
+                              "border border-dashed border-border/70 bg-muted/20 px-6 py-10 text-center",
+                              "shadow-inner",
                             )}
                           >
                             <div
@@ -567,11 +566,10 @@ export default function CreateAppointment() {
                                       setActivePreferredIndex(index)
                                     }
                                     className={cn(
-                                      "min-h-[88px] rounded-2xl border px-3 py-3 text-left transition-all sm:px-4",
+                                      "min-h-[92px] rounded-2xl border px-3 py-3 text-left transition-all sm:px-4",
                                       isActive
-                                        ? "border-primary/30 bg-primary/10 shadow-sm"
-                                        : "border-white/25 bg-white/45 hover:bg-white/60",
-                                      "dark:border-white/10 dark:bg-white/[0.04]",
+                                        ? "border-primary/40 bg-primary/10 shadow-sm"
+                                        : "border-border bg-card hover:bg-muted/30",
                                     )}
                                   >
                                     <div className="flex items-center justify-between gap-2">
@@ -608,48 +606,31 @@ export default function CreateAppointment() {
                             </div>
 
                             {!activePreferredOption.date && (
-                              <div
-                                className={cn(
-                                  "mx-auto w-full max-w-full rounded-[20px] sm:max-w-[350px]",
-                                  "border border-white/25 bg-white/45 p-1",
-                                  "shadow-sm backdrop-blur-xl",
-                                  "dark:border-white/10 dark:bg-white/[0.04]",
-                                )}
-                              >
-                                <div className="origin-top">
-                                  <Calendar
-                                    currentMonth={activePreferredOption.month}
-                                    selectedDate={activePreferredOption.date}
-                                    onMonthChange={(month) =>
-                                      updatePreferredOption(
-                                        activePreferredIndex,
-                                        {
-                                          month,
-                                        },
-                                      )
-                                    }
-                                    onDateSelect={(date) => {
-                                      updatePreferredOption(
-                                        activePreferredIndex,
-                                        {
-                                          date,
-                                          time: undefined,
-                                        },
-                                      );
-                                    }}
-                                    title={`Select Preferred Date - Option ${
-                                      activePreferredIndex + 1
-                                    }`}
-                                    occupiedDayColor="bg-primary/80"
-                                    legends={[]}
-                                    hasHeader
-                                    className="mx-auto w-full max-w-full sm:max-w-[430px]"
-                                    allowCurrentDate={false}
-                                    allowPastDates={false}
-                                    maxDate={maxDate}
-                                  />
-                                </div>
-                              </div>
+                              <Calendar
+                                currentMonth={activePreferredOption.month}
+                                selectedDate={activePreferredOption.date}
+                                onMonthChange={(month) =>
+                                  updatePreferredOption(activePreferredIndex, {
+                                    month,
+                                  })
+                                }
+                                onDateSelect={(date) => {
+                                  updatePreferredOption(activePreferredIndex, {
+                                    date,
+                                    time: undefined,
+                                  });
+                                }}
+                                title={`Select Preferred Date - Option ${
+                                  activePreferredIndex + 1
+                                }`}
+                                occupiedDayColor="bg-primary/80"
+                                legends={[]}
+                                hasHeader
+                                className="mx-auto w-full max-w-full sm:max-w-[430px]"
+                                allowCurrentDate={false}
+                                allowPastDates={false}
+                                maxDate={maxDate}
+                              />
                             )}
 
                             {activePreferredOption.date &&
@@ -657,8 +638,8 @@ export default function CreateAppointment() {
                                 <div className="space-y-4">
                                   <Card
                                     className={cn(
-                                      "rounded-2xl border border-primary/15 bg-primary/10",
-                                      "shadow-sm backdrop-blur-xl",
+                                      "rounded-2xl border border-border bg-card",
+                                      "shadow-sm",
                                     )}
                                   >
                                     <CardContent className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -666,8 +647,7 @@ export default function CreateAppointment() {
                                         <div
                                           className={cn(
                                             "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                                            "border border-primary/15 bg-white/55 text-primary",
-                                            "dark:bg-white/[0.06]",
+                                            "border border-primary/15 bg-primary/10 text-primary",
                                           )}
                                         >
                                           <CalendarDays className="h-4.5 w-4.5" />
@@ -704,7 +684,7 @@ export default function CreateAppointment() {
                                     </CardContent>
                                   </Card>
 
-                                  <div className="min-w-0 rounded-[24px] border border-white/25 bg-white/45 p-2 dark:border-white/10 dark:bg-white/[0.04] sm:p-3">
+                                  <div className="min-w-0">
                                     <SlotSelector
                                       selectedDate={activePreferredOption.date}
                                       selectedTime={activePreferredOption.time}
@@ -883,3 +863,4 @@ export default function CreateAppointment() {
     </>
   );
 }
+

@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from "react";
-import {
-  X,
-  MousePointer2,
-  Ear,
-  AudioLines,
-} from "lucide-react";
-import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import React, { useEffect, useState } from "react";
+import { AudioLines, Ear, MousePointer2, X } from "lucide-react";
+
 import { useUI } from "@/context";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cn } from "@/lib/utils";
 
 export const SpeechControl: React.FC = () => {
@@ -18,13 +14,13 @@ export const SpeechControl: React.FC = () => {
   const [readerActive, setReaderActive] = useState(false);
   const [showTip, setShowTip] = useState(false);
 
-  // Auto-show after a short delay
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
       const viewedTip = localStorage.getItem("speech_tip_viewed_v2");
       if (!viewedTip) setShowTip(true);
     }, 1500);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -35,58 +31,60 @@ export const SpeechControl: React.FC = () => {
 
   const handleToggle = () => {
     dismissTip();
-    const newState = !readerActive;
-    setReaderActive(newState);
-    if (!newState) {
+
+    const nextState = !readerActive;
+    setReaderActive(nextState);
+
+    if (!nextState) {
       stop();
-      // Remove any leftover outlines
       document.querySelectorAll(".reader-highlight").forEach((el) => {
         el.classList.remove("reader-highlight");
       });
     }
   };
 
-  // Global Interaction Logic
   useEffect(() => {
     if (!readerActive) return;
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Filter out speech control UI and any portaled content (like dropdowns)
+
       if (
         target.closest(".speech-control-ui") ||
         target.closest(".speech-control-ignore") ||
         target.closest("[data-radix-portal]")
-      )
+      ) {
         return;
+      }
 
-      // Clean up previous
       document.querySelectorAll(".reader-highlight").forEach((el) => {
         el.classList.remove("reader-highlight");
       });
 
-      // Add highlight to current
       target.classList.add("reader-highlight");
     };
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Filter out speech control UI and any portaled content (like dropdowns)
+
       if (
         target.closest(".speech-control-ui") ||
         target.closest(".speech-control-ignore") ||
         target.closest("[data-radix-portal]")
-      )
+      ) {
         return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
 
       const text = target.innerText || target.getAttribute("aria-label") || "";
+
       if (text.trim()) {
         const voice = voices.find(
           (v) => v.name === speechVoice || v.voiceURI === speechVoice,
         );
+
         speak(text, {
           rate: speechRate,
           voiceName: voice?.name || speechVoice,
@@ -105,15 +103,21 @@ export const SpeechControl: React.FC = () => {
         el.classList.remove("reader-highlight");
       });
     };
-  }, [readerActive, speak, speechRate, speechVoice]);
+  }, [readerActive, speak, speechRate, speechVoice, stop, voices]);
 
   if (!isVisible) return null;
 
   return (
     <div
-      className={`speech-control-ui fixed z-50 flex flex-col items-end gap-3 transition-all duration-500 ${isMobile ? "bottom-24 right-4" : "bottom-6 right-6"}`}
+      className={cn(
+        "speech-control-ui fixed z-50 flex flex-col items-end gap-3 transition-all duration-500",
+        "right-4 sm:right-5 lg:right-6",
+        "bottom-[calc(env(safe-area-inset-bottom)+1rem)]",
+        "sm:bottom-[calc(env(safe-area-inset-bottom)+1.25rem)]",
+        "lg:bottom-[calc(env(safe-area-inset-bottom)+1.5rem)]",
+        isMobile && "bottom-24 right-4",
+      )}
     >
-      {/* Quick Tip */}
       {showTip && !readerActive && (
         <div
           className={cn(
@@ -123,21 +127,24 @@ export const SpeechControl: React.FC = () => {
           )}
         >
           <button
+            type="button"
             onClick={dismissTip}
+            aria-label="Dismiss reader mode tip"
             className="absolute -right-1 -top-1 rounded-full border border-white/20 bg-slate-900 p-1"
           >
             <X size={10} />
           </button>
+
           <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
             <Ear size={14} /> Interactive Reader
           </p>
+
           <p className="text-[10px] leading-tight opacity-90">
             Turn it on and click any part of the page to have it read aloud!
           </p>
         </div>
       )}
 
-      {/* Reader Status Indicator */}
       {readerActive && (
         <div
           className={cn(
@@ -158,25 +165,34 @@ export const SpeechControl: React.FC = () => {
         </div>
       )}
 
-      {/* Main Toggle Bubble */}
       <div className="pointer-events-auto">
         <button
+          type="button"
           onClick={handleToggle}
-          className={`group relative flex h-16 w-16 items-center justify-center border shadow-[0_12px_40px_-8px_rgb(0,0,0,0.15)] transition-all duration-500 ${
+          aria-label={readerActive ? "Turn off reader mode" : "Turn on reader mode"}
+          aria-pressed={readerActive}
+          className={cn(
+            "group relative flex items-center justify-center rounded-full border",
+            "h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16",
+            "shadow-[0_12px_40px_-8px_rgb(0,0,0,0.15)]",
+            "transition-all duration-500 active:scale-95",
             readerActive
-              ? "rounded-full border-primary bg-primary text-primary-foreground"
-              : "rounded-full border-white/20 bg-primary text-primary-foreground hover:scale-110 active:scale-95"
-          } `}
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-white/20 bg-primary text-primary-foreground hover:scale-105",
+          )}
         >
-          {readerActive ? <Ear size={30} /> : <AudioLines size={30} />}
+          {readerActive ? (
+            <Ear className="h-6 w-6 lg:h-7 lg:w-7" />
+          ) : (
+            <AudioLines className="h-6 w-6 lg:h-7 lg:w-7" />
+          )}
 
-          {/* Status Label (Desktop) */}
           {!readerActive && !isMobile && (
             <span
               className={cn(
                 "absolute right-full mr-3 translate-x-2 whitespace-nowrap",
                 "rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium",
-                "text-white opacity-0 transition-opacity duration-200",
+                "text-white opacity-0 transition-all duration-200",
                 "group-hover:translate-x-0 group-hover:opacity-100",
               )}
             >
@@ -184,7 +200,6 @@ export const SpeechControl: React.FC = () => {
             </span>
           )}
 
-          {/* Active Ping */}
           {readerActive && (
             <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
           )}

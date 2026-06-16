@@ -136,7 +136,9 @@ export function SlipList({
               {slip.user?.firstName} {slip.user?.lastName}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              {slip.studentNumber || slip.user?.studentNumber || "Student record"}
+              {slip.studentNumber ||
+                slip.user?.studentNumber ||
+                "Student record"}
             </p>
           </div>
         ),
@@ -186,8 +188,9 @@ export function SlipList({
         render: (slip) => (
           <span
             className={cn(
-              "inline-flex min-w-max whitespace-nowrap rounded-full border",
-              "px-2.5 py-1 text-[11px] font-semibold tracking-wide",
+              "inline-flex min-h-6 min-w-max whitespace-nowrap rounded-full border",
+              "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+              "[overflow-wrap:normal] [word-break:normal]",
               STATUS_COLORS[getStatusColorKey(slip.status?.name)],
             )}
           >
@@ -223,8 +226,9 @@ export function SlipList({
 
         <span
           className={cn(
-            "shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1",
-            "text-[10px] font-bold tracking-wide shadow-sm",
+            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-full border",
+            "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+            "[overflow-wrap:normal] [word-break:normal]",
             STATUS_COLORS[getStatusColorKey(slip.status?.name)],
           )}
         >
@@ -428,7 +432,7 @@ export function SlipList({
                   type="text"
                   value={searchTerm ?? ""}
                   onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by student name, number, or reason..."
+                  placeholder="Search by name, email, or student number...."
                   spellCheck={false}
                   autoComplete="off"
                   className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"

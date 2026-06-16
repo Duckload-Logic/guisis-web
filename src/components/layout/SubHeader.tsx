@@ -46,10 +46,10 @@ export default function SubHeader({
           {badgeText && (
             <div
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border",
-                "border-white/30 bg-white/60 px-3 py-1 text-xs font-medium",
-                "text-muted-foreground backdrop-blur-md dark:border-white/10",
-                "dark:bg-white/[0.05]",
+                "inline-flex h-7 items-center gap-2 rounded-full border",
+                "border-border/70 bg-muted/40 px-3 text-[11px] font-semibold",
+                "leading-none text-muted-foreground shadow-sm backdrop-blur-md",
+                "dark:border-white/10 dark:bg-white/[0.05]",
               )}
             >
               {badgeIcon}

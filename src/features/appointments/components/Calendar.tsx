@@ -1,15 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCalendarStats } from "../hooks/useCalendar";
 import { DailyStatusCount } from "../types/calendar";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface Legend {
@@ -72,10 +64,12 @@ export default function Calendar({
   const currentYear = currentMonth.getFullYear();
   const currentMonthIndex = currentMonth.getMonth();
 
-  const { data: daysMeta, isLoading: isLoadingDaysMeta } = useCalendarStats({
-    isAdmin: isAdmin,
+  const { data: daysMeta } = useCalendarStats({
+    isAdmin,
     params: {
-      startDate: `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-01`,
+      startDate: `${currentMonth.getFullYear()}-${String(
+        currentMonth.getMonth() + 1,
+      ).padStart(2, "0")}-01`,
     },
   });
 
@@ -122,6 +116,16 @@ export default function Calendar({
     year: "numeric",
   });
 
+  const formatDateKey = useCallback(
+    (day: number): string => {
+      return `${currentYear}-${String(currentMonthIndex + 1).padStart(
+        2,
+        "0",
+      )}-${String(day).padStart(2, "0")}`;
+    },
+    [currentYear, currentMonthIndex],
+  );
+
   const isDateDisabled = useCallback(
     (day: number): boolean => {
       const date = new Date(currentYear, currentMonthIndex, day);
@@ -129,11 +133,16 @@ export default function Calendar({
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       const isPast = isCurrentMonth ? day < todayDate : currentMonth < today;
       const isToday = isCurrentMonth && day === todayDate;
+      const dateKey = `${currentYear}-${String(currentMonthIndex + 1).padStart(
+        2,
+        "0",
+      )}-${String(day).padStart(2, "0")}`;
 
       if (!allowWeekends && isWeekend) return true;
       if (!allowPastDates && isPast) return true;
       if (!allowCurrentDate && isToday) return true;
       if (maxDate && date > maxDate) return true;
+      if (bookedDates.has(dateKey)) return true;
       return false;
     },
     [
@@ -147,14 +156,8 @@ export default function Calendar({
       allowPastDates,
       allowCurrentDate,
       maxDate,
+      bookedDates,
     ],
-  );
-
-  const formatDateKey = useCallback(
-    (day: number): string => {
-      return `${currentYear}-${String(currentMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    },
-    [currentYear, currentMonthIndex],
   );
 
   const handleDateClick = (day: number) => {
@@ -170,129 +173,69 @@ export default function Calendar({
   ];
 
   const displayLegends = legends || defaultLegends;
-
   const hasInitialCalendarChecked = useRef(false);
 
   useEffect(() => {
     if (hasInitialCalendarChecked.current) return;
 
-    const checkAndSkip = () => {
-      const allDaysDisabled = Array.from(
-        { length: daysInMonth },
-        (_, i) => i + 1,
-      ).every((day) => isDateDisabled(day));
+    const allDaysDisabled = Array.from(
+      { length: daysInMonth },
+      (_, i) => i + 1,
+    ).every((day) => isDateDisabled(day));
 
-      if (allDaysDisabled) {
-        const nextMonth = new Date(currentYear, currentMonthIndex + 1, 1);
-        onMonthChange(nextMonth);
-      } else {
-        hasInitialCalendarChecked.current = true;
-      }
-    };
+    if (allDaysDisabled) {
+      onMonthChange(new Date(currentYear, currentMonthIndex + 1, 1));
+      return;
+    }
 
-    checkAndSkip();
-  }, [currentMonth, isDateDisabled, onMonthChange]);
+    hasInitialCalendarChecked.current = true;
+  }, [
+    currentMonth,
+    daysInMonth,
+    isDateDisabled,
+    onMonthChange,
+    currentYear,
+    currentMonthIndex,
+  ]);
 
   return (
-    <>
-      {/* Mobile View: Inline Card */}
-      <div className="w-full sm:hidden">
-        <Card
-          className={cn(
-            "bg-glass-bg/40 hover:bg-glass-bg/50 h-fit border-glass-border",
-            "shadow-md backdrop-blur-2xl transition-all duration-500",
-            className,
-          )}
-        >
-          {hasHeader && (
-            <CardHeader
-              className={cn(
-                "border-glass-border/30 border-b bg-muted/10",
-                "px-3 py-3.5",
-              )}
-            >
-              <CardTitle
-                className={cn(
-                  "text-lg font-bold tracking-tight",
-                  "text-foreground/90",
-                )}
-              >
-                {title}
-              </CardTitle>
-            </CardHeader>
-          )}
-          <CardContent className="px-2.5 pb-4 pt-4">
-            <CalendarContent
-              monthName={monthName}
-              handlePrevMonth={handlePrevMonth}
-              handleNextMonth={handleNextMonth}
-              emptyDays={emptyDays}
-              days={days}
-              formatDateKey={formatDateKey}
-              isCurrentMonth={isCurrentMonth}
-              todayDate={todayDate}
-              selectedDate={selectedDate}
-              currentMonthIndex={currentMonthIndex}
-              currentYear={currentYear}
-              isDateDisabled={isDateDisabled}
-              handleDateClick={handleDateClick}
-              isAdmin={isAdmin}
-              statsMap={statsMap}
-              displayLegends={displayLegends}
-            />
-          </CardContent>
-        </Card>
-      </div>
+    <Card
+      className={cn(
+        "h-fit overflow-hidden rounded-2xl border border-border bg-glass-bg",
+        "shadow-md backdrop-blur-xl transition-all duration-300",
+        className,
+      )}
+    >
+      {hasHeader && (
+        <CardHeader className="border-b border-border/60 bg-muted/30 px-4 py-4 sm:px-6 sm:py-5">
+          <CardTitle className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+            {title}
+          </CardTitle>
+        </CardHeader>
+      )}
 
-      {/* Desktop View: Inline Card */}
-      <div className="hidden sm:block">
-        <Card
-          className={cn(
-            "bg-glass-bg/40 hover:bg-glass-bg/50 h-fit border-glass-border",
-            "shadow-md backdrop-blur-2xl transition-all duration-500",
-            className,
-          )}
-        >
-          {hasHeader && (
-            <CardHeader
-              className={cn(
-                "border-glass-border/30 rounded-t-3xl border-b bg-muted/10",
-                "px-6 py-5",
-              )}
-            >
-              <CardTitle
-                className={cn(
-                  "text-xl font-bold tracking-tight",
-                  "text-foreground/90",
-                )}
-              >
-                {title}
-              </CardTitle>
-            </CardHeader>
-          )}
-          <CardContent className="px-6 pb-8 pt-8">
-            <CalendarContent
-              monthName={monthName}
-              handlePrevMonth={handlePrevMonth}
-              handleNextMonth={handleNextMonth}
-              emptyDays={emptyDays}
-              days={days}
-              formatDateKey={formatDateKey}
-              isCurrentMonth={isCurrentMonth}
-              todayDate={todayDate}
-              selectedDate={selectedDate}
-              currentMonthIndex={currentMonthIndex}
-              currentYear={currentYear}
-              isDateDisabled={isDateDisabled}
-              handleDateClick={handleDateClick}
-              isAdmin={isAdmin}
-              statsMap={statsMap}
-              displayLegends={displayLegends}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </>
+      <CardContent className="px-3 pb-5 pt-5 min-[420px]:px-4 sm:px-6 sm:pb-8 sm:pt-8">
+        <CalendarContent
+          monthName={monthName}
+          handlePrevMonth={handlePrevMonth}
+          handleNextMonth={handleNextMonth}
+          emptyDays={emptyDays}
+          days={days}
+          formatDateKey={formatDateKey}
+          isCurrentMonth={isCurrentMonth}
+          todayDate={todayDate}
+          selectedDate={selectedDate}
+          currentMonthIndex={currentMonthIndex}
+          currentYear={currentYear}
+          isDateDisabled={isDateDisabled}
+          handleDateClick={handleDateClick}
+          isAdmin={isAdmin}
+          statsMap={statsMap}
+          displayLegends={displayLegends}
+          occupiedDayColor={occupiedDayColor}
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -313,6 +256,7 @@ interface CalendarContentProps {
   isAdmin: boolean;
   statsMap: any;
   displayLegends: Legend[];
+  occupiedDayColor: string;
 }
 
 function CalendarContent({
@@ -332,50 +276,63 @@ function CalendarContent({
   isAdmin,
   statsMap,
   displayLegends,
+  occupiedDayColor,
 }: CalendarContentProps) {
   return (
-    <div className="flex flex-col p-0">
-      {/* Month Navigation */}
+    <div className="flex min-w-0 flex-col p-0">
       <div className="mb-4 flex min-w-0 items-center justify-between gap-2 sm:mb-6">
         <button
+          type="button"
           onClick={handlePrevMonth}
-          className="rounded p-2 transition-colors hover:bg-muted"
+          className={cn(
+            "flex h-10 w-10 min-h-0 shrink-0 items-center justify-center rounded-lg p-0",
+            "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+            "[overflow-wrap:normal] [word-break:normal]",
+          )}
+          aria-label="Previous month"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <span aria-hidden="true" className="text-2xl font-semibold leading-none">
+            ‹
+          </span>
         </button>
-        <h2 className="min-w-0 flex-1 text-center text-base font-semibold sm:text-lg">
+
+        <h2 className="min-w-0 flex-1 truncate text-center text-base font-semibold text-foreground sm:text-lg">
           {monthName}
         </h2>
+
         <button
+          type="button"
           onClick={handleNextMonth}
-          className="rounded p-2 transition-colors hover:bg-muted"
+          className={cn(
+            "flex h-10 w-10 min-h-0 shrink-0 items-center justify-center rounded-lg p-0",
+            "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+            "[overflow-wrap:normal] [word-break:normal]",
+          )}
+          aria-label="Next month"
         >
-          <ChevronRight className="h-5 w-5" />
+          <span aria-hidden="true" className="text-2xl font-semibold leading-none">
+            ›
+          </span>
         </button>
       </div>
 
-      {/* Calendar Grid */}
       <div className="space-y-4">
-        {/* Day Headers */}
         <div className="grid grid-cols-7 text-center">
           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
             <div
               key={day}
-              className="text-xs font-bold text-muted-foreground"
+              className="text-xs font-bold uppercase tracking-[0.04em] text-muted-foreground"
             >
               {day}
             </div>
           ))}
         </div>
 
-        {/* Calendar Days */}
         <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {emptyDays.map((_, idx) => (
-            <div
-              key={`empty-${idx}`}
-              className="w-full aspect-square"
-            />
+            <div key={`empty-${idx}`} className="aspect-square w-full" />
           ))}
+
           {days.map((day) => {
             const dateKey = formatDateKey(day);
             const isToday = isCurrentMonth && day === todayDate;
@@ -385,45 +342,32 @@ function CalendarContent({
               selectedDate.getFullYear() === currentYear;
             const isDisabled = isDateDisabled(day);
 
-            let btnClass = cn(
-              "flex w-full aspect-square max-w-[2.25rem] sm:max-w-[3rem]",
-              "items-center justify-center text-nowrap rounded-full",
-              "text-xs font-semibold transition-all focus:outline-none sm:text-sm",
-              "focus:ring-1 focus:ring-primary/50",
+            const btnClass = cn(
+              "mx-auto flex aspect-square w-full max-w-[2.25rem] items-center justify-center rounded-full p-0",
+              "whitespace-nowrap text-center text-xs font-semibold leading-none transition-all sm:max-w-[3rem] sm:text-sm",
+              "[overflow-wrap:normal] [word-break:normal] focus:outline-none focus:ring-1 focus:ring-primary/50",
+              isDisabled &&
+                "cursor-not-allowed bg-transparent text-muted-foreground/35",
+              !isDisabled &&
+                isSelected &&
+                `${occupiedDayColor} text-primary-foreground shadow`,
+              !isDisabled &&
+                !isSelected &&
+                isToday &&
+                "border border-primary bg-transparent text-primary hover:bg-muted/80",
+              !isDisabled &&
+                !isSelected &&
+                !isToday &&
+                "bg-transparent text-foreground hover:bg-muted/80",
             );
-
-            if (isDisabled) {
-              btnClass = cn(
-                btnClass,
-                "text-muted-foreground/35 cursor-not-allowed bg-transparent",
-              );
-            } else if (isSelected) {
-              btnClass = cn(
-                btnClass,
-                "bg-primary text-primary-foreground shadow",
-              );
-            } else if (isToday) {
-              btnClass = cn(
-                btnClass,
-                "border border-primary text-primary bg-transparent",
-                "hover:bg-muted/80",
-              );
-            } else {
-              btnClass = cn(
-                btnClass,
-                "text-foreground bg-transparent hover:bg-muted/80",
-              );
-            }
 
             return (
               <div
                 key={day}
-                className={cn(
-                  "group relative flex w-full aspect-square",
-                  "items-center justify-center",
-                )}
+                className="group relative flex aspect-square w-full items-center justify-center"
               >
                 <button
+                  type="button"
                   disabled={isDisabled}
                   onClick={() => handleDateClick(day)}
                   className={btnClass}
@@ -432,42 +376,24 @@ function CalendarContent({
                 >
                   {day}
                 </button>
+
                 {isAdmin && statsMap[dateKey] && (
-                  <div
-                    className={cn(
-                      "pointer-events-none absolute left-1/2 top-0 flex",
-                      "-translate-x-1/2 -translate-y-1/2 -space-x-1",
-                    )}
-                  >
-                    {/* Rescheduled is first in row-reverse order */}
+                  <div className="pointer-events-none absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 -space-x-1">
                     {statsMap[dateKey].rescheduledCount > 0 && (
                       <div
-                        className={cn(
-                          "size-3 rounded-full border-2 border-notice-foreground",
-                          "bg-notice-background",
-                        )}
+                        className="size-3 rounded-full border-2 border-notice-foreground bg-notice-background"
                         title="Rescheduled"
                       />
                     )}
-
-                    {/* Scheduled is rendered second (middle) */}
                     {statsMap[dateKey].scheduledCount > 0 && (
                       <div
-                        className={cn(
-                          "size-3 rounded-full border-2 border-info-foreground",
-                          "bg-info-background",
-                        )}
+                        className="size-3 rounded-full border-2 border-info-foreground bg-info-background"
                         title="Scheduled"
                       />
                     )}
-
-                    {/* Pending is rendered last */}
                     {statsMap[dateKey].pendingCount > 0 && (
                       <div
-                        className={cn(
-                          "size-3 rounded-full border-2 border-warning-foreground",
-                          "bg-warning-background",
-                        )}
+                        className="size-3 rounded-full border-2 border-warning-foreground bg-warning-background"
                         title="Pending"
                       />
                     )}
@@ -479,18 +405,17 @@ function CalendarContent({
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4 sm:mt-8 sm:gap-3">
-        {displayLegends.map(({ color, label }) => (
-          <div
-            key={label}
-            className="flex items-center gap-2 text-xs"
-          >
-            <div className={`size-3 rounded-full border ${color}`} />
-            <span>{label}</span>
-          </div>
-        ))}
-      </div>
+      {displayLegends.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4 sm:mt-8 sm:gap-3">
+          {displayLegends.map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-2 text-xs">
+              <div className={cn("size-3 rounded-full border", color)} />
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
