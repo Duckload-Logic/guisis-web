@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { SearchInput, Dropdown } from "@/components/form";
+import { Dropdown } from "@/components/form";
 import { useMemo } from "react";
 import { Pagination, Table, Column } from "@/components/shared";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { Eye, Calendar, Tag, Inbox, User } from "lucide-react";
+import { Eye, Calendar, Tag, Inbox, Search, User, X } from "lucide-react";
 import type { Slip } from "../types";
 import { formatDate } from "@/utils/dateTime";
 import { SlipStatus, SlipStats } from "../types";
@@ -46,8 +46,13 @@ interface SlipListProps {
   className?: string;
 }
 
+function formatCompactSlipDate(value?: string) {
+  if (!value) return "—";
+  return formatDate(value) || "—";
+}
+
 export function SlipList({
-  title = "Submitted Admission Slips",
+  title = "Admission Slip List",
   searchTerm = "",
   onSearchChange,
   statuses,
@@ -124,63 +129,65 @@ export function SlipList({
     () => [
       {
         header: "Student Name",
-        className: "px-6 py-4 text-left",
+        className: "min-w-[220px]",
         render: (slip) => (
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-foreground">
+          <div className="space-y-0.5">
+            <p className="font-semibold text-foreground">
               {slip.user?.firstName} {slip.user?.lastName}
             </p>
-            <p className="truncate text-[10px] text-muted-foreground opacity-70">
-              {slip.studentNumber || slip.user?.studentNumber || "-"}
+            <p className="text-[11px] text-muted-foreground">
+              {slip.studentNumber || slip.user?.studentNumber || "Student record"}
             </p>
           </div>
         ),
       },
       {
         header: "Absence Date",
-        className: "px-6 py-4 text-left",
+        className: "min-w-[155px]",
         render: (slip) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-foreground/80">
-            <Calendar className="h-3.5 w-3.5 text-primary/60" />
-            {formatDate(slip.dateOfAbsence)}
+          <div className="space-y-0.5">
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {formatCompactSlipDate(slip.dateOfAbsence)}
+            </p>
+            <p className="text-[11px] text-muted-foreground">Date of absence</p>
           </div>
         ),
       },
       {
         header: "Date Needed",
-        className: "px-6 py-4 text-left",
+        className: "min-w-[155px]",
         render: (slip) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-foreground/80">
-            <Calendar className="h-3.5 w-3.5 text-primary/60" />
-            {formatDate(slip.dateNeeded)}
+          <div className="space-y-0.5">
+            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+              {formatCompactSlipDate(slip.dateNeeded)}
+            </p>
+            <p className="text-[11px] text-muted-foreground">Needed date</p>
           </div>
         ),
       },
       {
         header: "Category",
-        className: "px-4 py-4 text-left",
+        className: "min-w-[150px]",
         render: (slip) => (
-          <div
+          <span
             className={cn(
-              "border-glass-border/20 flex w-fit items-center gap-2",
-              "rounded-full border bg-muted/20 px-2.5 py-1 text-xs font-bold",
-              "tracking-tight text-foreground",
+              "inline-flex max-w-[170px] items-center rounded-full border",
+              "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
+              "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
             )}
           >
-            <Tag className="h-3 w-3 text-muted-foreground/60" />
-            <span className="max-w-[140px] truncate">
-              {slip.category?.name || "-"}
-            </span>
-          </div>
+            <span className="truncate">{slip.category?.name || "-"}</span>
+          </span>
         ),
       },
       {
         header: "Status",
-        className: "px-4 py-4 text-left",
+        className: "min-w-[130px]",
         render: (slip) => (
           <span
             className={cn(
-              "inline-block rounded-full border px-2.5 py-1 text-xs font-medium",
+              "inline-flex min-w-max whitespace-nowrap rounded-full border",
+              "px-2.5 py-1 text-[11px] font-semibold tracking-wide",
               STATUS_COLORS[getStatusColorKey(slip.status?.name)],
             )}
           >
@@ -189,31 +196,35 @@ export function SlipList({
         ),
       },
     ],
-    [onViewClick],
+    [],
   );
 
   const renderMobileItem = (slip: Slip) => (
     <div
       key={slip.id}
       className={cn(
-        "bg-glass-bg/20 border-glass-border/20 space-y-4 rounded-3xl",
-        "border p-6 shadow-sm backdrop-blur-md transition-all",
-        "duration-300",
+        "space-y-3 rounded-2xl border border-border/70 bg-card p-4",
+        "shadow-sm backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
+        "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 text-sm font-bold text-foreground">
-          <div className="rounded-xl border border-primary/20 bg-primary/10 p-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <User className="h-4 w-4 text-primary" />
+            <span className="truncate">
+              {slip.user?.firstName} {slip.user?.lastName}
+            </span>
           </div>
-          <span className="tracking-tight">
-            {slip.user?.firstName} {slip.user?.lastName}
-          </span>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+            {slip.studentNumber || slip.user?.studentNumber || "Student record"}
+          </p>
         </div>
 
         <span
           className={cn(
-            "inline-block rounded-full border px-2.5 py-1 text-[10px] font-bold",
+            "shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1",
+            "text-[10px] font-bold tracking-wide shadow-sm",
             STATUS_COLORS[getStatusColorKey(slip.status?.name)],
           )}
         >
@@ -221,40 +232,48 @@ export function SlipList({
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-[10px] font-bold">
-        <div
-          className={cn(
-            "border-glass-border/10 flex items-center gap-2 rounded-xl",
-            "border bg-muted/20 px-3 py-2 text-muted-foreground/80",
-          )}
-        >
-          <Calendar className="h-3.5 w-3.5 text-primary/60" />
-          <span>{formatDate(slip.dateOfAbsence)}</span>
+      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Absence Date
+          </p>
+          <p className="mt-0.5 font-semibold text-foreground">
+            {formatCompactSlipDate(slip.dateOfAbsence)}
+          </p>
         </div>
 
-        <div
-          className={cn(
-            "border-glass-border/10 flex items-center gap-2 rounded-xl",
-            "border bg-muted/20 px-3 py-2 text-muted-foreground/80",
-          )}
-        >
-          <Tag className="h-3.5 w-3.5 text-primary/60" />
-          <span>{slip.category?.name || "-"}</span>
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Date Needed
+          </p>
+          <p className="mt-0.5 font-semibold text-foreground">
+            {formatCompactSlipDate(slip.dateNeeded)}
+          </p>
         </div>
       </div>
 
-      <div className="pt-2">
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <span
+          className={cn(
+            "inline-flex max-w-[160px] items-center gap-1.5 rounded-full border",
+            "border-border/70 bg-muted/30 px-2.5 py-1 text-[11px] font-medium",
+          )}
+        >
+          <Tag className="h-3 w-3 text-muted-foreground" />
+          <span className="truncate">{slip.category?.name || "-"}</span>
+        </span>
+
         <Button
           size="sm"
           variant="outline"
           onClick={() => onViewClick(slip)}
           className={cn(
-            "h-11 w-full gap-2 rounded-2xl border-primary/20 bg-primary/5",
-            "text-[10px] font-bold text-primary",
+            "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
+            "px-3 text-[11px] font-semibold text-primary",
           )}
         >
           <Eye className="h-3.5 w-3.5" />
-          Access Interface
+          View
         </Button>
       </div>
     </div>
@@ -270,7 +289,7 @@ export function SlipList({
       <div
         className={cn(
           "mb-4 flex h-14 w-14 items-center justify-center",
-          "rounded-full bg-muted",
+          "rounded-full border border-dashed border-border/70 bg-muted/40",
         )}
       >
         <Inbox className="h-6 w-6 text-muted-foreground" />
@@ -288,47 +307,33 @@ export function SlipList({
   );
 
   const renderDesktopSkeleton = () => (
-    <table className="w-full border-separate border-spacing-y-2 text-sm">
-      <thead className="text-[10px] font-bold text-muted-foreground opacity-60">
-        <tr>
-          <th className="px-6 py-4 text-left">Student Name</th>
-          <th className="px-6 py-4 text-left">Absence Date</th>
-          <th className="px-6 py-4 text-left">Date Needed</th>
-          <th className="px-4 py-4 text-left">Category</th>
-          <th className="px-4 py-4 text-left">Status</th>
-          <th className="px-6 py-4 pr-10 text-left">Actions</th>
+    <table className="w-full border-collapse text-sm">
+      <thead>
+        <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+          {columns.map((column) => (
+            <th
+              key={column.header}
+              className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
+            >
+              {column.header}
+            </th>
+          ))}
         </tr>
       </thead>
       <tbody>
         {Array.from({ length: 5 }).map((_, idx) => (
           <tr
             key={idx}
-            className="animate-pulse"
+            className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
-            <td className="rounded-l-[20px] px-6 py-6 text-sm">
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-28 rounded" />
-                  <Skeleton className="h-3 w-36 rounded" />
-                </div>
-              </div>
-            </td>
-            <td className="px-6 py-6">
-              <Skeleton className="h-4 w-20 rounded" />
-            </td>
-            <td className="px-6 py-6">
-              <Skeleton className="h-4 w-20 rounded" />
-            </td>
-            <td className="px-4 py-4">
-              <Skeleton className="h-6 w-24 rounded-full" />
-            </td>
-            <td className="px-4 py-4">
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </td>
-            <td className="rounded-r-[20px] px-6 py-4">
-              <Skeleton className="h-8 w-16 rounded-full" />
-            </td>
+            {columns.map((column) => (
+              <td
+                key={column.header}
+                className="px-4 py-3"
+              >
+                <Skeleton className="h-4 w-24 rounded" />
+              </td>
+            ))}
           </tr>
         ))}
       </tbody>
@@ -341,22 +346,19 @@ export function SlipList({
         <div
           key={idx}
           className={cn(
-            "bg-glass-bg/20 border-glass-border/20 space-y-4",
-            "animate-pulse rounded-3xl border p-6 shadow-sm",
+            "animate-pulse rounded-2xl border border-border/70",
+            "bg-card p-4 shadow-sm backdrop-blur-xl",
+            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-8 w-8 rounded-xl" />
-              <Skeleton className="h-5 w-24 rounded" />
-            </div>
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-5 w-36 rounded" />
             <Skeleton className="h-6 w-16 rounded-full" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-8 w-full rounded-xl" />
-            <Skeleton className="h-8 w-full rounded-xl" />
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
           </div>
-          <Skeleton className="h-11 w-full rounded-2xl" />
         </div>
       ))}
     </>
@@ -364,74 +366,126 @@ export function SlipList({
 
   return (
     <Card
-      className={`bg-glass-bg/40 hover:bg-glass-bg/50 flex flex-col overflow-hidden border-glass-border shadow-md backdrop-blur-2xl transition-all duration-500 ${className || ""}`}
+      className={cn(
+        "flex flex-col overflow-hidden rounded-2xl border border-border/70",
+        "bg-card shadow-md backdrop-blur-2xl transition-all duration-300",
+        "dark:border-white/10 dark:bg-white/[0.04]",
+        className,
+      )}
     >
-      <CardHeader className="border-glass-border/30 space-y-6 border-b bg-muted/10 px-8 py-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1.5 text-left">
-            <h2 className="text-xl font-bold tracking-tight text-foreground/90">
+      <CardHeader
+        className={cn(
+          "space-y-4 border-b border-border/70 px-5 py-5",
+          "bg-gradient-to-br from-muted/30 via-background/70 to-background",
+          "dark:border-white/10 dark:from-white/[0.04] dark:via-white/[0.025] dark:to-transparent",
+        )}
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1 text-left">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {title}
             </h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Student details, absence date, and date needed are shown in one
+              compact table.
+            </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
             <div
               className={cn(
                 "self-start rounded-full border border-primary/20",
-                "bg-primary/10 px-4 py-1.5 text-[10px] font-bold",
+                "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
                 "text-primary shadow-sm",
               )}
             >
-              {slips.length} Record{slips.length !== 1 ? "s" : ""}
+              {slips.length} record{slips.length !== 1 ? "s" : ""}
             </div>
           )}
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-          <SearchInput
-            placeholder="Search by student name, number, or reason..."
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange!}
-            className="border-glass-border/40 focus:bg-glass-bg/60 w-full rounded-2xl"
-            hasHeader={false}
-          />
+        <div
+          className={cn(
+            "rounded-2xl border border-border/60 bg-background/70 p-3 shadow-sm",
+            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
+          )}
+        >
+          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                Search
+              </label>
+              <div
+                className={cn(
+                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
+                  "bg-muted/50 px-3 shadow-sm transition-all duration-200",
+                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
+                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                )}
+              >
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchTerm ?? ""}
+                  onChange={(event) => onSearchChange?.(event.target.value)}
+                  placeholder="Search by student name, number, or reason..."
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange?.("")}
+                    className={cn(
+                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
+                      "text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
+                    )}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
 
-          <Dropdown
-            label="Status"
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              const status = statuses.find(
-                (s) => String(s.id) === String(val),
-              );
-              if (status) onStatusChange(status);
-            }}
-            labelKey="displayName"
-            enabled={!isLoading}
-            formStyle={false}
-          />
-
-          {sortOptions.length > 0 && onSortChange && (
             <Dropdown
-              label="Sort By"
-              options={sortOptions}
-              value={selectedSort}
-              onChange={handleRequiredSortChange}
+              label="Status"
+              options={dropdownOptions}
+              value={selectedStatus?.id}
+              onChange={(val) => {
+                const status = statuses.find(
+                  (s) => String(s.id) === String(val),
+                );
+                if (status) onStatusChange(status);
+              }}
+              labelKey="displayName"
               enabled={!isLoading}
               formStyle={false}
             />
-          )}
 
-          {orderOptions.length > 0 && onOrderChange && (
-            <Dropdown
-              label="Order"
-              options={orderOptions}
-              value={selectedOrder}
-              onChange={handleRequiredOrderChange}
-              enabled={!isLoading}
-              formStyle={false}
-            />
-          )}
+            {sortOptions.length > 0 && onSortChange && (
+              <Dropdown
+                label="Sort By"
+                options={sortOptions}
+                value={selectedSort}
+                onChange={handleRequiredSortChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+
+            {orderOptions.length > 0 && onOrderChange && (
+              <Dropdown
+                label="Order"
+                options={orderOptions}
+                value={selectedOrder}
+                onChange={handleRequiredOrderChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -449,13 +503,11 @@ export function SlipList({
         />
       </CardContent>
 
-      <div className="border-t border-border p-4">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </Card>
   );
 }

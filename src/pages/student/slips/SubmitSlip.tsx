@@ -39,6 +39,8 @@ import {
   useSubmitSlip,
   useUpdateSlip,
   useGetSlipById,
+  useGetSlipAttachments,
+  useGetAttachmentPreview,
 } from "@/features/slips/hooks";
 import { StepProgress } from "@/features/slips/components";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -52,7 +54,6 @@ import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 
 interface SubmitSlipFormState {
-  studentNumber: string;
   dateOfAbsence: string;
   dateNeeded: string;
   reason: string;
@@ -65,7 +66,6 @@ interface SubmitSlipFormState {
 }
 
 const EMPTY_FORM_DATA: SubmitSlipFormState = {
-  studentNumber: "",
   dateOfAbsence: "",
   dateNeeded: "",
   reason: "",
@@ -285,6 +285,174 @@ function LocalFileCard({
   );
 }
 
+// Reusable Existing Attachment Preview Card
+function ExistingFileCard({
+  slipId,
+  file,
+  onRemove,
+}: {
+  slipId: string;
+  file: any;
+  onRemove: () => void;
+}) {
+  const { previewUrl, isLoading } = useGetAttachmentPreview(slipId, file.id);
+  const isImage = file.fileName?.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/);
+  const isPdf = file.fileName?.toLowerCase().endsWith(".pdf");
+
+  return (
+    <>
+      {/* Desktop view card */}
+      <div
+        className={cn(
+          "group hidden overflow-hidden rounded-xl border md:flex",
+          "border-border/60 bg-card transition-all duration-300",
+          "hover:border-primary/40 hover:shadow-lg md:flex-col",
+          "hover:shadow-primary/5",
+        )}
+      >
+        <div
+          className={cn(
+            "relative flex aspect-[4/3] w-full cursor-pointer",
+            "items-center justify-center overflow-hidden bg-muted/30",
+          )}
+        >
+          {isLoading ? (
+            <div className="flex h-full w-full items-center justify-center">
+              <RefreshCw className="h-6 w-6 animate-spin text-muted" />
+            </div>
+          ) : isImage && previewUrl ? (
+            <img
+              src={previewUrl}
+              alt={file.fileName}
+              className={cn(
+                "h-full w-full object-cover transition-transform",
+                "duration-500 group-hover:scale-110",
+              )}
+            />
+          ) : isPdf ? (
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={cn(
+                  "rounded-lg bg-red-100 p-3 shadow-sm",
+                  "dark:bg-red-900/30",
+                )}
+              >
+                <FileText className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+              <span
+                className={cn(
+                  "rounded-full bg-red-100/50 px-2 py-0.5",
+                  "text-[8px] font-bold text-red-700",
+                  "dark:bg-red-900/40 dark:text-red-300",
+                )}
+              >
+                PDF
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={cn(
+                  "rounded-lg bg-blue-100 p-3 shadow-sm",
+                  "dark:bg-blue-900/30",
+                )}
+              >
+                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div
+          className={cn(
+            "flex items-center justify-between border-t",
+            "border-border/40 p-2",
+          )}
+        >
+          <div className="flex min-w-0 items-center gap-1.5">
+            {isImage ? (
+              <ImageIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+            ) : (
+              <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
+            )}
+            <p
+              className={cn(
+                "truncate text-[10px] font-medium",
+                "text-foreground/80",
+              )}
+            >
+              {file.fileName.split("/").pop()}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onRemove}
+            className={cn(
+              "rounded-full p-1 text-muted-foreground",
+              "transition-colors hover:bg-red-100",
+              "hover:text-red-500 dark:hover:bg-red-950/30",
+            )}
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile view card */}
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3 rounded-lg border",
+          "border-border/60 bg-card p-2 md:hidden",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center",
+              "overflow-hidden rounded-md bg-muted/40",
+            )}
+          >
+            {isLoading ? (
+              <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : isImage && previewUrl ? (
+              <img
+                src={previewUrl}
+                alt={file.fileName}
+                className="h-full w-full object-cover"
+              />
+            ) : isPdf ? (
+              <FileText className="h-5 w-5 text-red-500" />
+            ) : (
+              <FileText className="h-5 w-5 text-blue-500" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p
+              className={cn(
+                "truncate text-xs font-medium",
+                "text-foreground/80",
+              )}
+            >
+              {file.fileName.split("/").pop()}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className={cn(
+            "rounded-full p-1.5 text-muted-foreground",
+            "transition-colors hover:bg-red-50",
+            "hover:text-red-500 dark:hover:bg-red-950/30",
+          )}
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </>
+  );
+}
+
 export default function SubmitSlip() {
   const [formData, setFormData] =
     useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
@@ -308,11 +476,26 @@ export default function SubmitSlip() {
   const { mutate: submitSlip, isPending: isSubmitting } = useSubmitSlip();
   const { mutate: updateSlip, isPending: isUpdating } = useUpdateSlip();
 
+  const { data: existingAttachments = [] } = useGetSlipAttachments(
+    isEditMode ? id : undefined,
+  );
+  const [keptAttachments, setKeptAttachments] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isEditMode && existingAttachments.length > 0) {
+      setKeptAttachments(existingAttachments);
+    }
+  }, [isEditMode, existingAttachments]);
+
+  const getKeptFiles = (type: "excuseLetter" | "parentId" | "medicalCert") => {
+    return keptAttachments.filter((att) =>
+      att.fileName?.toLowerCase().startsWith(type.toLowerCase()),
+    );
+  };
+
   useEffect(() => {
     if (isEditMode && existingSlip) {
       setFormData({
-        studentNumber:
-          existingSlip.studentNumber || existingSlip.user?.studentNumber || "",
         dateOfAbsence: existingSlip.dateOfAbsence
           ? new Date(existingSlip.dateOfAbsence).toISOString().split("T")[0]
           : "",
@@ -330,27 +513,13 @@ export default function SubmitSlip() {
     }
   }, [isEditMode, existingSlip]);
 
-  useEffect(() => {
-    if (me?.studentNumber) {
-      setFormData((prev) =>
-        prev.studentNumber
-          ? prev
-          : { ...prev, studentNumber: me.studentNumber || "" },
-      );
-    }
-  }, [me?.studentNumber]);
-
   const steps = [
     { id: 1, label: "Info & Dates", icon: Calendar },
     { id: 2, label: "Category", icon: Layers },
     { id: 3, label: "Documents", icon: FileUp },
   ];
 
-  const datesComplete = !!(
-    formData.studentNumber.trim() &&
-    formData.dateOfAbsence &&
-    formData.dateNeeded
-  );
+  const datesComplete = !!(formData.dateOfAbsence && formData.dateNeeded);
   const categoryComplete =
     formData.categoryId > 0 && formData.reason.trim() !== "";
 
@@ -370,10 +539,15 @@ export default function SubmitSlip() {
     );
   };
 
-  const excuseLetterProvided = formData.files.excuseLetter.length > 0;
-  const parentIdProvided = formData.files.parentId.length > 0;
+  const excuseLetterProvided =
+    formData.files.excuseLetter.length > 0 ||
+    getKeptFiles("excuseLetter").length > 0;
+  const parentIdProvided =
+    formData.files.parentId.length > 0 || getKeptFiles("parentId").length > 0;
   const medicalCertProvided =
-    !isMedicalCategory() || formData.files.medicalCert.length > 0;
+    !isMedicalCategory() ||
+    formData.files.medicalCert.length > 0 ||
+    getKeptFiles("medicalCert").length > 0;
 
   const documentsProvided =
     excuseLetterProvided && parentIdProvided && medicalCertProvided;
@@ -513,7 +687,6 @@ export default function SubmitSlip() {
     if (!isFormValid) return;
 
     const payload: CreateSlipRequest = {
-      studentNumber: formData.studentNumber.trim(),
       reason: formData.reason,
       dateOfAbsence: new Date(formData.dateOfAbsence)
         .toISOString()
@@ -525,6 +698,9 @@ export default function SubmitSlip() {
         parentId: formData.files.parentId,
         medicalCert: formData.files.medicalCert,
       },
+      keepFileIds: isEditMode
+        ? keptAttachments.map((att) => att.id)
+        : undefined,
     };
 
     if (isEditMode && id) {
@@ -652,25 +828,11 @@ export default function SubmitSlip() {
                       <CardTitle className="text-base">Absence Dates</CardTitle>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Enter your student number, then tell us when you were absent and when you need approval by
+                      Tell us when you were absent and when you need approval by
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-5">
-                    <FormInput
-                      label="Student Number"
-                      value={formData.studentNumber}
-                      onChange={(val) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          studentNumber: val,
-                        }))
-                      }
-                      placeholder="e.g. 2022-00000-TG-0"
-                      required
-                      info="Admission slips use your student number for identification, not your student email."
-                    />
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 pb-4">
                       <div className="space-y-1.5">
                         <DatePicker
                           label="Date of Absence"
@@ -890,49 +1052,63 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
-                            {formData.files.excuseLetter.length === 0 && (
-                              <div
-                                className={cn(
-                                  "relative cursor-pointer rounded-lg",
-                                  "border-2 border-dashed border-border/60",
-                                  "p-6 transition-colors hover:bg-muted/20",
-                                  "hover:border-primary/50",
-                                )}
-                              >
-                                <input
-                                  type="file"
-                                  multiple
-                                  onChange={(e) =>
-                                    handleFileAdd(
-                                      "excuseLetter",
-                                      e.target.files,
-                                    )
-                                  }
+                            {formData.files.excuseLetter.length === 0 &&
+                              getKeptFiles("excuseLetter").length === 0 && (
+                                <div
                                   className={cn(
-                                    "absolute inset-0",
-                                    "cursor-pointer opacity-0",
+                                    "relative cursor-pointer rounded-lg",
+                                    "border-2 border-dashed border-border/60",
+                                    "p-6 transition-colors hover:bg-muted/20",
+                                    "hover:border-primary/50",
                                   )}
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                />
-                                <div className="flex flex-col items-center justify-center text-center">
-                                  <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                  <p className="text-sm font-medium text-foreground">
-                                    Click to upload or drag and drop
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    PDF, JPG, PNG up to 5MB total
-                                  </p>
+                                >
+                                  <input
+                                    type="file"
+                                    multiple
+                                    onChange={(e) =>
+                                      handleFileAdd(
+                                        "excuseLetter",
+                                        e.target.files,
+                                      )
+                                    }
+                                    className={cn(
+                                      "absolute inset-0",
+                                      "cursor-pointer opacity-0",
+                                    )}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                  />
+                                  <div className="flex flex-col items-center justify-center text-center">
+                                    <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
+                                    <p className="text-sm font-medium text-foreground">
+                                      Click to upload or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      PDF, JPG, PNG up to 5MB total
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
-                            {formData.files.excuseLetter.length > 0 && (
+                            {(formData.files.excuseLetter.length > 0 ||
+                              getKeptFiles("excuseLetter").length > 0) && (
                               <div
                                 className={cn(
                                   "flex flex-col gap-2",
                                   "md:grid md:grid-cols-3 md:gap-3",
                                 )}
                               >
+                                {getKeptFiles("excuseLetter").map((file) => (
+                                  <ExistingFileCard
+                                    key={file.id}
+                                    slipId={id || ""}
+                                    file={file}
+                                    onRemove={() => {
+                                      setKeptAttachments((prev) =>
+                                        prev.filter((x) => x.id !== file.id),
+                                      );
+                                    }}
+                                  />
+                                ))}
                                 {formData.files.excuseLetter.map(
                                   (file, index) => (
                                     <LocalFileCard
@@ -1053,46 +1229,60 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
-                            {formData.files.parentId.length === 0 && (
-                              <div
-                                className={cn(
-                                  "relative cursor-pointer rounded-lg",
-                                  "border-2 border-dashed border-border/60",
-                                  "p-6 transition-colors hover:bg-muted/20",
-                                  "hover:border-primary/50",
-                                )}
-                              >
-                                <input
-                                  type="file"
-                                  multiple
-                                  onChange={(e) =>
-                                    handleFileAdd("parentId", e.target.files)
-                                  }
+                            {formData.files.parentId.length === 0 &&
+                              getKeptFiles("parentId").length === 0 && (
+                                <div
                                   className={cn(
-                                    "absolute inset-0",
-                                    "cursor-pointer opacity-0",
+                                    "relative cursor-pointer rounded-lg",
+                                    "border-2 border-dashed border-border/60",
+                                    "p-6 transition-colors hover:bg-muted/20",
+                                    "hover:border-primary/50",
                                   )}
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                />
-                                <div className="flex flex-col items-center justify-center text-center">
-                                  <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                  <p className="text-sm font-medium text-foreground">
-                                    Click to upload or drag and drop
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    PDF, JPG, PNG up to 5MB total
-                                  </p>
+                                >
+                                  <input
+                                    type="file"
+                                    multiple
+                                    onChange={(e) =>
+                                      handleFileAdd("parentId", e.target.files)
+                                    }
+                                    className={cn(
+                                      "absolute inset-0",
+                                      "cursor-pointer opacity-0",
+                                    )}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                  />
+                                  <div className="flex flex-col items-center justify-center text-center">
+                                    <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
+                                    <p className="text-sm font-medium text-foreground">
+                                      Click to upload or drag and drop
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      PDF, JPG, PNG up to 5MB total
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
-                            {formData.files.parentId.length > 0 && (
+                            {(formData.files.parentId.length > 0 ||
+                              getKeptFiles("parentId").length > 0) && (
                               <div
                                 className={cn(
                                   "flex flex-col gap-2",
                                   "md:grid md:grid-cols-3 md:gap-3",
                                 )}
                               >
+                                {getKeptFiles("parentId").map((file) => (
+                                  <ExistingFileCard
+                                    key={file.id}
+                                    slipId={id || ""}
+                                    file={file}
+                                    onRemove={() => {
+                                      setKeptAttachments((prev) =>
+                                        prev.filter((x) => x.id !== file.id),
+                                      );
+                                    }}
+                                  />
+                                ))}
                                 {formData.files.parentId.map((file, index) => (
                                   <LocalFileCard
                                     key={`parent-${index}`}
@@ -1199,7 +1389,8 @@ export default function SubmitSlip() {
                               </div>
                             </div>
                             {medicalCertProvided &&
-                              formData.files.medicalCert.length > 0 && (
+                              (formData.files.medicalCert.length > 0 ||
+                                getKeptFiles("medicalCert").length > 0) && (
                                 <CheckCircle2
                                   className={cn(
                                     "mr-2 h-4 w-4 shrink-0",
@@ -1215,49 +1406,63 @@ export default function SubmitSlip() {
                             )}
                           >
                             <div className="space-y-4">
-                              {formData.files.medicalCert.length === 0 && (
-                                <div
-                                  className={cn(
-                                    "relative cursor-pointer rounded-lg",
-                                    "border-2 border-dashed border-border/60",
-                                    "p-6 transition-colors hover:bg-muted/20",
-                                    "hover:border-primary/50",
-                                  )}
-                                >
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) =>
-                                      handleFileAdd(
-                                        "medicalCert",
-                                        e.target.files,
-                                      )
-                                    }
+                              {formData.files.medicalCert.length === 0 &&
+                                getKeptFiles("medicalCert").length === 0 && (
+                                  <div
                                     className={cn(
-                                      "absolute inset-0",
-                                      "cursor-pointer opacity-0",
+                                      "relative cursor-pointer rounded-lg",
+                                      "border-2 border-dashed border-border/60",
+                                      "p-6 transition-colors hover:bg-muted/20",
+                                      "hover:border-primary/50",
                                     )}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                  />
-                                  <div className="flex flex-col items-center justify-center text-center">
-                                    <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                    <p className="text-sm font-medium text-foreground">
-                                      Click to upload or drag and drop
-                                    </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      PDF, JPG, PNG up to 5MB total
-                                    </p>
+                                  >
+                                    <input
+                                      type="file"
+                                      multiple
+                                      onChange={(e) =>
+                                        handleFileAdd(
+                                          "medicalCert",
+                                          e.target.files,
+                                        )
+                                      }
+                                      className={cn(
+                                        "absolute inset-0",
+                                        "cursor-pointer opacity-0",
+                                      )}
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                    />
+                                    <div className="flex flex-col items-center justify-center text-center">
+                                      <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
+                                      <p className="text-sm font-medium text-foreground">
+                                        Click to upload or drag and drop
+                                      </p>
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        PDF, JPG, PNG up to 5MB total
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {formData.files.medicalCert.length > 0 && (
+                              {(formData.files.medicalCert.length > 0 ||
+                                getKeptFiles("medicalCert").length > 0) && (
                                 <div
                                   className={cn(
                                     "flex flex-col gap-2",
                                     "md:grid md:grid-cols-3 md:gap-3",
                                   )}
                                 >
+                                  {getKeptFiles("medicalCert").map((file) => (
+                                    <ExistingFileCard
+                                      key={file.id}
+                                      slipId={id || ""}
+                                      file={file}
+                                      onRemove={() => {
+                                        setKeptAttachments((prev) =>
+                                          prev.filter((x) => x.id !== file.id),
+                                        );
+                                      }}
+                                    />
+                                  ))}
                                   {formData.files.medicalCert.map(
                                     (file, index) => (
                                       <LocalFileCard

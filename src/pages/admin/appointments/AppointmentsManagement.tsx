@@ -69,6 +69,7 @@ type SortOrder = "asc" | "desc";
 const APPOINTMENT_SORT_OPTIONS = [
   { id: "whenDate", name: "Nearest appointment date" },
   { id: "createdAt", name: "Date requested" },
+  { id: "urgencyLevel", name: "Urgency level" },
 ];
 
 const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
@@ -212,9 +213,17 @@ export default function AppointmentsManagement() {
 
   return (
     <>
-      <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 py-2 duration-300">
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-6">
-          <div className="h-full lg:col-span-2">
+      <div 
+        className={cn(
+          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "px-4 sm:px-6 md:px-8",
+        )}
+      >
+        <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-6">
+          <div 
+            className="h-full lg:col-span-2 animate-fade-in-up" 
+            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+          >
             <Calendar
               title="Calendar"
               className="h-full"
@@ -259,19 +268,19 @@ export default function AppointmentsManagement() {
 
           <Card
             className={cn(
-              "hover:bg-glass-bg/50 overflow-hidden shadow-md",
-              "backdrop-blur-2xl transition-all duration-500 lg:col-span-4",
+              "hover:bg-glass-bg/50 overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 lg:col-span-4",
+              "animate-fade-in-up hover:shadow-lg",
             )}
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
-            <div
-              className={cn(
-                "border-glass-border/40 flex items-center justify-between",
-                "border-b bg-muted/20 px-8 py-4",
-              )}
-            >
-              <h2 className="flex items-center gap-3 text-xl font-semibold text-foreground/90">
+            <div className={cn(
+              "border-border/40 flex items-center justify-between",
+              "border-b bg-muted/20 px-6 py-3" // This matches your uniform style
+            )}>
+              <h2 className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
                 Overview
               </h2>
+              
               {selectedDate && (
                 <Button
                   variant="ghost"
@@ -285,7 +294,7 @@ export default function AppointmentsManagement() {
                     setStartDate(toISODateString(start));
                     setEndDate(toISODateString(end));
                   }}
-                  className="h-8 rounded-lg px-3 text-xs font-semibold text-primary hover:bg-primary/10"
+                  className="h-8 rounded-lg px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
                 >
                   View Monthly View
                 </Button>
@@ -447,6 +456,11 @@ export default function AppointmentsManagement() {
               selectedSort={selectedSort}
               onSortChange={(sortValue: string) => {
                 setSelectedSort(sortValue);
+
+                if (sortValue === "urgencyLevel") {
+                  setSelectedOrder("desc");
+                }
+
                 setCurrentPage(1);
               }}
               orderOptions={SORT_ORDER_OPTIONS}

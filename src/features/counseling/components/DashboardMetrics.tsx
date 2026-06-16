@@ -11,6 +11,7 @@ interface MetricCardProps {
   icon: LucideIcon;
   iconColor?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function MetricCard({
@@ -21,13 +22,16 @@ export function MetricCard({
   icon: Icon,
   iconColor = "text-primary",
   className,
+  style,
 }: MetricCardProps) {
   return (
     <Card
       className={cn(
         "overflow-hidden shadow-md backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
+        "hover:-translate-y-0.5 hover:shadow-lg",
         className,
       )}
+      style={style} 
     >
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
@@ -75,6 +79,11 @@ export function DashboardMetrics({ metrics }: { metrics: MetricCardProps[] }) {
         <MetricCard
           key={index}
           {...metric}
+          className={cn(metric.className, "animate-fade-in-up")}
+          style={{ 
+            animationDelay: `${0.05 * (index + 1)}s`,            
+            animationFillMode: "both" 
+          }}
         />
       ))}
     </div>

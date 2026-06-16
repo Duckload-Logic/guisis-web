@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +17,11 @@ import {
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
-import { format } from "date-fns";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { parseAuditTrail } from "@/utils/auditTrail";
+import { formatDate } from "@/utils";
 
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
@@ -28,19 +30,28 @@ export default function SlipDetails() {
   const { data: slip, isLoading, isError } = useGetSlipById(id || "");
   const { data: attachments = [] } = useGetSlipAttachments(id || "");
 
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(slip?.adminNotes);
+  }, [slip?.adminNotes]);
+
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
     return STATUS_COLORS[key] || "bg-muted text-muted-foreground";
   };
 
-  usePageMetadata({
-    title: "Admission Slip Details",
-    description:
-      "Detailed view of your submitted admission slip and counselor feedback.",
-    badgeText: slip?.status?.name || "Loading",
-    badgeIcon: <FileCheck className="h-4 w-4" />,
-    isLoading: isLoading,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Admission Slip Details",
+        description:
+          "Detailed view of your submitted slip and counselor feedback.",
+        badgeText: slip?.status?.name || "Loading",
+        badgeIcon: <FileCheck className="h-4 w-4" />,
+        isLoading: isLoading,
+      }),
+      [slip?.status?.name, isLoading],
+    ),
+  );
 
   const handleEdit = () => {
     if (!id) return;
@@ -202,7 +213,7 @@ export default function SlipDetails() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "px-3 py-1 border-white/45 bg-white/40",
+                            "border-white/45 bg-white/40 px-3 py-1",
                             "backdrop-blur-xl dark:border-white/10",
                             "dark:bg-white/[0.05]",
                           )}
@@ -231,12 +242,7 @@ export default function SlipDetails() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {slip?.dateOfAbsence
-                            ? format(
-                                new Date(slip.dateOfAbsence),
-                                "MMMM d, yyyy",
-                              )
-                            : "---"}
+                          {formatDate(slip?.dateOfAbsence || "")}
                         </span>
                       </div>
                     </div>
@@ -247,9 +253,7 @@ export default function SlipDetails() {
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {slip?.dateNeeded
-                            ? format(new Date(slip.dateNeeded), "MMMM d, yyyy")
-                            : "---"}
+                          {formatDate(slip?.dateNeeded || "")}
                         </span>
                       </div>
                     </div>
@@ -270,28 +274,81 @@ export default function SlipDetails() {
                       Reason provided
                     </p>
                     <div className="rounded-lg border border-border/40 bg-muted/50 p-4">
-                      <p className="whitespace-pre-wrap text-sm italic leading-relaxed text-foreground/80">
-                        "{slip?.reason}"
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                        {slip?.reason}
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {slip?.adminNotes && (
-                <Card className="border-border/60 bg-amber-50/10 shadow-md dark:bg-amber-950/5">
-                  <CardHeader className="border-b border-border/30 py-4">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-amber-500" />
-                      <CardTitle className="text-sm">
-                        Guidance Feedback
-                      </CardTitle>
-                    </div>
+              {auditEntries.length > 0 && (
+                <Card className="border-border bg-glass-bg shadow-md">
+                  <CardHeader className="border-b bg-muted/5 p-5">
+                    <CardTitle
+                      className={cn(
+                        "flex items-center gap-2 text-[10px] font-bold",
+                        "uppercase tracking-wider text-muted-foreground",
+                      )}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Guidance Feedback / Audit Trail
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="py-5">
-                    <p className="text-sm font-medium leading-relaxed text-foreground/90">
-                      {slip.adminNotes}
-                    </p>
+                  <CardContent className="space-y-6 p-5">
+                    {auditEntries.map((entry, idx) => (
+                      <div
+                        key={idx}
+                        className="group flex items-start gap-4"
+                      >
+                        <div className="relative mt-1">
+                          <div
+                            className={cn(
+                              "relative z-10 h-3.5 w-3.5 shrink-0",
+                              "rounded-full border-2",
+                              entry.status.toUpperCase().includes("PENDING")
+                                ? "border-amber-500 bg-background shadow-sm"
+                                : entry.status
+                                      .toUpperCase()
+                                      .includes("APPROVED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("COMPLETED")
+                                  ? "border-emerald-500 bg-background shadow-sm"
+                                  : entry.status
+                                        .toUpperCase()
+                                        .includes("REJECTED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("REVISION")
+                                    ? "border-red-500 bg-background shadow-sm"
+                                    : "border-primary bg-background shadow-sm",
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                              "-translate-x-1/2 group-last:hidden",
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-foreground/80">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {entry.timestamp}
+                            </p>
+                          )}
+                          {entry.remarks && (
+                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                              {entry.remarks}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
@@ -400,52 +457,14 @@ export default function SlipDetails() {
                 </Card>
               )}
 
-              <Card className="border-0 bg-muted/40 shadow-md backdrop-blur-sm">
-                <CardHeader className="border-b border-border/40 pb-3">
-                  <CardTitle className="text-xs font-semibold uppercase text-muted-foreground">
-                    Timeline
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5 pt-4">
-                  <div className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="h-2 w-2 rounded-full bg-primary" />
-                      <div className="h-10 w-0.5 bg-border" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium">Submitted</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {slip?.createdAt
-                          ? format(
-                              new Date(slip.createdAt),
-                              "MMM d, yyyy · h:mm a",
-                            )
-                          : "---"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`h-2 w-2 rounded-full ${slip?.updatedAt !== slip?.createdAt ? "bg-primary" : "bg-muted"}`}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium">Last Activity</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {slip?.updatedAt
-                          ? format(
-                              new Date(slip.updatedAt),
-                              "MMM d, yyyy · h:mm a",
-                            )
-                          : "---"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               <div className="px-2">
+                <p className="text-[10px] text-muted-foreground">
+                  Requested At
+                </p>
+                <p className="break-all font-mono text-[10px]">
+                  {formatDate(slip?.createdAt)}
+                </p>
+
                 <p className="text-[10px] text-muted-foreground">
                   Reference ID
                 </p>

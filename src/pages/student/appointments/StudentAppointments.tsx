@@ -391,7 +391,13 @@ export default function StudentAppointments() {
   );
 
   return (
-    <div className="relative isolate space-y-6 overflow-visible">
+    <div
+      className={cn(
+        "mx-auto flex w-full flex-col space-y-6",
+        "px-4 sm:px-6 md:px-8",
+        "relative isolate overflow-visible"
+      )}
+    >
       {!user?.studentCorUrl ? (
         <Alert
           variant="destructive"

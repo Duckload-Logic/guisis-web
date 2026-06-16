@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useAppointment,
@@ -31,6 +31,7 @@ import { useToast } from "@/context";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { parseAuditTrail } from "@/utils/auditTrail";
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
@@ -51,7 +52,8 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("high") || normalized.includes("urgent")) {
     return {
       label: "High",
-      description: "This appointment should be prioritized by the Guidance Office.",
+      description:
+        "This appointment should be prioritized by the Guidance Office.",
       className:
         "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
     };
@@ -74,7 +76,6 @@ function getAppointmentUrgency(appointment?: any) {
   };
 }
 
-
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -84,6 +85,10 @@ export default function AppointmentDetails() {
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useCancelAppointment();
 
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(appointment?.adminNotes);
+  }, [appointment?.adminNotes]);
+
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
     return STATUS_COLORS[key] || "bg-muted text-muted-foreground";
@@ -92,18 +97,23 @@ export default function AppointmentDetails() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  usePageMetadata({
-    title: "Appointment Details",
-    description: "View and manage your scheduled counseling appointment.",
-    badgeText: appointment?.status?.name || "Loading",
-    badgeIcon:
-      appointment?.status?.name === "Approved" ? (
-        <FileCheck className="h-4 w-4" />
-      ) : (
-        <Calendar className="h-4 w-4" />
-      ),
-    isLoading: isLoading,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Appointment Details",
+        description: "View and manage your scheduled counseling appointment.",
+        badgeText: appointment?.status?.name || "Loading",
+        badgeIcon:
+          appointment?.status?.name === "Approved" ? (
+            <FileCheck className="h-4 w-4" />
+          ) : (
+            <Calendar className="h-4 w-4" />
+          ),
+        isLoading: isLoading,
+      }),
+      [appointment?.status?.name, isLoading],
+    ),
+  );
 
   const handleCancel = () => {
     if (!id || !cancelReason.trim()) return;
@@ -362,20 +372,84 @@ export default function AppointmentDetails() {
                 </CardContent>
               </Card>
 
-              {appointment?.adminNotes && (
-                <Card className="border-border/60 bg-amber-50/10 shadow-md dark:bg-amber-950/5">
-                  <CardHeader className="py-4">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-amber-500" />
-                      <CardTitle className="text-sm">
-                        Counselor Remarks
-                      </CardTitle>
-                    </div>
+              {auditEntries.length > 0 && (
+                <Card className="border-border bg-glass-bg shadow-md">
+                  <CardHeader className="border-b bg-muted/5 p-5">
+                    <CardTitle
+                      className={cn(
+                        "flex items-center gap-2 text-[10px] font-bold",
+                        "uppercase tracking-wider text-muted-foreground",
+                      )}
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Counselor Remarks / Audit Trail
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="pb-5 pt-0">
-                    <p className="text-sm italic leading-relaxed text-foreground/90">
-                      {appointment.adminNotes}
-                    </p>
+                  <CardContent className="space-y-6 p-5">
+                    {auditEntries.map((entry, idx) => (
+                      <div
+                        key={idx}
+                        className="group flex items-start gap-4"
+                      >
+                        <div className="relative mt-1">
+                          <div
+                            className={cn(
+                              "relative z-10 h-3.5 w-3.5 shrink-0",
+                              "rounded-full border-2",
+                              entry.status.toUpperCase().includes("PENDING")
+                                ? "border-amber-500 bg-background shadow-sm"
+                                : entry.status
+                                      .toUpperCase()
+                                      .includes("APPROVED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("COMPLETED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("SCHEDULED")
+                                  ? "border-emerald-500 bg-background shadow-sm"
+                                  : entry.status
+                                        .toUpperCase()
+                                        .includes("REJECTED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("CANCELLED") ||
+                                      entry.status
+                                        .toUpperCase()
+                                        .includes("CANCELED")
+                                    ? "border-red-500 bg-background shadow-sm"
+                                    : "border-primary bg-background shadow-sm",
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                              "-translate-x-1/2 group-last:hidden",
+                            )}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-foreground/80">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {entry.timestamp}
+                            </p>
+                          )}
+                          {entry.remarks && (
+                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                              {entry.remarks}
+                            </p>
+                          )}
+                          {entry.details && (
+                            <p className="text-[10px] italic text-muted-foreground">
+                              {entry.details}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </CardContent>
                 </Card>
               )}
@@ -481,4 +555,3 @@ export default function AppointmentDetails() {
     </>
   );
 }
-

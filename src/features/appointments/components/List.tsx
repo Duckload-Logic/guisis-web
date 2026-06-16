@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Pagination, Table, Column } from "@/components/shared";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
-import { CalendarX, Eye, User } from "lucide-react";
+import { CalendarX, Eye, Search, User, X } from "lucide-react";
 import { useMemo } from "react";
-import { SearchInput } from "@/components/form";
 import { format12HourTime } from "@/utils/dateTime";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -45,13 +44,15 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
 
   const level = urgency.key.toLowerCase();
   const tone =
-    level.includes("high") || level.includes("urgent")
-      ? "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-300"
-      : level.includes("medium") || level.includes("moderate")
-        ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-        : level.includes("low")
-          ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-          : "border-primary/20 bg-primary/10 text-primary";
+    level.includes("critical")
+      ? "border-red-700/25 bg-red-700/10 text-red-700 dark:text-red-300"
+      : level.includes("high") || level.includes("urgent")
+        ? "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-300"
+        : level.includes("medium") || level.includes("moderate")
+          ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+          : level.includes("low")
+            ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            : "border-primary/20 bg-primary/10 text-primary";
 
   return (
     <span
@@ -179,8 +180,26 @@ export default function AppointmentList({
   const columns = useMemo<Column<Appointment>[]>(
     () => [
       {
+        header: "Student Name",
+        className: "min-w-[220px]",
+        render: (apt) => (
+          <div className="space-y-0.5">
+            <p className="font-semibold text-foreground">
+              {apt.user?.firstName}{" "}
+              {apt.user?.middleName?.[0]
+                ? `${apt.user?.middleName?.[0]}. `
+                : ""}
+              {apt.user?.lastName}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {apt.studentNumber || apt.user?.email || "Student record"}
+            </p>
+          </div>
+        ),
+      },
+      {
         header: "Date Requested",
-        className: "min-w-[150px]",
+        className: "min-w-[155px]",
         render: (apt) => (
           <div className="space-y-0.5">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
@@ -207,31 +226,13 @@ export default function AppointmentList({
         ),
       },
       {
-        header: "Student",
-        className: "min-w-[190px]",
-        render: (apt) => (
-          <div className="space-y-0.5">
-            <p className="font-semibold text-foreground">
-              {apt.user?.firstName}{" "}
-              {apt.user?.middleName?.[0]
-                ? `${apt.user?.middleName?.[0]}. `
-                : ""}
-              {apt.user?.lastName}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              {apt.studentNumber || apt.user?.email || "Student record"}
-            </p>
-          </div>
-        ),
-      },
-      {
         header: "Category",
         className: "min-w-[160px]",
         render: (apt) => (
           <span
             className={cn(
               "inline-flex max-w-[170px] items-center rounded-full border",
-              "border-white/25 bg-white/45 px-2.5 py-1 text-xs font-medium",
+              "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
               "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
             )}
           >
@@ -267,7 +268,7 @@ export default function AppointmentList({
     <div
       key={apt.id}
       className={cn(
-        "space-y-3 rounded-2xl border border-white/20 bg-white/45 p-4",
+        "space-y-3 rounded-2xl border border-border/70 bg-card p-4",
         "shadow-sm backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
         "dark:border-white/10 dark:bg-white/[0.04]",
       )}
@@ -298,12 +299,7 @@ export default function AppointmentList({
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div
-          className={cn(
-            "rounded-xl border border-white/20 bg-white/40 px-3 py-2",
-            "dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Date Requested
           </p>
@@ -312,12 +308,7 @@ export default function AppointmentList({
           </p>
         </div>
 
-        <div
-          className={cn(
-            "rounded-xl border border-white/20 bg-white/40 px-3 py-2",
-            "dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Appointment Date
           </p>
@@ -357,8 +348,8 @@ export default function AppointmentList({
     >
       <div
         className={cn(
-          "rounded-full border border-dashed border-white/30",
-          "bg-white/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+          "rounded-full border border-dashed border-border/70",
+          "bg-muted/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
         )}
       >
         <CalendarX className="h-9 w-9 text-muted-foreground/50" />
@@ -377,7 +368,7 @@ export default function AppointmentList({
   const renderDesktopSkeleton = () => (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
+        <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
           {columns.map((column) => (
             <th
               key={column.header}
@@ -392,7 +383,7 @@ export default function AppointmentList({
         {Array.from({ length: 5 }).map((_, idx) => (
           <tr
             key={idx}
-            className="animate-pulse border-b border-white/15 dark:border-white/10"
+            className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
             {columns.map((column) => (
               <td
@@ -414,8 +405,8 @@ export default function AppointmentList({
         <div
           key={idx}
           className={cn(
-            "animate-pulse rounded-2xl border border-white/20",
-            "bg-white/35 p-4 shadow-sm backdrop-blur-xl",
+            "animate-pulse rounded-2xl border border-border/70",
+            "bg-card p-4 shadow-sm backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
@@ -435,20 +426,27 @@ export default function AppointmentList({
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-white/25",
-        "bg-white/45 shadow-md backdrop-blur-2xl transition-all duration-300",
+        "flex flex-col overflow-hidden rounded-2xl border border-border/70",
+        "bg-card shadow-md backdrop-blur-2xl transition-all duration-300",
         "dark:border-white/10 dark:bg-white/[0.04]",
         className,
       )}
     >
-      <CardHeader className="space-y-4 border-b border-white/20 bg-white/20 px-5 py-4 dark:border-white/10 dark:bg-white/[0.025]">
+      <CardHeader
+        className={cn(
+          "space-y-4 border-b border-border/70 px-5 py-5",
+          "bg-gradient-to-br from-muted/30 via-background/70 to-background",
+          "dark:border-white/10 dark:from-white/[0.04] dark:via-white/[0.025] dark:to-transparent",
+        )}
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-lg font-semibold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-xs text-muted-foreground">
-              Date requested and appointment date are shown in one compact table.
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Student details, date requested, and appointment date are shown in
+              one compact table.
             </p>
           </div>
 
@@ -465,49 +463,86 @@ export default function AppointmentList({
           )}
         </div>
 
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-          <SearchInput
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
-            placeholder="Search student..."
-            className="w-full rounded-xl border-white/30 bg-white/55 backdrop-blur-xl focus:bg-white/70 dark:border-white/10 dark:bg-white/[0.04]"
-            hasHeader={false}
-          />
+        <div
+          className={cn(
+            "rounded-2xl border border-border/60 bg-background/70 p-3 shadow-sm",
+            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
+          )}
+        >
+          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                Search
+              </label>
+              <div
+                className={cn(
+                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
+                  "bg-muted/50 px-3 shadow-sm transition-all duration-200",
+                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
+                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                )}
+              >
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchTerm ?? ""}
+                  onChange={(event) => onSearchChange?.(event.target.value)}
+                  placeholder="Search by student name, number, or reason..."
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange?.("")}
+                    className={cn(
+                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
+                      "text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
+                    )}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
 
-          <Dropdown
-            label="Status"
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              const status = statuses.find((s) => String(s.id) === String(val));
-              if (status) onStatusChange(status);
-            }}
-            labelKey="displayName"
-            enabled={!isLoading}
-            formStyle={false}
-          />
-
-          {sortOptions.length > 0 && onSortChange && (
             <Dropdown
-              label="Sort By"
-              options={sortOptions}
-              value={selectedSort}
-              onChange={handleRequiredSortChange}
+              label="Status"
+              options={dropdownOptions}
+              value={selectedStatus?.id}
+              onChange={(val) => {
+                const status = statuses.find((s) => String(s.id) === String(val));
+                if (status) onStatusChange(status);
+              }}
+              labelKey="displayName"
               enabled={!isLoading}
               formStyle={false}
             />
-          )}
 
-          {orderOptions.length > 0 && onOrderChange && (
-            <Dropdown
-              label="Order"
-              options={orderOptions}
-              value={selectedOrder}
-              onChange={handleRequiredOrderChange}
-              enabled={!isLoading}
-              formStyle={false}
-            />
-          )}
+            {sortOptions.length > 0 && onSortChange && (
+              <Dropdown
+                label="Sort By"
+                options={sortOptions}
+                value={selectedSort}
+                onChange={handleRequiredSortChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+
+            {orderOptions.length > 0 && onOrderChange && (
+              <Dropdown
+                label="Order"
+                options={orderOptions}
+                value={selectedOrder}
+                onChange={handleRequiredOrderChange}
+                enabled={!isLoading}
+                formStyle={false}
+              />
+            )}
+          </div>
         </div>
       </CardHeader>
 
@@ -533,4 +568,3 @@ export default function AppointmentList({
     </Card>
   );
 }
-

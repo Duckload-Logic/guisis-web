@@ -202,6 +202,50 @@ export default function CreateAppointment() {
       .join("\n\n");
   };
 
+  const filterConflictingSlots = (
+    slotsList: any[],
+    targetDate: Date | undefined,
+    excludePreferredIndex?: number,
+  ) => {
+    if (!targetDate) return slotsList;
+    const targetDateStr = toISODateString(targetDate);
+
+    const selections: Array<{ dateStr: string; slotId: number }> = [];
+
+    if (excludePreferredIndex !== undefined) {
+      if (selectedDate && selectedTime?.id) {
+        selections.push({
+          dateStr: toISODateString(selectedDate),
+          slotId: selectedTime.id,
+        });
+      }
+    }
+
+    preferredOptions.forEach((option, idx) => {
+      if (
+        idx !== excludePreferredIndex &&
+        option.date &&
+        option.time?.id
+      ) {
+        selections.push({
+          dateStr: toISODateString(option.date),
+          slotId: option.time.id,
+        });
+      }
+    });
+
+    return slotsList.map((slot) => {
+      const isConflicting = selections.some(
+        (sel) =>
+          sel.dateStr === targetDateStr && sel.slotId === slot.id,
+      );
+      if (isConflicting) {
+        return { ...slot, isAvailable: false };
+      }
+      return slot;
+    });
+  };
+
   const handleSubmitAppointment = () => {
     const payload: CreateAppointmentRequest = {
       reason: appointmentFormData.reason.trim(),
@@ -339,7 +383,10 @@ export default function CreateAppointment() {
                 <SlotSelector
                   selectedDate={selectedDate}
                   selectedTime={selectedTime}
-                  availableSlots={slots || []}
+                  availableSlots={filterConflictingSlots(
+                    slots || [],
+                    selectedDate,
+                  )}
                   loading={isLoading}
                   onTimeSelect={(time) => {
                     setSelectedTime(time);
@@ -661,9 +708,15 @@ export default function CreateAppointment() {
                                     <SlotSelector
                                       selectedDate={activePreferredOption.date}
                                       selectedTime={activePreferredOption.time}
-                                      availableSlots={getPreferredSlots(
-                                        activePreferredIndex,
-                                      )}
+                                      availableSlots={
+                                        filterConflictingSlots(
+                                          getPreferredSlots(
+                                            activePreferredIndex,
+                                          ),
+                                          activePreferredOption.date,
+                                          activePreferredIndex,
+                                        )
+                                      }
                                       loading={getPreferredSlotsLoading(
                                         activePreferredIndex,
                                       )}

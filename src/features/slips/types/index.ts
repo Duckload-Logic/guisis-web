@@ -69,6 +69,7 @@ export interface CreateSlipRequest {
     parentId?: File[];
     medicalCert?: File[];
   };
+  keepFileIds?: string[];
 }
 
 export interface SlipAttachment {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGetSlipById,
@@ -41,6 +41,7 @@ import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { usePageMetadata } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
+import { parseAuditTrail } from "@/utils/auditTrail";
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
@@ -55,6 +56,10 @@ export default function SlipDetails() {
   const [reason, setReason] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
   const [showCorPreview, setShowCorPreview] = useState(false);
+
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(slip?.adminNotes);
+  }, [slip?.adminNotes]);
 
   const fullName = slip
     ? [
@@ -682,18 +687,61 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-5">
+              {auditEntries.map((entry, idx) => (
+                <div key={idx} className="group flex items-start gap-4">
+                  <div className="relative mt-1">
+                    <div
+                      className={cn(
+                        "relative z-10 h-3.5 w-3.5 shrink-0",
+                        "rounded-full border-2",
+                        entry.status.toUpperCase().includes("PENDING")
+                          ? "border-amber-500 bg-background shadow-sm"
+                          : entry.status.toUpperCase().includes("APPROVED") ||
+                            entry.status.toUpperCase().includes("COMPLETED")
+                          ? "border-emerald-500 bg-background shadow-sm"
+                          : entry.status.toUpperCase().includes("REJECTED") ||
+                            entry.status.toUpperCase().includes("REVISION")
+                          ? "border-red-500 bg-background shadow-sm"
+                          : "border-primary bg-background shadow-sm"
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                        "-translate-x-1/2 group-last:hidden",
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-foreground/80">
+                      {entry.status}
+                    </p>
+                    {entry.timestamp && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {entry.timestamp}
+                      </p>
+                    )}
+                    {entry.remarks && (
+                      <p
+                        className={cn(
+                          "text-xs text-muted-foreground",
+                          "whitespace-pre-wrap"
+                        )}
+                      >
+                        {entry.remarks}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
               <div className="group flex items-start gap-4">
                 <div className="relative mt-1">
                   <div
                     className={cn(
-                      "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full border-2",
-                      "border-primary bg-background shadow-sm",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "absolute left-1/2 top-3.5 h-10 w-0.5 bg-border",
-                      "-translate-x-1/2 group-last:hidden",
+                      "relative z-10 h-3.5 w-3.5 shrink-0",
+                      "rounded-full border-2 border-primary",
+                      "bg-background shadow-sm",
                     )}
                   />
                 </div>
@@ -704,31 +752,14 @@ export default function SlipDetails() {
                   <p
                     className={cn(
                       "w-fit rounded-full border bg-muted/30",
-                      "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
+                      "px-2 py-0.5 text-[9px] font-bold",
+                      "text-muted-foreground/60",
                     )}
                   >
                     {formatDateShort(slip.createdAt)}
                   </p>
                 </div>
               </div>
-              {slip.updatedAt && slip.updatedAt !== slip.createdAt && (
-                <div className="group flex items-start gap-4">
-                  <div className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-blue-500 bg-background shadow-sm" />
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-foreground/80">
-                      System Activity Recorded
-                    </p>
-                    <p
-                      className={cn(
-                        "w-fit rounded-full border bg-muted/30",
-                        "px-2 py-0.5 text-[9px] font-bold text-muted-foreground/60",
-                      )}
-                    >
-                      {formatDateShort(slip.updatedAt)}
-                    </p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

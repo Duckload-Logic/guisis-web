@@ -46,7 +46,7 @@ export function Table<T>({
   if (isLoading) {
     if (variant === "list" && renderListItem) {
       return (
-        <div className="divide-y divide-white/20 dark:divide-white/10">
+        <div className="divide-y divide-border/60 dark:divide-white/10">
           {Array.from({ length: loadingRows }).map((_, idx) => (
             <div
               key={idx}
@@ -87,7 +87,7 @@ export function Table<T>({
                 )}
               >
                 <thead>
-                  <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
+                  <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
                     {columns.map((col, idx) => (
                       <th
                         key={idx}
@@ -105,7 +105,7 @@ export function Table<T>({
                   {Array.from({ length: loadingRows }).map((_, rIdx) => (
                     <tr
                       key={rIdx}
-                      className="animate-pulse border-b border-white/15 dark:border-white/10"
+                      className="animate-pulse border-b border-border/60 dark:border-white/10"
                     >
                       {columns.map((_, cIdx) => (
                         <td
@@ -131,8 +131,8 @@ export function Table<T>({
                   <div
                     key={idx}
                     className={cn(
-                      "animate-pulse rounded-2xl border border-white/20",
-                      "bg-white/35 p-4 shadow-sm backdrop-blur-xl",
+                      "animate-pulse rounded-2xl border border-border/70",
+                      "bg-card p-4 shadow-sm backdrop-blur-xl",
                       "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
@@ -158,7 +158,7 @@ export function Table<T>({
 
   if (variant === "list" && renderListItem) {
     return (
-      <div className="divide-y divide-white/20 border-y border-white/20 dark:divide-white/10 dark:border-white/10">
+      <div className="divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
         {data.map((item, idx) => renderListItem(item, idx))}
       </div>
     );
@@ -177,7 +177,7 @@ export function Table<T>({
             className={cn("w-full border-collapse text-sm", tableClassName)}
           >
             <thead>
-              <tr className="border-b border-white/20 text-muted-foreground dark:border-white/10">
+              <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
                 {columns.map((col, idx) => (
                   <th
                     key={idx}
@@ -202,10 +202,10 @@ export function Table<T>({
                   <tr
                     key={idx}
                     className={cn(
-                      "border-b border-white/15 bg-white/20 last:border-0",
+                      "border-b border-border/60 bg-background/70 last:border-0",
                       "transition-colors duration-200 dark:border-white/10 dark:bg-white/[0.025]",
                       clickable &&
-                        "cursor-pointer hover:bg-white/50 dark:hover:bg-white/[0.06]",
+                        "cursor-pointer hover:bg-muted/50 dark:hover:bg-white/[0.06]",
                       typeof rowClassName === "function"
                         ? rowClassName(item, idx)
                         : rowClassName,

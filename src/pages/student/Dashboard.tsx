@@ -237,7 +237,9 @@ export default function Dashboard() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
+              "animate-fade-in-up"
             )}
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
             <p
               className={cn(
@@ -261,7 +263,9 @@ export default function Dashboard() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
+              "animate-fade-in-up" 
             )}
+            style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
             <p
               className={cn(
@@ -301,15 +305,20 @@ export default function Dashboard() {
           "sm:grid-cols-4 sm:gap-4",
         )}
       >
-        {statCards.map((item) => (
+        {statCards.map((item, index) => (
           <Card
             key={item.title}
             className={cn(
               "group overflow-hidden rounded-xl border border-glass-border",
               "bg-glass-bg shadow-md",
-              "backdrop-blur-xl transition-all duration-200",
+              "backdrop-blur-xl transition-all duration-300",
               "hover:-translate-y-0.5",
+              "animate-fade-in-up"
             )}
+            style={{                          
+              animationDelay: `${0.05 * (index + 1)}s`, 
+              animationFillMode: "both",
+            }}
           >
             <CardContent className="p-3 sm:p-5">
               <div
@@ -374,8 +383,10 @@ export default function Dashboard() {
           "sm:p-6",
         )}
       >
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
+        <div 
+          className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between animate-fade-in-up"
+          style={{ animationDelay: "0.13s", animationFillMode: "both" }}
+        >          <div className="space-y-2">
             <p
               className={cn(
                 "inline-flex items-center gap-2 rounded-full border",
@@ -419,15 +430,22 @@ export default function Dashboard() {
               className={cn(
                 "group min-h-[132px] rounded-[22px] border border-white/25 bg-white/40 p-4",
                 "shadow-[0_8px_20px_rgba(15,23,42,0.045)] backdrop-blur-xl",
-                "transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/55",
+                "transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/55",
+                "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
                 "dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]",
+                "animate-fade-in-up"
               )}
+              style={{                           
+                animationDelay: `${0.05 * (index + 1)}s`, 
+                animationFillMode: "both",
+              }}
             >
               <div className="flex h-full items-start gap-4">
                 <div
                   className={cn(
                     "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
                     "border border-white/35 bg-gradient-to-br shadow-sm backdrop-blur-xl",
+                    "transition-transform duration-300 group-hover:scale-105",
                     "dark:border-white/10",
                     service.accent,
                   )}
@@ -598,7 +616,9 @@ export default function Dashboard() {
             "overflow-hidden rounded-[24px] border border-white/25 bg-white/45",
             "shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.04]",
+            "animate-fade-in-up"
           )}
+          style={{ animationDelay: "0s", animationFillMode: "both" }} 
         >
           <CardContent className="space-y-4 p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
