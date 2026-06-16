@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
   BookOpenCheck,
@@ -21,12 +20,14 @@ import {
   User,
   UserRoundCheck,
 } from "lucide-react";
-import { useMe } from "@/features/users/hooks/useMe";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { AnimationStyles } from "@/components/ui/animations";
+import { usePageMetadata } from "@/context";
+import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
 import { useUserIIR } from "@/features/iir/hooks";
 import { useGetSlipStats } from "@/features/slips/hooks";
-import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
-import { usePageMetadata } from "@/context";
-import { AnimationStyles } from "@/components/ui/animations";
+import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
@@ -232,12 +233,12 @@ export default function Dashboard() {
       badgeIcon: <LayoutDashboard className="h-4 w-4" />,
       isLoading,
       headerStats: (
-        <div className="hidden grid-cols-2 gap-3 sm:grid">
+        <div className="hidden grid-cols-2 gap-3 min-[520px]:grid">
           <div
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up"
+              "animate-fade-in-up",
             )}
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
@@ -263,7 +264,7 @@ export default function Dashboard() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up" 
+              "animate-fade-in-up",
             )}
             style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
@@ -295,63 +296,62 @@ export default function Dashboard() {
   if (isLoading) return null;
 
   return (
-    <div className={cn("mx-auto flex w-full flex-col", "px-4 sm:px-6 md:px-8")}>
+    <div
+      className={cn(
+        "mx-auto flex w-full flex-col",
+        "px-3 pb-28 min-[520px]:px-4 sm:px-6 md:px-7 lg:px-8 lg:pb-24 xl:pb-12",
+      )}
+    >
       <AnimationStyles />
 
-      {/* 1. Stats Grid */}
       <section
+        aria-label="Student dashboard status summary"
         className={cn(
-          "grid w-full grid-cols-2 gap-3",
-          "sm:grid-cols-4 sm:gap-4",
+          "grid w-full grid-cols-1 gap-3",
+          "min-[520px]:grid-cols-2 sm:gap-4",
+          "xl:grid-cols-4",
         )}
       >
         {statCards.map((item, index) => (
           <Card
             key={item.title}
             className={cn(
-              "group overflow-hidden rounded-xl border border-glass-border",
-              "bg-glass-bg shadow-md",
-              "backdrop-blur-xl transition-all duration-300",
+              "group min-h-[136px] overflow-hidden rounded-xl border border-glass-border",
+              "bg-glass-bg shadow-md backdrop-blur-xl transition-all duration-300",
               "hover:-translate-y-0.5",
-              "animate-fade-in-up"
+              "min-[520px]:min-h-[148px] xl:min-h-[168px]",
+              "animate-fade-in-up",
             )}
-            style={{                          
-              animationDelay: `${0.05 * (index + 1)}s`, 
+            style={{
+              animationDelay: `${0.05 * (index + 1)}s`,
               animationFillMode: "both",
             }}
           >
-            <CardContent className="p-3 sm:p-5">
-              <div
-                className={cn(
-                  "flex flex-col-reverse justify-between gap-3",
-                  "sm:flex-row sm:items-start sm:gap-4",
-                )}
-              >
-                <div className="space-y-1 sm:space-y-2.5">
+            <CardContent className="h-full p-4 sm:p-5">
+              <div className="flex h-full min-w-0 items-start justify-between gap-4">
+                <div className="min-w-0 flex-1 space-y-2 sm:space-y-2.5">
                   <p
+                    title={item.title}
                     className={cn(
-                      "text-[10px] font-semibold uppercase sm:text-[11px]",
-                      "text-muted-foreground",
+                      "max-w-full whitespace-nowrap text-[11px] font-semibold uppercase leading-4",
+                      "tracking-[0.14em] text-muted-foreground sm:text-xs",
                     )}
                   >
                     {item.title}
                   </p>
 
-                  <div className="space-y-0.5 sm:space-y-1">
+                  <div className="min-w-0 space-y-1">
                     <p
                       className={cn(
-                        "text-lg font-bold tabular-nums sm:text-2xl",
-                        "tracking-tight text-foreground sm:text-3xl",
+                        "max-w-full break-normal text-[clamp(1.5rem,3.1vw,1.9rem)]",
+                        "font-bold leading-tight tracking-tight text-foreground",
+                        "[overflow-wrap:normal]",
                       )}
                     >
                       {item.value}
                     </p>
 
-                    <p
-                      className={cn(
-                        "hidden text-[11px] text-muted-foreground sm:block",
-                      )}
-                    >
+                    <p className="text-xs leading-5 text-muted-foreground sm:text-sm">
                       {item.subtitle}
                     </p>
                   </div>
@@ -359,10 +359,9 @@ export default function Dashboard() {
 
                 <div
                   className={cn(
-                    "flex h-9 w-9 shrink-0 items-center sm:h-11 sm:w-11",
-                    "justify-center rounded-lg border sm:rounded-xl",
-                    "backdrop-blur-md transition-transform duration-200",
-                    "group-hover:scale-105",
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+                    "backdrop-blur-md transition-transform duration-200 group-hover:scale-105",
+                    "sm:h-11 sm:w-11",
                     item.iconWrap,
                   )}
                 >
@@ -374,28 +373,31 @@ export default function Dashboard() {
         ))}
       </section>
 
-      {/* 2. Guidance Services Offered */}
       <section
         className={cn(
           "mt-7 overflow-hidden rounded-[26px] border border-white/25",
-          "bg-white/45 p-5 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
+          "bg-white/45 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
           "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
           "sm:p-6",
         )}
       >
-        <div 
-          className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between animate-fade-in-up"
+        <div
+          className={cn(
+            "flex flex-col gap-4 animate-fade-in-up",
+            "md:flex-row md:items-end md:justify-between",
+          )}
           style={{ animationDelay: "0.13s", animationFillMode: "both" }}
-        >          <div className="space-y-2">
+        >
+          <div className="min-w-0 space-y-2">
             <p
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border",
+                "inline-flex max-w-full items-center gap-2 rounded-full border",
                 "border-primary/15 bg-primary/10 px-3 py-1 text-[11px]",
                 "font-semibold uppercase tracking-[0.16em] text-primary",
               )}
             >
-              <HeartHandshake className="h-3.5 w-3.5" />
-              Guidance Services
+              <HeartHandshake className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Guidance Services</span>
             </p>
 
             <div>
@@ -411,7 +413,7 @@ export default function Dashboard() {
 
           <div
             className={cn(
-              "w-fit rounded-full border border-white/25 bg-white/55 px-3.5 py-2",
+              "w-fit shrink-0 rounded-full border border-white/25 bg-white/55 px-3.5 py-2",
               "text-xs text-muted-foreground shadow-sm backdrop-blur-xl",
               "dark:border-white/10 dark:bg-white/[0.04]",
             )}
@@ -423,7 +425,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
           {guidanceServices.map((service, index) => (
             <article
               key={service.title}
@@ -433,14 +435,14 @@ export default function Dashboard() {
                 "transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/55",
                 "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
                 "dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]",
-                "animate-fade-in-up"
+                "animate-fade-in-up",
               )}
-              style={{                           
-                animationDelay: `${0.05 * (index + 1)}s`, 
+              style={{
+                animationDelay: `${0.05 * (index + 1)}s`,
                 animationFillMode: "both",
               }}
             >
-              <div className="flex h-full items-start gap-4">
+              <div className="flex h-full min-w-0 items-start gap-4">
                 <div
                   className={cn(
                     "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
@@ -477,7 +479,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* 3. Quick Actions and Student Reminders */}
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
         <div className="space-y-3">
           <div>
@@ -507,11 +508,7 @@ export default function Dashboard() {
             )}
           >
             {studentQuickActions.map((action) => (
-              <Link
-                key={action.title}
-                to={action.href}
-                className="group"
-              >
+              <Link key={action.title} to={action.href} className="group">
                 <div
                   className={cn(
                     "relative hidden overflow-hidden rounded-[18px] sm:flex",
@@ -576,7 +573,7 @@ export default function Dashboard() {
                     "dark:border-white/10 dark:bg-white/[0.04]",
                   )}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div
                       className={cn(
                         "flex h-10 w-10 shrink-0 items-center justify-center",
@@ -588,8 +585,8 @@ export default function Dashboard() {
                       <action.icon className="h-5 w-5" />
                     </div>
 
-                    <div className="text-left">
-                      <h3 className="text-sm font-semibold text-foreground">
+                    <div className="min-w-0 text-left">
+                      <h3 className="truncate text-sm font-semibold text-foreground">
                         {action.title}
                       </h3>
 
@@ -616,9 +613,9 @@ export default function Dashboard() {
             "overflow-hidden rounded-[24px] border border-white/25 bg-white/45",
             "shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.04]",
-            "animate-fade-in-up"
+            "animate-fade-in-up",
           )}
-          style={{ animationDelay: "0s", animationFillMode: "both" }} 
+          style={{ animationDelay: "0s", animationFillMode: "both" }}
         >
           <CardContent className="space-y-4 p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
@@ -665,7 +662,7 @@ export default function Dashboard() {
                     <reminder.icon className="h-4.5 w-4.5" />
                   </span>
 
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-foreground">
                       {reminder.title}
                     </h3>

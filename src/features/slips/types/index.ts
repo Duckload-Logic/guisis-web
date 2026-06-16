@@ -74,10 +74,14 @@ export interface CreateSlipRequest {
 
 export interface SlipAttachment {
   id: string;
-  slipId: string;
+  slipId?: string;
   fileName: string;
   fileUrl: string;
-  uploadedAt: string;
+  fileType?: string;
+  fileSize?: number;
+  mimeType?: string;
+  attachmentType?: string;
+  uploadedAt?: string;
 }
 
 /**

@@ -21,11 +21,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  LAYOUT_STYLES,
-  STATUS_COLORS,
-  getStatusColorKey,
-} from "@/config/constants";
+import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
 import {
   Appointment,
   AppointmentStatus,
@@ -234,7 +230,23 @@ export default function StudentAppointments() {
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
-    return STATUS_COLORS[key] || STATUS_COLORS.secondary;
+
+    switch (key) {
+      case "warning":
+        return "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
+      case "info":
+        return "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
+      case "success":
+        return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
+      case "danger":
+        return "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
+      case "notice":
+        return "border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200";
+      case "stale":
+        return "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200";
+      default:
+        return "border-border bg-muted/40 text-muted-foreground";
+    }
   };
 
   const renderListItem = useCallback(
@@ -242,9 +254,9 @@ export default function StudentAppointments() {
       <div
         key={appointment.id}
         className={cn(
-          "animate-fade-in-up cursor-pointer p-4",
-          "transition-colors duration-200 hover:bg-muted/50",
-          "sm:p-5",
+          "animate-fade-in-up cursor-pointer px-4 py-5",
+          "transition-colors duration-200 hover:bg-muted/45",
+          "sm:px-5 sm:py-6",
         )}
         style={{
           animationDelay: `${0.04 * (index + 1)}s`,
@@ -254,8 +266,8 @@ export default function StudentAppointments() {
       >
         <div
           className={cn(
-            "flex flex-col gap-3 sm:flex-row",
-            "sm:items-start sm:justify-between",
+            "flex min-h-[88px] flex-col gap-4",
+            "lg:flex-row lg:items-center lg:justify-between",
           )}
         >
           <div className="min-w-0 flex-1 space-y-2">
@@ -263,19 +275,25 @@ export default function StudentAppointments() {
               <Badge
                 variant="outline"
                 className={cn(
-                  "border-white/45 bg-white/40 text-xs",
-                  "font-medium backdrop-blur-xl",
+                  "inline-flex min-h-6 items-center rounded-full border",
+                  "border-border/70 bg-muted/30 px-3 py-1 text-xs",
+                  "font-medium text-foreground shadow-sm backdrop-blur-xl",
                   "dark:border-white/10 dark:bg-white/[0.05]",
+                  "[overflow-wrap:normal] [word-break:normal]",
                 )}
               >
-                <Tag className="mr-1 h-3 w-3" />
-                {appointment.appointmentCategory.name}
+                <Tag className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
+                <span className="max-w-[180px] truncate">
+                  {appointment.appointmentCategory.name}
+                </span>
               </Badge>
 
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-xs brightness-75 hover:brightness-100",
+                  "inline-flex min-h-6 items-center whitespace-nowrap rounded-full border",
+                  "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+                  "[overflow-wrap:normal] [word-break:normal]",
                   getStatusColor(appointment.status?.name),
                 )}
               >
@@ -283,35 +301,33 @@ export default function StudentAppointments() {
               </Badge>
             </div>
 
-            <p
-              className={cn("line-clamp-1 text-xs", "text-muted-foreground/85")}
-            >
+            <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground/85">
               {appointment.reason}
             </p>
           </div>
 
           <div
             className={cn(
-              "flex shrink-0 flex-col gap-1 rounded-2xl border",
-              "border-white/25 bg-white/40 px-3 py-2 text-left",
-              "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
-              "sm:min-w-[170px]",
+              "w-full shrink-0 rounded-2xl border border-border/70",
+              "bg-muted/25 px-4 py-3 text-left shadow-sm backdrop-blur-xl",
+              "dark:border-white/10 dark:bg-white/[0.04]",
+              "lg:w-[220px]",
             )}
           >
             <p
               className={cn(
-                "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                "text-[11px] font-bold uppercase tracking-[0.16em]",
                 "text-muted-foreground",
               )}
             >
               Appointment Date
             </p>
 
-            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
+            <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground">
               {formatDate(appointment.whenDate)}
             </p>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {format12HourTime(appointment.timeSlot.time)}
             </p>
           </div>
@@ -641,3 +657,4 @@ export default function StudentAppointments() {
     </div>
   );
 }
+

@@ -334,7 +334,7 @@ export async function GetSlipAttachmentDownload(
   slipId: string,
   attachmentId: string,
   config?: AxiosConfigWithMeta,
-) {
+): Promise<Blob> {
   try {
     const response = await apiClient.get(
       API_ROUTES.slips.downloadAttachment(slipId, attachmentId),
@@ -345,10 +345,39 @@ export async function GetSlipAttachmentDownload(
     );
     return response.data;
   } catch (error: any) {
+    const responseBlob = error?.response?.data;
+
+    if (responseBlob instanceof Blob) {
+      try {
+        const text = await responseBlob.text();
+        if (text) {
+          let message = text;
+          try {
+            const parsed = JSON.parse(text);
+            message =
+              parsed?.error ||
+              parsed?.message ||
+              "Failed to download attachment";
+          } catch {
+            // Keep the raw text when the server did not return JSON.
+          }
+          throw new Error(message);
+        }
+      } catch (blobError) {
+        if (blobError instanceof Error) throw blobError;
+      }
+    }
+
+    if (error?.message === "Network Error") {
+      throw new Error(
+        "Network error while fetching the attachment. Please check that the backend server is running and the file endpoint is reachable.",
+      );
+    }
 
     throw error;
   }
 }
+
 
 export const slipService = {
   GetSlipStats,

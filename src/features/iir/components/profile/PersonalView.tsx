@@ -110,14 +110,18 @@ export default function PersonalView({
       </section>
 
       <section>
-        <SectionTitle title="Residency Details" />
+        <SectionTitle title="Address Details" />
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {addresses?.length > 0 ? (
             addresses?.map((entry: StudentAddress) => (
               <CardBlock
                 icon={Home}
                 key={entry?.id}
-                title={asText(entry.addressType)}
+                title={
+                  asText(entry.addressType) === "Residential"
+                    ? "Permanent Address"
+                    : "Provincial Address"
+                }
               >
                 <p className="text-xs text-card-foreground">
                   {renderAddress(entry?.address)}
