@@ -34,23 +34,22 @@ export default function AppointmentForm({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-[26px] border border-white/25 bg-white/55",
-        "shadow-[0_14px_34px_rgba(15,23,42,0.07)] backdrop-blur-2xl",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "overflow-hidden rounded-2xl border border-border bg-glass-bg",
+        "shadow-md backdrop-blur-xl",
       )}
     >
-      <CardHeader className="border-b border-white/20 bg-white/25 px-4 py-4 dark:border-white/10 dark:bg-white/[0.025] sm:px-6 sm:py-5">
-        <CardTitle className="text-xl font-semibold text-foreground">
+      <CardHeader className="border-b border-border/60 bg-muted/30 px-4 py-4 sm:px-5">
+        <CardTitle className="text-base font-bold tracking-tight text-foreground sm:text-lg">
           Appointment Request Details
         </CardTitle>
 
-        <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
           Fill out your concern category and reason/request first. After this,
           you will be asked to choose your preferred date and preferred time.
         </p>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-4 sm:p-5">
         <div className="space-y-5">
           <Dropdown
             label="Concern Category"
@@ -83,9 +82,8 @@ export default function AppointmentForm({
                 onClick={onSubmit}
                 disabled={!isFormValid || isSubmitting || isLoading}
                 className={cn(
-                  "h-auto w-full rounded-xl bg-primary py-3 text-base font-semibold",
-                  "text-primary-foreground transition-colors hover:bg-primary/90",
-                  "md:w-1/2",
+                  "h-11 w-full rounded-xl text-sm font-semibold",
+                  "sm:w-auto sm:min-w-72",
                 )}
               >
                 {isSubmitting
