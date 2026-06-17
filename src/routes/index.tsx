@@ -105,18 +105,18 @@ export const routes: RouteObject[] = [
         ),
       },
       {
-        path: "appointments/:id",
-        element: (
-          <IIRGate>
-            <StudentAppointmentDetails />
-          </IIRGate>
-        ),
-      },
-      {
         path: "appointments/schedule",
         element: (
           <IIRGate>
             <CreateAppointment />
+          </IIRGate>
+        ),
+      },
+      {
+        path: "appointments/:id",
+        element: (
+          <IIRGate>
+            <StudentAppointmentDetails />
           </IIRGate>
         ),
       },
