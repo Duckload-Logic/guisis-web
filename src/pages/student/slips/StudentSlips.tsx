@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
+  Calendar,
   FileCheck2,
   FileClock,
   FilePenLine,
@@ -181,7 +182,7 @@ export default function StudentSlips() {
   const slips = data?.slips || [];
   const statusCounts = (slipStats || []) as StatusCount[];
 
-  const pageBadgeIcon = useMemo(() => <FileText className="h-4 w-4" />, []);
+  const pageBadgeIcon = useMemo(() => <FileText className="h-3.5 w-3.5" />, []);
 
   const hasValidCor = !!user?.studentCorUrl && !!user?.isStudentCorValid;
 
@@ -229,10 +230,14 @@ export default function StudentSlips() {
     headerActions: pageHeaderActions,
   });
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
+  const formatCompactDate = (value?: string) => {
+    if (!value) return "—";
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "—";
+
+    return parsed.toLocaleDateString("en-US", {
+      month: "long",
       day: "numeric",
       year: "numeric",
     });
@@ -248,9 +253,9 @@ export default function StudentSlips() {
       <div
         key={slip.id}
         className={cn(
-          "animate-fade-in-up cursor-pointer px-4 py-5",
-          "transition-colors duration-200 hover:bg-muted/45",
-          "sm:px-5 sm:py-6",
+          "animate-fade-in-up cursor-pointer p-4",
+          "transition-colors duration-200 hover:bg-muted/50",
+          "sm:p-5",
         )}
         style={{
           animationDelay: `${0.05 * (index + 1)}s`,
@@ -258,90 +263,91 @@ export default function StudentSlips() {
         }}
         onClick={() => navigate(`/student/slips/${slip.id}`)}
       >
-        <div
-          className={cn(
-            "flex min-h-[88px] flex-col gap-4",
-            "lg:flex-row lg:items-center lg:justify-between",
-          )}
-        >
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "inline-flex min-h-6 items-center rounded-full border",
-                  "border-border/70 bg-muted/30 px-3 py-1 text-xs",
-                  "font-medium text-foreground shadow-sm backdrop-blur-xl",
-                  "dark:border-white/10 dark:bg-white/[0.05]",
-                  "[overflow-wrap:normal] [word-break:normal]",
-                )}
-              >
-                <Tag className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
-                <span className="max-w-[180px] truncate">
-                  {slip.category?.name || "-"}
-                </span>
-              </Badge>
-
-              <Badge
-                variant="outline"
-                className={cn(
-                  "inline-flex min-h-6 items-center whitespace-nowrap rounded-full border",
-                  "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
-                  "[overflow-wrap:normal] [word-break:normal]",
-                  getStatusColor(slip.status?.name),
-                )}
-              >
-                {slip.status?.name || "-"}
-              </Badge>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div
+              className={cn(
+                "hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                "border border-primary/15 bg-primary/10 text-primary shadow-sm",
+                "backdrop-blur-md sm:flex",
+              )}
+            >
+              <FileText className="h-5 w-5" />
             </div>
 
-            <p className="line-clamp-2 max-w-3xl text-sm leading-6 text-muted-foreground/85">
-              {slip.reason}
-            </p>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border-white/45 bg-white/40 text-xs",
+                    "font-medium backdrop-blur-xl",
+                    "dark:border-white/10 dark:bg-white/[0.05]",
+                  )}
+                >
+                  <Tag className="mr-1 h-3 w-3" />
+                  {slip.category?.name}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs hover:opacity-90",
+                    getStatusColor(slip.status?.name),
+                  )}
+                >
+                  {slip.status?.name}
+                </Badge>
+              </div>
+
+              <p
+                className={cn(
+                  "mt-1.5 line-clamp-1 text-sm",
+                  "text-muted-foreground/90",
+                )}
+              >
+                {slip.reason}
+              </p>
+            </div>
           </div>
 
           <div
             className={cn(
-              "grid w-full shrink-0 gap-3 rounded-2xl border border-border/70",
-              "bg-muted/25 px-4 py-3 text-left shadow-sm backdrop-blur-xl",
-              "dark:border-white/10 dark:bg-white/[0.04]",
-              "sm:grid-cols-2 lg:w-[420px]",
+              "flex shrink-0 flex-col gap-1.5 text-sm text-muted-foreground",
+              "md:ml-auto md:flex-row md:items-center md:justify-end md:gap-4",
             )}
           >
-            <div className="min-w-0">
-              <p
-                className={cn(
-                  "text-[11px] font-bold uppercase tracking-[0.16em]",
-                  "text-muted-foreground",
-                )}
-              >
-                Absence Date
-              </p>
-
-              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground">
-                {formatDate(slip.dateOfAbsence)}
-              </p>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <Calendar className="h-4 w-4" />
+              <span>Date Requested: {formatCompactDate(slip.createdAt)}</span>
             </div>
 
-            <div className="min-w-0 sm:border-l sm:border-border/60 sm:pl-3 dark:sm:border-white/10">
-              <p
-                className={cn(
-                  "text-[11px] font-bold uppercase tracking-[0.16em]",
-                  "text-muted-foreground",
-                )}
-              >
-                Date Needed
-              </p>
+            <span
+              className={cn("hidden text-muted-foreground/40", "md:inline")}
+            >
+              •
+            </span>
 
-              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground">
-                {formatDate(slip.dateNeeded)}
-              </p>
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <Calendar className="h-4 w-4" />
+              <span>Absence: {formatCompactDate(slip.dateOfAbsence)}</span>
+            </div>
+
+            <span
+              className={cn("hidden text-muted-foreground/40", "md:inline")}
+            >
+              •
+            </span>
+
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <Calendar className="h-4 w-4" />
+              <span>Needed: {formatCompactDate(slip.dateNeeded)}</span>
             </div>
           </div>
         </div>
       </div>
     ),
-    [navigate, formatDate, getStatusColor],
+    [navigate, formatCompactDate, getStatusColor],
   );
 
   const emptyState = useMemo(

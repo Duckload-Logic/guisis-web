@@ -48,6 +48,37 @@ export function ReportModal({
     });
     return stats;
   }, [filteredData, type]);
+
+  const getStudentName = (item: any) => {
+    const firstName =
+      item.user?.firstName || item.userFirstName || item.student?.firstName || "";
+    const lastName =
+      item.user?.lastName || item.userLastName || item.student?.lastName || "";
+
+    if (firstName || lastName) {
+      return [lastName, firstName].filter(Boolean).join(", ");
+    }
+
+    return item.studentName || item.fullName || "N/A";
+  };
+
+  const getStudentNumber = (item: any) => {
+    return (
+      item.studentNumber ||
+      item.student_number ||
+      item.studentNo ||
+      item.student_no ||
+      item.user?.studentNumber ||
+      item.user?.student_number ||
+      item.student?.studentNumber ||
+      item.student?.student_number ||
+      item.iir?.studentNumber ||
+      item.iir?.student_number ||
+      item.personalInfo?.studentNumber ||
+      item.personalInfo?.student_number ||
+      "N/A"
+    );
+  };
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
@@ -62,10 +93,8 @@ export function ReportModal({
     const rowsHtml = filteredData
       .map((item, index) => {
         if (type === "appointments") {
-          const sName = item.user
-            ? `${item.user.lastName}, ${item.user.firstName}`
-            : "N/A";
-          const sNum = item.studentNumber || item.user?.studentNumber || "N/A";
+          const sName = getStudentName(item);
+          const sNum = getStudentNumber(item);
           const catName = item.appointmentCategory?.name || "N/A";
           const reason = item.reason || "N/A";
           return `
@@ -98,10 +127,8 @@ export function ReportModal({
             </tr>
           `;
         } else {
-          const sName = item.user
-            ? `${item.user.lastName}, ${item.user.firstName}`
-            : "N/A";
-          const sNum = item.user?.studentNumber || "N/A";
+          const sName = getStudentName(item);
+          const sNum = getStudentNumber(item);
           const code = item.ticket?.ticketCode || "N/A";
           const dates = item.dateOfAbsence || "N/A";
           const reason = item.reason || "N/A";
@@ -344,10 +371,8 @@ export function ReportModal({
         "Status",
       ];
       rows = filteredData.map((item, index) => {
-        const sName = item.user
-          ? `${item.user.lastName}, ${item.user.firstName}`
-          : "N/A";
-        const sNum = item.studentNumber || item.user?.studentNumber || "N/A";
+        const sName = getStudentName(item);
+        const sNum = getStudentNumber(item);
         const catName = item.appointmentCategory?.name || "N/A";
         const reason = item.reason || "N/A";
         return [
@@ -371,10 +396,8 @@ export function ReportModal({
         "Status",
       ];
       rows = filteredData.map((item, index) => {
-        const sName = item.user
-          ? `${item.user.lastName}, ${item.user.firstName}`
-          : "N/A";
-        const sNum = item.user?.studentNumber || "N/A";
+        const sName = getStudentName(item);
+        const sNum = getStudentNumber(item);
         const code = item.ticket?.ticketCode || "N/A";
         const dates = item.dateOfAbsence || "N/A";
         const reason = item.reason || "N/A";
@@ -395,7 +418,9 @@ export function ReportModal({
       [
         headers.join(","),
         ...rows.map((e) =>
-          e.map((val) => `"${val.replace(/"/g, '""')}"`).join(","),
+          e
+            .map((val) => `"${String(val ?? "").replace(/"/g, '""')}"`)
+            .join(","),
         ),
       ].join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -516,15 +541,8 @@ export function ReportModal({
                   </tr>
                 ) : (
                   filteredData.map((item, idx) => {
-                    const sName = item.user
-                      ? `${item.user.lastName}, ${item.user.firstName}`
-                      : "N/A";
-                    const sNum =
-                      type === "appointments"
-                        ? item.studentNumber ||
-                          item.user?.studentNumber ||
-                          "N/A"
-                        : item.user?.studentNumber || "N/A";
+                    const sName = getStudentName(item);
+                    const sNum = getStudentNumber(item);
                     const col2 =
                       type === "appointments"
                         ? item.whenDate
