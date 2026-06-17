@@ -13,7 +13,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -223,7 +222,7 @@ export default function UserManagement() {
           <div className="flex items-center gap-3 text-left">
             <div
               className={cn(
-                "flex h-10 w-10 items-center justify-center",
+                "flex aspect-square h-10 w-10 shrink-0 items-center justify-center",
                 "rounded-xl bg-primary/20 text-xs font-bold",
                 "uppercase text-primary",
               )}
@@ -561,7 +560,7 @@ export default function UserManagement() {
               isLoading={isLoading}
               emptyState={
                 <div className="py-20 text-center text-muted-foreground">
-                  No users found matching your search.
+                  It's kind of lonely here.
                 </div>
               }
               containerClassName="px-3 py-3"
