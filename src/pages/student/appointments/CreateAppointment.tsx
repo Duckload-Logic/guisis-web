@@ -22,6 +22,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
 import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
@@ -48,6 +56,7 @@ export default function CreateAppointment() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isScheduleNoticeOpen, setIsScheduleNoticeOpen] = useState(true);
 
   const [activePreferredIndex, setActivePreferredIndex] = useState(0);
 
@@ -303,6 +312,91 @@ export default function CreateAppointment() {
 
   return (
     <>
+      <Dialog
+        open={isScheduleNoticeOpen}
+        onOpenChange={setIsScheduleNoticeOpen}
+      >
+        <DialogContent
+          className={cn(
+            "overflow-hidden rounded-[34px] border border-blue-200/70 p-0",
+            "bg-white/95 shadow-2xl shadow-blue-950/10 backdrop-blur-xl",
+            "dark:border-blue-400/20 dark:bg-background/95 dark:shadow-blue-950/30 sm:max-w-[960px]",
+          )}
+        >
+          <div
+            className={cn(
+              "relative overflow-hidden px-7 pb-8 pt-8 sm:px-10 sm:pb-9 sm:pt-9",
+              "bg-gradient-to-br from-blue-50 via-sky-50/80 to-white",
+              "dark:from-blue-950/35 dark:via-sky-950/20 dark:to-background",
+            )}
+          >
+            <div className="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-blue-400/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-sky-300/20 blur-3xl" />
+
+            <DialogHeader className="relative space-y-5 text-left">
+              <div className="flex items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px]",
+                    "border border-blue-200/90 bg-blue-100/80 text-blue-700",
+                    "shadow-sm shadow-blue-600/10 dark:border-blue-400/25",
+                    "dark:bg-blue-400/10 dark:text-blue-300",
+                  )}
+                >
+                  <CalendarDays className="h-6 w-6" />
+                </div>
+
+                <div className="min-w-0 space-y-1.5 pt-0.5">
+                  <span
+                    className={cn(
+                      "inline-flex rounded-full border border-blue-200/80 bg-white/70",
+                      "px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em]",
+                      "text-blue-700 shadow-sm backdrop-blur-md",
+                      "dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300",
+                    )}
+                  >
+                    Appointment Notice
+                  </span>
+
+                  <DialogTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                    Guidance Office Schedule
+                  </DialogTitle>
+                </div>
+              </div>
+
+              <DialogDescription
+                className={cn(
+                  "rounded-[22px] border border-blue-100/90 bg-white/80 px-5 py-5 sm:px-6",
+                  "text-base leading-7 text-muted-foreground shadow-sm backdrop-blur-md sm:whitespace-nowrap",
+                  "dark:border-blue-400/10 dark:bg-white/[0.04]",
+                )}
+              >
+                Ma&apos;am Liwanag L. Maliksi&apos;s schedule is strictly from 8:00 AM to 5:00 PM only.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <DialogFooter
+            className={cn(
+              "border-t border-blue-100/80 bg-white/80 px-7 py-6 sm:px-10",
+              "dark:border-blue-400/10 dark:bg-white/[0.03] sm:justify-end",
+            )}
+          >
+            <Button
+              type="button"
+              onClick={() => setIsScheduleNoticeOpen(false)}
+              className={cn(
+                "h-12 rounded-[18px] bg-blue-600 px-9 font-semibold text-white",
+                "shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:bg-blue-700",
+                "focus-visible:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400",
+              )}
+            >
+              I understand
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="min-h-full">
         <div className="mx-auto w-full max-w-[1500px] overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="space-y-5">

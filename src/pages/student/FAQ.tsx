@@ -5,7 +5,6 @@ import {
   ClipboardList,
   FileText,
   HelpCircle,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -51,6 +50,11 @@ const faqCategories: FAQCategory[] = [
         answer:
           "Pending means your request is waiting for review, Approved means it has been accepted, Rescheduled means the Guidance Office provided a new schedule, Completed means the session is done, and Cancelled means it will no longer proceed.",
       },
+      {
+        question: "What should I do once my appointment schedule is approved?",
+        answer:
+          "Once your appointment schedule is approved, you must physically visit the Guidance Office.",
+      },
     ],
   },
   {
@@ -65,6 +69,16 @@ const faqCategories: FAQCategory[] = [
         question: "How do I submit an admission slip?",
         answer:
           "Open Admission Slips, click Submit Admission Slip, complete the required details, upload the needed attachment if applicable, then submit your request for review.",
+      },
+      {
+        question: "What is an admission slip used for?",
+        answer:
+          "An admission slip serves as an official excuse slip for your absences.",
+      },
+      {
+        question: "Can students revise a submitted admission slip?",
+        answer:
+          "Yes, students have the privilege to revise their submitted admission slips if needed.",
       },
       {
         question: "What should I check before submitting?",
@@ -127,11 +141,16 @@ export default function FAQ() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up" // <-- ADD THIS
+              "animate-fade-in-up",
             )}
-            style={{ animationDelay: "0.10s", animationFillMode: "both" }} // <-- ADD THIS
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
-            <p className={cn("text-center text-[11px] font-medium uppercase", "tracking-[0.18em] text-muted-foreground")}>
+            <p
+              className={cn(
+                "text-center text-[11px] font-medium uppercase",
+                "tracking-[0.18em] text-muted-foreground",
+              )}
+            >
               Topics
             </p>
             <p className="mt-1 text-center text-2xl font-bold text-foreground">
@@ -143,11 +162,16 @@ export default function FAQ() {
             className={cn(
               "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up" // <-- ADD THIS
+              "animate-fade-in-up",
             )}
-            style={{ animationDelay: "0.15s", animationFillMode: "both" }} // <-- ADD THIS
+            style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
-            <p className={cn("text-center text-[11px] font-medium uppercase", "tracking-[0.18em] text-muted-foreground")}>
+            <p
+              className={cn(
+                "text-center text-[11px] font-medium uppercase",
+                "tracking-[0.18em] text-muted-foreground",
+              )}
+            >
               FAQs
             </p>
             <p className="mt-1 text-center text-2xl font-bold text-foreground">
@@ -167,82 +191,33 @@ export default function FAQ() {
       ...current,
       [categoryTitle]:
         current[categoryTitle] === questionIndex ? null : questionIndex,
-    }));  
+    }));
   };
 
   return (
     <div className={cn("mx-auto flex w-full flex-col", "px-4 sm:px-6 md:px-8")}>
       <AnimationStyles />
 
-      <section
-        className={cn(
-          // "relative overflow-hidden rounded-[22px] border border-white/25",
-          // "bg-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.05)]",
-          // "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
-          // "sm:px-5 sm:py-5",
-        )}
-      >
-        <div
-          className={cn(
-            "pointer-events-none absolute -right-16 -top-20 h-28 w-28 rounded-full",
-            "bg-primary/10 blur-3xl dark:bg-primary/15",
-          )}
-        />
-
-        <div
-          className={cn(
-            "pointer-events-none absolute -bottom-20 left-8 h-28 w-28 rounded-full",
-            "bg-secondary/20 blur-3xl dark:bg-secondary/10",
-          )}
-        />
-
-        <div className="relative max-w-3xl space-y-1.5">
-          {/* <div
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border",
-              "border-primary/15 bg-primary/10 px-2.5 py-0.5 text-[10px]",
-              "font-semibold uppercase tracking-[0.15em] text-primary",
-            )}
-          >
-            <Sparkles className="h-2.5 w-2.5" />
-            Student Help Desk
-          </div> */}
-
-          {/* <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-              Frequently Asked Questions
-            </h2>
-
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
-              Find quick answers about appointments, admission slips, and IIR
-              records.
-            </p>
-          </div> */}
-        </div>
-      </section>
-
-      <section className="mt-6 grid items-start gap-5 xl:grid-cols-3">
-        {faqCategories.map((category, index) => {
-          const isCategoryOpen =
-            openItems[category.title] !== null &&
-            openItems[category.title] !== undefined;
-
+      <section className="mt-6 grid items-start gap-6 xl:grid-cols-3">
+        {faqCategories.map((category, categoryIndex) => {
           return (
             <Card
               key={category.title}
               className={cn(
-                "overflow-hidden rounded-[26px] border border-white/25",
-                "bg-white/55 shadow-[0_16px_36px_rgba(15,23,42,0.06)]",
-                "backdrop-blur-xl transition-all duration-300", 
-                "hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
-                "animate-fade-in-up",
-                "dark:border-white/10 dark:bg-white/[0.04]",
-                isCategoryOpen ? "h-auto min-h-[335px]" : "h-[335px]",
+                "h-fit w-full overflow-hidden rounded-[28px]",
+                "border border-white/30 bg-white/60",
+                "shadow-[0_18px_42px_rgba(15,23,42,0.08)] backdrop-blur-xl",
+                "transition-all duration-300 hover:-translate-y-0.5",
+                "hover:shadow-[0_20px_46px_rgba(15,23,42,0.10)]",
+                "animate-fade-in-up dark:border-white/10 dark:bg-white/[0.04]",
               )}
-              style={{ animationDelay: `${0.05 * (index + 1)}s`, animationFillMode: "both" }} 
+              style={{
+                animationDelay: `${0.05 * (categoryIndex + 1)}s`,
+                animationFillMode: "both",
+              }}
             >
-              <CardContent className="flex h-full flex-col p-0">
-                <div className="relative min-h-[130px] overflow-hidden p-5">
+              <CardContent className="flex h-fit flex-col p-0">
+                <div className="relative min-h-[140px] overflow-hidden px-8 pb-7 pt-7">
                   <div
                     className={cn(
                       "pointer-events-none absolute inset-0 bg-gradient-to-br",
@@ -250,10 +225,10 @@ export default function FAQ() {
                     )}
                   />
 
-                  <div className="relative flex items-start gap-4">
+                  <div className="relative flex items-start gap-5">
                     <div
                       className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                        "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl",
                         "border shadow-sm backdrop-blur-xl",
                         category.iconStyle,
                       )}
@@ -261,73 +236,68 @@ export default function FAQ() {
                       <category.icon className="h-5 w-5" />
                     </div>
 
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-foreground">
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <div className="flex min-h-[30px] flex-wrap items-center gap-2.5">
+                        <h3 className="text-xl font-bold tracking-tight text-foreground">
                           {category.title}
                         </h3>
 
                         <span
                           className={cn(
-                            "rounded-full border border-white/30 bg-white/55 px-2.5 py-1",
-                            "text-[11px] font-medium text-muted-foreground",
-                            "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
+                            "rounded-full border border-white/40 bg-white/65 px-3 py-1",
+                            "text-xs font-medium text-muted-foreground",
+                            "shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
                           )}
                         >
                           {category.questions.length} questions
                         </span>
                       </div>
 
-                      <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                      <p className="mt-2 max-w-[330px] text-sm leading-6 text-muted-foreground">
                         {category.description}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col gap-1.5 border-t border-white/25 p-4 dark:border-white/10">
-                  {category.questions.map((item, index) => {
-                    const isOpen = openItems[category.title] === index;
+                <div className="flex flex-col gap-3 px-8 pb-8 pt-7">
+                  {category.questions.map((item, questionIndex) => {
+                    const isOpen = openItems[category.title] === questionIndex;
 
                     return (
                       <div
                         key={item.question}
                         className={cn(
-                          "overflow-hidden rounded-2xl border transition-all duration-200",
+                          "rounded-2xl border transition-all duration-200",
                           isOpen
-                            ? "border-primary/20 bg-primary/[0.04] shadow-sm"
-                            : "border-white/25 bg-white/45 hover:border-white/40 hover:bg-white/65",
-                          "dark:border-white/10 dark:bg-white/[0.035]",
-                          "dark:hover:bg-white/[0.06]",
+                            ? "border-primary/20 bg-primary/[0.045] shadow-sm"
+                            : "border-transparent bg-transparent hover:border-white/50 hover:bg-white/60",
+                          "dark:hover:border-white/10 dark:hover:bg-white/[0.035]",
                         )}
                       >
                         <button
                           type="button"
-                          onClick={() => toggleItem(category.title, index)}
-                          aria-expanded={isOpen}
+                          onClick={() => toggleItem(category.title, questionIndex)}
                           className={cn(
-                            "flex min-h-[48px] w-full items-center justify-between gap-3 px-4 py-2",
-                            "text-left transition-colors",
+                            "grid min-h-[50px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4",
+                            "px-4 py-3 text-left transition-colors",
                           )}
                         >
-                          <p className="min-w-0 flex-1 line-clamp-2 text-sm font-semibold leading-5 text-foreground">
+                          <span className="min-w-0 text-sm font-semibold leading-5 text-foreground">
                             {item.question}
-                          </p>
+                          </span>
 
                           <span
                             className={cn(
-                              "inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2.5",
-                              "text-[11px] font-semibold transition-all duration-200",
-                              isOpen
-                                ? "border-primary/25 bg-primary/10 text-primary"
-                                : "border-white/30 bg-white/80 text-muted-foreground hover:bg-white hover:text-foreground",
-                              "dark:border-white/10 dark:bg-white/[0.07]",
+                              "inline-flex w-[70px] shrink-0 items-center justify-end gap-1.5",
+                              "text-xs font-semibold text-muted-foreground transition-colors",
+                              isOpen && "text-primary",
                             )}
                           >
                             {isOpen ? "Hide" : "Show"}
                             <ChevronDown
                               className={cn(
-                                "h-3 w-3 transition-transform duration-200",
+                                "h-3.5 w-3.5 transition-transform duration-200",
                                 isOpen && "rotate-180",
                               )}
                             />
@@ -335,20 +305,13 @@ export default function FAQ() {
                         </button>
 
                         {isOpen && (
-                          <div className="px-4 pb-4">
-                            <div
-                              className={cn(
-                                "rounded-xl border border-white/25 bg-white/65",
-                                "px-4 py-3 text-sm leading-6 text-muted-foreground",
-                                "shadow-sm backdrop-blur-xl",
-                                "dark:border-white/10 dark:bg-white/[0.05]",
-                              )}
-                            >
-                              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-                                Answer
-                              </p>
-                              {item.answer}
-                            </div>
+                          <div
+                            className={cn(
+                              "px-4 pb-4 pt-0 text-sm leading-7 text-muted-foreground",
+                              "break-words animate-in fade-in slide-in-from-top-1 duration-200",
+                            )}
+                          >
+                            {item.answer}
                           </div>
                         )}
                       </div>
@@ -359,41 +322,6 @@ export default function FAQ() {
             </Card>
           );
         })}
-      </section>
-
-      <section
-        className={cn(
-          "mt-6 rounded-[24px] border border-white/25 bg-white/45 p-5",
-          "shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-          "dark:border-white/10 dark:bg-white/[0.04] sm:p-6",
-        )}
-      >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p
-              className={cn(
-                "text-xs font-semibold uppercase tracking-[0.18em]",
-                "text-muted-foreground",
-              )}
-            >
-              Reminder
-            </p>
-
-            <h3 className="mt-1 text-lg font-semibold text-foreground">
-              For urgent or sensitive concerns, contact the Guidance Office
-              directly.
-            </h3>
-          </div>
-
-          <div
-            className={cn(
-              "w-fit rounded-2xl border border-primary/15 bg-primary/10 px-4 py-3",
-              "text-sm font-medium text-primary",
-            )}
-          >
-            Frequently asked questions are informational and static.
-          </div>
-        </div>
       </section>
     </div>
   );
