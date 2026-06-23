@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
+  ArrowLeft,
   Bell,
   Calendar,
   CheckCircle,
@@ -26,6 +27,7 @@ import {
   useGetNotifications,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
+  useMarkNotificationsTouched,
   useNotificationsStream,
 } from "@/features/notifications/hooks/useNotifications";
 import type { NotificationEntry } from "@/features/notifications/types";
@@ -157,8 +159,11 @@ export default function NotificationsPage() {
   const { data, isLoading, isFetching } = useGetNotifications(queryParams);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const markTouched = useMarkNotificationsTouched();
+  const touchedOnceRef = useRef(false);
   const { user, activeRole } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setPage(1);
@@ -175,6 +180,26 @@ export default function NotificationsPage() {
   const totalPages = Math.max(data?.totalPages || 1, 1);
   const currentPage = data?.page || page;
   const roleName = activeRole?.name || user?.roles?.[0]?.name || "student";
+  const rolePath = getRolePath(roleName);
+  const fromPath = (location.state as { from?: string } | null)?.from;
+
+  useEffect(() => {
+    if (touchedOnceRef.current || !data) return;
+
+    if ((data.untouchedCount || 0) > 0 && !markTouched.isPending) {
+      touchedOnceRef.current = true;
+      markTouched.mutate();
+    }
+  }, [data, markTouched]);
+
+  const handleBack = () => {
+    if (fromPath) {
+      navigate(fromPath);
+      return;
+    }
+
+    navigate(`/${rolePath}`);
+  };
 
   const handleMarkAllRead = () => {
     if (unreadCount === 0 || markAllRead.isPending) return;
@@ -194,6 +219,16 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 px-0 py-2 sm:space-y-6 sm:p-4 md:p-6">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={handleBack}
+        className="inline-flex min-h-11 items-center gap-2 px-2 text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       <Card className="overflow-hidden border-border shadow-sm">
         <CardHeader className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="min-w-0">
@@ -250,10 +285,7 @@ export default function NotificationsPage() {
               </div>
             ) : (
               notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className="px-2 py-1 sm:px-3"
-                >
+                <div key={notification.id} className="px-2 py-1 sm:px-3">
                   <NotificationItem
                     notification={notification}
                     onClick={handleNotificationClick}
@@ -363,4 +395,3 @@ function NotificationItem({
     </button>
   );
 }
-

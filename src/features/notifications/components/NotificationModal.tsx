@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   AlertTriangle,
   Bell,
@@ -10,12 +17,9 @@ import {
   Info,
   Shield,
   User,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import {
-  ResponsiveModal,
-  ResponsiveModalContent,
-} from "@/components/ui/responsive-modal";
 import {
   useGetNotifications,
   useMarkAllNotificationsRead,
@@ -26,10 +30,11 @@ import { usePushNotifications } from "../hooks/usePushNotifications";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/hooks";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 import type { NotificationEntry } from "../types";
 
-const MODAL_PAGE_SIZE = 8;
+const DROPDOWN_PAGE_SIZE = 6;
 
 type NotificationIconTone = "blue" | "purple" | "green" | "red";
 
@@ -142,6 +147,8 @@ export default function NotificationModal({
   showNotifications,
   setShowNotifications,
 }: Props) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [page, setPage] = useState(1);
   const markRead = useMarkNotificationRead();
@@ -153,7 +160,7 @@ export default function NotificationModal({
   const queryParams = useMemo(
     () => ({
       page,
-      pageSize: MODAL_PAGE_SIZE,
+      pageSize: DROPDOWN_PAGE_SIZE,
       unreadOnly: filter === "unread",
     }),
     [filter, page],
@@ -169,6 +176,13 @@ export default function NotificationModal({
     subscribe: subscribePush,
   } = usePushNotifications();
 
+  const closeNotifications = useCallback(() => {
+    if ((data?.untouchedCount || 0) > 0 && !markTouched.isPending) {
+      markTouched.mutate();
+    }
+    setShowNotifications(false);
+  }, [data?.untouchedCount, markTouched, setShowNotifications]);
+
   useEffect(() => {
     setPage(1);
   }, [filter]);
@@ -179,6 +193,39 @@ export default function NotificationModal({
     }
   }, [data?.totalPages, page]);
 
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+
+      if (dropdownRef.current?.contains(target as Node)) return;
+      if (target?.closest('[data-notification-trigger="true"]')) return;
+
+      closeNotifications();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeNotifications();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeNotifications, showNotifications]);
+
+  useEffect(() => {
+    if (isMobile && showNotifications) {
+      closeNotifications();
+    }
+  }, [closeNotifications, isMobile, showNotifications]);
+
   const handleSubscribePush = async () => {
     try {
       await subscribePush();
@@ -187,22 +234,7 @@ export default function NotificationModal({
     }
   };
 
-  const closeNotifications = () => {
-    if ((data?.untouchedCount || 0) > 0 && !markTouched.isPending) {
-      markTouched.mutate();
-    }
-    setShowNotifications(false);
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      closeNotifications();
-      return;
-    }
-    setShowNotifications(true);
-  };
-
-  if (!showNotifications) return null;
+  if (!showNotifications || isMobile) return null;
 
   const notifications = data?.notifications || [];
   const unreadCount = data?.unreadCount || 0;
@@ -239,44 +271,43 @@ export default function NotificationModal({
   };
 
   return (
-    <ResponsiveModal
-      open={showNotifications}
-      onOpenChange={handleOpenChange}
+    <div
+      ref={dropdownRef}
+      role="dialog"
+      aria-label="Notifications dropdown"
+      className={cn(
+        "fixed right-3 top-[4.25rem] z-50 hidden w-[calc(100vw-1.5rem)]",
+        "max-w-[28rem] flex-col overflow-hidden rounded-2xl border",
+        "border-border bg-card text-card-foreground shadow-2xl outline-none",
+        "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200",
+        "sm:right-6 sm:top-[5.25rem] md:flex lg:right-8",
+      )}
     >
-      <ResponsiveModalContent
-        hasCloseButton={false}
-        className={cn(
-          "flex h-[88dvh] w-[calc(100vw-1rem)] max-w-[42rem] flex-col",
-          "overflow-hidden border-border bg-card p-0 shadow-2xl outline-none",
-          "sm:h-[75vh] sm:w-full md:max-w-[42rem]",
-        )}
-      >
-        <div className="flex flex-col gap-4 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div className="min-w-0">
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <Bell className="h-4 w-4 shrink-0 text-primary" />
-              Notifications
-            </h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Opening this panel only clears the bell badge after closing it.
-            </p>
-          </div>
-
-          {unreadCount > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleMarkAllRead}
-              disabled={markAllRead.isPending}
-              className="min-h-11 w-full sm:w-auto"
-            >
-              {markAllRead.isPending ? "Marking..." : "Mark all as read"}
-            </Button>
-          )}
+      <div className="flex items-start justify-between gap-3 border-b border-border p-4">
+        <div className="min-w-0">
+          <h2 className="flex items-center gap-2 text-base font-semibold">
+            <Bell className="h-4 w-4 shrink-0 text-primary" />
+            Notifications
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            The bell badge clears after closing this dropdown.
+          </p>
         </div>
 
-        <div className="flex gap-2 border-b border-border px-4 py-3 text-sm sm:px-5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={closeNotifications}
+          className="-mr-2 -mt-2 h-9 w-9 shrink-0"
+          aria-label="Close notifications"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="flex gap-2 text-sm">
           <FilterButton
             active={filter === "all"}
             onClick={() => setFilter("all")}
@@ -296,100 +327,111 @@ export default function NotificationModal({
           </FilterButton>
         </div>
 
-        <div className="flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3">
-          {showPushBanner && (
-            <div
-              className={cn(
-                "mx-1 flex flex-col gap-3 rounded-xl border border-primary/20",
-                "bg-primary/5 p-4 shadow-sm transition hover:bg-primary/10",
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <Bell className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">
-                    Enable Background Notifications
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Receive urgent status updates even when PUPT-GuiSIS is
-                    closed.
-                  </p>
-                </div>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSubscribePush}
-                disabled={isPushPending}
-                className="min-h-11 w-full sm:ml-auto sm:w-auto"
-              >
-                {isPushPending ? "Enabling..." : "Enable"}
-              </Button>
-            </div>
-          )}
+        {unreadCount > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleMarkAllRead}
+            disabled={markAllRead.isPending}
+            className="h-9 shrink-0 px-3 text-xs"
+          >
+            {markAllRead.isPending ? "Marking..." : "Mark all read"}
+          </Button>
+        )}
+      </div>
 
-          {isLoading ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              Loading notifications...
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              No {filter === "unread" ? "unread " : ""}notifications found.
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                compact
-                onClick={handleNotificationClick}
-              />
-            ))
-          )}
-        </div>
-
-        <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-center gap-2 sm:justify-start">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={handlePreviousPage}
-              disabled={currentPage <= 1 || isFetching}
-              className="min-h-11 min-w-11"
-              aria-label="Previous notification page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="min-w-[5.5rem] text-center text-xs text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages || isFetching}
-              className="min-h-11 min-w-11"
-              aria-label="Next notification page"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <Link
-            to={`/${rolePath}/notifications`}
-            onClick={closeNotifications}
+      <div className="max-h-[24rem] flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">
+        {showPushBanner && (
+          <div
             className={cn(
-              "inline-flex min-h-11 items-center justify-center rounded-lg px-3",
-              "text-sm font-medium text-primary transition hover:bg-primary/10",
+              "rounded-xl border border-primary/20 bg-primary/5 p-3 shadow-sm",
+              "transition hover:bg-primary/10",
             )}
           >
-            View All Notifications
-          </Link>
+            <div className="flex items-start gap-3">
+              <Bell className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">
+                  Enable Background Notifications
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Receive urgent status updates even when PUPT-GuiSIS is closed.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleSubscribePush}
+              disabled={isPushPending}
+              className="mt-3 h-9 w-full"
+            >
+              {isPushPending ? "Enabling..." : "Enable"}
+            </Button>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            Loading notifications...
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            No {filter === "unread" ? "unread " : ""}notifications found.
+          </div>
+        ) : (
+          notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onClick={handleNotificationClick}
+            />
+          ))
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-t border-border p-3">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handlePreviousPage}
+            disabled={currentPage <= 1 || isFetching}
+            className="h-9 w-9"
+            aria-label="Previous notification page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="min-w-[4.5rem] text-center text-xs text-muted-foreground">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleNextPage}
+            disabled={currentPage >= totalPages || isFetching}
+            className="h-9 w-9"
+            aria-label="Next notification page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-      </ResponsiveModalContent>
-    </ResponsiveModal>
+
+        <Link
+          to={`/${rolePath}/notifications`}
+          onClick={closeNotifications}
+          className={cn(
+            "inline-flex h-9 items-center justify-center rounded-lg px-3",
+            "text-sm font-medium text-primary transition hover:bg-primary/10",
+          )}
+        >
+          View All
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -407,7 +449,7 @@ function FilterButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative inline-flex min-h-11 items-center rounded-lg px-3 font-medium",
+        "relative inline-flex h-9 items-center rounded-lg px-3 font-medium",
         "transition-colors focus-visible:outline-none focus-visible:ring-2",
         "focus-visible:ring-ring",
         active
@@ -422,11 +464,9 @@ function FilterButton({
 
 function NotificationItem({
   notification,
-  compact = false,
   onClick,
 }: {
   notification: NotificationEntry;
-  compact?: boolean;
   onClick: (notification: NotificationEntry) => void;
 }) {
   const { icon: Icon, color } = getIconForNotificationType(
@@ -440,9 +480,8 @@ function NotificationItem({
       onClick={() => onClick(notification)}
       className={cn(
         "group flex min-h-11 w-full cursor-pointer items-start text-left",
-        "gap-3 rounded-xl transition-colors duration-200 hover:bg-muted/60",
+        "gap-3 rounded-xl p-3 transition-colors duration-200 hover:bg-muted/60",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        compact ? "p-3" : "p-4 sm:p-5",
         unread ? "bg-primary/5" : "opacity-75",
       )}
     >
@@ -459,7 +498,7 @@ function NotificationItem({
           getNotificationIconClass(color),
         )}
       >
-        <Icon className="h-5 w-5" />
+        <Icon className="h-4 w-4" />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -471,7 +510,7 @@ function NotificationItem({
         >
           {notification.title}
         </p>
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
           {notification.message}
         </p>
         <p className="mt-2 text-[11px] font-medium text-muted-foreground">
@@ -481,4 +520,3 @@ function NotificationItem({
     </button>
   );
 }
-
