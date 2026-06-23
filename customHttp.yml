@@ -4,10 +4,12 @@ customHeaders:
       - key: 'Content-Security-Policy'
         value: >-
           default-src 'self';
-          script-src 'self' 'unsafe-inline' 'unsafe-eval';
+          script-src 'self';
           style-src 'self' 'unsafe-inline';
           img-src 'self' data: blob:;
           connect-src 'self' http://localhost:8080 https://*.dllbsit2027.com;
+          frame-ancestors 'none';
+          form-action 'self';
       - key: 'X-Frame-Options'
         value: 'DENY'
       - key: 'X-Content-Type-Options'
@@ -16,6 +18,8 @@ customHeaders:
         value: 'max-age=31536000; includeSubDomains'
       - key: 'X-XSS-Protection'
         value: '1; mode=block'
+      - key: 'X-Permitted-Cross-Domain-Policies'
+        value: 'none'
       - key: 'Referrer-Policy'
         value: 'strict-origin-when-cross-origin'
       - key: 'X-Robots-Tag'
