@@ -6,20 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  Ban,
   Calendar,
   CalendarClock,
-  CalendarDays,
   CalendarX,
-  CheckCircle2,
-  Hourglass,
   Plus,
-  RotateCcw,
   Tag,
-  UserX,
-  XCircle,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
 import {
@@ -43,95 +35,6 @@ const ACTION_REQUIRED_ALERT = LAYOUT_STYLES.ALERT;
 const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
   id: 0,
   name: "All",
-};
-
-type StatusCardMeta = {
-  icon: LucideIcon;
-  label: string;
-  card: string;
-  glow: string;
-  iconBox: string;
-};
-
-const STATUS_CARD_META: Record<string, StatusCardMeta> = {
-  pending: {
-    icon: Hourglass,
-    label: "text-amber-700/90 dark:text-amber-200",
-    card: "border-amber-300/30 bg-gradient-to-br from-amber-50/55 via-white/35 to-white/25 shadow-amber-100/20 dark:border-amber-400/15 dark:from-amber-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-amber-200/20 dark:bg-amber-400/10",
-    iconBox:
-      "border-amber-300/30 bg-amber-50/45 text-amber-700 dark:border-amber-400/15 dark:bg-amber-400/10 dark:text-amber-200",
-  },
-  scheduled: {
-    icon: CalendarClock,
-    label: "text-sky-700/90 dark:text-sky-200",
-    card: "border-sky-300/30 bg-gradient-to-br from-sky-50/55 via-white/35 to-white/25 shadow-sky-100/20 dark:border-sky-400/15 dark:from-sky-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-sky-200/20 dark:bg-sky-400/10",
-    iconBox:
-      "border-sky-300/30 bg-sky-50/45 text-sky-700 dark:border-sky-400/15 dark:bg-sky-400/10 dark:text-sky-200",
-  },
-  completed: {
-    icon: CheckCircle2,
-    label: "text-emerald-700/90 dark:text-emerald-200",
-    card: "border-emerald-300/30 bg-gradient-to-br from-emerald-50/55 via-white/35 to-white/25 shadow-emerald-100/20 dark:border-emerald-400/15 dark:from-emerald-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-emerald-200/20 dark:bg-emerald-400/10",
-    iconBox:
-      "border-emerald-300/30 bg-emerald-50/45 text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/10 dark:text-emerald-200",
-  },
-  cancelled: {
-    icon: XCircle,
-    label: "text-rose-700/90 dark:text-rose-200",
-    card: "border-rose-300/30 bg-gradient-to-br from-rose-50/55 via-white/35 to-white/25 shadow-rose-100/20 dark:border-rose-400/15 dark:from-rose-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-rose-200/20 dark:bg-rose-400/10",
-    iconBox:
-      "border-rose-300/30 bg-rose-50/45 text-rose-700 dark:border-rose-400/15 dark:bg-rose-400/10 dark:text-rose-200",
-  },
-  rejected: {
-    icon: Ban,
-    label: "text-red-700/90 dark:text-red-200",
-    card: "border-red-300/30 bg-gradient-to-br from-red-50/55 via-white/35 to-white/25 shadow-red-100/20 dark:border-red-400/15 dark:from-red-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-red-200/20 dark:bg-red-400/10",
-    iconBox:
-      "border-red-300/30 bg-red-50/45 text-red-700 dark:border-red-400/15 dark:bg-red-400/10 dark:text-red-200",
-  },
-  rescheduled: {
-    icon: RotateCcw,
-    label: "text-violet-700/90 dark:text-violet-200",
-    card: "border-violet-300/30 bg-gradient-to-br from-violet-50/55 via-white/35 to-white/25 shadow-violet-100/20 dark:border-violet-400/15 dark:from-violet-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-violet-200/20 dark:bg-violet-400/10",
-    iconBox:
-      "border-violet-300/30 bg-violet-50/45 text-violet-700 dark:border-violet-400/15 dark:bg-violet-400/10 dark:text-violet-200",
-  },
-  "no-show": {
-    icon: UserX,
-    label: "text-slate-700/90 dark:text-slate-200",
-    card: "border-slate-300/35 bg-gradient-to-br from-slate-50/65 via-white/35 to-white/25 shadow-slate-100/20 dark:border-slate-400/15 dark:from-slate-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-slate-200/20 dark:bg-slate-400/10",
-    iconBox:
-      "border-slate-300/35 bg-slate-50/55 text-slate-700 dark:border-slate-400/15 dark:bg-slate-400/10 dark:text-slate-200",
-  },
-  default: {
-    icon: CalendarDays,
-    label: "text-primary/90 dark:text-white",
-    card: "border-primary/20 bg-gradient-to-br from-primary/10 via-white/35 to-white/25 shadow-primary/10 dark:border-white/10 dark:from-white/[0.055] dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-primary/15 dark:bg-white/10",
-    iconBox:
-      "border-primary/20 bg-primary/10 text-primary dark:border-white/10 dark:bg-white/[0.055] dark:text-white",
-  },
-};
-
-const getStatusKey = (name?: string) => {
-  const normalized = (name || "").toLowerCase().trim().replace(/\s+/g, "-");
-
-  if (normalized === "canceled") return "cancelled";
-  if (normalized === "noshow" || normalized === "no-show") return "no-show";
-
-  return normalized;
-};
-
-const getStatusCardMeta = (name?: string) => {
-  const key = getStatusKey(name);
-  return STATUS_CARD_META[key] || STATUS_CARD_META.default;
 };
 
 export default function StudentAppointments() {
@@ -473,113 +376,6 @@ export default function StudentAppointments() {
           </AlertDescription>
         </Alert>
       ) : null}
-
-      <section className="hidden md:block">
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(min(100%, 180px), 1fr))",
-          }}
-        >
-          {appointmentStatuses.map((stat: AppointmentStatus, index: number) => {
-            const count =
-              statusCounts?.find((s) => String(s.id) === String(stat.id))
-                ?.count || 0;
-
-            const statusMeta = getStatusCardMeta(stat.name);
-            const StatusIcon = statusMeta.icon;
-
-            return (
-              <Card
-                key={stat.id}
-                className={cn(
-                  GLASS_CARD,
-                  "animate-fade-in-up group relative h-[124px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
-                  statusMeta.card,
-                )}
-                style={{
-                  animationDelay: `${0.05 * (index + 1)}s`,
-                  animationFillMode: "both",
-                }}
-              >
-                <div
-                  className={cn(
-                    "pointer-events-none absolute -right-8 -top-8",
-                    "h-28 w-28 rounded-full blur-2xl",
-                    statusMeta.glow,
-                  )}
-                />
-
-                <div
-                  className={cn(
-                    "pointer-events-none absolute inset-x-0 top-0 h-px",
-                    "bg-white/70 dark:bg-white/15",
-                  )}
-                />
-                <div
-                  className={cn(
-                    "pointer-events-none absolute inset-x-0 bottom-0",
-                    "from-white/28 h-1/2 bg-gradient-to-t to-transparent",
-                    "dark:from-black/15",
-                  )}
-                />
-
-                <CardContent className="relative flex h-full flex-col justify-between p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p
-                        title={stat.name}
-                        className={cn(
-                          "whitespace-nowrap text-[11px] font-bold uppercase",
-                          statusMeta.label,
-                        )}
-                      >
-                        {stat.name}
-                      </p>
-                      <p
-                        className={cn(
-                          "mt-1 whitespace-nowrap text-[11px] font-medium",
-                          "text-muted-foreground/75",
-                        )}
-                      >
-                        Appointment status
-                      </p>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] transition-transform duration-300 group-hover:scale-105",
-                        statusMeta.iconBox,
-                      )}
-                    >
-                      <StatusIcon
-                        className="h-5 w-5"
-                        strokeWidth={2}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-end justify-between gap-3">
-                    <p className="text-[34px] tabular-nums leading-none tracking-tight text-foreground">
-                      {count}
-                    </p>
-                    <span
-                      className={cn(
-                        "rounded-full px-3 py-1",
-                        "text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/85",
-                        GLASS_INNER,
-                      )}
-                    >
-                      Total
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
 
       <Card className={cn(GLASS_CARD, "animate-fade-in-up")}>
         <CardHeader
