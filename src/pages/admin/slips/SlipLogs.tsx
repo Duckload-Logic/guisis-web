@@ -149,15 +149,15 @@ export default function SlipLogs() {
 
   return (
     <>
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-8 pb-12",
           "px-4 sm:px-6 md:px-8",
         )}
       >
         {/* Filters Section */}
-        <div 
-          className="animate-fade-in-up" 
+        <div
+          className="animate-fade-in-up"
           style={{ animationDelay: "0.05s", animationFillMode: "both" }}
         >
           <Card
@@ -202,8 +202,8 @@ export default function SlipLogs() {
         </div>
 
         {/* Slips List Section */}
-        <div 
-          className="animate-fade-in-up" 
+        <div
+          className="animate-fade-in-up"
           style={{ animationDelay: "0.10s", animationFillMode: "both" }}
         >
           <SlipList

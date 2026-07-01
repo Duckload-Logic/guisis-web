@@ -113,14 +113,14 @@ export default function AcademicSettings() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div 
+    <div
       className={cn(
         "mx-auto flex w-full max-w-4xl flex-col space-y-8 pb-12",
         "px-4 sm:px-6 md:px-8",
       )}
     >
       {/* Header (Wave 1) */}
-      <div 
+      <div
         className="flex items-start gap-4 animate-fade-in-up"
         style={{ animationDelay: "0.05s", animationFillMode: "both" }}
       >

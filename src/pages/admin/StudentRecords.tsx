@@ -228,14 +228,14 @@ export default function StudentRecords() {
 
   return (
     <>
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-8 pb-12",
           "px-4 sm:px-6 md:px-8",
         )}
-      > 
-        <div 
-          className="animate-fade-in-up" 
+      >
+        <div
+          className="animate-fade-in-up"
           style={{ animationDelay: "0.05s", animationFillMode: "both" }}
         >
         <StudentFilters
@@ -279,9 +279,9 @@ export default function StudentRecords() {
           {isGridLoading ? (
             <StudentRecordsSkeleton />
           ) : (
-              <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: "0.10s", animationFillMode: "both" 
+              <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: "0.10s", animationFillMode: "both"
               }}
-              > 
+              >
                 <StudentGrid
                 students={allStudents}
                 isStudentsLoading={false} // Loading handled by parent
