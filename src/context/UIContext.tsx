@@ -9,6 +9,8 @@ import React, {
   useMemo,
 } from "react";
 
+const MOBILE_BREAKPOINT = 768;
+
 export interface PageMetadata {
   title: string;
   description?: string;
@@ -27,6 +29,7 @@ interface UIContextType {
   toggleSidebarPinned: () => void;
   sidebarHovered: boolean;
   setSidebarHovered: (value: boolean) => void;
+  isMobile: boolean;
   pageMetadata: PageMetadata;
   setPageMetadata: React.Dispatch<React.SetStateAction<PageMetadata>>;
   // UI Preferences
@@ -63,6 +66,10 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const [sidebarPinned, setSidebarPinnedInternal] = useState(false);
   const [sidebarHovered, setSidebarHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < MOBILE_BREAKPOINT;
+  });
   const [darkMode, setDarkModeInternal] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem(STORAGE_KEYS.DARK_MODE) === "dark";
@@ -74,6 +81,28 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
   const [speechRate, setSpeechRateState] = useState(1);
   const [speechVoice, setSpeechVoiceState] = useState("");
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia(
+      `(max-width: ${MOBILE_BREAKPOINT - 1}px)`,
+    );
+
+    const syncMobileState = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
+    syncMobileState();
+    mediaQuery.addEventListener("change", syncMobileState);
+    window.addEventListener("resize", syncMobileState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncMobileState);
+      window.removeEventListener("resize", syncMobileState);
+    };
+  }, []);
 
   useEffect(() => {
     const updateVoices = () => {
@@ -253,6 +282,7 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
       toggleSidebarPinned,
       sidebarHovered,
       setSidebarHovered,
+      isMobile,
       darkMode,
       setDarkMode,
       grayscale,
@@ -277,6 +307,7 @@ export const UIProvider: React.FC<{ children: React.ReactNode }> = ({
       toggleSidebarPinned,
       sidebarHovered,
       setSidebarHovered,
+      isMobile,
       darkMode,
       setDarkMode,
       grayscale,

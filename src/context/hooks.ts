@@ -51,6 +51,7 @@ export function usePageMetadata(metadata: Partial<PageMetadata>) {
     metadata.headerStats,
     metadata.showDate,
     metadata.isLoading,
+    metadata.showSubHeader,
     setPageMetadata,
   ]);
 
@@ -66,6 +67,7 @@ export function usePageMetadata(metadata: Partial<PageMetadata>) {
         headerStats: undefined,
         showDate: false,
         isLoading: false,
+        showSubHeader: true,
       });
     };
   }, [setPageMetadata]);
