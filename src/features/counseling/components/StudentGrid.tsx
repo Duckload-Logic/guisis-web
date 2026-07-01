@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Eye, LayoutGrid, List } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Spinner } from "@/components/shared";
 import { IIRProfileView } from "@/features/iir/types";
 import { ProfileFemale, ProfileMale } from "@/assets/icons";
 import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -55,7 +55,7 @@ export default function StudentGrid({
           <div
             className={cn(
               "relative flex h-10 w-10 shrink-0 items-center",
-              "justify-center overflow-hidden rounded-full",
+              "justify-center overflow-hidden rounded-xl",
               "bg-glass-bg/50 border border-primary/20",
             )}
           >
@@ -113,8 +113,8 @@ export default function StudentGrid({
       render: (student: IIRProfileView) => (
         <span
           className={cn(
-            "inline-block rounded-full border px-2.5 py-0.5",
-            "text-[10px] font-bold uppercase",
+            "inline-block rounded-xl border px-2.5 py-0.5",
+            "text-[10px] font-bold uppercase shadow-md",
             statusColors[student.status?.id] || "bg-gray-200",
           )}
         >
@@ -143,7 +143,7 @@ export default function StudentGrid({
             <div
               className={cn(
                 "relative flex h-10 w-10 shrink-0 items-center",
-                "justify-center overflow-hidden rounded-full",
+                "justify-center overflow-hidden rounded-xl",
                 "bg-glass-bg/50 border border-primary/20",
               )}
             >
@@ -165,7 +165,7 @@ export default function StudentGrid({
           </div>
           <span
             className={cn(
-              "rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase",
+              "rounded-xl border px-2 py-0.5 text-[9px] font-bold uppercase shadow-md",
               statusColors[student.status?.id] || "bg-gray-200",
             )}
           >
@@ -181,18 +181,20 @@ export default function StudentGrid({
               {student.course.code} - {yrName} Yr
             </p>
           </div>
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => onViewClick(student)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border",
-              "border-primary/20 bg-primary/10 px-3 py-1.5 text-[10px]",
-              "font-bold uppercase text-primary transition-all",
-              "duration-300 hover:bg-primary hover:text-white",
+              "min-h-8 gap-1.5 rounded-xl border-primary/20",
+              "bg-primary/10 px-3 py-1.5 text-[10px] font-bold",
+              "uppercase text-primary hover:bg-primary hover:text-white",
             )}
           >
             <Eye size={12} />
             View
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -207,22 +209,22 @@ export default function StudentGrid({
             "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
           )}
         >
-          {students.map((student, index) => (
+          {students.map((student) => (
             <div
               key={student.email}
               className={cn(
                 "hover:bg-glass-bg/40 group relative overflow-hidden",
-                "rounded-md border border-glass-border bg-glass-bg p-3 md:p-6",
+                "rounded-xl border border-glass-border bg-glass-bg p-3 md:p-6",
                 "shadow-md backdrop-blur-glass transition-all duration-500",
                 "hover:-translate-y-1.5 hover:border-primary/30",
-                "hover:shadow-2xl active:scale-[0.98]",
+                "hover:shadow-md active:scale-[0.98]",
               )}
             >
               {/* Status Badge (Desktop Only) */}
               <div
                 className={cn(
-                  "absolute right-4 top-4 rounded-full border px-3 py-1",
-                  "hidden text-[10px] font-bold uppercase md:block",
+                  "absolute right-4 top-4 rounded-xl border px-3 py-1",
+                  "hidden text-[10px] font-bold uppercase shadow-md md:block",
                   statusColors[student.status?.id] || "bg-gray-200",
                 )}
               >
@@ -232,7 +234,7 @@ export default function StudentGrid({
               {/* Subtle Gradient Accent */}
               <div
                 className={cn(
-                  "absolute -right-10 -top-10 h-32 w-32 rounded-full",
+                  "absolute -right-10 -top-10 h-32 w-32 rounded-xl",
                   "bg-primary/5 blur-3xl transition-colors duration-500",
                   "group-hover:bg-primary/10",
                 )}
@@ -245,7 +247,7 @@ export default function StudentGrid({
                     {/* Avatar Glow */}
                     <div
                       className={cn(
-                        "absolute inset-0 rounded-full bg-primary/20 opacity-0",
+                        "absolute inset-0 rounded-xl bg-primary/20 opacity-0",
                         "blur-2xl transition-all duration-700",
                         "group-hover/avatar:bg-primary/30 group-hover:opacity-100",
                       )}
@@ -255,8 +257,8 @@ export default function StudentGrid({
                       className={cn(
                         "bg-glass-bg/50 relative flex h-16 w-16",
                         "items-center justify-center md:h-28 md:w-28",
-                        "overflow-hidden rounded-full border-[3px]",
-                        "border-primary/20 shadow-xl md:border-[6px]",
+                        "overflow-hidden rounded-xl border-[3px]",
+                        "border-primary/20 shadow-md md:border-[6px]",
                         "transition-transform duration-500",
                       )}
                     >
@@ -272,16 +274,16 @@ export default function StudentGrid({
                       className={cn(
                         "absolute bottom-0 right-0 flex h-5 w-5",
                         "items-center justify-center md:h-8 md:w-8",
-                        "rounded-full border border-white/20 bg-card",
-                        "shadow-lg backdrop-blur-md transition-transform",
+                        "rounded-xl border border-white/20 bg-card",
+                        "shadow-md backdrop-blur-md transition-transform",
                         "duration-500 group-hover/avatar:translate-x-1",
                         "group-hover/avatar:translate-y-1",
                       )}
                     >
                       <div
                         className={cn(
-                          "h-2 w-2 rounded-full md:h-3.5 md:w-3.5",
-                          "shadow-sm",
+                          "h-2 w-2 rounded-xl md:h-3.5 md:w-3.5",
+                          "shadow-md",
                           genderColors[student?.gender?.id] || "bg-gray-400",
                         )}
                       />
@@ -307,8 +309,8 @@ export default function StudentGrid({
                     <div className="flex justify-center pt-0.5 md:hidden">
                       <span
                         className={cn(
-                          "rounded-full border px-1.5 py-0.5",
-                          "text-[7px] font-bold uppercase",
+                          "rounded-xl border px-1.5 py-0.5",
+                          "text-[7px] font-bold uppercase shadow-md",
                           statusColors[student.status?.id] || "bg-gray-200",
                         )}
                       >
@@ -396,15 +398,15 @@ export default function StudentGrid({
 
                 {/* Actions */}
                 <div className="pt-1.5 md:pt-2">
-                  <button
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => onViewClick(student)}
                     className={cn(
-                      "group/btn inline-flex w-full items-center",
-                      "justify-center gap-1 rounded-xl border md:gap-2",
+                      "group/btn w-full justify-center gap-1 rounded-xl md:gap-2",
                       "border-primary/20 bg-primary/10 py-1.5 md:py-3",
                       "text-[9px] font-bold uppercase md:text-xs",
-                      "text-primary transition-all duration-300",
-                      "hover:bg-primary hover:text-white",
+                      "text-primary hover:bg-primary hover:text-white",
                       "whitespace-nowrap active:scale-[0.97]",
                     )}
                   >
@@ -418,7 +420,7 @@ export default function StudentGrid({
                     <span>
                       View <span className="hidden sm:inline">Profile</span>
                     </span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -427,8 +429,8 @@ export default function StudentGrid({
       ) : (
         <div
           className={cn(
-            "bg-glass-bg/20 rounded-2xl border border-glass-border",
-            "overflow-hidden shadow-sm backdrop-blur-glass",
+            "bg-glass-bg/20 rounded-xl border border-glass-border",
+            "overflow-hidden shadow-md backdrop-blur-glass",
           )}
         >
           <Table

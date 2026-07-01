@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dropdown } from "@/components/form";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Pagination, Table, Column } from "@/components/shared";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Eye, Calendar, Tag, Inbox, Search, User, X } from "lucide-react";
@@ -10,6 +10,7 @@ import { formatDate } from "@/utils/dateTime";
 import { SlipStatus, SlipStats } from "../types";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 type SortOrder = "asc" | "desc";
 
@@ -90,6 +91,13 @@ export function SlipList({
           : `${s.name} (${statMap[s.id]?.count || 0})`,
     }));
   }, [statuses, statMap]);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const handleClearSearch = () => {
+    onSearchChange?.("");
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
 
   const handleRequiredSortChange = (value: unknown) => {
     const nextValue = String(value ?? "").trim();
@@ -173,7 +181,7 @@ export function SlipList({
         render: (slip) => (
           <span
             className={cn(
-              "inline-flex max-w-[170px] items-center rounded-full border",
+              "inline-flex max-w-[170px] items-center rounded-xl border",
               "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
               "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
             )}
@@ -188,8 +196,8 @@ export function SlipList({
         render: (slip) => (
           <span
             className={cn(
-              "inline-flex min-h-6 min-w-max whitespace-nowrap rounded-full border",
-              "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+              "inline-flex min-h-6 min-w-max whitespace-nowrap rounded-xl border",
+              "px-3 py-1 text-xs font-semibold leading-none shadow-md",
               "[overflow-wrap:normal] [word-break:normal]",
               STATUS_COLORS[getStatusColorKey(slip.status?.name)],
             )}
@@ -206,8 +214,8 @@ export function SlipList({
     <div
       key={slip.id}
       className={cn(
-        "space-y-3 rounded-2xl border border-border/70 bg-card p-4",
-        "shadow-sm backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
+        "space-y-3 rounded-xl border border-border/70 bg-card p-4",
+        "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
         "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
@@ -226,8 +234,8 @@ export function SlipList({
 
         <span
           className={cn(
-            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-full border",
-            "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-xl border",
+            "px-3 py-1 text-xs font-semibold leading-none shadow-md",
             "[overflow-wrap:normal] [word-break:normal]",
             STATUS_COLORS[getStatusColorKey(slip.status?.name)],
           )}
@@ -259,7 +267,7 @@ export function SlipList({
       <div className="flex items-center justify-between gap-3 pt-1">
         <span
           className={cn(
-            "inline-flex max-w-[160px] items-center gap-1.5 rounded-full border",
+            "inline-flex max-w-[160px] items-center gap-1.5 rounded-xl border",
             "border-border/70 bg-muted/30 px-2.5 py-1 text-[11px] font-medium",
           )}
         >
@@ -293,7 +301,7 @@ export function SlipList({
       <div
         className={cn(
           "mb-4 flex h-14 w-14 items-center justify-center",
-          "rounded-full border border-dashed border-border/70 bg-muted/40",
+          "rounded-xl border border-dashed border-border/70 bg-muted/40",
         )}
       >
         <Inbox className="h-6 w-6 text-muted-foreground" />
@@ -350,14 +358,14 @@ export function SlipList({
         <div
           key={idx}
           className={cn(
-            "animate-pulse rounded-2xl border border-border/70",
-            "bg-card p-4 shadow-sm backdrop-blur-xl",
+            "animate-pulse rounded-xl border border-border/70",
+            "bg-card p-4 shadow-md backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
           <div className="flex items-center justify-between gap-3">
             <Skeleton className="h-5 w-36 rounded" />
-            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-xl" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <Skeleton className="h-12 w-full rounded-xl" />
@@ -371,7 +379,7 @@ export function SlipList({
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-border/70",
+        "flex flex-col overflow-hidden rounded-xl border border-border/70",
         "bg-card shadow-md backdrop-blur-2xl transition-all duration-300",
         "dark:border-white/10 dark:bg-white/[0.04]",
         className,
@@ -398,9 +406,9 @@ export function SlipList({
           {!isLoading && slips.length > 0 && (
             <div
               className={cn(
-                "self-start rounded-full border border-primary/20",
+                "self-start rounded-xl border border-primary/20",
                 "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
-                "text-primary shadow-sm",
+                "text-primary shadow-md",
               )}
             >
               {slips.length} record{slips.length !== 1 ? "s" : ""}
@@ -410,7 +418,7 @@ export function SlipList({
 
         <div
           className={cn(
-            "rounded-2xl border border-border/60 bg-background/70 p-3 shadow-sm",
+            "rounded-xl border border-border/60 bg-background/70 p-3 shadow-md",
             "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
@@ -422,33 +430,40 @@ export function SlipList({
               <div
                 className={cn(
                   "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-                  "bg-muted/50 px-3 shadow-sm transition-all duration-200",
+                  "bg-muted/50 px-3 shadow-md transition-all duration-200",
                   "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
                   "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
                 )}
               >
                 <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <input
+                <Input
+                  ref={searchInputRef}
                   type="text"
                   value={searchTerm ?? ""}
                   onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by name, email, or student number...."
+                  placeholder="Search by name, email, or student number..."
                   spellCheck={false}
                   autoComplete="off"
-                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
                 />
                 {searchTerm && (
-                  <button
+                  <Button
                     type="button"
-                    onClick={() => onSearchChange?.("")}
+                    variant="ghost"
+                    size="icon"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
+                    onClick={handleClearSearch}
                     className={cn(
-                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
-                      "text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
+                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
+                      "text-muted-foreground hover:bg-background hover:text-foreground",
                     )}
                     aria-label="Clear search"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
