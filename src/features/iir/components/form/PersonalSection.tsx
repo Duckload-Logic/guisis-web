@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
 import { Dropdown, FormInput, Checkbox, DatePicker } from "@/components/form";
 import { SectionContainer } from "./SectionContainer";
+import { FormSectionTitle } from "./shared";
 import { User, MapPin, Phone, Briefcase, Activity } from "lucide-react";
 import {
   useCourses,
@@ -1032,10 +1033,7 @@ export const PersonalSection = forwardRef<
             <div className="flex flex-col gap-10">
               {/* Permanent Address */}
               <div>
-                <h4 className="mb-6 flex items-center gap-2 text-sm font-bold text-foreground/80">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Permanent Address
-                </h4>
+                <FormSectionTitle className="mb-6">Permanent Address</FormSectionTitle>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <Dropdown
                     formStyle
@@ -1139,10 +1137,7 @@ export const PersonalSection = forwardRef<
               {/* Provincial Address */}
               <div className="border-t border-glass-border pt-8">
                 <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-foreground/80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    Provincial Address
-                  </h4>
+                  <FormSectionTitle>Provincial Address</FormSectionTitle>
                   <Checkbox
                     id="provincialSameAsResidential"
                     label="Same as permanent address"
@@ -1517,10 +1512,7 @@ export const PersonalSection = forwardRef<
 
               <div className="border-t border-glass-border pt-8">
                 <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-foreground/80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    Contact Address
-                  </h4>
+                  <FormSectionTitle>Contact Address</FormSectionTitle>
                   <Checkbox
                     id="emergencySameAsResidential"
                     label="Same as permanent address"

@@ -1,4 +1,5 @@
 ﻿import { FormInput, Checkbox } from "@/components/form";
+import { cn } from "@/lib/utils";
 
 export function HealthArea({
   title,
@@ -14,7 +15,7 @@ export function HealthArea({
   onChange: (path: string, value: any) => void;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-md">
       <div className="mb-3 flex items-center gap-3">
         <Checkbox
           id={`has-${title}`}
@@ -33,7 +34,7 @@ export function HealthArea({
           isTextarea
           value={details}
           onChange={(val) => onChange(`${fieldPrefix}Details`, val)}
-          placeholder="Describe the problem"
+          placeholder={cn("Describe the problem")}
         />
       )}
     </div>
