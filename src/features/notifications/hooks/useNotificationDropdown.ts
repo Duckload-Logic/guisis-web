@@ -37,6 +37,7 @@ export function useNotificationDropdown({
 }: UseNotificationDropdownArgs) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollLoadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { user, activeRole } = useAuth();
@@ -198,12 +199,25 @@ export function useNotificationDropdown({
       const nearBottom =
         scrollHeight - scrollTop - clientHeight < SCROLL_LOAD_THRESHOLD;
 
-      if (nearBottom && hasNextPage && !isFetching) {
-        setPage((value) => value + 1);
+      if (!nearBottom || !hasNextPage || isFetching || scrollLoadTimerRef.current) {
+        return;
       }
+
+      scrollLoadTimerRef.current = setTimeout(() => {
+        setPage((value) => value + 1);
+        scrollLoadTimerRef.current = null;
+      }, 650);
     },
     [hasNextPage, isFetching],
   );
+
+  useEffect(() => {
+    return () => {
+      if (scrollLoadTimerRef.current) {
+        clearTimeout(scrollLoadTimerRef.current);
+      }
+    };
+  }, []);
 
   return {
     dropdownRef,

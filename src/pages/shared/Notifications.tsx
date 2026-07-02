@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Bell } from "lucide-react";
 import { usePageMetadata, useAuth } from "@/context";
@@ -50,6 +50,7 @@ export default function NotificationsPage() {
     () => new Set(),
   );
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchedOnceRef = useRef(false);
   useNotificationsStream();
 
@@ -76,6 +77,24 @@ export default function NotificationsPage() {
   const roleName = activeRole?.name || user?.roles?.[0]?.name || "student";
   const rolePath = getRolePath(roleName);
   const fromPath = (location.state as { from?: string } | null)?.from;
+
+
+  const requestNextPage = useCallback(() => {
+    if (!hasNextPage || isFetching || loadMoreTimerRef.current) return;
+
+    loadMoreTimerRef.current = setTimeout(() => {
+      setPage((value) => value + 1);
+      loadMoreTimerRef.current = null;
+    }, 650);
+  }, [hasNextPage, isFetching]);
+
+  useEffect(() => {
+    return () => {
+      if (loadMoreTimerRef.current) {
+        clearTimeout(loadMoreTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setPage(1);
@@ -114,8 +133,8 @@ export default function NotificationsPage() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isFetching) {
-          setPage((value) => value + 1);
+        if (entry.isIntersecting) {
+          requestNextPage();
         }
       },
       { rootMargin: "180px" },
@@ -124,7 +143,7 @@ export default function NotificationsPage() {
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [hasNextPage, isFetching]);
+  }, [hasNextPage, isFetching, requestNextPage]);
 
   const handleBack = () => {
     if (fromPath) {
@@ -243,6 +262,20 @@ export default function NotificationsPage() {
 
           <div ref={loadMoreRef} className="min-h-1" />
 
+          {hasNextPage && loadedNotifications.length > 0 && (
+            <div className="border-t border-border px-4 py-3 sm:hidden">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={requestNextPage}
+                disabled={isFetching}
+                className="h-11 w-full rounded-xl shadow-md"
+              >
+                {isFetching ? "Loading..." : "Load more notifications"}
+              </Button>
+            </div>
+          )}
+
           {isFetching && loadedNotifications.length > 0 && (
             <div className="border-t border-border p-4 text-center text-xs font-medium text-muted-foreground">
               Loading more notifications...
@@ -311,7 +344,8 @@ function NotificationItem({
         "gap-3 rounded-xl border p-4 shadow-md transition-colors duration-200",
         "hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         unread && "border-primary/15 bg-primary/5",
-        highlightedRead && "border-red-500/25 bg-red-500/10 text-foreground",
+        highlightedRead &&
+          "border-border/60 bg-muted/30 text-muted-foreground opacity-60",
       )}
     >
       <span
@@ -325,7 +359,7 @@ function NotificationItem({
         className={cn(
           "shrink-0 rounded-xl p-2.5 shadow-md",
           getNotificationIconClass(color),
-          highlightedRead && "bg-red-500/10 text-red-600",
+          highlightedRead && "bg-muted text-muted-foreground",
         )}
       >
         <Icon className="h-5 w-5" />
@@ -335,7 +369,7 @@ function NotificationItem({
         <span
           className={cn(
             "block line-clamp-1 text-sm sm:text-base",
-            unread ? "font-semibold text-foreground" : "font-medium",
+            unread ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
           )}
         >
           {notification.title}
