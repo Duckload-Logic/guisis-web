@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import NotificationModal from "@/features/notifications/components/NotificationModal";
+import CustomerSupportWidget from "@/features/support/components/CustomerSupportWidget";
 
 import Toast from "@/components/ui/Toast";
 import { NAV_CONFIG } from "@/config/navigation";
@@ -354,6 +355,7 @@ export default function Layout({
           onCancel={handleDismissTerms}
         />
 
+        {isLoggedIn && !termsOpen && <CustomerSupportWidget />}
         <Toast toasts={toasts} />
         <SpeechControl />
         <AnimationStyles />
