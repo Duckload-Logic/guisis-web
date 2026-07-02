@@ -259,22 +259,22 @@ export default function IIRProfile() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-        <div 
+        <div
         className={cn(
-          "mx-auto mt-4 flex w-full flex-col gap-8", 
-          "px-4 sm:px-6 md:px-8"                     
+          "mx-auto mt-4 flex w-full flex-col gap-8",
+          "px-4 sm:px-6 md:px-8"
         )}
         >
         <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
-          
-          <div 
+
+          <div
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
             <BioCard data={studentData?.student} />
           </div>
 
-          <div 
+          <div
             className="animate-fade-in-up flex h-full flex-col gap-0 xl:col-span-3"
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >

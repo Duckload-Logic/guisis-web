@@ -31,7 +31,7 @@ export function MetricCard({
         "hover:-translate-y-0.5 hover:shadow-lg",
         className,
       )}
-      style={style} 
+      style={style}
     >
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
@@ -80,9 +80,9 @@ export function DashboardMetrics({ metrics }: { metrics: MetricCardProps[] }) {
           key={index}
           {...metric}
           className={cn(metric.className, "animate-fade-in-up")}
-          style={{ 
-            animationDelay: `${0.05 * (index + 1)}s`,            
-            animationFillMode: "both" 
+          style={{
+            animationDelay: `${0.05 * (index + 1)}s`,
+            animationFillMode: "both"
           }}
         />
       ))}

@@ -1,7 +1,9 @@
 import { Search, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const ICON_SIZE = 20;
 
@@ -23,6 +25,7 @@ export default function SearchInput({
   noSpecialCharacters = false,
 }: SearchInputProps) {
   const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (val: string) => {
     if (noSpecialCharacters && SPECIAL_CHARS_REGEX.test(val)) {
@@ -33,6 +36,12 @@ export default function SearchInput({
     onSearchChange?.(val);
   };
 
+  const handleClear = () => {
+    setError("");
+    onSearchChange?.("");
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
   return (
     <div className={className}>
       {hasHeader && (
@@ -40,31 +49,44 @@ export default function SearchInput({
           Search:
         </label>
       )}
-      <div className="flex items-center gap-2">
-        <div className="relative w-full">
-          <input
-            type="text"
-            placeholder={placeholder}
-            value={searchTerm}
-            onChange={(e) => handleChange(e.target.value)}
-            className={`hover:border-glass-border/60 dark:focus:bg-glass-bg/40 h-11 w-full rounded-xl border border-border bg-muted/60 px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground/70 focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5 dark:bg-muted/20 ${error ? "border-destructive/50 ring-destructive/5" : ""} `}
-          />
-        </div>
-        {searchTerm ? (
-          <button
-            onClick={() => handleChange("")}
-            className={cn(
-              "flex cursor-pointer items-center justify-center rounded p-1",
-              "text-card-foreground transition-colors hover:bg-muted/50",
-            )}
+      <div className="relative w-full">
+        <Search
+          size={ICON_SIZE}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-card-foreground opacity-50"
+        />
+        <Input
+          ref={inputRef}
+          type="text"
+          placeholder={placeholder}
+          value={searchTerm}
+          onChange={(e) => handleChange(e.target.value)}
+          className={cn(
+            "hover:border-glass-border/60 h-11 bg-muted/60 py-2.5 pl-10 pr-11",
+            "text-sm font-medium text-foreground shadow-md outline-none",
+            "transition-all duration-200 placeholder:text-muted-foreground/70",
+            "focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
+            "dark:bg-muted/20 dark:focus:bg-glass-bg/40",
+            error ? "border-destructive/50 ring-destructive/5" : "",
+          )}
+        />
+        {searchTerm && (
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={handleClear}
+            className={cn(
+              "absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 rounded-xl",
+              "text-card-foreground hover:bg-muted/50",
+            )}
+            aria-label="Clear search"
           >
             <X size={ICON_SIZE} />
-          </button>
-        ) : (
-          <div className="flex items-center justify-center p-1 text-card-foreground opacity-50">
-            <Search size={ICON_SIZE} />
-          </div>
+          </Button>
         )}
       </div>
       {error && (

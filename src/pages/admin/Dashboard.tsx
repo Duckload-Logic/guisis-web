@@ -156,8 +156,8 @@ export default function Dashboard() {
   return (
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-10", 
-          "px-4 sm:px-6 md:px-8",                   
+          "mx-auto flex w-full flex-col space-y-8 pb-10",
+          "px-4 sm:px-6 md:px-8",
         )}
       >
       {/* Outdated Academic Settings Warning */}
@@ -218,12 +218,12 @@ export default function Dashboard() {
       {showDailyTip && (
         <div
           className={cn(
-            "animate-fade-in-up relative", 
+            "animate-fade-in-up relative",
             "overflow-hidden rounded-3xl border border-red-500/20",
             "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
-            "backdrop-blur-md", 
+            "backdrop-blur-md",
           )}
-          style={{ animationDelay: "0.5s", animationFillMode: "both" }} 
+          style={{ animationDelay: "0.5s", animationFillMode: "both" }}
         >
           <div className="flex items-start gap-5">
             <div className="rounded-2xl bg-teal-500 p-3 text-white shadow-lg shadow-teal-500/20">
@@ -258,12 +258,12 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <DashboardMetrics metrics={metrics} />
         {/* Monthly Visitors Analytics */}
-        <Card 
+        <Card
           className={cn(
             "overflow-hidden shadow-md backdrop-blur-md",
             "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
           )}
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold">
@@ -318,13 +318,13 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-8 xl:flex-row">
         {/* Main Content: Upcoming Appointments */}
-            <div className="flex-1 space-y-8">  
-            <Card 
+            <div className="flex-1 space-y-8">
+            <Card
               className={cn(
                 "overflow-hidden shadow-md backdrop-blur-md",
-                "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" 
+                "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
               )}
-              style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+              style={{ animationDelay: "0.15s", animationFillMode: "both" }}
             >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold">
@@ -407,9 +407,9 @@ export default function Dashboard() {
         </div>
 
         {/* Sidebar: Slips & Analytics */}
-        <div 
-          className="w-full space-y-8 xl:w-96 animate-fade-in-up" 
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+        <div
+          className="w-full space-y-8 xl:w-96 animate-fade-in-up"
+          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           {/* Slip Status Tracker */}
           <SlipStatusTracker

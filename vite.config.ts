@@ -28,24 +28,5 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false,
-    headers: {
-      "Content-Security-Policy":
-        "default-src 'self'; " +
-        "script-src 'self'; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob:; " +
-        "connect-src 'self' http://localhost:8080 " +
-        "ws://localhost:5173 " +
-        "https://*.dllbsit2027.com; " +
-        "frame-ancestors 'none'; " +
-        "form-action 'self';",
-      "X-Frame-Options": "DENY",
-      "X-Content-Type-Options": "nosniff",
-      "Strict-Transport-Security":
-        "max-age=31536000; includeSubDomains",
-      "X-XSS-Protection": "1; mode=block",
-      "X-Permitted-Cross-Domain-Policies": "none",
-      "X-Robots-Tag": "noindex, nofollow",
-    },
   },
 });

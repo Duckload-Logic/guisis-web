@@ -213,15 +213,15 @@ export default function AppointmentsManagement() {
 
   return (
     <>
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-8 pb-12",
           "px-4 sm:px-6 md:px-8",
         )}
       >
         <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-6">
-          <div 
-            className="h-full lg:col-span-2 animate-fade-in-up" 
+          <div
+            className="h-full lg:col-span-2 animate-fade-in-up"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
             <Calendar
@@ -280,7 +280,7 @@ export default function AppointmentsManagement() {
               <h2 className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
                 Overview
               </h2>
-              
+
               {selectedDate && (
                 <Button
                   variant="ghost"

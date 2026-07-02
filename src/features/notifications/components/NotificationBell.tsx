@@ -6,19 +6,13 @@ import {
 } from "../hooks/useNotifications";
 import { useAuth } from "@/context/hooks";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getRolePath } from "../utils";
 
 interface Props {
   showNotifications: boolean;
   setShowNotifications: (value: boolean) => void;
-}
-
-function getRolePath(roleName?: string) {
-  const role = roleName?.toLowerCase().replace(/\s+/g, "") || "student";
-  if (role === "admin" || role === "counselor") return "admin";
-  if (role === "superadmin") return "superadmin";
-  if (role === "developer") return "developer";
-  return "student";
 }
 
 export default function NotificationBell({
@@ -54,15 +48,17 @@ export default function NotificationBell({
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       data-notification-trigger="true"
       onClick={handleClick}
       aria-label={isMobile ? "Go to notifications" : "Open notifications"}
       aria-expanded={!isMobile && showNotifications}
       className={cn(
-        "group relative rounded-lg p-2 text-foreground transition-colors",
-        "duration-300 hover:bg-muted/30",
+        "group relative h-11 w-11 rounded-xl p-2 text-foreground",
+        "duration-300 hover:bg-muted/30 hover:shadow-md",
       )}
     >
       <Bell
@@ -83,6 +79,6 @@ export default function NotificationBell({
           {untouchedCount > 99 ? "99+" : untouchedCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 }

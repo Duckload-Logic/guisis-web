@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-8 pb-12",
           "px-4 sm:px-6 md:px-8",
@@ -284,7 +284,7 @@ export default function AnalyticsPage() {
       >
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column: Gender Distribution Chart */}
-          <div 
+          <div
             className="lg:col-span-1 animate-fade-in-up"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Right Columns: KPIs */}
-          <div 
+          <div
             className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2 animate-fade-in-up"
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
