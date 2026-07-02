@@ -41,6 +41,7 @@ import {
 import { format } from "date-fns";
 import { getDateRange, getFilterLabel, type TimeFilter } from "@/utils";
 import { usePageMetadata } from "@/context";
+import { cn } from "@/lib/utils";
 
 type SortOrder = "asc" | "desc";
 
@@ -208,188 +209,169 @@ export default function ReviewSlips() {
   });
 
   return (
-    <>
-      <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 py-2 duration-300">
-        <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-md backdrop-blur-2xl transition-all duration-300 dark:border-white/10 dark:bg-white/[0.04]">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-primary/10 p-2 text-primary shadow-inner">
-                  <Ticket className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold tracking-tight text-foreground sm:text-base">
-                    On-Site Ticket
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Enter the ticket code to verify a student slip.
-                  </p>
-                </div>
-              </div>
+    <div className="animate-in fade-in duration-500 mx-auto flex w-full flex-col space-y-6 py-2 px-4 sm:px-6 md:px-8">
 
-              <form
-                onSubmit={handleClaimTicket}
-                className="flex w-full flex-col gap-2 sm:flex-row md:max-w-md"
-              >
-                <FormInput
-                  placeholder="Ticket code"
-                  value={ticketCode}
-                  onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
-                  className="h-10 rounded-xl border-border/70 bg-background/70 focus:bg-background dark:border-white/10 dark:bg-white/[0.04]"
-                  label={""}
-                />
+      <div
+        className={cn(
+          "rounded-2xl border border-border/70 bg-white p-5 shadow-sm",
+          "dark:border-white/10 dark:bg-neutral-950/40",
+          "animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+        )}
+        style={{ animationDelay: "50ms" }}
+      >
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
 
-                <Button
-                  type="submit"
-                  disabled={
-                    isVerifying ||
-                    claimTicketMutation.isPending ||
-                    !ticketCode.trim()
-                  }
-                  className="h-10 gap-2 rounded-xl bg-primary px-4 text-sm font-bold shadow-md shadow-primary/15 transition-all hover:scale-[1.02] active:scale-95"
-                >
-                  {isVerifying || claimTicketMutation.isPending ? (
-                    <Clock3 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="h-4 w-4" />
-                  )}
-                  Verify
-                </Button>
-              </form>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner">
+              <Ticket className="h-6 w-6" />
             </div>
-          </CardContent>
-        </Card>
 
-        <SlipList
-          slips={slips}
-          isLoading={isLoading}
-          onViewClick={handleViewSlip}
-          searchTerm={searchTerm}
-          onSearchChange={(value: string) => {
-            setSearchTerm(value);
-            setCurrentPage(1);
-          }}
-          statuses={statusWithAll as any}
-          selectedStatus={selectedStatus as any}
-          statusCounts={slipStats || []}
-          onStatusChange={(status: SlipStatus) => {
-            setSelectedStatus(status);
-            setCurrentPage(1);
-          }}
-          sortOptions={SLIP_SORT_OPTIONS}
-          selectedSort={selectedSort}
-          onSortChange={(sortValue: string) => {
-            setSelectedSort(sortValue);
-            setCurrentPage(1);
-          }}
-          orderOptions={SORT_ORDER_OPTIONS}
-          selectedOrder={selectedOrder}
-          onOrderChange={(orderValue: SortOrder) => {
-            setSelectedOrder(orderValue);
-            setCurrentPage(1);
-          }}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          totalPages={totalPages}
-        />
+            <div>
+              <h3 className="text-base font-bold tracking-tight">
+                On-Site Ticket
+              </h3>
+
+              <p className="text-sm text-muted-foreground">
+                Enter the ticket code to verify a student slip.
+              </p>
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleClaimTicket}
+            className="flex w-full max-w-md items-center gap-3"
+          >
+            <input
+              id="ticket-code-input"
+              type="text"
+              placeholder="Ticket code"
+              value={ticketCode}
+              onChange={(e) =>
+                setTicketCode(e.target.value.toUpperCase())
+              }
+              className="
+                h-12
+                flex-1
+                rounded-xl
+                border
+                border-border
+                bg-background
+                px-4
+                text-sm
+                transition-all
+                outline-none
+                focus:border-primary
+                focus:ring-2
+                focus:ring-primary/20
+                dark:bg-white/5
+              "
+            />
+
+            <Button
+              type="submit"
+              disabled={
+                isVerifying ||
+                claimTicketMutation.isPending ||
+                !ticketCode.trim()
+              }
+              className="h-12 shrink-0 gap-2 rounded-xl bg-[#8f1113] px-6 font-semibold shadow-md transition-all hover:scale-[1.02] hover:bg-[#6a0d0d] active:scale-95"
+            >
+              {isVerifying || claimTicketMutation.isPending ? (
+                <Clock3 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="h-4 w-4" />
+              )}
+
+              Verify
+            </Button>
+          </form>
+        </div>
       </div>
+
+      <SlipList
+        className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:150ms]"
+        slips={slips}
+        isLoading={isLoading}
+        onViewClick={handleViewSlip}
+        searchTerm={searchTerm}
+        onSearchChange={(value: string) => {
+          setSearchTerm(value);
+          setCurrentPage(1);
+        }}
+        statuses={statusWithAll as any}
+        selectedStatus={selectedStatus as any}
+        statusCounts={slipStats || []}
+        onStatusChange={(status: SlipStatus) => {
+          setSelectedStatus(status);
+          setCurrentPage(1);
+        }}
+        sortOptions={SLIP_SORT_OPTIONS}
+        selectedSort={selectedSort}
+        onSortChange={(sortValue: string) => {
+          setSelectedSort(sortValue);
+          setCurrentPage(1);
+        }}
+        orderOptions={SORT_ORDER_OPTIONS}
+        selectedOrder={selectedOrder}
+        onOrderChange={(orderValue: SortOrder) => {
+          setSelectedOrder(orderValue);
+          setCurrentPage(1);
+        }}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        totalPages={totalPages}
+      />
 
       <AlertDialog
         open={!!pendingSlip}
         onOpenChange={(open) => !open && setPendingSlip(null)}
       >
-        <AlertDialogContent className="max-w-md border-border/70 bg-background/95 shadow-2xl backdrop-blur-2xl dark:border-white/10">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-3 text-xl font-bold">
-              <div className="rounded-xl bg-primary/10 p-2 text-primary">
-                <Ticket className="h-5 w-5" />
-              </div>
-              Confirm Ticket Verification
+            <AlertDialogTitle>
+              Verify Admission Slip
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm font-medium text-muted-foreground">
-              Please review the slip details below before marking it as
-              verified.
+
+            <AlertDialogDescription>
+              Are you sure you want to verify this ticket? This will
+              assign the admission slip to you for processing.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          {pendingSlip && (
-            <div className="my-4 space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-5 shadow-inner dark:border-white/10">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                    Student Name
-                  </p>
-                  <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <User className="h-3.5 w-3.5 text-primary/60" />
-                    {pendingSlip.user?.firstName} {pendingSlip.user?.lastName}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                    Category
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full px-2 py-0 text-[10px]"
-                  >
-                    {pendingSlip.category?.name}
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                    Date of Absence
-                  </p>
-                  <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <Calendar className="h-3.5 w-3.5 text-primary/60" />
-                    {pendingSlip.dateOfAbsence
-                      ? format(
-                          new Date(pendingSlip.dateOfAbsence),
-                          "MMM d, yyyy",
-                        )
-                      : "N/A"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                    Date Needed
-                  </p>
-                  <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                    <Clock className="h-3.5 w-3.5 text-primary/60" />
-                    {pendingSlip.dateNeeded
-                      ? format(new Date(pendingSlip.dateNeeded), "MMM d, yyyy")
-                      : "N/A"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 pt-2">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground/60">
-                  Reason
-                </p>
-                <div className="rounded-xl border border-border/70 bg-muted/30 p-3 shadow-sm dark:border-white/10">
-                  <p className="line-clamp-3 text-xs italic leading-relaxed text-foreground/80">
-                    "{pendingSlip.reason}"
-                  </p>
-                </div>
-              </div>
+          <div className="space-y-2 rounded-xl bg-muted/50 p-4 text-sm">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>
+                {pendingSlip?.user
+                  ? `${pendingSlip.user.firstName} ${pendingSlip.user.lastName}`
+                  : pendingSlip?.studentNumber || "-"}
+              </span>
             </div>
-          )}
 
-          <AlertDialogFooter className="gap-3 sm:gap-0">
-            <AlertDialogCancel className="rounded-xl font-bold transition-all">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmClaim}
-              disabled={claimTicketMutation.isPending}
-              className="rounded-xl bg-primary px-8 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-            >
-              {claimTicketMutation.isPending ? (
-                <Clock3 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ShieldCheck className="mr-2 h-4 w-4" />
-              )}
-              Confirm & Verify
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>
+                {pendingSlip?.dateOfAbsence
+                  ? format(new Date(pendingSlip.dateOfAbsence), "MMMM dd, yyyy")
+                  : "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>
+                {pendingSlip?.dateNeeded
+                  ? format(new Date(pendingSlip.dateNeeded), "MMMM dd, yyyy")
+                  : "-"}
+              </span>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <AlertDialogAction onClick={confirmClaim}>
+              Verify Ticket
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -399,52 +381,51 @@ export default function ReviewSlips() {
         open={showAlreadyVerified}
         onOpenChange={setShowAlreadyVerified}
       >
-        <AlertDialogContent className="max-w-sm backdrop-blur-2xl">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
-              <ShieldCheck className="h-8 w-8" />
-            </div>
-            <AlertDialogTitle className="text-center text-xl font-bold">
-              Already Verified
+            <AlertDialogTitle>
+              Ticket Already Verified
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-sm font-medium text-muted-foreground">
-              This ticket has already been verified and claimed. No further
-              action is required.
+
+            <AlertDialogDescription>
+              This ticket has already been verified and cannot be used
+              again.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
-            <AlertDialogAction className="w-full rounded-xl bg-blue-600 font-bold hover:bg-blue-700">
-              Close
+            <AlertDialogAction>
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Not Found */}
       <AlertDialog
         open={showNotFound}
         onOpenChange={setShowNotFound}
       >
-        <AlertDialogContent className="max-w-sm backdrop-blur-2xl">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-500">
-              <XCircle className="h-8 w-8" />
-            </div>
-            <AlertDialogTitle className="text-center text-xl font-bold">
+            <AlertDialogTitle>
               Ticket Not Found
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-sm font-medium text-muted-foreground">
-              We couldn't find any admission slip matching the ticket code you
-              entered.
+
+            <AlertDialogDescription>
+              The ticket code you entered could not be found. Please
+              check the code and try again.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
-            <AlertDialogAction className="w-full rounded-xl bg-red-600 font-bold hover:bg-red-700">
-              Try Again
+            <AlertDialogAction>
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+
+    </div>
   );
 }
-

@@ -377,29 +377,19 @@ export function SlipList({
   );
 
   return (
-    <Card
-      className={cn(
-        "flex flex-col overflow-hidden rounded-xl border border-border/70",
-        "bg-card shadow-md backdrop-blur-2xl transition-all duration-300",
-        "dark:border-white/10 dark:bg-white/[0.04]",
-        className,
-      )}
-    >
-      <CardHeader
-        className={cn(
-          "space-y-4 border-b border-border/70 px-5 py-5",
-          "bg-gradient-to-br from-muted/30 via-background/70 to-background",
-          "dark:border-white/10 dark:from-white/[0.04] dark:via-white/[0.025] dark:to-transparent",
-        )}
-      >
+    <div className={cn("flex flex-col space-y-6", className)}>
+      
+      {/* 1. COMBINED HEADER & FILTER CARD */}
+      <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+        
+        {/* Top Section: Title & Badge */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Student details, absence date, and date needed are shown in one
-              compact table.
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Student details, absence date, and date needed are shown in one compact table.
             </p>
           </div>
 
@@ -407,8 +397,8 @@ export function SlipList({
             <div
               className={cn(
                 "self-start rounded-xl border border-primary/20",
-                "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
-                "text-primary shadow-md",
+                "bg-primary/5 px-4 py-1.5 text-xs font-semibold",
+                "text-primary shadow-sm",
               )}
             >
               {slips.length} record{slips.length !== 1 ? "s" : ""}
@@ -416,99 +406,98 @@ export function SlipList({
           )}
         </div>
 
-        <div
-          className={cn(
-            "rounded-xl border border-border/60 bg-background/70 p-3 shadow-md",
-            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
-          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Search
-              </label>
-              <div
+        {/* Bottom Section: Search & Filters */}
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              Search
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+              <Input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm ?? ""}
+                onChange={(event) => onSearchChange?.(event.target.value)}
+                placeholder="Search by name, email, or student number..."
+                spellCheck={false}
+                autoComplete="off"
                 className={cn(
-                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-                  "bg-muted/50 px-3 shadow-md transition-all duration-200",
-                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
-                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                  "h-10 w-full rounded-xl bg-slate-100 pl-10 pr-10 text-sm text-foreground",
+                  "border-0 shadow-none transition-colors placeholder:text-neutral-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20",
+                  "dark:bg-white/5 dark:focus-visible:bg-white/10",
                 )}
-              >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchTerm ?? ""}
-                  onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by name, email, or student number..."
-                  spellCheck={false}
-                  autoComplete="off"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
-                />
-                {searchTerm && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={handleClearSearch}
-                    className={cn(
-                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-                      "text-muted-foreground hover:bg-background hover:text-foreground",
-                    )}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+              />
+              {searchTerm && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={handleClearSearch}
+                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="flex w-full flex-col gap-1.5 sm:w-[150px]">
+              <Dropdown
+                label="Status"
+                options={dropdownOptions}
+                value={selectedStatus?.id}
+                onChange={(val) => {
+                  const status = statuses.find(
+                    (s) => String(s.id) === String(val),
+                  );
+                  if (status) onStatusChange(status);
+                }}
+                labelKey="displayName"
+                enabled={!isLoading}
+                formStyle={true}
+              />
             </div>
 
-            <Dropdown
-              label="Status"
-              options={dropdownOptions}
-              value={selectedStatus?.id}
-              onChange={(val) => {
-                const status = statuses.find(
-                  (s) => String(s.id) === String(val),
-                );
-                if (status) onStatusChange(status);
-              }}
-              labelKey="displayName"
-              enabled={!isLoading}
-              formStyle={false}
-            />
-
             {sortOptions.length > 0 && onSortChange && (
-              <Dropdown
-                label="Sort By"
-                options={sortOptions}
-                value={selectedSort}
-                onChange={handleRequiredSortChange}
-                enabled={!isLoading}
-                formStyle={false}
-              />
+              <div className="flex w-full flex-col gap-1.5 sm:w-[190px]">
+                <Dropdown
+                  label="Sort By"
+                  options={sortOptions}
+                  value={selectedSort}
+                  onChange={handleRequiredSortChange}
+                  enabled={!isLoading}
+                  formStyle={true}
+                />
+              </div>
             )}
 
             {orderOptions.length > 0 && onOrderChange && (
-              <Dropdown
-                label="Order"
-                options={orderOptions}
-                value={selectedOrder}
-                onChange={handleRequiredOrderChange}
-                enabled={!isLoading}
-                formStyle={false}
-              />
+              <div className="flex w-full flex-col gap-1.5 sm:w-[130px]">
+                <Dropdown
+                  label="Order"
+                  options={orderOptions}
+                  value={selectedOrder}
+                  onChange={handleRequiredOrderChange}
+                  enabled={!isLoading}
+                  formStyle={true}
+                />
+              </div>
             )}
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="flex-1 p-0">
+      </div>
+
+      {/* 2. TABLE CARD */}
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
         <Table
           data={slips}
           columns={columns}
@@ -520,13 +509,15 @@ export function SlipList({
           containerClassName="px-3 py-3"
           onRowClick={onViewClick}
         />
-      </CardContent>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </Card>
+        <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
+      </div>
+      
+    </div>
   );
 }

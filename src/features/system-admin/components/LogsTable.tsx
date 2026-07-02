@@ -1,22 +1,21 @@
 import { useState, useMemo } from "react";
 import {
-  Search,
   Filter,
   RefreshCw,
   Sparkles,
   Clock,
   AlertCircle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pagination, Table, Column } from "@/components/shared";
-import { useDebounce } from "@/hooks/useDebounce";
 import { usePageMetadata } from "@/context";
 import type { SystemLog, SystemLogsParams, SystemLogsResponse } from "../types";
 import type { UseQueryResult } from "@tanstack/react-query";
-import { DatePicker, Dropdown } from "@/components/form";
+import { DatePicker } from "@/components/form";
 import { cn } from "@/lib/utils";
 import { capitalizeWords, truncateText } from "@/utils";
 import { useNavigate } from "react-router-dom";
@@ -233,14 +232,12 @@ export default function LogsTable({
   showIPAddress = false,
 }: LogsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [actionFilter, setActionFilter] = useState("");
+  const [excludedActions, setExcludedActions] = useState<string[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [actorSortDirection, setActorSortDirection] = useState<"asc" | "desc">("asc");
   const navigate = useNavigate();
-
-  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const params = useMemo<SystemLogsParams>(() => {
     const p: SystemLogsParams = {
@@ -248,56 +245,51 @@ export default function LogsTable({
       page_size: PAGE_SIZE,
     };
 
-    if (debouncedSearch) p.search = debouncedSearch;
-    if (actionFilter) p.action = actionFilter;
     if (startDate) p.start_date = startDate;
     if (endDate) p.end_date = endDate;
 
     return p;
-  }, [currentPage, debouncedSearch, actionFilter, startDate, endDate]);
+  }, [currentPage, startDate, endDate]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
 
-  const logs = useMemo(() => data?.logs ?? [], [data]);
+  const sortedLogs = useMemo(() => {
+    const list = data?.logs ?? [];
+    return [...list].sort((a, b) => {
+      const aValue = (a.userEmail ?? "").toLowerCase();
+      const bValue = (b.userEmail ?? "").toLowerCase();
+
+      if (aValue < bValue) return actorSortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return actorSortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [data?.logs, actorSortDirection]);
+
+  const logs = useMemo(
+    () => sortedLogs.filter((log) => !excludedActions.includes(log.action)),
+    [sortedLogs, excludedActions],
+  );
+
   const totalPages = data?.meta?.totalPages ?? 1;
   const total = data?.meta?.total ?? 0;
-  const hasActiveFilters = Boolean(actionFilter || startDate || endDate);
+  const hasActiveFilters = Boolean(
+    excludedActions.length || startDate || endDate,
+  );
 
   const formatAction = (action: string) =>
     capitalizeWords(action.replace(/_/g, " "));
 
-  const actionDropdownOptions = useMemo(() => {
-    return [
-      { id: "", label: "All Actions" },
-      ...actionOptions.map((action) => ({
-        id: action,
-        label: formatAction(action),
-      })),
-    ];
-  }, [actionOptions]);
-
-  const highlightText = (text: string, query: string) => {
-    if (!query) return text;
-
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
-
-    return parts.map((part, index) =>
-      part.toLowerCase() === query.toLowerCase() ? (
-        <span
-          key={index}
-          className="rounded-md bg-yellow-200 px-1 text-black dark:bg-yellow-500/20 dark:text-yellow-200"
-        >
-          {part}
-        </span>
-      ) : (
-        part
-      ),
+  const toggleExcludedAction = (action: string) => {
+    setExcludedActions((prev) =>
+      prev.includes(action)
+        ? prev.filter((item) => item !== action)
+        : [...prev, action],
     );
+    setCurrentPage(1);
   };
 
   const handleReset = () => {
-    setSearchTerm("");
-    setActionFilter("");
+    setExcludedActions([]);
     setStartDate("");
     setEndDate("");
     setCurrentPage(1);
@@ -383,16 +375,31 @@ export default function LogsTable({
         className: "min-w-[280px]",
         render: (log) => (
           <div className="line-clamp-1 max-w-[520px] text-sm leading-6 text-foreground">
-            {highlightText(truncateText(log.message, 55), debouncedSearch)}
+            {truncateText(log.message, 55)}
           </div>
         ),
       },
       {
-        header: "Actor",
+        header: (
+          <button
+            type="button"
+            onClick={() =>
+              setActorSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))
+            }
+            className="inline-flex items-center gap-1 text-left text-sm font-semibold text-foreground"
+          >
+            Actor
+            {actorSortDirection === "asc" ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        ),
         className: "min-w-[190px]",
         render: (log) => (
           <span className="text-sm text-muted-foreground">
-            {log.userEmail ? highlightText(log.userEmail, debouncedSearch) : "—"}
+            {log.userEmail || "—"}
           </span>
         ),
       },
@@ -401,9 +408,7 @@ export default function LogsTable({
         className: "min-w-[190px]",
         render: (log) => (
           <span className="text-sm text-muted-foreground">
-            {log.targetEmail
-              ? highlightText(log.targetEmail, debouncedSearch)
-              : "—"}
+            {log.targetEmail || "—"}
           </span>
         ),
       },
@@ -422,7 +427,7 @@ export default function LogsTable({
     }
 
     return cols;
-  }, [showIPAddress, debouncedSearch]);
+  }, [showIPAddress]);
 
   const renderMobileItem = (log: SystemLog) => (
     <button
@@ -476,16 +481,28 @@ export default function LogsTable({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Action
+                  Exclude Actions
                 </label>
-                <Dropdown
-                  options={actionDropdownOptions}
-                  value={actionFilter}
-                  onChange={(val) => {
-                    setActionFilter(val);
-                    setCurrentPage(1);
-                  }}
-                />
+                <div className="flex flex-wrap gap-2">
+                  {actionOptions.map((action) => {
+                    const isExcluded = excludedActions.includes(action);
+                    return (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => toggleExcludedAction(action)}
+                        className={cn(
+                          "rounded-full border px-3 py-2 text-xs font-semibold transition-all",
+                          isExcluded
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                        )}
+                      >
+                        {formatAction(action)}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -556,22 +573,6 @@ export default function LogsTable({
               )}
             </div>
 
-            <div className="relative w-full lg:w-80">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search logs..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className={cn(
-                  "h-10 rounded-xl border-white/30 bg-white/70 pl-10",
-                  "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
-                  searchTerm && "border-primary/40",
-                )}
-              />
-            </div>
           </div>
         </CardHeader>
 
@@ -592,7 +593,7 @@ export default function LogsTable({
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
                   Try adjusting your filters or clear them to load more results.
                 </p>
-                {(hasActiveFilters || searchTerm) && (
+                {hasActiveFilters && (
                   <Button
                     variant="ghost"
                     size="sm"

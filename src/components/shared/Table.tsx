@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export interface Column<T> {
-  header: string;
+  header: React.ReactNode;
   className?: string;
   render: (item: T, index: number) => React.ReactNode;
 }
