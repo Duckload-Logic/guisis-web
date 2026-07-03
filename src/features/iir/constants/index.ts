@@ -35,6 +35,7 @@ export const EMPTY_IIR_FORM: IIRForm = {
     personalInfo: {
       id: undefined,
       suffix: "",
+      twoByTwoPhotoDataUrl: null,
       studentNumber: "",
       gender: { id: 0 },
       civilStatus: { id: 0 },
@@ -158,6 +159,7 @@ export const COMPLETE_IIR_FORM: IIRForm = {
     personalInfo: {
       id: undefined,
       suffix: "",
+      twoByTwoPhotoDataUrl: null,
       studentNumber: "2022-00001-TG-0",
       gender: { id: 1 },
       civilStatus: { id: 1 },

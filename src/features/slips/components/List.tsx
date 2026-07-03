@@ -1,16 +1,29 @@
+import { MouseEvent, useMemo, useRef, useState } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Eye,
+  EyeOff,
+  Inbox,
+  RotateCcw,
+  Search,
+  Tag,
+  User,
+  X,
+} from "lucide-react";
+
+import { Pagination, Table, Column } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Dropdown } from "@/components/form";
-import { useMemo, useRef } from "react";
-import { Pagination, Table, Column } from "@/components/shared";
-import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { Eye, Calendar, Tag, Inbox, Search, User, X } from "lucide-react";
-import type { Slip } from "../types";
-import { formatDate } from "@/utils/dateTime";
-import { SlipStatus, SlipStats } from "../types";
-import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/utils/dateTime";
+import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
+
+import type { Slip } from "../types";
+import { SlipStatus, SlipStats } from "../types";
 
 type SortOrder = "asc" | "desc";
 
@@ -52,6 +65,20 @@ function formatCompactSlipDate(value?: string) {
   return formatDate(value) || "—";
 }
 
+function getSlipStudentName(slip: Slip) {
+  return [slip.user?.firstName, slip.user?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function getSlipKey(slip: Slip, index: number) {
+  return String(
+    slip.id ||
+      `${slip.studentNumber || slip.user?.studentNumber || "student"}-${slip.dateOfAbsence}-${index}`,
+  );
+}
+
 export function SlipList({
   title = "Admission Slip List",
   searchTerm = "",
@@ -74,29 +101,52 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
+  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const visibleSlips = useMemo(
+    () => slips.filter((slip, index) => !hiddenSlipKeys.has(getSlipKey(slip, index))),
+    [hiddenSlipKeys, slips],
+  );
+
+  const hiddenCount = slips.length - visibleSlips.length;
   const statMap = useMemo(() => {
     const map: Record<string | number, SlipStats> = {};
-    (statusCounts || []).forEach((sc) => {
-      map[sc.id] = sc;
+    (statusCounts || []).forEach((status) => {
+      map[status.id] = status;
     });
     return map;
   }, [statusCounts]);
 
   const dropdownOptions = useMemo(() => {
-    return (statuses || []).map((s) => ({
-      ...s,
+    return (statuses || []).map((status) => ({
+      ...status,
       displayName:
-        String(s.id) === "0"
+        String(status.id) === "0"
           ? "All Statuses"
-          : `${s.name} (${statMap[s.id]?.count || 0})`,
+          : `${status.name} (${statMap[status.id]?.count || 0})`,
     }));
   }, [statuses, statMap]);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const isSortingByStudentName = selectedSort === "studentName";
+  const nextNameSortOrder: SortOrder =
+    isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
+  const SortArrow = nextNameSortOrder === "asc" ? ArrowUp : ArrowDown;
+
+  const handleSearchChange = (value: string) => {
+    onSearchChange?.(value);
+    onPageChange(1);
+  };
 
   const handleClearSearch = () => {
-    onSearchChange?.("");
+    handleSearchChange("");
     requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
+  const handleStatusChange = (status: SlipStatus) => {
+    onStatusChange(status);
+    onPageChange(1);
   };
 
   const handleRequiredSortChange = (value: unknown) => {
@@ -115,6 +165,7 @@ export function SlipList({
     }
 
     onSortChange?.(nextValue);
+    onPageChange(1);
   };
 
   const handleRequiredOrderChange = (value: unknown) => {
@@ -131,22 +182,63 @@ export function SlipList({
     }
 
     onOrderChange?.(value);
+    onPageChange(1);
+  };
+
+  const handleNameHeaderSort = () => {
+    onSortChange?.("studentName");
+    onOrderChange?.(nextNameSortOrder);
+    onPageChange(1);
+  };
+
+  const hideSlip = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
+    event?.stopPropagation();
+    setHiddenSlipKeys((previous) => {
+      const next = new Set(previous);
+      next.add(getSlipKey(slip, slips.indexOf(slip)));
+      return next;
+    });
+  };
+
+  const restoreHiddenSlips = () => {
+    setHiddenSlipKeys(new Set());
+  };
+
+  const handleViewClick = (
+    slip: Slip,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event?.stopPropagation();
+    onViewClick(slip);
   };
 
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
-        header: "Student Name",
+        header: (
+          <button
+            type="button"
+            onClick={handleNameHeaderSort}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition hover:bg-muted/70 hover:text-foreground",
+              isSortingByStudentName ? "text-primary" : "text-muted-foreground",
+            )}
+            title={`Sort student name ${nextNameSortOrder === "asc" ? "ascending" : "descending"}`}
+          >
+            Student Name
+            <SortArrow className="h-3.5 w-3.5" />
+          </button>
+        ),
         className: "min-w-[220px]",
         render: (slip) => (
           <div className="space-y-0.5">
             <p className="font-semibold text-foreground">
-              {slip.user?.firstName} {slip.user?.lastName}
+              {getSlipStudentName(slip) || "Unnamed Student"}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              {slip.studentNumber ||
-                slip.user?.studentNumber ||
-                "Student record"}
+              {slip.studentNumber || slip.user?.studentNumber || "Student record"}
             </p>
           </div>
         ),
@@ -206,13 +298,41 @@ export function SlipList({
           </span>
         ),
       },
+      {
+        header: "Actions",
+        className: "min-w-[160px]",
+        render: (slip) => (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => handleViewClick(slip, event)}
+              className="h-8 rounded-xl border-primary/20 bg-primary/5 px-3 text-[11px] font-semibold text-primary"
+            >
+              <Eye className="mr-1 h-3.5 w-3.5" />
+              View
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(event) => hideSlip(slip, event)}
+              className="h-8 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+            >
+              <EyeOff className="mr-1 h-3.5 w-3.5" />
+              Hide
+            </Button>
+          </div>
+        ),
+      },
     ],
-    [],
+    [isSortingByStudentName, nextNameSortOrder, onViewClick, slips],
   );
 
   const renderMobileItem = (slip: Slip) => (
     <div
-      key={slip.id}
+      key={slip.id || `${slip.studentNumber}-${slip.dateOfAbsence}`}
       className={cn(
         "space-y-3 rounded-xl border border-border/70 bg-card p-4",
         "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
@@ -224,7 +344,7 @@ export function SlipList({
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <User className="h-4 w-4 text-primary" />
             <span className="truncate">
-              {slip.user?.firstName} {slip.user?.lastName}
+              {getSlipStudentName(slip) || "Unnamed Student"}
             </span>
           </div>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
@@ -264,7 +384,7 @@ export function SlipList({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
         <span
           className={cn(
             "inline-flex max-w-[160px] items-center gap-1.5 rounded-xl border",
@@ -275,18 +395,29 @@ export function SlipList({
           <span className="truncate">{slip.category?.name || "-"}</span>
         </span>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onViewClick(slip)}
-          className={cn(
-            "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
-            "px-3 text-[11px] font-semibold text-primary",
-          )}
-        >
-          <Eye className="h-3.5 w-3.5" />
-          View
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(event) => hideSlip(slip, event)}
+            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
+          >
+            <EyeOff className="h-3.5 w-3.5" />
+            Hide
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(event) => handleViewClick(slip, event)}
+            className={cn(
+              "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
+              "px-3 text-[11px] font-semibold text-primary",
+            )}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            View
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -312,8 +443,9 @@ export function SlipList({
       </h3>
 
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        There are no submissions for the current filters yet. Try changing the
-        time range or search term.
+        {hiddenCount > 0
+          ? "All rows on this page are hidden. Restore hidden rows to show them again."
+          : "There are no admission slip records available for this page."}
       </p>
     </div>
   );
@@ -322,9 +454,9 @@ export function SlipList({
     <table className="w-full border-collapse text-sm">
       <thead>
         <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
-          {columns.map((column) => (
+          {columns.map((column, index) => (
             <th
-              key={column.header}
+              key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
               {column.header}
@@ -333,14 +465,14 @@ export function SlipList({
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, idx) => (
+        {Array.from({ length: 5 }).map((_, rowIndex) => (
           <tr
-            key={idx}
+            key={rowIndex}
             className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
-            {columns.map((column) => (
+            {columns.map((_, columnIndex) => (
               <td
-                key={column.header}
+                key={columnIndex}
                 className="px-4 py-3"
               >
                 <Skeleton className="h-4 w-24 rounded" />
@@ -354,9 +486,9 @@ export function SlipList({
 
   const renderMobileSkeleton = () => (
     <>
-      {Array.from({ length: 3 }).map((_, idx) => (
+      {Array.from({ length: 3 }).map((_, index) => (
         <div
-          key={idx}
+          key={index}
           className={cn(
             "animate-pulse rounded-xl border border-border/70",
             "bg-card p-4 shadow-md backdrop-blur-xl",
@@ -398,20 +530,34 @@ export function SlipList({
               {title}
             </h2>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Student details, absence date, and date needed are shown in one
-              compact table.
+              Student details, absence date, and date needed are shown in one compact table.
             </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
-            <div
-              className={cn(
-                "self-start rounded-xl border border-primary/20",
-                "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
-                "text-primary shadow-md",
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <div
+                className={cn(
+                  "self-start rounded-xl border border-primary/20",
+                  "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
+                  "text-primary shadow-md",
+                )}
+              >
+                {visibleSlips.length} visible / {slips.length} total
+              </div>
+
+              {hiddenCount > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={restoreHiddenSlips}
+                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Restore {hiddenCount}
+                </Button>
               )}
-            >
-              {slips.length} record{slips.length !== 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -440,7 +586,7 @@ export function SlipList({
                   ref={searchInputRef}
                   type="text"
                   value={searchTerm ?? ""}
-                  onChange={(event) => onSearchChange?.(event.target.value)}
+                  onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Search by name, email, or student number..."
                   spellCheck={false}
                   autoComplete="off"
@@ -472,11 +618,11 @@ export function SlipList({
               label="Status"
               options={dropdownOptions}
               value={selectedStatus?.id}
-              onChange={(val) => {
+              onChange={(value) => {
                 const status = statuses.find(
-                  (s) => String(s.id) === String(val),
+                  (item) => String(item.id) === String(value),
                 );
-                if (status) onStatusChange(status);
+                if (status) handleStatusChange(status);
               }}
               labelKey="displayName"
               enabled={!isLoading}
@@ -510,7 +656,7 @@ export function SlipList({
 
       <CardContent className="flex-1 p-0">
         <Table
-          data={slips}
+          data={visibleSlips}
           columns={columns}
           renderMobileItem={renderMobileItem}
           isLoading={isLoading}
@@ -530,3 +676,4 @@ export function SlipList({
     </Card>
   );
 }
+

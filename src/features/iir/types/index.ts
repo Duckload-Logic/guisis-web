@@ -1,4 +1,3 @@
-
 export interface Gender {
   id: number;
   name?: string;
@@ -142,6 +141,7 @@ export interface EmergencyContact {
 export interface PersonalInfo {
   id?: number;
   suffix: string;
+  twoByTwoPhotoDataUrl?: string | null;
   studentNumber: string;
   gender: Gender;
   civilStatus: CivilStatus;

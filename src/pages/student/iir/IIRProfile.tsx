@@ -271,7 +271,7 @@ export default function IIRProfile() {
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
-            <BioCard data={studentData?.student} />
+            <BioCard data={studentData?.student} iirId={finalIirId} />
           </div>
 
           <div
