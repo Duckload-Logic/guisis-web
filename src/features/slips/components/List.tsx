@@ -1,4 +1,4 @@
-import { MouseEvent, useMemo, useRef, useState } from "react";
+import { MouseEvent, useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -6,10 +6,8 @@ import {
   EyeOff,
   Inbox,
   RotateCcw,
-  Search,
   Tag,
   User,
-  X,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
@@ -19,8 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/utils/dateTime";
-import { Dropdown } from "@/components/form";
-import { Input } from "@/components/ui/input";
+import { Dropdown, SearchInput } from "@/components/form";
 
 import type { Slip } from "../types";
 import { SlipStatus, SlipStats } from "../types";
@@ -128,7 +125,6 @@ export function SlipList({
     }));
   }, [statuses, statMap]);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const isSortingByStudentName = selectedSort === "studentName";
   const nextNameSortOrder: SortOrder =
     isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
@@ -137,11 +133,6 @@ export function SlipList({
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
-  };
-
-  const handleClearSearch = () => {
-    handleSearchChange("");
-    requestAnimationFrame(() => searchInputRef.current?.focus());
   };
 
   const handleStatusChange = (status: SlipStatus) => {
@@ -528,6 +519,12 @@ export function SlipList({
           {!isLoading && slips.length > 0 && (
             <div
               className={cn(
+                "flex flex-wrap items-center gap-2",
+                "sm:justify-end",
+              )}
+            >
+              <div
+                className={cn(
                   "self-start rounded-xl border border-primary/20",
                   "bg-primary/5 px-4 py-1.5 text-xs font-semibold",
                   "text-primary shadow-sm",
@@ -542,7 +539,10 @@ export function SlipList({
                   variant="outline"
                   size="sm"
                   onClick={restoreHiddenSlips}
-                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
+                  className={cn(
+                    "h-8 rounded-xl px-3 text-[11px]",
+                    "font-semibold shadow-md",
+                  )}
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
                   Restore {hiddenCount}
@@ -553,77 +553,28 @@ export function SlipList({
         </div>
 
         {/* Bottom Section: Search & Filters */}
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div
+          className={cn(
+            "flex flex-col gap-4",
+            "xl:flex-row xl:items-end xl:justify-between",
+          )}
+        >
           
           <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <label
+              className={cn(
+                "text-sm font-medium",
+                "text-neutral-700 dark:text-neutral-300",
+              )}
+            >
               Search
             </label>
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-              <Input
-                ref={searchInputRef}
-                type="text"
-                value={searchTerm ?? ""}
-                onChange={(event) => onSearchChange?.(event.target.value)}
-                placeholder="Search by name, email, or student number..."
-                spellCheck={false}
-                autoComplete="off"
-                className={cn(
-                  "h-10 w-full rounded-xl bg-slate-100 pl-10 pr-10 text-sm text-foreground",
-                  "border-0 shadow-none transition-colors placeholder:text-neutral-400 ",
-                  "focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20",
-                  "dark:bg-white/5 dark:focus-visible:bg-white/10",
-                )}
-              >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchTerm ?? ""}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Search by name, email, or student number..."
-                  spellCheck={false}
-                  autoComplete="off"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
-                />
-                {searchTerm && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={handleClearSearch}
-                    className={cn(
-                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-                      "text-muted-foreground hover:bg-background hover:text-foreground",
-                    )}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              />
-              {searchTerm && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                  }}
-                  onClick={handleClearSearch}
-                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"
-                  aria-label="Clear search"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <SearchInput
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              placeholder="Search by name, email, or student number..."
+              hasHeader={false}
+            />
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">

@@ -1,4 +1,4 @@
-import { MouseEvent, useMemo, useRef, useState } from "react";
+import { MouseEvent, useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -6,9 +6,7 @@ import {
   Eye,
   EyeOff,
   RotateCcw,
-  Search,
   User,
-  X,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
@@ -19,8 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { format12HourTime } from "@/utils/dateTime";
-import { Dropdown } from "@/components/form";
-import { Input } from "@/components/ui/input";
+import { Dropdown, SearchInput } from "@/components/form";
 
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
 
@@ -175,7 +172,6 @@ export default function AppointmentList({
     }));
   }, [statuses, statMap]);
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const isSortingByStudentName = selectedSort === "studentName";
   const nextNameSortOrder: SortOrder =
     isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
@@ -184,11 +180,6 @@ export default function AppointmentList({
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
-  };
-
-  const handleClearSearch = () => {
-    handleSearchChange("");
-    requestAnimationFrame(() => searchInputRef.current?.focus());
   };
 
   const handleStatusChange = (status: AppointmentStatus) => {
@@ -562,9 +553,9 @@ export default function AppointmentList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-      
+
       <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
-        
+
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -604,76 +595,22 @@ export default function AppointmentList({
         </div>
 
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          
+
           <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            <label
+              className={cn(
+                "text-sm font-medium",
+                "text-neutral-700 dark:text-neutral-300",
+              )}
+            >
               Search
             </label>
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-              <Input
-                ref={searchInputRef}
-                type="text"
-                value={searchTerm ?? ""}
-                onChange={(event) => onSearchChange?.(event.target.value)}
-                placeholder="Search by name, email, or student number..."
-                spellCheck={false}
-                autoComplete="off"
-                className={cn(
-                  "h-10 w-full rounded-xl bg-slate-100 pl-10 pr-10 text-sm text-foreground",
-                  "border-0 shadow-none transition-colors placeholder:text-neutral-400 ",
-                  "focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20",
-                  "dark:bg-white/5 dark:focus-visible:bg-white/10",
-                )}
-              >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchTerm ?? ""}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Search by name, email, or student number..."
-                  spellCheck={false}
-                  autoComplete="off"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
-                />
-                {searchTerm && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={handleClearSearch}
-                    className={cn(
-                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-                      "text-muted-foreground hover:bg-background hover:text-foreground",
-                    )}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              />
-              {searchTerm && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                  }}
-                  onClick={handleClearSearch}
-                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"
-                  aria-label="Clear search"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <SearchInput
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              placeholder="Search by name, email, or student number..."
+              hasHeader={false}
+            />
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -744,7 +681,7 @@ export default function AppointmentList({
           />
         </div>
       </div>
-      
+
     </div>
   );
 }
