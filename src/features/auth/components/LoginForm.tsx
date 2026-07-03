@@ -89,7 +89,7 @@ export default function LoginForm({
             type="submit"
             disabled={isLoading}
             className={cn(
-              "h-12 w-full rounded-2xl bg-red-500 text-sm font-semibold text-white shadow-[0_14px_30px_-16px_rgba(239,68,68,0.55)] transition hover:bg-red-600 dark:hover:bg-red-600 sm:text-base",
+              "h-12 w-full rounded-2xl bg-[#8f1113] text-sm font-semibold text-white shadow-lg transition hover:bg-[#6a0d0d] dark:hover:bg-[#6a0d0d] sm:text-base",
             )}
           >
             {isLoading ? (
@@ -136,18 +136,6 @@ export default function LoginForm({
           />
         </div>
       </form>
-
-      <p className={"mt-6 text-center text-sm text-muted-foreground"}>
-        Don&apos;t have an account?{" "}
-        <Link
-          to="/register"
-          className={cn(
-            "font-semibold text-primary transition-colors hover:opacity-80",
-          )}
-        >
-          Register here
-        </Link>
-      </p>
     </>
   );
 }
