@@ -1,16 +1,28 @@
+import { MouseEvent, useMemo, useRef, useState } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  CalendarX,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Search,
+  User,
+  X,
+} from "lucide-react";
+
+import { Pagination, Table, Column } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Pagination, Table, Column } from "@/components/shared";
-import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { Appointment, AppointmentStatus, StatusCount } from "../types";
-import { CalendarX, Eye, Search, User, X } from "lucide-react";
-import { useMemo, useRef } from "react";
-import { format12HourTime } from "@/utils/dateTime";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { Dropdown } from "@/components/form";
 import { Skeleton } from "@/components/ui/skeleton";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { cn } from "@/lib/utils";
+import { format12HourTime } from "@/utils/dateTime";
+import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
+
+import { Appointment, AppointmentStatus, StatusCount } from "../types";
 
 function getUrgencyValue(apt: Appointment) {
   const raw = apt.urgencyLevel ?? apt.urgency;
@@ -37,6 +49,17 @@ function formatCompactDate(value?: string) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function getAppointmentStudentName(apt: Appointment) {
+  return [
+    apt.user?.firstName,
+    apt.user?.middleName?.[0] ? `${apt.user.middleName[0]}.` : "",
+    apt.user?.lastName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 }
 
 function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
@@ -105,7 +128,7 @@ interface AppointmentListProps {
 
 export default function AppointmentList({
   title,
-  searchTerm,
+  searchTerm = "",
   onSearchChange,
   statuses,
   selectedStatus,
@@ -125,29 +148,52 @@ export default function AppointmentList({
   totalPages,
   className,
 }: AppointmentListProps) {
+  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const visibleAppointments = useMemo(
+    () => appointments.filter((appointment) => !hiddenAppointmentIds.has(String(appointment.id))),
+    [appointments, hiddenAppointmentIds],
+  );
+
+  const hiddenCount = appointments.length - visibleAppointments.length;
   const statMap = useMemo(() => {
     const map: Record<number, StatusCount> = {};
-    statusCounts.forEach((sc) => {
-      map[sc.id] = sc;
+    statusCounts.forEach((status) => {
+      map[status.id] = status;
     });
     return map;
   }, [statusCounts]);
 
   const dropdownOptions = useMemo(() => {
-    return statuses.map((s) => ({
-      ...s,
+    return statuses.map((status) => ({
+      ...status,
       displayName:
-        s.id === 0
+        status.id === 0
           ? "All Statuses"
-          : `${s.name} (${statMap[s.id]?.count || 0})`,
+          : `${status.name} (${statMap[status.id]?.count || 0})`,
     }));
   }, [statuses, statMap]);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const isSortingByStudentName = selectedSort === "studentName";
+  const nextNameSortOrder: SortOrder =
+    isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
+  const SortArrow = nextNameSortOrder === "asc" ? ArrowUp : ArrowDown;
+
+  const handleSearchChange = (value: string) => {
+    onSearchChange?.(value);
+    onPageChange(1);
+  };
 
   const handleClearSearch = () => {
-    onSearchChange?.("");
+    handleSearchChange("");
     requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
+
+  const handleStatusChange = (status: AppointmentStatus) => {
+    onStatusChange(status);
+    onPageChange(1);
   };
 
   const handleRequiredSortChange = (value: unknown) => {
@@ -166,6 +212,7 @@ export default function AppointmentList({
     }
 
     onSortChange?.(nextValue);
+    onPageChange(1);
   };
 
   const handleRequiredOrderChange = (value: unknown) => {
@@ -182,21 +229,63 @@ export default function AppointmentList({
     }
 
     onOrderChange?.(value);
+    onPageChange(1);
+  };
+
+  const handleNameHeaderSort = () => {
+    onSortChange?.("studentName");
+    onOrderChange?.(nextNameSortOrder);
+    onPageChange(1);
+  };
+
+  const hideAppointment = (
+    appointment: Appointment,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event?.stopPropagation();
+    setHiddenAppointmentIds((previous) => {
+      const next = new Set(previous);
+      next.add(String(appointment.id));
+      return next;
+    });
+  };
+
+  const restoreHiddenAppointments = () => {
+    setHiddenAppointmentIds(new Set());
+  };
+
+  const handleViewClick = (
+    appointment: Appointment,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event?.stopPropagation();
+    onViewClick(appointment);
   };
 
   const columns = useMemo<Column<Appointment>[]>(
     () => [
       {
-        header: "Student Name",
+        header: (
+          <button
+            type="button"
+            onClick={handleNameHeaderSort}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition hover:bg-muted/70 hover:text-foreground",
+              isSortingByStudentName ? "text-primary" : "text-muted-foreground",
+            )}
+            title={`Sort student name ${nextNameSortOrder === "asc" ? "ascending" : "descending"}`}
+          >
+            Student Name
+            <SortArrow className="h-3.5 w-3.5" />
+          </button>
+        ),
         className: "min-w-[220px]",
         render: (apt) => (
           <div className="space-y-0.5">
             <p className="font-semibold text-foreground">
-              {apt.user?.firstName}{" "}
-              {apt.user?.middleName?.[0]
-                ? `${apt.user?.middleName?.[0]}. `
-                : ""}
-              {apt.user?.lastName}
+              {getAppointmentStudentName(apt) || "Unnamed Student"}
             </p>
             <p className="text-[11px] text-muted-foreground">
               {apt.studentNumber || apt.user?.email || "Student record"}
@@ -267,8 +356,36 @@ export default function AppointmentList({
         className: "min-w-[110px]",
         render: (apt) => <UrgencyCapsule appointment={apt} />,
       },
+      {
+        header: "Actions",
+        className: "min-w-[160px]",
+        render: (apt) => (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => handleViewClick(apt, event)}
+              className="h-8 rounded-xl border-primary/20 bg-primary/5 px-3 text-[11px] font-semibold text-primary"
+            >
+              <Eye className="mr-1 h-3.5 w-3.5" />
+              View
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(event) => hideAppointment(apt, event)}
+              className="h-8 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+            >
+              <EyeOff className="mr-1 h-3.5 w-3.5" />
+              Hide
+            </Button>
+          </div>
+        ),
+      },
     ],
-    [],
+    [isSortingByStudentName, nextNameSortOrder, onViewClick],
   );
 
   const renderMobileItem = (apt: Appointment) => (
@@ -285,7 +402,7 @@ export default function AppointmentList({
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <User className="h-4 w-4 text-primary" />
             <span className="truncate">
-              {apt.user?.firstName} {apt.user?.lastName}
+              {getAppointmentStudentName(apt) || "Unnamed Student"}
             </span>
           </div>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
@@ -328,20 +445,31 @@ export default function AppointmentList({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
         <UrgencyCapsule appointment={apt} />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onViewClick(apt)}
-          className={cn(
-            "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
-            "px-3 text-[11px] font-semibold text-primary",
-          )}
-        >
-          <Eye className="h-3.5 w-3.5" />
-          View
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(event) => hideAppointment(apt, event)}
+            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
+          >
+            <EyeOff className="h-3.5 w-3.5" />
+            Hide
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(event) => handleViewClick(apt, event)}
+            className={cn(
+              "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
+              "px-3 text-[11px] font-semibold text-primary",
+            )}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            View
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -366,7 +494,9 @@ export default function AppointmentList({
           No appointments found
         </h3>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          No active records match the current filters.
+          {hiddenCount > 0
+            ? "All rows on this page are hidden. Restore hidden rows to show them again."
+            : "No active records are available for this page."}
         </p>
       </div>
     </div>
@@ -376,9 +506,9 @@ export default function AppointmentList({
     <table className="w-full border-collapse text-sm">
       <thead>
         <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
-          {columns.map((column, columnIndex) => (
+          {columns.map((column, index) => (
             <th
-              key={columnIndex}
+              key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
               {column.header}
@@ -387,12 +517,12 @@ export default function AppointmentList({
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, idx) => (
+        {Array.from({ length: 5 }).map((_, rowIndex) => (
           <tr
-            key={idx}
+            key={rowIndex}
             className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
-            {columns.map((column, columnIndex) => (
+            {columns.map((_, columnIndex) => (
               <td
                 key={columnIndex}
                 className="px-4 py-3"
@@ -408,9 +538,9 @@ export default function AppointmentList({
 
   const renderMobileSkeleton = () => (
     <>
-      {Array.from({ length: 3 }).map((_, idx) => (
+      {Array.from({ length: 3 }).map((_, index) => (
         <div
-          key={idx}
+          key={index}
           className={cn(
             "animate-pulse rounded-xl border border-border/70",
             "bg-card p-4 shadow-md backdrop-blur-xl",
@@ -440,20 +570,35 @@ export default function AppointmentList({
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Student details, date requested, and appointment date are shown in one compact table.
             </p>
           </div>
 
           {!isLoading && appointments.length > 0 && (
-            <div
-              className={cn(
-                "self-start rounded-xl border border-primary/20",
-                "bg-primary/5 px-4 py-1.5 text-xs font-semibold",
-                "text-primary shadow-sm",
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+              <div
+                className={cn(
+                  "self-start rounded-xl border border-primary/20",
+                  "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
+                  "text-primary shadow-md",
+                )}
+              >
+                {visibleAppointments.length} visible / {appointments.length} total
+              </div>
+
+              {hiddenCount > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={restoreHiddenAppointments}
+                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Restore {hiddenCount}
+                </Button>
               )}
-            >
-              {appointments.length} record{appointments.length !== 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -476,8 +621,40 @@ export default function AppointmentList({
                 autoComplete="off"
                 className={cn(
                   "h-10 w-full rounded-xl bg-slate-100 pl-10 pr-10 text-sm text-foreground",
-                  "border-0 shadow-none transition-colors placeholder:text-neutral-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20",
+                  "border-0 shadow-none transition-colors placeholder:text-neutral-400 ",
+                  "focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20",
                   "dark:bg-white/5 dark:focus-visible:bg-white/10",
+                )}
+              >
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchTerm ?? ""}
+                  onChange={(event) => handleSearchChange(event.target.value)}
+                  placeholder="Search by name, email, or student number..."
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+                />
+                {searchTerm && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }}
+                    onClick={handleClearSearch}
+                    className={cn(
+                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
+                      "text-muted-foreground hover:bg-background hover:text-foreground",
+                    )}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
               />
               {searchTerm && (
@@ -549,7 +726,7 @@ export default function AppointmentList({
 
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
         <Table
-          data={appointments}
+          data={visibleAppointments}
           columns={columns}
           renderMobileItem={renderMobileItem}
           isLoading={isLoading}
@@ -571,3 +748,4 @@ export default function AppointmentList({
     </div>
   );
 }
+

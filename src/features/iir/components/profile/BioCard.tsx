@@ -14,24 +14,45 @@ import { StudentSection } from "../../types";
 import { NOT_SPECIFIED } from "../../constants";
 import QuickInfo from "./QuickInfo";
 import { cn } from "@/lib/utils";
+import {
+  getIIRTwoByTwoPhoto,
+  getTwoByTwoPhotoIdentityFromStudent,
+} from "@/features/iir/utils/twoByTwoPhoto";
 
 export default function BioCard({
   data,
+  iirId,
 }: {
   data: StudentSection | undefined;
+  iirId?: string | number;
 }) {
   const DefaultProfileIcon =
     data?.personalInfo?.gender?.id === 1 ? ProfileMale : ProfileFemale;
+  const twoByTwoPhoto = getIIRTwoByTwoPhoto(
+    getTwoByTwoPhotoIdentityFromStudent(data, iirId),
+    data,
+  );
 
   return (
     <div className="relative mt-10 flex flex-col items-center sm:mt-12">
       <div className="absolute -top-12 z-10">
-        <DefaultProfileIcon
-          className={cn(
-            "h-24 w-24 rounded-full border-4 border-card bg-background",
-            "p-1 text-muted-foreground shadow-lg",
-          )}
-        />
+        {twoByTwoPhoto ? (
+          <img
+            src={twoByTwoPhoto}
+            alt="Student 2x2 profile"
+            className={cn(
+              "h-24 w-24 rounded-xl border-4 border-card bg-background",
+              "object-cover shadow-lg",
+            )}
+          />
+        ) : (
+          <DefaultProfileIcon
+            className={cn(
+              "h-24 w-24 rounded-full border-4 border-card bg-background",
+              "p-1 text-muted-foreground shadow-lg",
+            )}
+          />
+        )}
       </div>
 
       <div

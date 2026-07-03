@@ -30,6 +30,11 @@ import { SectionProgress } from "@/features/iir/components/form/SectionProgress"
 import ConsentDialog from "@/features/iir/components/form/ConsentDialog";
 import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
+import {
+  getIIRTwoByTwoPhoto,
+  getTwoByTwoPhotoIdentityFromForm,
+  saveIIRTwoByTwoPhoto,
+} from "@/features/iir/utils/twoByTwoPhoto";
 
 import {
   IIRDraftPrompt,
@@ -123,6 +128,19 @@ export default function IIRForm() {
     setLastChangeTimestamp(Date.now());
   }, []);
 
+  const persistTwoByTwoPhoto = useCallback(
+    (formData?: IIRFormType | null) => {
+      const photoDataUrl = formData?.student?.personalInfo?.twoByTwoPhotoDataUrl;
+      if (!photoDataUrl) return;
+
+      saveIIRTwoByTwoPhoto(
+        photoDataUrl,
+        getTwoByTwoPhotoIdentityFromForm(formData, (me as any)?.id, editIirId),
+      );
+    },
+    [editIirId, me],
+  );
+
   useEffect(() => {
     const initializeForm = () => {
       if (
@@ -142,6 +160,17 @@ export default function IIRForm() {
         me,
         { preserveBasicInfoFromSource: isEditMode },
       );
+      const savedPhoto = getIIRTwoByTwoPhoto(
+        getTwoByTwoPhotoIdentityFromForm(
+          initializedData,
+          (me as any)?.id,
+          editIirId,
+        ),
+        initializedData,
+      );
+      if (savedPhoto) {
+        initializedData.student.personalInfo.twoByTwoPhotoDataUrl = savedPhoto;
+      }
       setLocalFormData(initializedData);
       setIsInitializing(false);
       hasInitialized.current = true;
@@ -202,7 +231,22 @@ export default function IIRForm() {
 
   const handleRestoreDraft = () => {
     if (draftData) {
-      setLocalFormData(draftData);
+      const savedPhoto = getIIRTwoByTwoPhoto(
+        getTwoByTwoPhotoIdentityFromForm(draftData, (me as any)?.id, editIirId),
+        draftData,
+      );
+      const restoredDraft = {
+        ...draftData,
+        student: {
+          ...draftData.student,
+          personalInfo: {
+            ...draftData.student.personalInfo,
+            twoByTwoPhotoDataUrl:
+              savedPhoto || draftData.student.personalInfo.twoByTwoPhotoDataUrl || null,
+          },
+        },
+      };
+      setLocalFormData(restoredDraft);
     }
     setShowDraftPrompt(false);
   };
@@ -216,6 +260,7 @@ export default function IIRForm() {
     if (!localFormData) return;
 
     try {
+      persistTwoByTwoPhoto(localFormData);
       await saveDraft(localFormData);
     } catch (err) {
       console.error("[AutoSave] Error saving draft:", err);
@@ -384,6 +429,7 @@ export default function IIRForm() {
     }
 
     setIsSaving(true);
+    persistTwoByTwoPhoto(localFormData);
 
     try {
       // Submit or update backend record (service handles transformation via normalizeIIRPayload)
