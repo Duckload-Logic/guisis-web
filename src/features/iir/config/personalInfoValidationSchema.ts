@@ -27,6 +27,9 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
     commonRules.required("Email"),
     commonRules.email(),
   ],
+  "student.personalInfo.twoByTwoPhotoDataUrl": [
+    commonRules.required("2x2 profile photo"),
+  ],
 
   // Personal Details
   "student.personalInfo.studentNumber": [

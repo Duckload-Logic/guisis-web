@@ -8,6 +8,7 @@ export const PERSONAL_SUBSTEP_FIELDS: Record<number, string[]> = {
     "student.basicInfo.firstName",
     "student.basicInfo.lastName",
     "student.basicInfo.email",
+    "student.personalInfo.twoByTwoPhotoDataUrl",
     "student.personalInfo.studentNumber",
     "student.personalInfo.course",
     "student.personalInfo.yearLevel",
