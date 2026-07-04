@@ -2,6 +2,7 @@ import { useRoutes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, UIProvider, ToastProvider } from "@/context";
 import { routes } from "@/routes";
+import { TawkToWidget } from "@/features/support/components/TawkToWidget";
 
 const QUERY_CLIENT_STALE_TIME = 1000 * 60 * 5; // 5 minutes
 const QUERY_CLIENT_GC_TIME = 1000 * 60 * 60; // 1 hour
@@ -29,6 +30,7 @@ function App() {
       <AuthProvider>
         <UIProvider>
           <ToastProvider>
+            <TawkToWidget />
             <AppRoutes />
           </ToastProvider>
         </UIProvider>
@@ -38,4 +40,3 @@ function App() {
 }
 
 export default App;
-

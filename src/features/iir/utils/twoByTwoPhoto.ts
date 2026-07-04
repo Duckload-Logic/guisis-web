@@ -1,3 +1,4 @@
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import type { IIRForm, StudentSection } from "../types";
 
 export const TWO_BY_TWO_PHOTO_FIELD = "twoByTwoPhotoDataUrl";
@@ -5,6 +6,24 @@ export const TWO_BY_TWO_PHOTO_FIELD = "twoByTwoPhotoDataUrl";
 const STORAGE_PREFIX = "guisis_iir_two_by_two_photo";
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const OUTPUT_SIZE = 600;
+
+const isPhotoValue = (value?: string | null) => {
+  const trimmed = String(value || "").trim();
+  return (
+    trimmed.startsWith("data:image/") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("uploads/")
+  );
+};
+
+export const normalizeTwoByTwoPhotoUrl = (value?: string | null) => {
+  const trimmed = String(value || "").trim();
+  if (!isPhotoValue(trimmed)) return "";
+  if (trimmed.startsWith("data:image/")) return trimmed;
+  return getProfilePictureUrl(trimmed);
+};
 
 type TwoByTwoPhotoIdentity = {
   iirId?: string | number | null;
@@ -50,9 +69,7 @@ const getPhotoFromSource = (source?: PhotoSource) => {
   const personalInfo = (student as StudentSection | undefined)?.personalInfo;
   const photo = personalInfo?.twoByTwoPhotoDataUrl;
 
-  return typeof photo === "string" && photo.startsWith("data:image/")
-    ? photo
-    : "";
+  return normalizeTwoByTwoPhotoUrl(photo);
 };
 
 const loadImage = (file: File) =>
@@ -113,14 +130,48 @@ export async function createTwoByTwoPhotoDataUrl(file: File) {
   return canvas.toDataURL("image/jpeg", 0.92);
 }
 
+const dataUrlToFile = (dataUrl: string, fileName: string) => {
+  const [metadata, base64Data] = dataUrl.split(",");
+  const mimeType = metadata.match(/data:(.*?);/)?.[1] || "image/jpeg";
+  const binaryString = window.atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+
+  for (let i = 0; i < binaryString.length; i += 1) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return new File([bytes], fileName, { type: mimeType });
+};
+
+const buildTwoByTwoPhotoFileName = (originalName: string) => {
+  const safeBaseName = originalName
+    .replace(/\.[^/.]+$/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "student-photo";
+
+  return `${safeBaseName}-2x2.jpg`;
+};
+
+export async function createTwoByTwoPhotoFile(file: File) {
+  const dataUrl = await createTwoByTwoPhotoDataUrl(file);
+
+  return {
+    dataUrl,
+    file: dataUrlToFile(dataUrl, buildTwoByTwoPhotoFileName(file.name)),
+  };
+}
+
 export function saveIIRTwoByTwoPhoto(
   dataUrl: string | null | undefined,
   identity?: TwoByTwoPhotoIdentity,
 ) {
-  if (typeof window === "undefined" || !dataUrl) return;
+  const photoUrl = normalizeTwoByTwoPhotoUrl(dataUrl);
+  if (typeof window === "undefined" || !photoUrl) return;
 
   getStorageKeys(identity).forEach((key) => {
-    localStorage.setItem(key, dataUrl);
+    localStorage.setItem(key, photoUrl);
   });
 }
 
@@ -142,8 +193,8 @@ export function getIIRTwoByTwoPhoto(
   if (typeof window === "undefined") return "";
 
   for (const key of getStorageKeys(identity)) {
-    const value = localStorage.getItem(key);
-    if (value?.startsWith("data:image/")) return value;
+    const value = normalizeTwoByTwoPhotoUrl(localStorage.getItem(key));
+    if (value) return value;
   }
 
   return "";
