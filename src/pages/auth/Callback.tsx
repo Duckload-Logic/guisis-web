@@ -185,7 +185,7 @@ export default function Callback() {
         <div className="relative z-10 w-full max-w-md px-6">
           <div
             className={cn(
-              "group relative overflow-hidden rounded-xl border",
+              "group relative overflow-hidden rounded-[32px] border",
               "border-white/20 bg-white/10 p-12",
               "shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] backdrop-blur-xl",
               "dark:border-white/10 dark:bg-black/20",
@@ -269,7 +269,7 @@ export default function Callback() {
       >
         <div
           className={cn(
-            "w-full max-w-md overflow-hidden rounded-xl border",
+            "w-full max-w-md overflow-hidden rounded-[32px] border",
             "border-destructive/20 bg-destructive/5 p-10 shadow-2xl",
             "backdrop-blur-xl",
           )}

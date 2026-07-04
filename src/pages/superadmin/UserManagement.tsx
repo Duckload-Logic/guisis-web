@@ -23,7 +23,6 @@ import {
 import { usePageMetadata, useToast } from "@/context";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { getProfilePictureUrl } from "@/lib/profilePicture";
 import {
   ArrowRight,
   Calendar,
@@ -173,24 +172,6 @@ export default function UserManagement() {
     });
   };
 
-
-  const getInitials = (user: UserAccount) => {
-    const first = user.firstName?.trim()?.[0] || "";
-    const last = user.lastName?.trim()?.[0] || "";
-    const fallback = user.email?.trim()?.[0] || "U";
-
-    return `${first}${last}`.trim().toUpperCase() || fallback.toUpperCase();
-  };
-
-  const getUserProfilePicture = (user: UserAccount) =>
-    getProfilePictureUrl(user.profilePicture);
-
-  const hideBrokenProfilePicture = (
-    event: React.SyntheticEvent<HTMLImageElement>,
-  ) => {
-    event.currentTarget.classList.add("hidden");
-  };
-
   const getRoleBadgeColor = (roleName: string) => {
     switch (roleName.toLowerCase()) {
       case "superadmin":
@@ -241,22 +222,13 @@ export default function UserManagement() {
           <div className="flex items-center gap-3 text-left">
             <div
               className={cn(
-                "relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center overflow-hidden",
-                "rounded-xl border border-primary/15 bg-primary/10 text-xs font-bold",
-                "uppercase text-primary shadow-sm",
+                "flex aspect-square h-10 w-10 shrink-0 items-center justify-center",
+                "rounded-xl bg-primary/20 text-xs font-bold",
+                "uppercase text-primary",
               )}
             >
-              <span className="absolute inset-0 flex items-center justify-center">
-                {getInitials(user)}
-              </span>
-              {getUserProfilePicture(user) && (
-                <img
-                  src={getUserProfilePicture(user)}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="relative z-10 h-full w-full object-cover"
-                  onError={hideBrokenProfilePicture}
-                />
-              )}
+              {user.firstName[0]}
+              {user.lastName[0]}
             </div>
             <div className="space-y-0.5">
               <div className="font-semibold text-foreground">
@@ -725,4 +697,3 @@ export default function UserManagement() {
     </div>
   );
 }
-

@@ -84,7 +84,6 @@ const POST_ROUTES = {
   submit: API_ROUTES.iir.submit,
   update: API_ROUTES.iir.update,
   cor: API_ROUTES.iir.inventory.cor,
-  twoByTwoPhoto: API_ROUTES.users.profilePictureUpload,
 };
 
 /**
@@ -322,30 +321,6 @@ export const UploadIIRCor = async (
 };
 
 /**
- * Upload the IIR 2x2 photo and use the same file as the account profile picture.
- * Backend endpoint: POST /users/profile-picture/upload with multipart field `file`.
- */
-export const UploadIIRTwoByTwoPhoto = async (
-  file: File,
-  config?: AxiosConfigWithMeta,
-): Promise<{ message: string; url: string }> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await apiClient.post(POST_ROUTES.twoByTwoPhoto, formData, {
-      ...config,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    return response.data?.data ?? response.data;
-  } catch (error) {
-
-    throw error;
-  }
-};
-
-/**
  * Downloads the student's IIR as a PDF blob.
  * @param iirID - The ID of the student's IIR.
  * @param config - Optional Axios configuration with metadata.
@@ -436,12 +411,6 @@ export const iirService = {
     return UploadIIRCor(iirID, file);
   },
 
-  async uploadIIRTwoByTwoPhoto(
-    file: File,
-  ): Promise<{ message: string; url: string }> {
-    return UploadIIRTwoByTwoPhoto(file);
-  },
-
   async bulkUpdateStudentStatus(payload: {
     iirIds?: string[];
     excludedIirIds?: string[];
@@ -458,4 +427,3 @@ export const iirService = {
     await apiClient.patch(API_ROUTES.iir.bulkStatus, payload);
   },
 };
-

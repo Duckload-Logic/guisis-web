@@ -105,19 +105,6 @@ export default function StudentRecords() {
     localStorage.setItem("student_grid_view_mode", mode);
   };
 
-  const handlePageChange = (nextPage: number) => {
-    setPage(nextPage);
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    requestAnimationFrame(() => {
-      document.querySelector("main")?.parentElement?.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    });
-  };
-
   const {
     data,
     isLoading: isStudentsLoading,
@@ -183,7 +170,7 @@ export default function StudentRecords() {
             <Pagination
               currentPage={page}
               totalPages={data?.meta?.totalPages || 1}
-              onPageChange={handlePageChange}
+              onPageChange={setPage}
             />
           </div>
         )}

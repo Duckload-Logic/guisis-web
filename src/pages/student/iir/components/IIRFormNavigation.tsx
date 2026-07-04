@@ -1,4 +1,4 @@
-import { AlertCircle, ChevronLeft, ChevronRight, Save } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,6 @@ interface IIRFormNavigationProps {
   isSaving: boolean;
   isSubmitting: boolean;
   isEditMode: boolean;
-  isNextBlocked?: boolean;
-  nextBlockedMessage?: string;
   onReset: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -25,15 +23,12 @@ export function IIRFormNavigation({
   isSaving,
   isSubmitting,
   isEditMode,
-  isNextBlocked = false,
-  nextBlockedMessage,
   onReset,
   onPrevious,
   onNext,
   onSubmit,
 }: IIRFormNavigationProps) {
   const hasNextSection = currentIndex < totalSections - 1;
-  const shouldDisableNext = isSaving || isNextBlocked;
 
   return (
     <div
@@ -45,34 +40,17 @@ export function IIRFormNavigation({
         "delay-500 duration-700 md:flex-row",
       )}
     >
-      <div className="flex w-full flex-col gap-3 md:w-auto">
-        <Button
-          variant="ghost"
-          onClick={onReset}
-          className={cn(
-            "w-fit rounded-xl px-4 font-bold text-neutral-400 transition-all",
-            "duration-300 hover:bg-destructive/10 hover:text-destructive",
-            "sm:px-6",
-          )}
-        >
-          Reset Section
-        </Button>
-
-        {isNextBlocked && nextBlockedMessage && (
-          <div
-            className={cn(
-              "inline-flex max-w-xl items-start gap-2 rounded-xl border px-3 py-2",
-              "border-amber-500/25 bg-amber-500/10 text-xs font-medium text-amber-700",
-              "shadow-sm dark:text-amber-200",
-            )}
-            role="alert"
-            aria-live="polite"
-          >
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{nextBlockedMessage}</span>
-          </div>
+      <Button
+        variant="ghost"
+        onClick={onReset}
+        className={cn(
+          "rounded-xl px-4 font-bold text-neutral-400 transition-all",
+          "duration-300 hover:bg-destructive/10 hover:text-destructive",
+          "sm:px-6",
         )}
-      </div>
+      >
+        Reset Section
+      </Button>
 
       <div className="flex gap-3">
         <Button
@@ -94,16 +72,12 @@ export function IIRFormNavigation({
         {hasNextSection ? (
           <Button
             onClick={onNext}
-            disabled={shouldDisableNext}
-            aria-disabled={shouldDisableNext}
-            title={isNextBlocked ? nextBlockedMessage : "Next Step"}
+            disabled={isSaving}
             className={cn(
               "flex h-12 items-center gap-2 rounded-2xl bg-primary px-6",
               "font-black tracking-tight text-primary-foreground shadow-xl",
               "shadow-primary/20 transition-all duration-300",
               "hover:bg-primary/90 active:scale-95 sm:px-10",
-              isNextBlocked &&
-                "cursor-not-allowed bg-muted text-muted-foreground shadow-none hover:bg-muted active:scale-100",
             )}
           >
             {isSaving ? (
