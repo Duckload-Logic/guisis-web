@@ -348,6 +348,7 @@ export interface IIRProfileView {
     name: string;
   };
   email: string;
+  profilePicture?: string;
   course: {
     id: number;
     name: string;
@@ -357,3 +358,4 @@ export interface IIRProfileView {
   status: StudentStatus;
   studentCorUrl?: string;
 }
+

@@ -90,6 +90,8 @@ export function transformFormToPayload(formData: IIRForm): any {
         otherReligionText: handleNullableString(
           formData.student.personalInfo.otherReligionText,
         ),
+        twoByTwoPhotoDataUrl:
+          formData.student.personalInfo.twoByTwoPhotoDataUrl || undefined,
         heightM: parseNumberSafely(formData.student.personalInfo.heightM),
         weightKg: parseNumberSafely(formData.student.personalInfo.weightKg),
         complexion: formData.student.personalInfo.complexion,
