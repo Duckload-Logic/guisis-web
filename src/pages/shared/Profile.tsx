@@ -179,12 +179,12 @@ export default function Profile() {
             >
               <div className="absolute inset-x-0 bottom-0 h-1/2 rounded-b-full bg-black/40 blur-sm" />
               <Avatar className="relative z-10 h-full w-full rounded-full border-4 border-card">
-                {/* <AvatarImage
-                  src={
-                    previewImage || getProfilePictureUrl(user?.profilePicture)
-                  }
-                  className="object-cover transition-transform duration-500 group-hover/avatar:scale-110"
-                /> */}
+                <AvatarImage
+                  key={previewImage || user?.profilePicture || "profile-picture"}
+                  src={previewImage || getProfilePictureUrl(user?.profilePicture)}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="object-cover object-center transition-transform duration-500 group-hover/avatar:scale-110"
+                />
                 <AvatarFallback className="bg-muted text-4xl font-bold uppercase text-muted-foreground">
                   {user.firstName[0]}
                   {user.lastName[0]}
