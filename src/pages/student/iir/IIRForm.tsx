@@ -46,11 +46,6 @@ import {
 } from "./components";
 import { getActiveIIRSections } from "./config/iirFormSections";
 
-const PHOTO_REQUIRED_SECTION = 1;
-const PHOTO_REQUIRED_FIELD = "student.personalInfo.twoByTwoPhotoDataUrl";
-const PHOTO_REQUIRED_MESSAGE =
-  "Upload your required 2x2 profile photo before moving to the next step.";
-
 export default function IIRForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -107,8 +102,6 @@ export default function IIRForm() {
   const [sectionsWithErrors, setSectionsWithErrors] = useState<number[]>([]);
   const [showDraftPrompt, setShowDraftPrompt] = useState(false);
   const [draftData, setDraftData] = useState<IIRFormType | null>(null);
-  const [showPhotoValidationWarning, setShowPhotoValidationWarning] =
-    useState(false);
   const { triggerToast } = useToast();
 
   // Modal error state
@@ -117,12 +110,6 @@ export default function IIRForm() {
   const [totalErrors, setTotalErrors] = useState(0);
 
   const [lastChangeTimestamp, setLastChangeTimestamp] = useState(0);
-
-  const hasRequiredPhoto = Boolean(
-    localFormData?.student?.personalInfo?.twoByTwoPhotoDataUrl,
-  );
-  const isOnPhotoRequiredStep = currentSection === PHOTO_REQUIRED_SECTION;
-  const isPhotoStepBlocked = isOnPhotoRequiredStep && !hasRequiredPhoto;
 
   const scrollToTop = () => {
     const container = document.querySelector("main")?.parentElement;
@@ -138,9 +125,6 @@ export default function IIRForm() {
     setLocalFormData((prev: IIRFormType | null) =>
       updateNestedField(prev, path, value),
     );
-    if (fieldPath === PHOTO_REQUIRED_FIELD && value) {
-      setShowPhotoValidationWarning(false);
-    }
     setLastChangeTimestamp(Date.now());
   }, []);
 
@@ -296,29 +280,7 @@ export default function IIRForm() {
     );
   }
 
-  const handleBlockedPhotoStep = () => {
-    setShowPhotoValidationWarning(true);
-    markFieldTouched(PHOTO_REQUIRED_FIELD);
-    personalSectionRef.current?.validate?.(PHOTO_REQUIRED_SECTION);
-    scrollToTop();
-  };
-
-  const handleSectionNavigation = (targetSection: number) => {
-    if (targetSection > currentSection && isPhotoStepBlocked) {
-      handleBlockedPhotoStep();
-      return;
-    }
-
-    setCurrentSection(targetSection);
-    setSectionsWithErrors([]);
-  };
-
   const handleNextSection = async () => {
-    if (isPhotoStepBlocked) {
-      handleBlockedPhotoStep();
-      return;
-    }
-
     // Validate current section using its ref
     const sectionRefs: Record<number, any> = {
       1: personalSectionRef,
@@ -869,7 +831,10 @@ export default function IIRForm() {
                 currentSection={currentSection}
                 sectionsWithErrors={sectionsWithErrors}
                 visitedSections={visitedSections}
-                onNavigate={handleSectionNavigation}
+                onNavigate={(id: number) => {
+                  setCurrentSection(id);
+                  setSectionsWithErrors([]);
+                }}
                 calculateCompletion={(sectionIndex: number) =>
                   calculateSectionCompletion(
                     sectionIndex,
@@ -891,7 +856,10 @@ export default function IIRForm() {
                     currentSection={currentSection}
                     sectionsWithErrors={sectionsWithErrors}
                     visitedSections={visitedSections}
-                    onNavigate={handleSectionNavigation}
+                    onNavigate={(id: number) => {
+                      setCurrentSection(id);
+                      setSectionsWithErrors([]);
+                    }}
                     calculateCompletion={(sectionIndex: number) =>
                       calculateSectionCompletion(
                         sectionIndex,
@@ -956,12 +924,6 @@ export default function IIRForm() {
                     isSubmitting={isSubmitting}
                     isEditMode={isEditMode}
                     onReset={() => setShowResetConfirm(true)}
-                    isNextBlocked={isPhotoStepBlocked}
-                    nextBlockedMessage={
-                      showPhotoValidationWarning || isPhotoStepBlocked
-                        ? PHOTO_REQUIRED_MESSAGE
-                        : undefined
-                    }
                     onPrevious={handlePreviousSection}
                     onNext={handleNextSection}
                     onSubmit={handleSubmit}

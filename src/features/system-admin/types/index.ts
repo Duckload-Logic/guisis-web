@@ -38,7 +38,6 @@ export interface UserAccount {
   lastName: string;
   suffixName?: string;
   email: string;
-  profilePicture?: string | null;
   roles: UserRole[];
   isActive: boolean;
   createdAt: string;
@@ -146,7 +145,7 @@ export interface RoleDistribution {
 
 export interface WhitelistEntry {
   email: string;
-  profilePicture?: string | null;
   roles: UserRole[];
   createdAt: string;
 }
+
