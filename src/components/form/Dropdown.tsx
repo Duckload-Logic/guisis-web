@@ -32,6 +32,7 @@ export default function Dropdown({
   lockedReason = "Locked",
   formStyle = false,
   labelKey,
+  buttonClassName,
 }: {
   id?: string;
   label?: string;
@@ -49,6 +50,7 @@ export default function Dropdown({
   lockedReason?: string;
   formStyle?: boolean;
   labelKey?: string;
+  buttonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const safeOptions = options || [];
@@ -114,6 +116,7 @@ export default function Dropdown({
                       : "border-destructive/20 bg-muted/20 hover:border-destructive/40 focus:border-destructive/50 focus:ring-2 focus:ring-destructive/5"
                     : "border-glass-border/40 hover:border-glass-border/60 dark:focus:bg-glass-bg/40 bg-muted/20 shadow-sm focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
                 error && "border-destructive/50",
+                buttonClassName,
               )}
             >
               <span

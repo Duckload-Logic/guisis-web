@@ -30,7 +30,12 @@ interface StudentGridProps {
 }
 
 type StudentSortOrder = "asc" | "desc";
-type StudentSortKey = "studentName" | "studentNumber" | "course" | "email";
+type StudentSortKey =
+  | "studentName"
+  | "studentNumber"
+  | "course"
+  | "yearLevel"
+  | "email";
 
 
 function getStudentName(student: IIRProfileView) {
@@ -88,6 +93,8 @@ export default function StudentGrid({
 }: StudentGridProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
+  const [selectedCourseCode, setSelectedCourseCode] = useState<string>("all");
+  const [selectedYearLevel, setSelectedYearLevel] = useState<string>("all");
   const [selectedSort, setSelectedSort] =
     useState<StudentSortKey>("studentName");
   const [selectedOrder, setSelectedOrder] =
@@ -95,30 +102,25 @@ export default function StudentGrid({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isSortingByStudentName = selectedSort === "studentName";
-  const nextStudentSortOrder: StudentSortOrder =
-    isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
-  const SortArrow = nextStudentSortOrder === "asc" ? ArrowUp : ArrowDown;
+  const isSortingByStudentNumber = selectedSort === "studentNumber";
+  const isSortingByEmail = selectedSort === "email";
+  const isSortingByCourse = selectedSort === "course";
+  const isSortingByYear = selectedSort === "yearLevel";
+
+  const nextSortOrder: StudentSortOrder =
+    selectedOrder === "asc" ? "desc" : "asc";
+  const CurrentSortArrow = selectedOrder === "asc" ? ArrowUp : ArrowDown;
 
   const statusOptions = useMemo(() => {
-    const statusMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      const id = String(student.status?.id || "unknown");
-      const name = student.status?.name || "Unknown";
-      const existing = statusMap.get(id);
-
-      statusMap.set(id, {
-        id,
-        name,
-        count: existing ? existing.count + 1 : 1,
-      });
-    });
+    const activeCount = students.filter((student) =>
+      String(student.status?.name || "").toLowerCase().includes("active"),
+    ).length;
+    const inactiveCount = students.length - activeCount;
 
     return [
       { id: "all", name: "All Statuses", count: students.length },
-      ...Array.from(statusMap.values()).sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
+      { id: "active", name: "Active", count: activeCount },
+      { id: "not-active", name: "Not Active", count: inactiveCount },
     ].map((status) => ({
       ...status,
       displayName:
@@ -128,11 +130,39 @@ export default function StudentGrid({
     }));
   }, [students]);
 
+  const courseOptions = useMemo(() => {
+    const courseMap = new Map<string, string>();
+
+    students.forEach((student) => {
+      const code = student.course?.code;
+      if (code) {
+        courseMap.set(code, code);
+      }
+    });
+
+    return [
+      { id: "all", name: "All Courses" },
+      ...Array.from(courseMap.keys()).sort().map((code) => ({
+        id: code,
+        name: code,
+      })),
+    ];
+  }, [students]);
+
+  const yearOptions = useMemo(() => [
+    { id: "all", name: "All Year Levels" },
+    ...yearLevels.map((level) => ({
+      id: String(level.id),
+      name: level.name,
+    })),
+  ], [yearLevels]);
+
   const sortOptions = useMemo(
     () => [
       { id: "studentName", name: "Student Name" },
       { id: "studentNumber", name: "Student Number" },
       { id: "course", name: "Course" },
+      { id: "yearLevel", name: "Year Level" },
       { id: "email", name: "Email Address" },
     ],
     [],
@@ -150,11 +180,24 @@ export default function StudentGrid({
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return students.filter((student) => {
+      const statusName = String(student.status?.name || "").toLowerCase();
       const matchesStatus =
         selectedStatusId === "all" ||
-        String(student.status?.id || "unknown") === selectedStatusId;
+        (selectedStatusId === "active" && statusName.includes("active")) ||
+        (selectedStatusId === "not-active" && !statusName.includes("active"));
 
-      if (!matchesStatus) return false;
+      const matchesCourse =
+        selectedCourseCode === "all" ||
+        String(student.course?.code || "") === selectedCourseCode;
+
+      const matchesYear =
+        selectedYearLevel === "all" ||
+        String(student.yearLevel) === selectedYearLevel;
+
+      if (!matchesStatus || !matchesCourse || !matchesYear) {
+        return false;
+      }
+
       if (!normalizedSearch) return true;
 
       return [
@@ -167,20 +210,23 @@ export default function StudentGrid({
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(normalizedSearch));
     });
-  }, [searchTerm, selectedStatusId, students]);
+  }, [searchTerm, selectedStatusId, selectedCourseCode, selectedYearLevel, students]);
 
   const sortedVisibleStudents = useMemo(() => {
     return [...filteredStudents].sort((a, b) => {
       const getSortValue = (student: IIRProfileView) => {
         if (selectedSort === "studentNumber") return student.studentNumber || "";
         if (selectedSort === "course") return student.course?.code || "";
+        if (selectedSort === "yearLevel") return String(student.yearLevel || "");
         if (selectedSort === "email") return student.email || "";
         return getStudentName(student);
       };
 
       const left = getSortValue(a).toLowerCase();
       const right = getSortValue(b).toLowerCase();
-      const result = left.localeCompare(right);
+      const result = left.localeCompare(right, undefined, {
+        numeric: selectedSort === "yearLevel",
+      });
       return selectedOrder === "asc" ? result : -result;
     });
   }, [filteredStudents, selectedOrder, selectedSort]);
@@ -212,7 +258,9 @@ export default function StudentGrid({
 
   const handleStudentNameSort = () => {
     setSelectedSort("studentName");
-    setSelectedOrder(nextStudentSortOrder);
+    setSelectedOrder(
+      selectedSort === "studentName" ? nextSortOrder : "asc",
+    );
   };
 
   const handleSearchChange = (value: string) => {
@@ -228,9 +276,25 @@ export default function StudentGrid({
     setSelectedStatusId(statusId);
   };
 
+  const handleCourseFilterChange = (courseCode: string) => {
+    setSelectedCourseCode(courseCode);
+  };
+
+  const handleYearFilterChange = (yearId: string) => {
+    setSelectedYearLevel(yearId);
+  };
+
   const handleSortChange = (value: unknown) => {
     const nextValue = String(value ?? "").trim();
-    if (!["studentName", "studentNumber", "course", "email"].includes(nextValue)) {
+    if (
+      ![
+        "studentName",
+        "studentNumber",
+        "course",
+        "yearLevel",
+        "email",
+      ].includes(nextValue)
+    ) {
       return;
     }
     setSelectedSort(nextValue as StudentSortKey);
@@ -252,21 +316,24 @@ export default function StudentGrid({
   const columns = [
     {
       header: (
-        <button
-          type="button"
-          onClick={handleStudentNameSort}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
-            "text-[11px] font-bold uppercase tracking-[0.14em]",
-            "transition hover:bg-muted/70 hover:text-foreground",
-            isSortingByStudentName ? "text-primary" : "text-muted-foreground",
-          )}
-          title={`Sort student name ${nextStudentSortOrder === "asc" ? "ascending" : "descending"}`}
-        >
-          Student Name
-          <SortArrow className="h-3.5 w-3.5" />
-        </button>
+        <div className="h-full flex items-center">
+          <button
+            type="button"
+            onClick={handleStudentNameSort}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition hover:bg-muted/70 hover:text-foreground",
+              isSortingByStudentName ? "text-primary" : "text-muted-foreground",
+            )}
+            title={`Sort student name ${nextSortOrder === "asc" ? "ascending" : "descending"}`}
+          >
+            Student Name
+            <CurrentSortArrow className="h-3.5 w-3.5 shrink-0" />
+          </button>
+        </div>
       ),
+      className: "w-[20%] min-w-[200px] pl-6 pr-4 py-3",
       render: (student: IIRProfileView) => (
         <div className="flex items-center gap-3">
           <div
@@ -291,15 +358,59 @@ export default function StudentGrid({
       ),
     },
     {
-      header: "Student Number",
+      header: (
+        <div className="h-full flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedSort("studentNumber");
+              setSelectedOrder(
+                selectedSort === "studentNumber" ? nextSortOrder : "asc",
+              );
+            }}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition hover:bg-muted/70 hover:text-foreground",
+              isSortingByStudentNumber ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            Student Number
+            <CurrentSortArrow className="h-3.5 w-3.5 shrink-0" />
+          </button>
+        </div>
+      ),
+      className: "w-[16%] min-w-[170px] px-4 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-xs font-bold uppercase text-primary/60">
+        <span className="whitespace-nowrap text-xs font-bold uppercase text-primary/60">
           {student.studentNumber}
         </span>
       ),
     },
     {
-      header: "Email Address",
+      header: (
+        <div className="h-full flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedSort("email");
+              setSelectedOrder(
+                selectedSort === "email" ? nextSortOrder : "asc",
+              );
+            }}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition hover:bg-muted/70 hover:text-foreground",
+              isSortingByEmail ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            Email Address
+            <CurrentSortArrow className="h-3.5 w-3.5 shrink-0" />
+          </button>
+        </div>
+      ),
+      className: "w-[18%] min-w-[200px] px-4 py-3",
       render: (student: IIRProfileView) => (
         <span className="text-sm font-medium text-foreground/80">
           {student.email}
@@ -307,26 +418,63 @@ export default function StudentGrid({
       ),
     },
     {
-      header: "Course & Year",
+      header: (
+        <div className="h-full flex items-center">
+          <Dropdown
+            label=""
+            options={courseOptions}
+            value={selectedCourseCode}
+            onChange={handleCourseFilterChange}
+            buttonClassName="border-0 bg-transparent shadow-none hover:bg-slate-100 focus:border-0 focus:ring-0 text-[11px] font-bold uppercase tracking-[0.14em] px-0 whitespace-nowrap"
+          />
+        </div>
+      ),
+      className: "w-[14%] min-w-[140px] px-4 py-3",
+      render: (student: IIRProfileView) => (
+        <span className="text-sm font-semibold text-primary/80">
+          {student.course.code}
+        </span>
+      ),
+    },
+    {
+      header: (
+        <div className="h-full flex items-center">
+          <Dropdown
+            label=""
+            options={yearOptions}
+            value={selectedYearLevel}
+            onChange={handleYearFilterChange}
+            buttonClassName="border-0 bg-transparent shadow-none hover:bg-slate-100 focus:border-0 focus:ring-0 text-[11px] font-bold uppercase tracking-[0.14em] px-0 whitespace-nowrap"
+          />
+        </div>
+      ),
+      className: "w-[16%] min-w-[160px] px-4 py-3",
       render: (student: IIRProfileView) => {
         const yrName =
           yearLevels
             .find((level) => level.id === student.yearLevel)
             ?.name.split(" ")[0] || "N/A";
+
         return (
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-primary/80">
-              {student.course.code}
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              {yrName} Year
-            </span>
-          </div>
+          <span className="text-sm font-semibold text-foreground/80">
+            {yrName} Year
+          </span>
         );
       },
     },
     {
-      header: "Status",
+      header: (
+        <div className="h-full flex items-center">
+          <Dropdown
+            label=""
+            options={statusOptions}
+            value={selectedStatusId}
+            onChange={handleStatusFilterChange}
+            buttonClassName="border-0 bg-transparent shadow-none hover:bg-slate-100 focus:border-0 focus:ring-0 text-[11px] font-bold uppercase tracking-[0.14em] px-0 whitespace-nowrap"
+          />
+        </div>
+      ),
+      className: "w-[16%] min-w-[150px] pl-4 pr-6 py-3",
       render: (student: IIRProfileView) => (
         <span
           className={cn(
@@ -337,23 +485,6 @@ export default function StudentGrid({
         >
           {student.status?.name || "Unknown"}
         </span>
-      ),
-    },
-    {
-      header: "Actions",
-      render: (student: IIRProfileView) => (
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={(event) => handleViewClick(student, event)}
-            className="h-8 rounded-xl border-primary/20 bg-primary/5 px-3 text-[11px] font-semibold text-primary"
-          >
-            <Eye className="mr-1 h-3.5 w-3.5" />
-            View
-          </Button>
-        </div>
       ),
     },
   ];
@@ -457,69 +588,29 @@ export default function StudentGrid({
     );
   }
 
-  return (
+return (
     <div className="space-y-6">
-      <div className="space-y-3 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-medium text-muted-foreground">
-            Click Student Name to sort directly. Use the search, status, sort by, and order controls to refine the list.
+      <div className="flex flex-col gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Student Records List</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Click Student Name to sort directly. Use the search control to refine the list.
           </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl border border-glass-border bg-background/70 p-1 shadow-md">
-              <button
-                type="button"
-                onClick={() => onViewModeChange("list")}
-                className={cn(
-                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
-                  "text-[11px] font-semibold transition-all",
-                  viewMode === "list"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-                aria-pressed={viewMode === "list"}
-              >
-                <List className="h-3.5 w-3.5" />
-                List
-              </button>
-              <button
-                type="button"
-                onClick={() => onViewModeChange("tile")}
-                className={cn(
-                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
-                  "text-[11px] font-semibold transition-all",
-                  viewMode === "tile"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-                aria-pressed={viewMode === "tile"}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Cards
-              </button>
-            </div>
-          </div>
         </div>
 
-        <div
-          className={cn(
-            "rounded-xl border border-border/60 bg-background/70 p-3 shadow-md",
-            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
-          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Search
-              </label>
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          
+          <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-end">
+            
+            <div className="w-full shrink-0 md:max-w-[240px] lg:max-w-sm">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Search</label>
               <div
                 className={cn(
-                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-                  "bg-muted/50 px-3 shadow-md transition-all duration-200",
-                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
-                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                  "relative flex h-11 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3",
+                  "transition-all duration-200 focus-within:border-primary focus-within:bg-white focus-within:ring-1 focus-within:ring-primary",
                 )}
               >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Search className="h-4 w-4 shrink-0 text-slate-400" />
                 <Input
                   ref={searchInputRef}
                   type="text"
@@ -528,7 +619,7 @@ export default function StudentGrid({
                   placeholder="Search by name, email, or student number..."
                   spellCheck={false}
                   autoComplete="off"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-1 py-0 text-sm font-medium text-slate-900 shadow-none outline-none placeholder:text-slate-400 focus-visible:ring-0"
                 />
                 {searchTerm && (
                   <Button
@@ -540,10 +631,7 @@ export default function StudentGrid({
                       event.stopPropagation();
                     }}
                     onClick={handleClearSearch}
-                    className={cn(
-                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-                      "text-muted-foreground hover:bg-background hover:text-foreground",
-                    )}
+                    className="h-7 w-7 shrink-0 rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700"
                     aria-label="Clear search"
                   >
                     <X className="h-4 w-4" />
@@ -552,33 +640,75 @@ export default function StudentGrid({
               </div>
             </div>
 
-            <Dropdown
-              label="Status"
-              options={statusOptions}
-              value={selectedStatusId}
-              onChange={(value) => handleStatusFilterChange(String(value))}
-              labelKey="displayName"
-              enabled={!isStudentsLoading}
-              formStyle={false}
-            />
+            {viewMode === "tile" && (
+              <>
+                <div className="w-full shrink-0 md:w-36 lg:w-40">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Status</label>
+                  <Dropdown
+                    label=""
+                    options={statusOptions}
+                    value={selectedStatusId}
+                    onChange={handleStatusFilterChange}
+                    buttonClassName="h-11 w-full justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 shadow-none hover:bg-slate-100 focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
 
-            <Dropdown
-              label="Sort By"
-              options={sortOptions}
-              value={selectedSort}
-              onChange={handleSortChange}
-              enabled={!isStudentsLoading}
-              formStyle={false}
-            />
+                <div className="w-full shrink-0 md:w-36 lg:w-40">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Sort By</label>
+                  <Dropdown
+                    label=""
+                    options={sortOptions}
+                    value={selectedSort}
+                    onChange={handleSortChange}
+                    buttonClassName="h-11 w-full justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 shadow-none hover:bg-slate-100 focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
 
-            <Dropdown
-              label="Order"
-              options={orderOptions}
-              value={selectedOrder}
-              onChange={handleOrderChange}
-              enabled={!isStudentsLoading}
-              formStyle={false}
-            />
+                <div className="w-full shrink-0 md:w-36 lg:w-40">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Order</label>
+                  <Dropdown
+                    label=""
+                    options={orderOptions}
+                    value={selectedOrder}
+                    onChange={handleOrderChange}
+                    buttonClassName="h-11 w-full justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-900 shadow-none hover:bg-slate-100 focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="flex h-11 shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => onViewModeChange("list")}
+              className={cn(
+                "inline-flex h-full items-center justify-center gap-2 rounded-md px-4",
+                "text-sm font-semibold transition-colors",
+                viewMode === "list"
+                  ? "bg-[#800000] text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+              )}
+              aria-pressed={viewMode === "list"}
+            >
+              <List className="h-4 w-4 shrink-0" />
+              <span>List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onViewModeChange("tile")}
+              className={cn(
+                "inline-flex h-full items-center justify-center gap-2 rounded-md px-4",
+                "text-sm font-semibold transition-colors",
+                viewMode === "tile"
+                  ? "bg-[#800000] text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+              )}
+              aria-pressed={viewMode === "tile"}
+            >
+              <LayoutGrid className="h-4 w-4 shrink-0" />
+              <span>Cards</span>
+            </button>
           </div>
         </div>
       </div>
@@ -783,6 +913,7 @@ export default function StudentGrid({
             columns={columns}
             renderMobileItem={renderMobileItem}
             isLoading={false}
+            tableClassName="w-full table-fixed"
             onRowClick={(student) => onViewClick(student)}
           />
         </div>
