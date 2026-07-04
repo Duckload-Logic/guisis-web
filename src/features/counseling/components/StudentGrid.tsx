@@ -41,12 +41,21 @@ function getStudentName(student: IIRProfileView) {
 
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
-  return getIIRTwoByTwoPhoto({
-    iirId: student.iirId,
-    userId: student.userId,
-    studentNumber: student.studentNumber || null,
-    email: student.email || null,
-  });
+  return getIIRTwoByTwoPhoto(
+    {
+      iirId: student.iirId,
+      userId: student.userId,
+      studentNumber: student.studentNumber || null,
+      email: student.email || null,
+    },
+    {
+      student: {
+        personalInfo: {
+          twoByTwoPhotoDataUrl: student.profilePicture || null,
+        },
+      },
+    } as any,
+  );
 }
 
 function renderStudentAvatar(
@@ -781,3 +790,4 @@ export default function StudentGrid({
     </div>
   );
 }
+

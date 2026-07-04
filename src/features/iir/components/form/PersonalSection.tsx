@@ -41,6 +41,18 @@ import {
 } from "@/features/iir/utils/twoByTwoPhoto";
 
 import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
+import { UploadProfilePicture } from "@/features/users/services/service";
+import { useAuth } from "@/context";
+
+
+const dataUrlToFile = async (dataUrl: string, fileName: string) => {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+
+  return new File([blob], fileName, {
+    type: blob.type || "image/jpeg",
+  });
+};
 
 interface FormErrors {
   [key: string]: string;
@@ -84,7 +96,9 @@ export const PersonalSection = forwardRef<
   const { data: religions = [] } = useReligions();
   const { data: studentRelationshipTypes = [] } = useStudentRelationshipTypes();
   const { data: regions = [] } = useGetRegions();
+  const { refresh } = useAuth();
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Stable indices for address array
   const PROVINCIAL_IDX = 0;
@@ -510,19 +524,34 @@ export const PersonalSection = forwardRef<
     const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
 
     try {
+      setIsUploadingPhoto(true);
+
       const dataUrl = await createTwoByTwoPhotoDataUrl(file);
+      const profilePictureFile = await dataUrlToFile(
+        dataUrl,
+        `iir-2x2-profile-${Date.now()}.jpg`,
+      );
+
+      await UploadProfilePicture(profilePictureFile);
+
       handleInputChange(fieldPath, dataUrl);
       saveIIRTwoByTwoPhoto(dataUrl, {
         studentNumber: studentInfo?.personalInfo?.studentNumber || null,
         email: studentInfo?.basicInfo?.email || null,
       });
       clearError(fieldPath);
+      await refresh();
     } catch (error: any) {
+      console.error("Failed to upload 2x2 profile photo:", error);
       setErrors((prev: FormErrors) => ({
         ...prev,
         [fieldPath]:
-          error?.message || "Unable to process the selected 2x2 photo.",
+          error?.response?.data?.message ||
+          error?.message ||
+          "Unable to upload and sync the selected 2x2 photo.",
       }));
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -587,6 +616,7 @@ export const PersonalSection = forwardRef<
                       "inline-flex h-12 min-w-[10.5rem] shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
                       "rounded-xl border border-primary/30 bg-primary/10 px-5 text-sm font-medium",
                       "text-primary shadow-md transition hover:bg-primary/15",
+                      isUploadingPhoto && "pointer-events-none opacity-60",
                     )}
                   >
                     {twoByTwoPhotoDataUrl ? (
@@ -594,13 +624,14 @@ export const PersonalSection = forwardRef<
                     ) : (
                       <Upload className="h-4 w-4" />
                     )}
-                    {twoByTwoPhotoDataUrl ? "Edit Photo" : "Upload Photo"}
+                    {isUploadingPhoto ? "Uploading..." : twoByTwoPhotoDataUrl ? "Edit Photo" : "Upload Photo"}
                   </label>
                   <input
                     id="iir-two-by-two-photo"
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     className="sr-only"
+                    disabled={isUploadingPhoto}
                     onChange={(event) => {
                       void handlePhotoUpload(event.target.files?.[0]);
                       event.currentTarget.value = "";
@@ -610,6 +641,7 @@ export const PersonalSection = forwardRef<
                     <button
                       type="button"
                       onClick={handlePhotoRemove}
+                      disabled={isUploadingPhoto}
                       className={cn(
                         "inline-flex h-12 min-w-[10.5rem] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl",
                         "border border-destructive/30 px-5 text-sm font-medium text-destructive",
