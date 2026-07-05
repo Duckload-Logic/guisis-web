@@ -12,7 +12,6 @@ import {
 import { Pagination, Table, Column } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
@@ -145,15 +144,16 @@ export default function AppointmentList({
   totalPages,
   className,
 }: AppointmentListProps) {
-  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const visibleAppointments = useMemo(
-    () => appointments.filter((appointment) => !hiddenAppointmentIds.has(String(appointment.id))),
-    [appointments, hiddenAppointmentIds],
-  );
 
-  const hiddenCount = appointments.length - visibleAppointments.length;
+  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(() => new Set());
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+
+  const sortKeyName = useMemo(() => sortOptions?.find(o => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
+  const sortKeyRequested = useMemo(() => sortOptions?.find(o => /created|request/i.test(o.id) || /created|request/i.test(o.name))?.id || "createdAt", [sortOptions]);
+  const sortKeyAppointment = useMemo(() => sortOptions?.find(o => /nearest|when|appoint/i.test(o.id) || /nearest|when|appoint/i.test(o.name))?.id || "nearestAppointment", [sortOptions]);
+
   const statMap = useMemo(() => {
     const map: Record<number, StatusCount> = {};
     statusCounts.forEach((status) => {
@@ -172,67 +172,68 @@ export default function AppointmentList({
     }));
   }, [statuses, statMap]);
 
-  const isSortingByStudentName = selectedSort === "studentName";
-  const nextNameSortOrder: SortOrder =
-    isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
-  const SortArrow = nextNameSortOrder === "asc" ? ArrowUp : ArrowDown;
+  const categoryOptions = useMemo(() => {
+    const cats = new Set<string>();
+    appointments.forEach((a) => {
+      if (a.appointmentCategory?.name) cats.add(a.appointmentCategory.name);
+    });
+    return [
+      { id: "all", displayName: "All Categories" },
+      ...Array.from(cats).sort().map((c) => ({ id: c, displayName: c })),
+    ];
+  }, [appointments]);
+
+  const urgencyOptions = useMemo(() => {
+    const urgs = new Set<string>();
+    appointments.forEach((a) => {
+      const u = getUrgencyValue(a)?.label;
+      if (u) urgs.add(u);
+    });
+    return [
+      { id: "all", displayName: "All Urgencies" },
+      ...Array.from(urgs).sort().map((u) => ({ id: u, displayName: u })),
+    ];
+  }, [appointments]);
+
+  const visibleAppointments = useMemo(() => {
+    let filtered = appointments.filter((appointment) => {
+      if (hiddenAppointmentIds.has(String(appointment.id))) return false;
+
+      const matchesCat = selectedCategory === "all" || appointment.appointmentCategory?.name === selectedCategory;
+      const matchesUrg = selectedUrgency === "all" || getUrgencyValue(appointment)?.label === selectedUrgency;
+
+      return matchesCat && matchesUrg;
+    });
+
+    filtered.sort((a, b) => {
+      if (selectedSort === sortKeyName) {
+        const left = getAppointmentStudentName(a).toLowerCase();
+        const right = getAppointmentStudentName(b).toLowerCase();
+        const res = left.localeCompare(right);
+        return selectedOrder === "asc" ? res : -res;
+      } else if (selectedSort === sortKeyRequested) {
+        const left = new Date(a.createdAt || 0).getTime();
+        const right = new Date(b.createdAt || 0).getTime();
+        return selectedOrder === "asc" ? left - right : right - left;
+      } else if (selectedSort === sortKeyAppointment) {
+        const left = new Date(a.whenDate || 0).getTime();
+        const right = new Date(b.whenDate || 0).getTime();
+        return selectedOrder === "asc" ? left - right : right - left;
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [appointments, hiddenAppointmentIds, selectedCategory, selectedUrgency, selectedSort, selectedOrder, sortKeyName, sortKeyRequested, sortKeyAppointment]);
+
+  const hiddenCount = appointments.length - visibleAppointments.length;
 
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
   };
 
-  const handleStatusChange = (status: AppointmentStatus) => {
-    onStatusChange(status);
-    onPageChange(1);
-  };
-
-  const handleRequiredSortChange = (value: unknown) => {
-    const nextValue = String(value ?? "").trim();
-
-    if (!nextValue) {
-      return;
-    }
-
-    const isValidSortOption = sortOptions.some(
-      (option) => String(option.id) === nextValue,
-    );
-
-    if (!isValidSortOption) {
-      return;
-    }
-
-    onSortChange?.(nextValue);
-    onPageChange(1);
-  };
-
-  const handleRequiredOrderChange = (value: unknown) => {
-    if (value !== "asc" && value !== "desc") {
-      return;
-    }
-
-    const isValidOrderOption = orderOptions.some(
-      (option) => option.id === value,
-    );
-
-    if (!isValidOrderOption) {
-      return;
-    }
-
-    onOrderChange?.(value);
-    onPageChange(1);
-  };
-
-  const handleNameHeaderSort = () => {
-    onSortChange?.("studentName");
-    onOrderChange?.(nextNameSortOrder);
-    onPageChange(1);
-  };
-
-  const hideAppointment = (
-    appointment: Appointment,
-    event?: MouseEvent<HTMLButtonElement>,
-  ) => {
+  const hideAppointment = (appointment: Appointment, event?: MouseEvent<HTMLButtonElement>) => {
     event?.stopPropagation();
     setHiddenAppointmentIds((previous) => {
       const next = new Set(previous);
@@ -245,36 +246,60 @@ export default function AppointmentList({
     setHiddenAppointmentIds(new Set());
   };
 
-  const handleViewClick = (
-    appointment: Appointment,
-    event?: MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleViewClick = (appointment: Appointment, event?: MouseEvent<HTMLButtonElement>) => {
     event?.stopPropagation();
     onViewClick(appointment);
   };
 
+const renderSortableHeader = (label: string, sortKey: string) => {
+  const isActive = selectedSort === sortKey;
+  const Icon =
+    isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        onSortChange?.(sortKey);
+        onOrderChange?.(
+          isActive && selectedOrder === "asc" ? "desc" : "asc"
+        );
+        onPageChange(1);
+      }}
+      className={cn(
+        "inline-flex items-center gap-2",
+        "text-left",
+        "text-[11px] font-bold uppercase tracking-[0.14em]",
+        "transition-colors",
+        isActive
+          ? "text-[#800000]"
+          : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      <span>{label}</span>
+
+      <Icon
+        className={cn(
+          "h-3.5 w-3.5 flex-shrink-0",
+          isActive ? "opacity-100" : "opacity-40"
+        )}
+        strokeWidth={isActive ? 2.5 : 2}
+      />
+    </button>
+  );
+};
+
   const columns = useMemo<Column<Appointment>[]>(
     () => [
-      {
+          {
         header: (
-          <button
-            type="button"
-            onClick={handleNameHeaderSort}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
-              "text-[11px] font-bold uppercase tracking-[0.14em]",
-              "transition hover:bg-muted/70 hover:text-foreground",
-              isSortingByStudentName ? "text-primary" : "text-muted-foreground",
-            )}
-            title={`Sort student name ${nextNameSortOrder === "asc" ? "ascending" : "descending"}`}
-          >
-            Student Name
-            <SortArrow className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center px-3 py-3">
+             {renderSortableHeader("Student Name", sortKeyName)}
+          </div>
         ),
-        className: "min-w-[220px]",
+        className: "min-w-[220px] p-0", // p-0 is critical here
         render: (apt) => (
-          <div className="space-y-0.5">
+          <div className="px-3 py-3 space-y-0.5">
             <p className="font-semibold text-foreground">
               {getAppointmentStudentName(apt) || "Unnamed Student"}
             </p>
@@ -285,24 +310,30 @@ export default function AppointmentList({
         ),
       },
       {
-        header: "Date Requested",
-        className: "min-w-[155px]",
+        header: (
+          <div className="flex items-center px-3 py-3">
+            {renderSortableHeader("Date Requested", sortKeyRequested)}
+          </div>
+        ),
+        className: "min-w-[155px] p-0",
         render: (apt) => (
-          <div className="space-y-0.5">
+          <div className="px-3 py-3 space-y-0.5">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
               {formatCompactDate(apt.createdAt)}
             </p>
-            <p className="text-[11px] text-muted-foreground">
-              Request submitted
-            </p>
+            <p className="text-[11px] text-muted-foreground">Request submitted</p>
           </div>
         ),
       },
       {
-        header: "Appointment Date",
-        className: "min-w-[165px]",
+        header: (
+          <div className="flex items-center px-3 py-3">
+            {renderSortableHeader("Appointment Date", sortKeyAppointment)}
+          </div>
+        ),
+        className: "min-w-[165px] p-0",
         render: (apt) => (
-          <div className="space-y-0.5">
+          <div className="px-3 py-3 space-y-0.5">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
               {formatCompactDate(apt.whenDate)}
             </p>
@@ -313,7 +344,20 @@ export default function AppointmentList({
         ),
       },
       {
-        header: "Category",
+        header: (
+          <Dropdown
+            label=""
+            options={categoryOptions}
+            value={selectedCategory}
+            onChange={(val) => setSelectedCategory(val ? String(val) : "all")} 
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+              selectedCategory === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+            )}
+          />
+        ),
         className: "min-w-[160px]",
         render: (apt) => (
           <span
@@ -328,7 +372,33 @@ export default function AppointmentList({
         ),
       },
       {
-        header: "Status",
+        header: (
+          <Dropdown
+            label=""
+            options={dropdownOptions}
+            value={selectedStatus?.id}
+            onChange={(val) => {
+              if (!val || String(val) === "all" || String(val) === "0") {
+                // Fixed double-click bug for status prop
+                const allStatus = statuses.find((s) => s.id === 0) || { id: 0, name: "All Statuses" } as AppointmentStatus;
+                onStatusChange(allStatus);
+                onPageChange(1);
+                return;
+              }
+              const status = statuses.find((s) => String(s.id) === String(val));
+              if (status) {
+                onStatusChange(status);
+                onPageChange(1);
+              }
+            }}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+              selectedStatus?.id === 0 ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+            )}
+          />
+        ),
         className: "min-w-[130px]",
         render: (apt) => (
           <span
@@ -343,40 +413,42 @@ export default function AppointmentList({
         ),
       },
       {
-        header: "Urgency",
+        header: (
+          <Dropdown
+            label=""
+            options={urgencyOptions}
+            value={selectedUrgency}
+            onChange={(val) => setSelectedUrgency(val ? String(val) : "all")} 
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+              selectedUrgency === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+            )}
+          />
+        ),
         className: "min-w-[110px]",
         render: (apt) => <UrgencyCapsule appointment={apt} />,
       },
-      {
-        header: "Actions",
-        className: "min-w-[160px]",
-        render: (apt) => (
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(event) => handleViewClick(apt, event)}
-              className="h-8 rounded-xl border-primary/20 bg-primary/5 px-3 text-[11px] font-semibold text-primary"
-            >
-              <Eye className="mr-1 h-3.5 w-3.5" />
-              View
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={(event) => hideAppointment(apt, event)}
-              className="h-8 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
-            >
-              <EyeOff className="mr-1 h-3.5 w-3.5" />
-              Hide
-            </Button>
-          </div>
-        ),
-      },
     ],
-    [isSortingByStudentName, nextNameSortOrder, onViewClick],
+    [
+      selectedSort,
+      selectedOrder,
+      selectedStatus,
+      selectedCategory,
+      selectedUrgency,
+      dropdownOptions,
+      categoryOptions,
+      urgencyOptions,
+      statuses,
+      sortKeyName,
+      sortKeyRequested,
+      sortKeyAppointment,
+      onSortChange,
+      onOrderChange,
+      onPageChange,
+      onStatusChange,
+    ],
   );
 
   const renderMobileItem = (apt: Appointment) => (
@@ -480,6 +552,7 @@ export default function AppointmentList({
       >
         <CalendarX className="h-9 w-9 text-muted-foreground/50" />
       </div>
+      
       <div className="space-y-2">
         <h3 className="text-lg font-semibold tracking-tight text-foreground/80">
           No appointments found
@@ -487,8 +560,27 @@ export default function AppointmentList({
         <p className="text-sm leading-relaxed text-muted-foreground">
           {hiddenCount > 0
             ? "All rows on this page are hidden. Restore hidden rows to show them again."
-            : "No active records are available for this page."}
+            : "No active records match the current filters."}
         </p>
+
+        {(selectedCategory !== "all" || selectedStatus?.id !== 0 || selectedUrgency !== "all") && (
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSelectedCategory("all");
+                setSelectedUrgency("all");
+                const allStatus = statuses.find((s) => s.id === 0) || { id: 0, name: "All Statuses" } as AppointmentStatus;
+                onStatusChange(allStatus);
+                onPageChange(1);
+              }}
+              className="rounded-xl shadow-md"
+            >
+              Show all records
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -502,7 +594,7 @@ export default function AppointmentList({
               key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
-              {column.header}
+              {typeof column.header === 'string' ? column.header : <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />}
             </th>
           ))}
         </tr>
@@ -514,10 +606,7 @@ export default function AppointmentList({
             className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
             {columns.map((_, columnIndex) => (
-              <td
-                key={columnIndex}
-                className="px-4 py-3"
-              >
+              <td key={columnIndex} className="px-4 py-3">
                 <Skeleton className="h-4 w-24 rounded" />
               </td>
             ))}
@@ -553,9 +642,7 @@ export default function AppointmentList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-
       <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
-
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -595,8 +682,7 @@ export default function AppointmentList({
         </div>
 
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-
-          <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex flex-1 flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
             <label
               className={cn(
                 "text-sm font-medium",
@@ -612,53 +698,7 @@ export default function AppointmentList({
               hasHeader={false}
             />
           </div>
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex w-full flex-col gap-1.5 sm:w-[150px]">
-              <Dropdown
-                label="Status"
-                options={dropdownOptions}
-                value={selectedStatus?.id}
-                onChange={(val) => {
-                  const status = statuses.find(
-                    (s) => String(s.id) === String(val),
-                  );
-                  if (status) onStatusChange(status);
-                }}
-                labelKey="displayName"
-                enabled={!isLoading}
-                formStyle={true}
-              />
-            </div>
-
-            {sortOptions.length > 0 && onSortChange && (
-              <div className="flex w-full flex-col gap-1.5 sm:w-[190px]">
-                <Dropdown
-                  label="Sort By"
-                  options={sortOptions}
-                  value={selectedSort}
-                  onChange={handleRequiredSortChange}
-                  enabled={!isLoading}
-                  formStyle={true}
-                />
-              </div>
-            )}
-
-            {orderOptions.length > 0 && onOrderChange && (
-              <div className="flex w-full flex-col gap-1.5 sm:w-[130px]">
-                <Dropdown
-                  label="Order"
-                  options={orderOptions}
-                  value={selectedOrder}
-                  onChange={handleRequiredOrderChange}
-                  enabled={!isLoading}
-                  formStyle={true}
-                />
-              </div>
-            )}
-          </div>
         </div>
-
       </div>
 
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
@@ -681,8 +721,6 @@ export default function AppointmentList({
           />
         </div>
       </div>
-
     </div>
   );
 }
-
