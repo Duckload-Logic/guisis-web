@@ -212,8 +212,25 @@ apiClient.interceptors.response.use(
 export function getErrorMessage(error: any): string {
   if (!error) return "An unexpected error occurred.";
 
-  const maskedMessage = getStagingMaskedMessage(error.response?.status);
+  const status = error.response?.status;
+  const maskedMessage = getStagingMaskedMessage(status);
   if (maskedMessage) return maskedMessage;
+
+  if (status >= 500) {
+    return "We're having trouble loading this page right now. Please try again in a moment.";
+  }
+
+  if (status === 404) {
+    return "We couldn't find the requested information. It may have been moved or is no longer available.";
+  }
+
+  if (status === 403) {
+    return "You don't have permission to view this information.";
+  }
+
+  if (status === 401 && !isAuthRequest(error.config?.url)) {
+    return "Your session has expired. Please sign in again.";
+  }
 
   const responseData = error.response?.data;
   if (responseData && typeof responseData === "object") {
@@ -243,7 +260,19 @@ export function getErrorMessage(error: any): string {
     }
   }
 
-  return (
-    capitalizeFirstLetter(error.message) || "An unexpected error occurred."
-  );
+  const rawMessage = String(error.message || "");
+
+  if (/network error/i.test(rawMessage)) {
+    return "We couldn't connect to the server. Please check your connection and try again.";
+  }
+
+  if (/timeout/i.test(rawMessage)) {
+    return "The request took too long to finish. Please try again.";
+  }
+
+  if (/request failed with status code/i.test(rawMessage)) {
+    return "We couldn't complete the request. Please try again in a moment.";
+  }
+
+  return capitalizeFirstLetter(rawMessage) || "An unexpected error occurred.";
 }
