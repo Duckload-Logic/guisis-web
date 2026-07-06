@@ -9,7 +9,7 @@ import React, {
   useMemo,
 } from "react";
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 1280;
 
 export interface PageMetadata {
   title: string;

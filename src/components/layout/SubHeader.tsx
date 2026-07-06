@@ -27,8 +27,8 @@ export default function SubHeader({
   return (
     <section
       className={cn(
-        "relative mb-6 overflow-hidden rounded-[20px] border",
-        "border-glass-border bg-glass-bg p-5",
+        "relative mb-6 min-w-0 max-w-full overflow-hidden rounded-xl border",
+        "border-glass-border bg-glass-bg p-4 sm:p-5",
         "shadow-md",
         "dark:border-white/10 dark:bg-glass-bg",
         "dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] sm:p-6",
@@ -41,8 +41,8 @@ export default function SubHeader({
 
       <Breadcrumbs />
 
-      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
+      <div className="relative flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0 space-y-3">
           {badgeText && (
             <div
               className={cn(
@@ -57,12 +57,12 @@ export default function SubHeader({
             </div>
           )}
 
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+          <div className="min-w-0 space-y-2">
+            <h1 className="break-words text-2xl font-bold leading-tight text-foreground sm:text-3xl">
               {title}
             </h1>
             {description && (
-              <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
+              <p className="max-w-3xl break-words text-sm text-muted-foreground sm:text-base">
                 {description}
               </p>
             )}
@@ -76,7 +76,7 @@ export default function SubHeader({
         </div>
 
         {(headerActions || headerStats) && (
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
             {headerStats}
             {headerActions}
           </div>
