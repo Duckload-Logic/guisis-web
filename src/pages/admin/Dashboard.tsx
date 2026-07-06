@@ -156,7 +156,7 @@ export default function Dashboard() {
   return (
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-10",
+          "mx-auto flex w-full min-w-0 flex-col space-y-8 pb-10",
           "px-4 sm:px-6 md:px-8",
         )}
       >
@@ -255,12 +255,14 @@ export default function Dashboard() {
       )}
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <DashboardMetrics metrics={metrics} />
+      <div className="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,1fr)] 2xl:grid-cols-2">
+        <div className="min-w-0">
+          <DashboardMetrics metrics={metrics} />
+        </div>
         {/* Monthly Visitors Analytics */}
         <Card
           className={cn(
-            "overflow-hidden shadow-md backdrop-blur-md",
+            "min-w-0 overflow-hidden shadow-md backdrop-blur-md",
             "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
           )}
           style={{ animationDelay: "0.15s", animationFillMode: "both" }}
@@ -433,4 +435,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
