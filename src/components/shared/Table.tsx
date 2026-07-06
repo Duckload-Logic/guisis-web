@@ -43,21 +43,23 @@ export function Table<T>({
   onRowClick,
   isRowClickable,
 }: TableProps<T>) {
+  const hasMobileRenderer = Boolean(renderMobileItem);
+
   if (isLoading) {
     if (variant === "list" && renderListItem) {
       return (
-        <div className="divide-y divide-border/60 dark:divide-white/10">
+        <div className="min-w-0 divide-y divide-border/60 dark:divide-white/10">
           {Array.from({ length: loadingRows }).map((_, idx) => (
             <div
               key={idx}
               className="px-4 py-3 sm:px-5"
             >
-              <div className="flex animate-pulse items-center gap-4">
+              <div className="flex min-w-0 animate-pulse items-center gap-4">
                 <Skeleton className="hidden h-10 w-10 shrink-0 rounded-xl sm:block" />
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <Skeleton className="h-4 w-36 rounded" />
-                    <Skeleton className="h-6 w-20 rounded-full" />
+                  <div className="flex min-w-0 items-center justify-between gap-3">
+                    <Skeleton className="h-4 w-36 max-w-full rounded" />
+                    <Skeleton className="h-6 w-20 shrink-0 rounded-full" />
                   </div>
                   <Skeleton className="h-3 w-52 max-w-full rounded" />
                 </div>
@@ -73,7 +75,8 @@ export function Table<T>({
         {columns.length > 0 && (
           <div
             className={cn(
-              "hidden overflow-x-auto md:block",
+              hasMobileRenderer ? "hidden xl:block" : "block",
+              "max-w-full overflow-x-auto overscroll-x-contain",
               containerClassName,
             )}
           >
@@ -82,7 +85,7 @@ export function Table<T>({
             ) : (
               <table
                 className={cn(
-                  "w-full border-collapse text-sm",
+                  "w-full min-w-[42rem] border-collapse text-sm xl:min-w-full",
                   tableClassName,
                 )}
               >
@@ -92,7 +95,7 @@ export function Table<T>({
                       <th
                         key={idx}
                         className={cn(
-                          "px-3 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]",
+                          "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]",
                           col.className,
                         )}
                       >
@@ -110,7 +113,7 @@ export function Table<T>({
                       {columns.map((_, cIdx) => (
                         <td
                           key={cIdx}
-                          className="px-3 py-3"
+                          className="px-4 py-3"
                         >
                           <Skeleton className="h-4 w-24 rounded" />
                         </td>
@@ -124,23 +127,23 @@ export function Table<T>({
         )}
 
         {renderMobileItem && (
-          <div className="block space-y-3 px-4 pb-5 md:hidden">
+          <div className="block min-w-0 space-y-3 px-3 pb-5 sm:px-4 xl:hidden">
             {renderMobileSkeleton
               ? renderMobileSkeleton()
               : Array.from({ length: 3 }).map((_, idx) => (
                   <div
                     key={idx}
                     className={cn(
-                      "animate-pulse rounded-2xl border border-border/70",
-                      "bg-card p-4 shadow-sm backdrop-blur-xl",
+                      "animate-pulse rounded-xl border border-border/70",
+                      "bg-card p-4 shadow-md backdrop-blur-xl",
                       "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <Skeleton className="h-5 w-36 rounded" />
-                      <Skeleton className="h-6 w-16 rounded-full" />
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <Skeleton className="h-5 w-36 max-w-full rounded" />
+                      <Skeleton className="h-6 w-16 shrink-0 rounded-full" />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="mt-3 grid min-w-0 grid-cols-2 gap-3">
                       <Skeleton className="h-8 w-full rounded-xl" />
                       <Skeleton className="h-8 w-full rounded-xl" />
                     </div>
@@ -158,92 +161,87 @@ export function Table<T>({
 
   if (variant === "list" && renderListItem) {
     return (
-      <div className="divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
+      <div className="min-w-0 divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
         {data.map((item, idx) => renderListItem(item, idx))}
       </div>
     );
   }
 
-return (
-  <>
-    {columns.length > 0 && (
-      <div
-        className={cn(
-          "hidden overflow-x-auto md:block",
-          containerClassName,
-        )}
-      >
-        <table
+  return (
+    <>
+      {columns.length > 0 && (
+        <div
           className={cn(
-            "w-full border-collapse table-auto text-sm",
-            tableClassName,
+            hasMobileRenderer ? "hidden xl:block" : "block",
+            "max-w-full overflow-x-auto overscroll-x-contain px-3 py-3",
+            containerClassName,
           )}
         >
-          <thead>
-            <tr className="border-b border-border/70 dark:border-white/10">
-              {columns.map((col, idx) => (
-                <th
-                  key={idx}
-                  className={cn(
-                    "px-4 py-4 text-left align-middle",
-                    col.className,
-                  )}
-                >
-                  <div className="w-full">
+          <table
+            className={cn(
+              "w-full min-w-[42rem] border-collapse text-sm xl:min-w-full",
+              tableClassName,
+            )}
+          >
+            <thead>
+              <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+                {columns.map((col, idx) => (
+                  <th
+                    key={idx}
+                    className={cn(
+                      "px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]",
+                      col.className,
+                    )}
+                  >
                     {col.header}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody>
-            {data.map((item, idx) => {
-              const clickable =
-                !!onRowClick &&
-                (!isRowClickable || isRowClickable(item, idx));
+            <tbody>
+              {data.map((item, idx) => {
+                const clickable =
+                  !!onRowClick &&
+                  (!isRowClickable || isRowClickable(item, idx));
 
-              return (
-                <tr
-                  key={idx}
-                  className={cn(
-                    "border-b border-border/60 bg-background/70 last:border-0",
-                    "transition-colors duration-200",
-                    "dark:border-white/10 dark:bg-white/[0.025]",
-                    clickable &&
-                      "cursor-pointer hover:bg-muted/50 dark:hover:bg-white/[0.06]",
-                    typeof rowClassName === "function"
-                      ? rowClassName(item, idx)
-                      : rowClassName,
-                  )}
-                  onClick={
-                    clickable ? () => onRowClick?.(item, idx) : undefined
-                  }
-                >
-                  {columns.map((col, cIdx) => (
-                    <td
-                      key={cIdx}
-                      className={cn(
-                        "px-4 py-4 align-middle",
-                        col.className,
-                      )}
-                    >
-                      {col.render(item, idx)}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    )}
+                return (
+                  <tr
+                    key={idx}
+                    className={cn(
+                      "border-b border-border/60 bg-background/70 last:border-0",
+                      "transition-colors duration-200 dark:border-white/10 dark:bg-white/[0.025]",
+                      clickable &&
+                        "cursor-pointer hover:bg-muted/50 dark:hover:bg-white/[0.06]",
+                      typeof rowClassName === "function"
+                        ? rowClassName(item, idx)
+                        : rowClassName,
+                    )}
+                    onClick={
+                      clickable ? () => onRowClick?.(item, idx) : undefined
+                    }
+                  >
+                    {columns.map((col, cIdx) => (
+                      <td
+                        key={cIdx}
+                        className="px-4 py-3 align-middle"
+                      >
+                        {col.render(item, idx)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-    {renderMobileItem && (
-      <div className="block space-y-3 px-4 pb-5 md:hidden">
-        {data.map((item, idx) => renderMobileItem(item, idx))}
-      </div>
-    )}
-  </>
-);
+      {renderMobileItem && (
+        <div className="block min-w-0 space-y-3 px-3 pb-5 sm:px-4 xl:hidden">
+          {data.map((item, idx) => renderMobileItem(item, idx))}
+        </div>
+      )}
+    </>
+  );
 }
