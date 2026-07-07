@@ -552,3 +552,34 @@
     font-family: "Open-Dyslexic", "OpenDyslexic", sans-serif !important;
   }
 }
+@layer utilities {
+  .responsive-page-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .responsive-page-shell :where(.grid, .flex) > * {
+    min-width: 0;
+  }
+
+  .responsive-page-shell :where(img, video, canvas, svg) {
+    max-width: 100%;
+  }
+
+  .responsive-page-shell :where(p, h1, h2, h3, h4, h5, h6, span, label) {
+    overflow-wrap: anywhere;
+  }
+
+  .responsive-page-shell :where(table) {
+    max-width: 100%;
+  }
+
+  .card-elevated {
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+  }
+}

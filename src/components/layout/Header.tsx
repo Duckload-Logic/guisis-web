@@ -52,26 +52,26 @@ export default function Header({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 grid w-full grid-cols-[auto,1fr,auto] items-center",
+        "sticky top-0 z-30 grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center",
         "h-16 border-b border-glass-border bg-background px-3 shadow-md",
-        "sm:h-20 sm:border sm:px-6",
+        "sm:h-20 sm:grid-cols-[auto,1fr,auto] sm:border sm:px-6",
       )}
     >
-      <div className="flex items-center gap-3 text-foreground">
+      <div className="flex min-w-0 items-center gap-2 text-foreground sm:gap-3">
         <img
           src={LOGO_SRC}
           alt="Logo"
           className={cn(
-            "h-10 w-10 rounded-full transition-transform duration-200",
+            "h-9 w-9 shrink-0 rounded-full transition-transform duration-200",
             "hover:scale-110 sm:h-12 sm:w-12",
           )}
         />
         <div className="min-w-0 flex flex-col gap-0.5 text-xs">
-          <p className="hidden font-semibold sm:block">
+          <p className="hidden max-w-[min(48vw,34rem)] truncate font-semibold sm:block xl:max-w-none">
             Polytechnic University of the Philippines – Taguig
           </p>
           <p className="truncate font-semibold sm:hidden">PUP Taguig</p>
-          <p className="hidden text-foreground/50 sm:block">
+          <p className="hidden max-w-[min(42vw,28rem)] truncate text-foreground/50 sm:block xl:max-w-none">
             Guidance Services Information System
           </p>
           <p className="truncate text-foreground/50 sm:hidden">GuiSIS</p>
@@ -79,7 +79,7 @@ export default function Header({
       </div>
 
       {!isLoggedIn && (
-        <nav className="mr-5 hidden items-center justify-end gap-8 md:flex">
+        <nav className="mr-5 hidden min-w-0 items-center justify-end gap-4 xl:flex lg:gap-8">
           {isLanding ? (
             <a
               href="#top"
@@ -145,7 +145,7 @@ export default function Header({
         </nav>
       )}
 
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
         <ThemeToggle
           darkMode={darkMode}
           setDarkMode={setDarkMode}
@@ -156,7 +156,7 @@ export default function Header({
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
-                "rounded-lg p-2 text-foreground hover:bg-muted md:hidden",
+                "rounded-lg p-2 text-foreground hover:bg-muted xl:hidden",
                 "transition-colors",
               )}
               aria-label="Toggle Menu"
@@ -175,7 +175,7 @@ export default function Header({
               setShowNotifications={setShowNotifications}
             />
 
-            <div className="hidden md:block">
+            <div className="hidden xl:block">
               <ProfileMenu
                 firstName={user?.firstName}
                 middleName={user?.middleName}
@@ -195,7 +195,7 @@ export default function Header({
         <div
           className={cn(
             "absolute left-0 top-20 z-20 flex w-full flex-col gap-4 border-b",
-            "border-glass-border bg-background p-6 shadow-lg md:hidden",
+            "border-glass-border bg-background p-6 shadow-lg xl:hidden",
             "animate-in slide-in-from-top-4 duration-200",
           )}
         >
@@ -257,4 +257,3 @@ export default function Header({
     </header>
   );
 }
-

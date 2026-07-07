@@ -206,7 +206,7 @@ export default function Layout({
     <ErrorBoundary>
       <ScrollToTop targetRef={scrollRef as React.RefObject<HTMLDivElement>} />
       <div
-        className={`relative flex h-screen flex-col overflow-hidden bg-neutral-100 text-foreground dark:bg-neutral-950 ${
+        className={`relative flex h-dvh min-w-0 max-w-full flex-col overflow-hidden bg-neutral-100 text-foreground dark:bg-neutral-950 ${
           grayscale ? "grayscale" : ""
         }`}
       >
@@ -257,7 +257,7 @@ export default function Layout({
 
         <div
           ref={contentRef}
-          className={`relative z-10 flex min-h-0 flex-1 transform-gpu flex-col transition-all duration-300 ${
+          className={`relative z-10 flex min-h-0 min-w-0 flex-1 transform-gpu flex-col transition-all duration-300 ${
             termsOpen
               ? "pointer-events-none select-none opacity-40 grayscale-[0.5]"
               : ""
@@ -283,7 +283,7 @@ export default function Layout({
             </>
           )}
 
-          <div className="flex min-h-0 w-full flex-1 flex-col-reverse bg-background md:flex-row">
+          <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col-reverse bg-background xl:flex-row">
             {/* <div
               className={cn(
     "absolute inset-0 z-0 bg-[url('/src/assets/images/bg.gif')]",
@@ -302,15 +302,15 @@ export default function Layout({
               />
             )}
 
-            <div className="relative min-w-0 flex-1 overflow-hidden">
+            <div className="relative min-w-0 max-w-full flex-1 overflow-hidden">
               <div
                 ref={scrollRef}
                 className={cn(
-                  "relative z-10 flex max-h-full flex-col",
-                  "overflow-y-auto overflow-x-hidden pb-20 md:pb-12",
+                  "relative z-10 flex max-h-full min-w-0 max-w-full flex-col",
+                  "overflow-y-auto overflow-x-hidden overscroll-contain pb-24 md:pb-12",
                 )}
               >
-                <main className="min-w-0 flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
+                <main className="responsive-page-shell min-w-0 max-w-full flex-1 p-3 sm:p-4 md:p-6 xl:p-8">
                   {showHeader && showSubHeader && (
                     <SubHeader
                       title={title || ""}
@@ -327,7 +327,7 @@ export default function Layout({
                       <Spinner size="lg" />
                     </div>
                   ) : null}
-                  <div className={`${isLoading ? "hidden" : "block"} h-full`}>
+                  <div className={`${isLoading ? "hidden" : "block"} h-full min-w-0 max-w-full`}>
                     {children || <Outlet />}
                   </div>
                 </main>

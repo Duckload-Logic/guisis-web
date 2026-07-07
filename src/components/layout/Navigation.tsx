@@ -191,7 +191,7 @@ export default function Navigation({
 
     return (
       <>
-        <nav className="fixt bottom-0 z-50 w-full shrink-0 border-t bg-background">
+        <nav className="fixed inset-x-0 bottom-0 z-50 w-full shrink-0 border-t bg-background xl:hidden">
           <div className="flex h-16 items-center justify-around px-2">
             {homeItem && (
               <NavItem
@@ -232,7 +232,7 @@ export default function Navigation({
           open={openDrawer}
           onOpenChange={setOpenDrawer}
         >
-          <DrawerContent className="space-y-8 p-4 pb-8">
+          <DrawerContent className="max-h-[85dvh] space-y-8 overflow-y-auto p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
             {drawerMode === "menu" ? (
               <div className="space-y-3">
                 <p className="px-2 text-xs font-bold text-muted-foreground">
@@ -277,7 +277,7 @@ export default function Navigation({
 
   return (
     <div
-      className={`relative z-[90] hidden h-full shrink-0 items-center transition-all duration-300 md:flex ${sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]"}`}
+      className={`relative z-[90] hidden h-full shrink-0 items-center transition-all duration-300 xl:flex ${sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]"}`}
     >
       <aside
         onMouseEnter={handleMouseEnter}
@@ -536,4 +536,3 @@ function MobileSettingsContent({
     </div>
   );
 }
-
