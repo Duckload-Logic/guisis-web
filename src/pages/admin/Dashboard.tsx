@@ -26,6 +26,7 @@ import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { toISODateString, format12HourTime } from "@/utils";
 
 export default function Dashboard() {
@@ -132,6 +133,16 @@ export default function Dashboard() {
       }),
     ) || [];
 
+  const getUserInitials = (user?: { firstName?: string; lastName?: string }) => {
+    const firstInitial = user?.firstName?.trim()?.[0] || "";
+    const lastInitial = user?.lastName?.trim()?.[0] || "";
+    return `${firstInitial}${lastInitial}`.toUpperCase() || "ST";
+  };
+
+  const getUserFullName = (user?: { firstName?: string; lastName?: string }) => {
+    return [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Student";
+  };
+
   const visitorConfig = {
     visitors: {
       label: "Visitors",
@@ -156,7 +167,7 @@ export default function Dashboard() {
   return (
       <div
         className={cn(
-          "mx-auto flex w-full min-w-0 flex-col space-y-8 pb-10",
+          "mx-auto flex w-full flex-col space-y-8 pb-10",
           "px-4 sm:px-6 md:px-8",
         )}
       >
@@ -255,14 +266,12 @@ export default function Dashboard() {
       )}
 
       {/* Metrics Row */}
-      <div className="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,1fr)] 2xl:grid-cols-2">
-        <div className="min-w-0">
-          <DashboardMetrics metrics={metrics} />
-        </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <DashboardMetrics metrics={metrics} />
         {/* Monthly Visitors Analytics */}
         <Card
           className={cn(
-            "min-w-0 overflow-hidden shadow-md backdrop-blur-md",
+            "overflow-hidden shadow-md backdrop-blur-md",
             "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
           )}
           style={{ animationDelay: "0.15s", animationFillMode: "both" }}
@@ -369,15 +378,18 @@ export default function Dashboard() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="size-8 rounded-lg">
-                                <AvatarImage src={apt.user?.profilePicture} />
+                                <AvatarImage
+                                  src={getProfilePictureUrl(apt.user?.profilePicture)}
+                                  alt={getUserFullName(apt.user)}
+                                  className="object-cover"
+                                />
                                 <AvatarFallback className="rounded-lg bg-primary/10 text-[10px] font-bold uppercase text-primary">
-                                  {apt.user?.firstName?.[0]}
-                                  {apt.user?.lastName?.[0]}
+                                  {getUserInitials(apt.user)}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                  {apt.user?.firstName} {apt.user?.lastName}
+                                  {getUserFullName(apt.user)}
                                 </p>
                                 <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
                                   {apt.user?.studentNumber}
