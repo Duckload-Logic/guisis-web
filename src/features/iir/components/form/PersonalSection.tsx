@@ -41,18 +41,6 @@ import {
 } from "@/features/iir/utils/twoByTwoPhoto";
 
 import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
-import { UploadProfilePicture } from "@/features/users/services/service";
-import { useAuth } from "@/context";
-
-
-const dataUrlToFile = async (dataUrl: string, fileName: string) => {
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-
-  return new File([blob], fileName, {
-    type: blob.type || "image/jpeg",
-  });
-};
 
 interface FormErrors {
   [key: string]: string;
@@ -96,9 +84,7 @@ export const PersonalSection = forwardRef<
   const { data: religions = [] } = useReligions();
   const { data: studentRelationshipTypes = [] } = useStudentRelationshipTypes();
   const { data: regions = [] } = useGetRegions();
-  const { refresh } = useAuth();
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   // Stable indices for address array
   const PROVINCIAL_IDX = 0;
@@ -524,34 +510,19 @@ export const PersonalSection = forwardRef<
     const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
 
     try {
-      setIsUploadingPhoto(true);
-
       const dataUrl = await createTwoByTwoPhotoDataUrl(file);
-      const profilePictureFile = await dataUrlToFile(
-        dataUrl,
-        `iir-2x2-profile-${Date.now()}.jpg`,
-      );
-
-      await UploadProfilePicture(profilePictureFile);
-
       handleInputChange(fieldPath, dataUrl);
       saveIIRTwoByTwoPhoto(dataUrl, {
         studentNumber: studentInfo?.personalInfo?.studentNumber || null,
         email: studentInfo?.basicInfo?.email || null,
       });
       clearError(fieldPath);
-      await refresh();
     } catch (error: any) {
-      console.error("Failed to upload 2x2 profile photo:", error);
       setErrors((prev: FormErrors) => ({
         ...prev,
         [fieldPath]:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Unable to upload and sync the selected 2x2 photo.",
+          error?.message || "Unable to process the selected 2x2 photo.",
       }));
-    } finally {
-      setIsUploadingPhoto(false);
     }
   };
 
@@ -578,84 +549,92 @@ export const PersonalSection = forwardRef<
             <div className="md:col-span-6">
               <div
                 className={cn(
-                  "flex flex-col gap-4 rounded-xl border border-border/70",
-                  "bg-card/80 p-4 shadow-md sm:flex-row sm:items-center",
+                  "space-y-4 rounded-xl border border-border/70",
+                  "bg-card/80 p-4 shadow-md",
                 )}
               >
-                <div className="flex items-center gap-4">
-                  <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-primary/40 bg-muted/50 shadow-md">
-                    {twoByTwoPhotoDataUrl ? (
-                      <img
-                        src={twoByTwoPhotoDataUrl}
-                        alt="Uploaded 2x2 student photo"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Camera className="h-9 w-9 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
-                      2x2 Student Picture
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Upload a clear JPG, PNG, or WebP photo up to 5MB only. The image is automatically cropped to a strict square 2x2 layout.
-                    </p>
-                    {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl") && (
-                      <p className="mt-2 text-xs font-medium text-destructive">
-                        {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl")}
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-primary/40 bg-muted/50 shadow-md">
+                      {twoByTwoPhotoDataUrl ? (
+                        <img
+                          src={twoByTwoPhotoDataUrl}
+                          alt="Uploaded 2x2 student photo"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Camera className="h-9 w-9 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        2x2 Student Picture
                       </p>
-                    )}
+                      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+                        Upload a clear JPG, PNG, or WebP photo up to 5MB only. The image is automatically cropped to a strict square 2x2 layout.
+                      </p>
+                      {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl") && (
+                        <p className="mt-2 text-xs font-medium text-destructive">
+                          {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl")}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row">
-                  <label
-                    htmlFor="iir-two-by-two-photo"
+                  <div
                     className={cn(
-                      "inline-flex h-12 min-w-[10.5rem] shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
-                      "rounded-xl border border-primary/30 bg-primary/10 px-5 text-sm font-medium",
-                      "text-primary shadow-md transition hover:bg-primary/15",
-                      isUploadingPhoto && "pointer-events-none opacity-60",
+                      "grid w-full grid-cols-1 gap-2 xl:w-auto",
+                      twoByTwoPhotoDataUrl
+                        ? "sm:grid-cols-2 xl:min-w-[18rem]"
+                        : "sm:max-w-[14rem] xl:min-w-[14rem]",
                     )}
                   >
-                    {twoByTwoPhotoDataUrl ? (
-                      <Pencil className="h-4 w-4" />
-                    ) : (
-                      <Upload className="h-4 w-4" />
-                    )}
-                    {isUploadingPhoto ? "Uploading..." : twoByTwoPhotoDataUrl ? "Edit Photo" : "Upload Photo"}
-                  </label>
-                  <input
-                    id="iir-two-by-two-photo"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="sr-only"
-                    disabled={isUploadingPhoto}
-                    onChange={(event) => {
-                      void handlePhotoUpload(event.target.files?.[0]);
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                  {twoByTwoPhotoDataUrl && (
-                    <button
-                      type="button"
-                      onClick={handlePhotoRemove}
-                      disabled={isUploadingPhoto}
+                    <label
+                      htmlFor="iir-two-by-two-photo"
                       className={cn(
-                        "inline-flex h-12 min-w-[10.5rem] shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl",
-                        "border border-destructive/30 px-5 text-sm font-medium text-destructive",
-                        "shadow-md transition hover:bg-destructive/10",
+                        "inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
+                        "rounded-xl border border-primary/30 bg-primary/10 px-4 text-sm font-medium",
+                        "text-primary shadow-md transition hover:bg-primary/15 hover:shadow-lg",
+                        "focus-within:ring-2 focus-within:ring-primary/20",
                       )}
                     >
-                      <X className="h-4 w-4" />
-                      Remove
-                    </button>
-                  )}
+                      {twoByTwoPhotoDataUrl ? (
+                        <Pencil className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <Upload className="h-4 w-4 shrink-0" />
+                      )}
+                      <span className="truncate text-center">
+                        {twoByTwoPhotoDataUrl ? "Edit Photo" : "Upload Photo"}
+                      </span>
+                    </label>
+                    <input
+                      id="iir-two-by-two-photo"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="sr-only"
+                      onChange={(event) => {
+                        void handlePhotoUpload(event.target.files?.[0]);
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                    {twoByTwoPhotoDataUrl && (
+                      <button
+                        type="button"
+                        onClick={handlePhotoRemove}
+                        className={cn(
+                          "inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl",
+                          "border border-destructive/30 px-4 text-sm font-medium text-destructive",
+                          "shadow-md transition hover:bg-destructive/10",
+                        )}
+                      >
+                        <X className="h-4 w-4 shrink-0" />
+                        <span className="truncate">Remove</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-
             <div className="md:col-span-2">
               <FormInput
                 label="First Name"
