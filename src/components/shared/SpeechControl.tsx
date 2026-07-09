@@ -112,10 +112,10 @@ export const SpeechControl: React.FC = () => {
       className={cn(
         "speech-control-ui fixed z-50 flex flex-col items-end gap-3 transition-all duration-500",
         "right-4 sm:right-5 lg:right-6",
-        "bottom-[calc(env(safe-area-inset-bottom)+5.15rem)]",
-        "sm:bottom-[calc(env(safe-area-inset-bottom)+5.35rem)]",
-        "lg:bottom-[calc(env(safe-area-inset-bottom)+5.55rem)]",
-        isMobile && "bottom-[5.15rem] right-4",
+        "bottom-[calc(env(safe-area-inset-bottom)+1rem)]",
+        "sm:bottom-[calc(env(safe-area-inset-bottom)+1.25rem)]",
+        "lg:bottom-[calc(env(safe-area-inset-bottom)+1.5rem)]",
+        isMobile && "bottom-24 right-4",
       )}
     >
       {showTip && !readerActive && (
