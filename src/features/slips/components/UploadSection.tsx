@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileUp, CheckCircle2, X } from "lucide-react";
+import { FileUp, CheckCircle2, X, AlertCircle, Check, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";
+import badCertificateImg from "@/assets/images/bad-certificate-example.png";
+import goodCertificateImg from "@/assets/images/good-certificate-example.png";
 
 export interface UploadSectionProps {
   number?: number;
@@ -13,6 +15,7 @@ export interface UploadSectionProps {
   onFilesAdd: (files: FileList | null) => void;
   onFileRemove: (index: number) => void;
   optional?: boolean;
+  showMedicalGuidelines?: boolean;
 }
 
 export function UploadSection({
@@ -23,9 +26,14 @@ export function UploadSection({
   onFilesAdd,
   onFileRemove,
   optional = false,
+  showMedicalGuidelines = false,
 }: UploadSectionProps) {
   const [dragActive, setDragActive] = useState(false);
   const { triggerToast } = useToast();
+
+  const isMedical = showMedicalGuidelines || title.toLowerCase().includes("medical");
+  
+  const isID = /\bid\b/i.test(title);
 
   const validateFiles = (files: FileList | null): File[] => {
     if (!files) return [];
@@ -63,15 +71,6 @@ export function UploadSection({
 
     const validFiles = validateFiles(e.dataTransfer.files);
     if (validFiles.length > 0) {
-      // Create a pseudo-FileList or just pass the array if onFilesAdd is updated
-      // Since FileList is hard to construct, we'll keep the prop signature but
-      // this component currently expects FileList.
-      // For now, I'll pass null to onFilesAdd if I can't easily backfill it,
-      // but a better way is to change the prop to File[].
-      // However, to keep it simple and working with the existing (though unused) implementation,
-      // I'll just skip the call if all are invalid.
-      // Wait, SubmitSlip doesn't use this yet.
-      // I'll update the prop signature to be more flexible.
       onFilesAdd(e.dataTransfer.files);
     }
   };
@@ -111,6 +110,9 @@ export function UploadSection({
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
           )}
         </div>
+
+        {isMedical && <UploadGuidelines />}
+        {isID && <UploadIDGuidelines />}
 
         {/* Upload Area */}
         <div
@@ -178,5 +180,70 @@ export function UploadSection({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export function UploadIDGuidelines() {
+  return (
+    <div className="mb-6">
+      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900 shadow-sm dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
+        <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+        <div className="text-sm">
+          <p className="font-semibold mb-1">Important requirements for ID upload:</p>
+          <ul className="list-inside list-disc space-y-0.5 text-blue-800 dark:text-blue-300">
+            <li>Ensure the photo is clear and well-lit.</li>
+            <li>All text, especially the name and ID number, must be readable.</li>
+            <li>Avoid camera flash glare, shadows, or cropped edges.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function UploadGuidelines() {
+  return (
+    <div className="mb-6 space-y-4">
+      <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-[#FFF9E5] p-4 text-amber-900 shadow-sm">
+        <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+        <p className="text-sm font-bold">
+          Please ensure the doctor's signature and PRC License Number are clearly visible.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Card className="overflow-hidden border-2 border-red-100 shadow-sm">
+          <div className="flex items-center justify-center gap-2 bg-[#9E2A2B] py-2.5 text-sm font-bold text-white">
+            <X className="h-4 w-4 stroke-[3]" /> Do Not Upload
+          </div>
+          <div className="bg-slate-50 p-4">
+            <img
+              src={badCertificateImg}
+              alt="Example of incorrect document"
+              className="mx-auto h-40 w-full rounded border bg-white object-cover object-top opacity-80 shadow-sm"
+            />
+          </div>
+          <div className="bg-white p-4 text-center text-xs font-semibold text-muted-foreground">
+            Incomplete certificate without visible signature and PRC License Number.
+          </div>
+        </Card>
+
+        <Card className="overflow-hidden border-2 border-green-100 shadow-sm">
+          <div className="flex items-center justify-center gap-2 bg-[#2D6A4F] py-2.5 text-sm font-bold text-white">
+            <Check className="h-4 w-4 stroke-[3]" /> Upload This
+          </div>
+          <div className="bg-slate-50 p-4">
+            <img
+              src={goodCertificateImg}
+              alt="Example of correct document"
+              className="mx-auto h-40 w-full rounded border bg-white object-cover object-top shadow-sm"
+            />
+          </div>
+          <div className="bg-white p-4 text-center text-xs font-semibold text-muted-foreground">
+            Complete certificate with the doctor's signature and PRC License Number.
+          </div>
+        </Card>
+      </div>
+    </div>
   );
 }
