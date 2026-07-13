@@ -216,7 +216,8 @@ export default function Calendar({
       )}
 
       <CardContent className="px-3 pb-5 pt-5 min-[420px]:px-4 sm:px-6 sm:pb-8 sm:pt-8">
-        <CalendarContent
+        <div className="mx-auto w-full max-w-[34rem]">
+          <CalendarContent
           monthName={monthName}
           handlePrevMonth={handlePrevMonth}
           handleNextMonth={handleNextMonth}
@@ -233,8 +234,9 @@ export default function Calendar({
           isAdmin={isAdmin}
           statsMap={statsMap}
           displayLegends={displayLegends}
-          occupiedDayColor={occupiedDayColor}
-        />
+            occupiedDayColor={occupiedDayColor}
+          />
+        </div>
       </CardContent>
     </Card>
   );
@@ -419,4 +421,3 @@ function CalendarContent({
     </div>
   );
 }
-

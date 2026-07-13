@@ -171,7 +171,7 @@ export default function StudentAppointments() {
         key={appointment.id}
         className={cn(
           "animate-fade-in-up cursor-pointer p-4",
-          "transition-colors duration-200 hover:bg-muted/50",
+          "max-w-full overflow-hidden transition-colors duration-200 hover:bg-muted/50",
           "sm:p-5",
         )}
         style={{
@@ -180,7 +180,7 @@ export default function StudentAppointments() {
         }}
         onClick={() => navigate(`/student/appointments/${appointment.id}`)}
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <div
               className={cn(
@@ -230,24 +230,26 @@ export default function StudentAppointments() {
 
           <div
             className={cn(
-              "flex shrink-0 flex-col gap-1.5 text-sm text-muted-foreground",
-              "md:ml-auto md:flex-row md:items-center md:justify-end md:gap-4",
+              "grid min-w-0 grid-cols-1 gap-1.5 text-sm text-muted-foreground",
+              "sm:grid-cols-2 xl:ml-auto xl:flex xl:shrink-0 xl:items-center xl:justify-end xl:gap-4",
             )}
           >
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <Calendar className="h-4 w-4" />
-              <span>Date Requested: {formatCompactDate(appointment.createdAt)}</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 break-words">
+                Date Requested: {formatCompactDate(appointment.createdAt)}
+              </span>
             </div>
 
             <span
-              className={cn("hidden text-muted-foreground/40", "md:inline")}
+              className={cn("hidden text-muted-foreground/40", "xl:inline")}
             >
               •
             </span>
 
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <CalendarClock className="h-4 w-4" />
-              <span>
+            <div className="flex min-w-0 items-center gap-2">
+              <CalendarClock className="h-4 w-4 shrink-0" />
+              <span className="min-w-0 break-words">
                 Appointment: {formatDate(appointment.whenDate)}{" "}
                 {format12HourTime(appointment.timeSlot.time)}
               </span>
@@ -331,9 +333,8 @@ export default function StudentAppointments() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col space-y-6",
-        "px-4 sm:px-6 md:px-8",
-        "relative isolate overflow-visible"
+        "relative isolate mx-auto flex w-full max-w-full flex-col space-y-6",
+        "overflow-x-hidden px-4 sm:px-6 md:px-8"
       )}
     >
       {!user?.studentCorUrl ? (
@@ -377,7 +378,7 @@ export default function StudentAppointments() {
         </Alert>
       ) : null}
 
-      <Card className={cn(GLASS_CARD, "animate-fade-in-up")}>
+      <Card className={cn(GLASS_CARD, "min-w-0 animate-fade-in-up overflow-hidden")}>
         <CardHeader
           className={cn(
             "border-b border-white/30 px-4 py-3.5",
@@ -472,5 +473,3 @@ export default function StudentAppointments() {
     </div>
   );
 }
-
-
