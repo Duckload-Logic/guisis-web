@@ -1,4 +1,18 @@
 self.addEventListener("push", (event) => {
+  if (
+    typeof Notification === "undefined" || 
+    !self.registration || 
+    !self.registration.showNotification
+  ) {
+    console.warn("Push notifications are not supported in this browser environment.");
+    return; 
+  }
+
+  if (Notification.permission !== "granted") {
+    console.warn("Notification permission is not granted.");
+    return;
+  }
+
   let data = {};
   if (event.data) {
     try {
@@ -23,6 +37,8 @@ self.addEventListener("push", (event) => {
 });
 
 self.addEventListener("notificationclick", (event) => {
+  if (!event.notification) return;
+
   event.notification.close();
   const notificationData = event.notification.data || {};
   const type = (notificationData.type || "").toLowerCase();
