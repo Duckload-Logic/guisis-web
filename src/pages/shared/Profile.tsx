@@ -180,8 +180,12 @@ export default function Profile() {
               <div className="absolute inset-x-0 bottom-0 h-1/2 rounded-b-full bg-black/40 blur-sm" />
               <Avatar className="relative z-10 h-full w-full rounded-full border-4 border-card">
                 <AvatarImage
-                  key={previewImage || user?.profilePicture || "profile-picture"}
-                  src={previewImage || getProfilePictureUrl(user?.profilePicture)}
+                  key={
+                    previewImage || user?.profilePicture || "profile-picture"
+                  }
+                  src={
+                    previewImage || getProfilePictureUrl(user?.profilePicture)
+                  }
                   alt={`${user.firstName} ${user.lastName}`}
                   className="object-cover object-center transition-transform duration-500 group-hover/avatar:scale-110"
                 />
@@ -268,10 +272,7 @@ export default function Profile() {
                   Last Login
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-bold">
-                  <Clock
-                    size={12}
-                    className="text-blue-400"
-                  />{" "}
+                  <Clock size={12} className="text-blue-400" />{" "}
                   {stats.lastSession
                     ? `${format12HourTime(stats.lastSession)} Today`
                     : "No recent session"}
@@ -283,10 +284,7 @@ export default function Profile() {
       </div>
 
       {/* Actionable Tabs Interface */}
-      <Tabs
-        defaultValue="overview"
-        className="space-y-6"
-      >
+      <Tabs defaultValue="overview" className="space-y-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <TabsList
             className={cn(
@@ -336,14 +334,11 @@ export default function Profile() {
               "md:col-span-2",
             )}
           >
-            <CardHeader className="border-b border-glass-border bg-glass-bg p-8">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
+            <CardHeader className="border-b border-glass-border bg-glass-bg p-5 sm:p-8">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0 space-y-1">
                   <CardTitle className="flex items-center gap-2 text-2xl font-bold">
-                    <User
-                      className="text-primary"
-                      size={24}
-                    />
+                    <User className="text-primary" size={24} />
                     Personal Information
                   </CardTitle>
                   <CardDescription>
@@ -354,14 +349,12 @@ export default function Profile() {
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "group cursor-not-allowed rounded-full border-primary/20",
+                    "group w-fit shrink-0 cursor-not-allowed self-start",
+                    "rounded-full border-primary/20 px-3",
                     "bg-muted/50 text-primary",
                   )}
                 >
-                  <Lock
-                    size={14}
-                    className="mr-2 group-hover:animate-bounce"
-                  />{" "}
+                  <Lock size={14} className="mr-2 group-hover:animate-bounce" />{" "}
                   Uneditable
                 </Button>
               </div>
@@ -444,10 +437,7 @@ export default function Profile() {
                       "border-border/10 bg-muted/40 px-4 text-sm font-bold",
                     )}
                   >
-                    <Mail
-                      size={16}
-                      className="text-blue-500"
-                    />
+                    <Mail size={16} className="text-blue-500" />
                     {user.email}
                   </div>
                 </div>
@@ -500,10 +490,7 @@ export default function Profile() {
                   )}
                 >
                   <div className="mb-2 flex items-center gap-3">
-                    <Calendar
-                      size={16}
-                      className="text-primary"
-                    />
+                    <Calendar size={16} className="text-primary" />
                     <p className="text-xs font-bold">Join Date</p>
                   </div>
                   <p className="text-xl tracking-tight">
@@ -516,10 +503,7 @@ export default function Profile() {
         </TabsContent>
 
         {/* Activity Tab Content */}
-        <TabsContent
-          value="activity"
-          className="outline-none"
-        >
+        <TabsContent value="activity" className="outline-none">
           <Card
             className={cn(
               "overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
@@ -612,10 +596,7 @@ export default function Profile() {
                       "rounded-full border-4 border-card bg-muted shadow-inner",
                     )}
                   >
-                    <Clock
-                      size={32}
-                      className="text-muted-foreground/40"
-                    />
+                    <Clock size={32} className="text-muted-foreground/40" />
                   </div>
                   <h3 className="text-xl font-bold">No recent activities</h3>
                   <p className="text-sm leading-relaxed text-muted-foreground">
