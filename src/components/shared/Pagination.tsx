@@ -145,9 +145,13 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={safeCurrentPage === 1 || isLoading}
           aria-label="Previous page"
           title="Previous page"
-          className="h-11 w-11 shrink-0 sm:hidden"
+          className="h-11 w-11 shrink-0 p-0 sm:hidden"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft
+            className="h-5 w-5 text-current"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          />
         </Button>
 
         <div className="flex shrink-0 items-center justify-center gap-2">
@@ -214,9 +218,13 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={safeCurrentPage === totalPages || isLoading}
           aria-label="Next page"
           title="Next page"
-          className="h-11 w-11 shrink-0 sm:hidden"
+          className="h-11 w-11 shrink-0 p-0 sm:hidden"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight
+            className="h-5 w-5 text-current"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          />
         </Button>
       </div>
     </nav>
