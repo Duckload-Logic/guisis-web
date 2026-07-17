@@ -15,14 +15,25 @@ export const SpeechControl: React.FC = () => {
   const [showTip, setShowTip] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       setIsVisible(true);
-      const viewedTip = localStorage.getItem("speech_tip_viewed_v2");
-      if (!viewedTip) setShowTip(true);
+
+      // Keep phones and tablets uncluttered. The instructional tip is only
+      // displayed on desktop where there is enough available screen space.
+      if (!isMobile) {
+        const viewedTip = localStorage.getItem("speech_tip_viewed_v2");
+        if (!viewedTip) setShowTip(true);
+      }
     }, 1500);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => window.clearTimeout(timer);
+  }, [isMobile]);
+
+  useEffect(() => {
+    // Immediately remove desktop-only helper UI when switching to a phone or
+    // tablet viewport through responsive mode or device rotation.
+    if (isMobile) setShowTip(false);
+  }, [isMobile]);
 
   const dismissTip = () => {
     setShowTip(false);
@@ -46,8 +57,8 @@ export const SpeechControl: React.FC = () => {
   useEffect(() => {
     if (!readerActive) return;
 
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+    const handleMouseOver = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
 
       if (
         target.closest(".speech-control-ui") ||
@@ -64,8 +75,8 @@ export const SpeechControl: React.FC = () => {
       target.classList.add("reader-highlight");
     };
 
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
 
       if (
         target.closest(".speech-control-ui") ||
@@ -75,14 +86,15 @@ export const SpeechControl: React.FC = () => {
         return;
       }
 
-      e.preventDefault();
-      e.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
       const text = target.innerText || target.getAttribute("aria-label") || "";
 
       if (text.trim()) {
         const voice = voices.find(
-          (v) => v.name === speechVoice || v.voiceURI === speechVoice,
+          (item) =>
+            item.name === speechVoice || item.voiceURI === speechVoice,
         );
 
         speak(text, {
@@ -110,101 +122,111 @@ export const SpeechControl: React.FC = () => {
   return (
     <div
       className={cn(
-        "speech-control-ui fixed z-50 flex flex-col items-end gap-3 transition-all duration-500",
-        "right-4 sm:right-5 lg:right-6",
-        "bottom-[calc(env(safe-area-inset-bottom)+1rem)]",
-        "sm:bottom-[calc(env(safe-area-inset-bottom)+1.25rem)]",
-        "lg:bottom-[calc(env(safe-area-inset-bottom)+1.5rem)]",
-        isMobile && "bottom-24 right-4",
+        "speech-control-ui pointer-events-none fixed z-[60] flex flex-col items-end gap-3",
+        "right-4 sm:right-5 xl:right-8",
+        // Phones and tablets use a fixed 4rem bottom navigation. Keep the
+        // reader completely above it, including the device safe-area inset.
+        "bottom-[calc(4rem+env(safe-area-inset-bottom)+1rem)]",
+        "sm:bottom-[calc(4rem+env(safe-area-inset-bottom)+1.25rem)]",
+        // Desktop has no bottom navigation, so maintain a clean edge gap.
+        "xl:bottom-8",
+        "transition-[bottom,right,opacity,transform] duration-300",
       )}
     >
-      {showTip && !readerActive && (
+      {showTip && !readerActive && !isMobile && (
         <div
           className={cn(
             "animate-in slide-in-from-right-4 fade-in pointer-events-auto",
-            "relative mb-2 mr-2 max-w-[220px] rounded-2xl bg-primary p-4",
-            "text-primary-foreground shadow-xl duration-500",
+            "relative mb-1 mr-1 max-w-[220px] rounded-xl bg-primary p-4",
+            "text-primary-foreground shadow-md duration-500",
           )}
         >
           <button
             type="button"
             onClick={dismissTip}
             aria-label="Dismiss reader mode tip"
-            className="absolute -right-1 -top-1 rounded-full border border-white/20 bg-slate-900 p-1"
+            className={cn(
+              "absolute -right-1 -top-1 rounded-full border border-white/20",
+              "bg-slate-900 p-1 text-white",
+            )}
           >
-            <X size={10} />
+            <X size={10} aria-hidden="true" />
           </button>
 
           <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
-            <Ear size={14} /> Interactive Reader
+            <Ear size={14} aria-hidden="true" /> Interactive Reader
           </p>
 
           <p className="text-[10px] leading-tight opacity-90">
-            Turn it on and click any part of the page to have it read aloud!
+            Turn it on and click any part of the page to have it read aloud.
           </p>
         </div>
       )}
 
-      {readerActive && (
+      {readerActive && !isMobile && (
         <div
           className={cn(
-            "animate-in slide-in-from-bottom-4 fade-in",
-            "pointer-events-none mb-2 flex flex-col items-end gap-2",
-            "duration-300",
+            "animate-in slide-in-from-bottom-4 fade-in pointer-events-none",
+            "mb-1 flex items-center rounded-full border border-white/20",
+            "bg-primary px-3 py-1.5 text-[10px] font-bold uppercase",
+            "text-primary-foreground shadow-md duration-300",
           )}
+          aria-hidden="true"
         >
-          <div
-            className={cn(
-              "flex animate-pulse items-center gap-2 rounded-full border",
-              "border-white/20 bg-primary px-3 py-1.5 text-[10px] font-bold",
-              "uppercase text-primary-foreground shadow-lg",
-            )}
-          >
-            <MousePointer2 size={12} /> Live Reader
-          </div>
+          <MousePointer2 size={12} className="mr-2" /> Live Reader
         </div>
       )}
 
-      <div className="pointer-events-auto">
-        <button
-          type="button"
-          onClick={handleToggle}
-          aria-label={readerActive ? "Turn off reader mode" : "Turn on reader mode"}
-          aria-pressed={readerActive}
-          className={cn(
-            "group relative flex items-center justify-center rounded-full border",
-            "h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16",
-            "shadow-[0_12px_40px_-8px_rgb(0,0,0,0.15)]",
-            "transition-all duration-500 active:scale-95",
-            readerActive
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-white/20 bg-primary text-primary-foreground hover:scale-105",
-          )}
-        >
-          {readerActive ? (
-            <Ear className="h-6 w-6 lg:h-7 lg:w-7" />
-          ) : (
-            <AudioLines className="h-6 w-6 lg:h-7 lg:w-7" />
-          )}
+      <button
+        type="button"
+        onClick={handleToggle}
+        aria-label={readerActive ? "Turn off reader mode" : "Turn on reader mode"}
+        aria-pressed={readerActive}
+        className={cn(
+          "group pointer-events-auto relative flex touch-manipulation items-center",
+          "justify-center rounded-full border border-white/25 bg-primary",
+          "h-12 w-12 sm:h-14 sm:w-14 xl:h-16 xl:w-16",
+          "text-primary-foreground shadow-md outline-none",
+          "transition-transform duration-200 hover:scale-105 active:scale-95",
+          "focus-visible:ring-2 focus-visible:ring-primary",
+          "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        )}
+      >
+        {readerActive ? (
+          <Ear className="h-6 w-6 xl:h-7 xl:w-7" aria-hidden="true" />
+        ) : (
+          <AudioLines
+            className="h-6 w-6 xl:h-7 xl:w-7"
+            aria-hidden="true"
+          />
+        )}
 
-          {!readerActive && !isMobile && (
-            <span
-              className={cn(
-                "absolute right-full mr-3 translate-x-2 whitespace-nowrap",
-                "rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium",
-                "text-white opacity-0 transition-all duration-200",
-                "group-hover:translate-x-0 group-hover:opacity-100",
-              )}
-            >
-              Turn On Reader Mode
-            </span>
-          )}
+        {!readerActive && !isMobile && (
+          <span
+            className={cn(
+              "pointer-events-none absolute right-full mr-3 translate-x-2",
+              "whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5",
+              "text-xs font-medium text-white opacity-0 shadow-md",
+              "transition-all duration-200 group-hover:translate-x-0",
+              "group-hover:opacity-100 group-focus-visible:translate-x-0",
+              "group-focus-visible:opacity-100",
+            )}
+          >
+            Turn On Reader Mode
+          </span>
+        )}
 
-          {readerActive && (
-            <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20" />
-          )}
-        </button>
-      </div>
+        {readerActive && !isMobile && (
+          <span
+            className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20"
+            aria-hidden="true"
+          />
+        )}
+      </button>
+
+      <span className="sr-only" aria-live="polite">
+        {readerActive ? "Live reader is active" : "Live reader is inactive"}
+      </span>
     </div>
   );
 };
