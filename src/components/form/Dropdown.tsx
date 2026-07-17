@@ -1,5 +1,5 @@
-import { Check, Lock, ChevronDown, X } from "lucide-react";
-import { useState } from "react";
+import { Check, Lock, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -53,6 +53,8 @@ export default function Dropdown({
   buttonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const safeOptions = options || [];
   const selectedOption = safeOptions.find(
     (opt) => String(opt[identifier]) === String(value),
@@ -90,6 +92,34 @@ export default function Dropdown({
     }
   };
 
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnPageMovement = (event: Event) => {
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        (contentRef.current?.contains(target) ||
+          triggerRef.current?.contains(target))
+      ) {
+        return;
+      }
+
+      setOpen(false);
+    };
+
+    window.addEventListener("scroll", closeOnPageMovement, true);
+    window.addEventListener("resize", closeOnPageMovement);
+    window.visualViewport?.addEventListener("resize", closeOnPageMovement);
+
+    return () => {
+      window.removeEventListener("scroll", closeOnPageMovement, true);
+      window.removeEventListener("resize", closeOnPageMovement);
+      window.visualViewport?.removeEventListener("resize", closeOnPageMovement);
+    };
+  }, [open]);
+
   return (
     <div className="relative space-y-2">
       {label && (
@@ -100,12 +130,10 @@ export default function Dropdown({
       )}
 
       <div id={id}>
-        <Popover
-          open={open}
-          onOpenChange={setOpen}
-        >
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
+              ref={triggerRef}
               disabled={!enabled || loading}
               className={cn(
                 "flex h-11 w-full items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium tracking-tight text-foreground shadow-sm outline-none transition-all duration-200",
@@ -150,12 +178,24 @@ export default function Dropdown({
             </button>
           </PopoverTrigger>
           <PopoverContent
+            ref={contentRef}
             className={cn(
-              "speech-control-ignore z-50 overflow-hidden rounded-xl border-glass-border p-0",
+              "speech-control-ignore z-50 w-[var(--radix-popover-trigger-width)]",
+              "max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl",
+              "border-glass-border p-0",
               formStyle ? "bg-card" : "bg-background",
             )}
             align="start"
             sideOffset={8}
+            collisionPadding={16}
+            sticky="always"
+            hideWhenDetached
+            updatePositionStrategy="always"
+            onOpenAutoFocus={(event) => event.preventDefault()}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              triggerRef.current?.focus({ preventScroll: true });
+            }}
           >
             <Command className={formStyle ? "bg-card" : "bg-background"}>
               {label && (
