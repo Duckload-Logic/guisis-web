@@ -33,9 +33,9 @@ export interface IIRAnalyticsReportResponse {
 
 export type DashboardResponse = IIRAnalyticsReportResponse;
 
-export interface AnalyticsCourse {
+export interface AnalyticsProgram {
   id: number;
-  courseName: string;
+  programName: string;
 }
 
 export interface StudentAnalytics {

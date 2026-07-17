@@ -38,7 +38,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCourses, useEnrollmentYears } from "@/features/iir/hooks";
+import { usePrograms, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
 import { FullScreenLoader } from "@/components/shared";
@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
   const [selectedYear, setSelectedYear] = useState<string>(() =>
     currentCalendarYear.toString(),
   );
-  const [selectedCourse, setSelectedCourse] = useState<string>("0");
+  const [selectedProgram, setSelectedProgram] = useState<string>("0");
 
   const { data: settings, isLoading: isSettingsLoading } = useQuery({
     queryKey: ["counselor", "academicSettings"],
@@ -116,16 +116,16 @@ export default function AnalyticsPage() {
     pdfUrl,
     isDownloading,
   } = useAnalyticsDashboard();
-  const { data: coursesData } = useCourses();
-  const courses = useMemo(() => {
+  const { data: programsData } = usePrograms();
+  const programs = useMemo(() => {
     return [
-      { value: "0", label: "All Courses" },
-      ...(coursesData || []).map((c: any) => ({
-        value: c.id.toString(),
-        label: c.code,
+      { value: "0", label: "All Programs" },
+      ...(programsData || []).map((p: any) => ({
+        value: p.id.toString(),
+        label: p.code,
       })),
     ];
-  }, [coursesData]);
+  }, [programsData]);
   const { data: enrollmentYears } = useEnrollmentYears();
 
   const [hasSetDefaultYear, setHasSetDefaultYear] = useState(false);
@@ -135,29 +135,29 @@ export default function AnalyticsPage() {
       const yearStr = settings.currentYearStart.toString();
       setSelectedYear(yearStr);
       setHasSetDefaultYear(true);
-      refresh(settings.currentYearStart, parseInt(selectedCourse), 0);
+      refresh(settings.currentYearStart, parseInt(selectedProgram), 0);
     } else if (!settings && !isSettingsLoading && !hasSetDefaultYear) {
       const fallbackYear = new Date().getFullYear();
       setSelectedYear(fallbackYear.toString());
       setHasSetDefaultYear(true);
-      refresh(fallbackYear, parseInt(selectedCourse), 0);
+      refresh(fallbackYear, parseInt(selectedProgram), 0);
     }
   }, [
     settings,
     isSettingsLoading,
     hasSetDefaultYear,
-    selectedCourse,
+    selectedProgram,
     refresh,
   ]);
 
   // Update filters and refresh
   const handleYearChange = (val: string) => {
     setSelectedYear(val);
-    refresh(parseInt(val), parseInt(selectedCourse), 0);
+    refresh(parseInt(val), parseInt(selectedProgram), 0);
   };
 
-  const handleCourseChange = (val: string) => {
-    setSelectedCourse(val);
+  const handleProgramChange = (val: string) => {
+    setSelectedProgram(val);
     refresh(parseInt(selectedYear), parseInt(val), 0);
   };
 
@@ -211,12 +211,12 @@ export default function AnalyticsPage() {
 
         <div className="w-full min-w-[11rem] sm:w-44 md:w-52">
           <Dropdown
-            name="course"
+            name="program"
             get="value"
             identifier="value"
-            value={selectedCourse}
-            onChange={handleCourseChange}
-            options={courses}
+            value={selectedProgram}
+            onChange={handleProgramChange}
+            options={programs}
             formStyle={false}
           />
         </div>
@@ -225,7 +225,7 @@ export default function AnalyticsPage() {
           variant="outline"
           disabled={isDownloading}
           onClick={() =>
-            generatePreview(parseInt(selectedYear), parseInt(selectedCourse))
+            generatePreview(parseInt(selectedYear), parseInt(selectedProgram))
           }
           className={cn(
             "border-glass-border/40 hover:border-glass-border/60",
@@ -246,9 +246,9 @@ export default function AnalyticsPage() {
       selectedYear,
       handleYearChange,
       yearOptions,
-      selectedCourse,
-      handleCourseChange,
-      courses,
+      selectedProgram,
+      handleProgramChange,
+      programs,
       isDownloading,
       generatePreview,
     ],
@@ -282,7 +282,7 @@ export default function AnalyticsPage() {
         <Button
           variant="outline"
           onClick={() =>
-            refresh(parseInt(selectedYear), parseInt(selectedCourse), 0)
+            refresh(parseInt(selectedYear), parseInt(selectedProgram), 0)
           }
           className="mt-4 border-primary/20 hover:bg-primary/5"
         >

@@ -4,7 +4,7 @@ import { SectionContainer } from "./SectionContainer";
 import { FormSectionTitle } from "./shared";
 import { User, MapPin, Phone, Briefcase, Activity, Camera, Upload, Pencil, X } from "lucide-react";
 import {
-  useCourses,
+  usePrograms,
   useGenders,
   useCivilStatuses,
   useReligions,
@@ -78,7 +78,7 @@ export const PersonalSection = forwardRef<
   },
   ref,
 ) {
-  const { data: courses = [], isLoading: isCoursesLoading } = useCourses();
+  const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const { data: genders = [] } = useGenders();
   const { data: civilStatuses = [] } = useCivilStatuses();
   const { data: religions = [] } = useReligions();
@@ -718,18 +718,21 @@ export const PersonalSection = forwardRef<
             <div className="md:col-span-3">
               <Dropdown
                 formStyle
-                label="Course"
-                options={courses}
-                value={studentInfo?.personalInfo?.course?.id || ""}
+                label="Program"
+                options={programs}
+                value={studentInfo?.personalInfo?.program?.id || ""}
                 onChange={(val: any) =>
-                  handleInputChange("student.personalInfo.course", { id: val })
+                  handleInputChange(
+                    "student.personalInfo.program",
+                    { id: val },
+                  )
                 }
-                error={errors["student.personalInfo.course"]}
+                error={errors["student.personalInfo.program"]}
                 required={isFieldRequired(
                   runtimeSchema,
-                  "student.personalInfo.course",
+                  "student.personalInfo.program",
                 )}
-                enabled={!isCoursesLoading}
+                enabled={!isProgramsLoading}
               />
             </div>
 

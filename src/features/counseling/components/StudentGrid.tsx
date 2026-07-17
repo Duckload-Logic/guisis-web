@@ -30,7 +30,7 @@ interface StudentGridProps {
 }
 
 type StudentSortOrder = "asc" | "desc";
-type StudentSortKey = "studentName" | "studentNumber" | "course" | "email";
+type StudentSortKey = "studentName" | "studentNumber" | "program" | "email";
 
 
 function getStudentName(student: IIRProfileView) {
@@ -123,7 +123,7 @@ export default function StudentGrid({
     () => [
       { id: "studentName", name: "Student Name" },
       { id: "studentNumber", name: "Student Number" },
-      { id: "course", name: "Course" },
+      { id: "program", name: "Program" },
       { id: "email", name: "Email Address" },
     ],
     [],
@@ -152,7 +152,7 @@ export default function StudentGrid({
         getStudentName(student),
         student.studentNumber,
         student.email,
-        student.course?.code,
+        student.program?.code,
         student.status?.name,
       ]
         .filter(Boolean)
@@ -164,7 +164,7 @@ export default function StudentGrid({
     return [...filteredStudents].sort((a, b) => {
       const getSortValue = (student: IIRProfileView) => {
         if (selectedSort === "studentNumber") return student.studentNumber || "";
-        if (selectedSort === "course") return student.course?.code || "";
+        if (selectedSort === "program") return student.program?.code || "";
         if (selectedSort === "email") return student.email || "";
         return getStudentName(student);
       };
@@ -220,11 +220,17 @@ export default function StudentGrid({
   };
 
   const handleSortChange = (value: unknown) => {
-    const nextValue = String(value ?? "").trim();
-    if (!["studentName", "studentNumber", "course", "email"].includes(nextValue)) {
+    const validKeys = [
+      "studentName",
+      "studentNumber",
+      "program",
+      "email",
+    ];
+    const strValue = String(value);
+    if (!validKeys.includes(strValue)) {
       return;
     }
-    setSelectedSort(nextValue as StudentSortKey);
+    setSelectedSort(strValue as StudentSortKey);
   };
 
   const handleOrderChange = (value: unknown) => {
@@ -298,7 +304,7 @@ export default function StudentGrid({
       ),
     },
     {
-      header: "Course & Year",
+      header: "Program & Year",
       render: (student: IIRProfileView) => {
         const yrName =
           yearLevels
@@ -307,7 +313,7 @@ export default function StudentGrid({
         return (
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-primary/80">
-              {student.course.code}
+              {student.program.code}
             </span>
             <span className="text-[10px] text-muted-foreground">
               {yrName} Year
@@ -399,10 +405,10 @@ export default function StudentGrid({
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
           <div>
             <p className="text-[9px] font-bold uppercase text-muted-foreground/60">
-              Course & Year
+              Program & Year
             </p>
             <p className="font-semibold text-foreground/80">
-              {student.course.code} - {yrName} Yr
+              {student.program.code} - {yrName} Yr
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -709,7 +715,7 @@ export default function StudentGrid({
 
                   <div className="flex items-center justify-center gap-1.5 md:hidden">
                     <span className="text-[10px] font-bold text-primary/80">
-                      {student.course.code}
+                      {student.program.code}
                     </span>
                     <span className="text-center text-[10px] text-muted-foreground/40">
                       •
@@ -725,10 +731,10 @@ export default function StudentGrid({
                   <div className="hidden grid-cols-2 gap-2 md:grid">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[9px] font-bold uppercase text-muted-foreground opacity-60">
-                        Course
+                        Program
                       </span>
                       <span className="text-sm font-semibold text-primary/80">
-                        {student.course.code}
+                        {student.program.code}
                       </span>
                     </div>
                     <div className="flex flex-col gap-0.5">

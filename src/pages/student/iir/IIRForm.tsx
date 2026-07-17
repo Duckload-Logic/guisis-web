@@ -520,14 +520,14 @@ export default function IIRForm() {
             personalInfo: {
               ...updated.student.personalInfo,
               studentNumber: "",
-              course: { id: 0 },
+              program: { id: 0 },
               yearLevel: 1,
               section: "",
             },
           };
           fieldsToClearTouched.push(
             "student.personalInfo.studentNumber",
-            "student.personalInfo.course",
+            "student.personalInfo.program",
             "student.personalInfo.yearLevel",
             "student.personalInfo.section",
           );

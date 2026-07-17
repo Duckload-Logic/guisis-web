@@ -10,15 +10,15 @@ import { CACHE_TIMING } from "@/config/constants";
 import { GetIIRLookup } from "../services/service";
 
 /**
- * Fetch courses lookup data
- * @returns Query result with courses data
+ * Fetch programs lookup data
+ * @returns Query result with programs data
  */
-export function useCourses() {
+export function usePrograms() {
   return useLookupWithMeta(
-    QUERY_KEYS.iir.lookups.courses,
-    (config) => GetIIRLookup("courses", config),
+    QUERY_KEYS.iir.lookups.programs,
+    (config) => GetIIRLookup("programs", config),
     "GetIIRLookup",
-    "Fetch Courses",
+    "Fetch Programs",
     { ...CACHE_TIMING.IIR_LOOKUPS },
   );
 }

@@ -28,7 +28,7 @@ export const CheckStudentOnboarding = async (
 };
 
 const LOOKUP_GET_ROUTES = {
-  courses: API_ROUTES.iir.lookups.courses,
+  programs: API_ROUTES.iir.lookups.programs,
   genders: API_ROUTES.iir.lookups.genders,
   enrollmentYears: API_ROUTES.iir.lookups.enrollmentYears,
   religions: API_ROUTES.iir.lookups.religions,
@@ -450,7 +450,7 @@ export const iirService = {
     graduationYear?: number;
     filters?: {
       search?: string;
-      courseId?: number;
+      programId?: number;
       yearLevel?: number;
       enrollYear?: number;
     };

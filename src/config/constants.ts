@@ -110,7 +110,7 @@ export const CACHE_TIMING = {
 
   /**
    * IIR_LOOKUPS: 12 hours stale, 24 hours garbage collection
-   * Use for: IIR reference data (courses, genders, religions, etc.)
+   * Use for: IIR reference data (programs, genders, religions, etc.)
    */
   IIR_LOOKUPS: {
     staleTime: 12 * 60 * 60 * 1000,

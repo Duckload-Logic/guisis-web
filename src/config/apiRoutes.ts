@@ -120,7 +120,7 @@ export const API_ROUTES = Object.freeze({
    */
   iir: Object.freeze({
     lookups: Object.freeze({
-      courses: "/students/lookups/courses",
+      programs: "/students/lookups/programs",
       genders: "/students/lookups/genders",
       enrollmentYears: "/students/lookups/enrollment-years",
       religions: "/students/lookups/religions",

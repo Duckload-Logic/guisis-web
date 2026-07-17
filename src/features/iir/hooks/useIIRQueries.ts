@@ -70,7 +70,7 @@ export function useIIRPagination(params: QueryParam) {
   return useQuery({
     queryKey: [
       ...QUERY_KEYS.iir.inventory.all,
-      params.courseId,
+      params.programId,
       params.search,
       params.genderId,
       params.yearLevel,

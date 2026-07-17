@@ -64,6 +64,7 @@ export default function Dropdown({
     return (
       option.label ||
       option.statusName ||
+      option.programName ||
       option.courseName ||
       option.code ||
       option.name ||

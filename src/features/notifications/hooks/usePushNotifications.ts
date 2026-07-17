@@ -21,7 +21,9 @@ export function usePushNotifications() {
   const { isAuthenticated } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>(
-    typeof window !== "undefined" ? Notification.permission : "default",
+    typeof window !== "undefined" && typeof Notification !== "undefined"
+      ? Notification.permission
+      : "default",
   );
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -29,7 +31,12 @@ export function usePushNotifications() {
   const syncSubscription = useCallback(async () => {
     if (!isSupported) return;
     try {
-      if (Notification.permission !== "granted") return;
+      if (
+        typeof Notification === "undefined" ||
+        Notification.permission !== "granted"
+      ) {
+        return;
+      }
 
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
@@ -66,7 +73,8 @@ export function usePushNotifications() {
     if (
       typeof window !== "undefined" &&
       "serviceWorker" in navigator &&
-      "PushManager" in window
+      "PushManager" in window &&
+      "Notification" in window
     ) {
       setIsSupported(true);
       navigator.serviceWorker.ready.then((registration) => {
@@ -81,6 +89,9 @@ export function usePushNotifications() {
     if (!isSupported) return;
     setIsPending(true);
     try {
+      if (typeof Notification === "undefined") {
+        throw new Error("Notification is not supported");
+      }
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
@@ -143,7 +154,11 @@ export function usePushNotifications() {
       }
 
       setIsSubscribed(false);
-      setPermission(Notification.permission);
+      setPermission(
+        typeof Notification !== "undefined"
+          ? Notification.permission
+          : "default",
+      );
     } catch (error) {
       console.error("Failed to unsubscribe from push notifications:", error);
       throw error;

@@ -75,7 +75,7 @@ export default function BioCard({
               "text-[10px] font-bold uppercase text-primary",
             )}
           >
-            {data?.personalInfo?.course?.code || NOT_SPECIFIED}-
+            {data?.personalInfo?.program?.code || NOT_SPECIFIED}-
             {data?.personalInfo?.yearLevel || NOT_SPECIFIED}
           </span>
         </div>

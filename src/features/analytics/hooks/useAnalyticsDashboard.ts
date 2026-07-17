@@ -3,12 +3,12 @@ import { apiClient } from "@/lib/api";
 import { API_ROUTES } from "@/config/apiRoutes";
 import {
   IIRAnalyticsReportResponse,
-  AnalyticsCourse,
+  AnalyticsProgram,
 } from "../types/analytics.types";
 
 export function useAnalyticsDashboard() {
   const [data, setData] = useState<IIRAnalyticsReportResponse | null>(null);
-  const [courses, setCourses] = useState<AnalyticsCourse[]>([]);
+  const [programs, setPrograms] = useState<AnalyticsProgram[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,12 +18,12 @@ export function useAnalyticsDashboard() {
   const [currentFileName, setCurrentFileName] = useState<string>("");
 
   const fetchDashboard = useCallback(
-    async (year?: number, courseId?: number, statusId?: number) => {
+    async (year?: number, programId?: number, statusId?: number) => {
       try {
         setLoading(true);
         const params: any = {};
         if (year) params.year = year;
-        if (courseId) params.course_id = courseId;
+        if (programId) params.program_id = programId;
         if (statusId) params.status_id = statusId;
 
         const response = await apiClient.get(API_ROUTES.analytics.iirReport, {
@@ -44,24 +44,24 @@ export function useAnalyticsDashboard() {
     [],
   );
 
-  const fetchCourses = useCallback(async () => {
+  const fetchPrograms = useCallback(async () => {
     try {
-      const response = await apiClient.get("/students/lookups/courses");
+      const response = await apiClient.get("/students/lookups/programs");
       if (response.data.success) {
-        setCourses(response.data.data);
+        setPrograms(response.data.data);
       }
     } catch (err) {
-      console.error("Failed to fetch courses", err);
+      console.error("Failed to fetch programs", err);
     }
   }, []);
 
   const generatePreview = useCallback(
-    async (year?: number, courseId?: number) => {
+    async (year?: number, programId?: number) => {
       try {
         setIsDownloading(true);
         const params: any = {};
         if (year) params.year = year;
-        if (courseId) params.course_id = courseId;
+        if (programId) params.program_id = programId;
 
         const response = await apiClient.get(
           API_ROUTES.analytics.iirReportExport,
@@ -110,12 +110,12 @@ export function useAnalyticsDashboard() {
   }, [pdfUrl]);
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
+    fetchPrograms();
+  }, [fetchPrograms]);
 
   return {
     data,
-    courses,
+    programs,
     loading,
     error,
     refresh: fetchDashboard,

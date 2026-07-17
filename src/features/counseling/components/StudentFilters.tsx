@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 interface SearchFilterProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  // Specific course props
-  courses: any[];
-  selectedCourseId: number;
-  onCourseChange: (id: number) => void;
+  // Specific program props
+  programs: any[];
+  selectedProgramId: number;
+  onProgramChange: (id: number) => void;
   // Specific gender props
   genders: any[];
   selectedGenderId: number;
@@ -26,9 +26,9 @@ interface SearchFilterProps {
 export default function StudentFilters({
   searchTerm,
   onSearchChange,
-  courses,
-  selectedCourseId,
-  onCourseChange,
+  programs,
+  selectedProgramId,
+  onProgramChange,
   genders,
   selectedGenderId,
   onGenderChange,
@@ -61,10 +61,13 @@ export default function StudentFilters({
           )}
         >
           <Dropdown
-            label="Course"
-            value={selectedCourseId}
-            onChange={onCourseChange}
-            options={[{ id: 0, name: "All Courses" }, ...(courses || [])]}
+            label="Program"
+            value={selectedProgramId}
+            onChange={onProgramChange}
+            options={[
+              { id: 0, name: "All Programs" },
+              ...(programs || []),
+            ]}
           />
           <Dropdown
             label="Gender"
