@@ -1,6 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Bell } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell } from "lucide-react";
 import { usePageMetadata, useAuth } from "@/context";
 import {
   Card,
@@ -24,7 +31,6 @@ import {
   getIconForNotificationType,
   getNotificationIconClass,
   getNotificationTargetUrl,
-  getRolePath,
 } from "@/features/notifications/utils";
 
 const PAGE_SIZE = 10;
@@ -69,15 +75,11 @@ export default function NotificationsPage() {
   const markTouched = useMarkNotificationsTouched();
   const { user, activeRole } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const unreadCount = data?.unreadCount || 0;
   const totalPages = Math.max(data?.totalPages || 1, 1);
   const hasNextPage = page < totalPages;
   const roleName = activeRole?.name || user?.roles?.[0]?.name || "student";
-  const rolePath = getRolePath(roleName);
-  const fromPath = (location.state as { from?: string } | null)?.from;
-
 
   const requestNextPage = useCallback(() => {
     if (!hasNextPage || isFetching || loadMoreTimerRef.current) return;
@@ -109,7 +111,9 @@ export default function NotificationsPage() {
       const incoming = data.notifications || [];
       if (page === 1) return incoming;
 
-      const existingIds = new Set(previous.map((notification) => notification.id));
+      const existingIds = new Set(
+        previous.map((notification) => notification.id),
+      );
       const nextNotifications = incoming.filter(
         (notification) => !existingIds.has(notification.id),
       );
@@ -145,15 +149,6 @@ export default function NotificationsPage() {
     return () => observer.disconnect();
   }, [hasNextPage, isFetching, requestNextPage]);
 
-  const handleBack = () => {
-    if (fromPath) {
-      navigate(fromPath);
-      return;
-    }
-
-    navigate(`/${rolePath}`);
-  };
-
   const handleMarkAllRead = () => {
     if (unreadCount === 0 || markAllRead.isPending) return;
     setSelectedReadIds(
@@ -183,16 +178,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4 px-0 py-2 sm:space-y-6 sm:p-4 md:p-6">
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={handleBack}
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-
       <Card className="overflow-hidden rounded-xl border-border shadow-md">
         <CardHeader className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="min-w-0">
@@ -369,7 +354,9 @@ function NotificationItem({
         <span
           className={cn(
             "block line-clamp-1 text-sm sm:text-base",
-            unread ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
+            unread
+              ? "font-semibold text-foreground"
+              : "font-medium text-muted-foreground",
           )}
         >
           {notification.title}
