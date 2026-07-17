@@ -11,7 +11,6 @@ import {
   PinOff,
 } from "lucide-react";
 
-
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
@@ -231,8 +230,14 @@ export default function Navigation({
         <Drawer
           open={openDrawer}
           onOpenChange={setOpenDrawer}
+          handleOnly
+          fixed
+          autoFocus={false}
         >
-          <DrawerContent className="max-h-[85dvh] space-y-8 overflow-y-auto p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
+          <DrawerContent
+            className="max-h-[85dvh] overflow-hidden"
+            scrollClassName="space-y-8 pb-[calc(env(safe-area-inset-bottom)+2rem)]"
+          >
             {drawerMode === "menu" ? (
               <div className="space-y-3">
                 <p className="px-2 text-xs font-bold text-muted-foreground">
