@@ -302,6 +302,10 @@ const FormInput = forwardRef<
                   size="icon"
                   onClick={handleMicToggle}
                   title={isListening ? "Stop Dictation" : "Start Dictation"}
+                  aria-label={
+                    isListening ? "Stop voice input" : "Start voice input"
+                  }
+                  aria-pressed={isListening}
                   className={cn(
                     "h-9 w-9 rounded-xl p-0",
                     "transition-all",
@@ -311,7 +315,7 @@ const FormInput = forwardRef<
                           "hover:text-primary",
                   )}
                 >
-                  {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                  {isListening ? <Mic size={15} /> : <MicOff size={15} />}
                 </Button>
               </div>
             )}
