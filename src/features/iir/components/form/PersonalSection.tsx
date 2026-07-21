@@ -2,7 +2,19 @@ import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
 import { Dropdown, FormInput, Checkbox, DatePicker } from "@/components/form";
 import { SectionContainer } from "./SectionContainer";
 import { FormSectionTitle } from "./shared";
-import { User, MapPin, Phone, Briefcase, Activity, Camera, Upload, Pencil, X } from "lucide-react";
+import { 
+  User, 
+  MapPin, 
+  Phone, 
+  Briefcase, 
+  Activity, 
+  Camera, 
+  Upload, 
+  Pencil, 
+  X,
+  Info,
+  CheckCircle2
+} from "lucide-react";
 import {
   usePrograms,
   useGenders,
@@ -41,6 +53,9 @@ import {
 } from "@/features/iir/utils/twoByTwoPhoto";
 
 import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
+
+import formalImage from "@/assets/images/formal_image.png";
+import notFormalImage from "@/assets/images/notformal_image.png";
 
 interface FormErrors {
   [key: string]: string;
@@ -634,7 +649,50 @@ export const PersonalSection = forwardRef<
                   </div>
                 </div>
               </div>
+              
+              {/* PROFILE PICTURE GUIDELINES */}
+              <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+                <div className="mb-3 flex items-center gap-2">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-200">
+                    Profile Picture Requirements
+                  </h4>
+                </div>
+                <p className="mb-4 text-sm text-blue-800 dark:text-blue-300">
+                  Please upload a <strong>formal 2x2 picture</strong>. Ensure you are wearing appropriate professional or school attire against a plain background. Avoid selfies, heavy filters, or cluttered environments.
+                </p>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col items-center rounded-lg border border-emerald-200 bg-white/60 p-3 shadow-sm dark:border-emerald-800/50 dark:bg-emerald-950/40">
+                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" /> Upload this
+                    </h5>
+                    <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                      <img
+                        src={formalImage}
+                        alt="Formal 2x2 Example"
+                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center rounded-lg border border-red-200 bg-white/60 p-3 shadow-sm dark:border-red-800/50 dark:bg-red-950/40">
+                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                      <X className="h-4 w-4 shrink-0" /> Do Not Upload
+                    </h5>
+                    <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                      <img
+                        src={notFormalImage}
+                        alt="Non-Formal Example"
+                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* END PROFILE PICTURE GUIDELINES */}
             </div>
+
             <div className="md:col-span-2">
               <FormInput
                 label="First Name"
