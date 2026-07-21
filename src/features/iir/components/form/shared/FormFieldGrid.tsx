@@ -6,8 +6,8 @@ type GridColumns = "two" | "three" | "six" | "none";
 
 const columnClasses: Record<GridColumns, string> = {
   two: "md:grid-cols-2",
-  three: "md:grid-cols-3",
-  six: "md:grid-cols-6",
+  three: "md:grid-cols-2 lg:grid-cols-3",
+  six: "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
   none: "",
 };
 
@@ -25,7 +25,7 @@ export function FormFieldGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-6",
+        "grid min-w-0 grid-cols-1 gap-6",
         columnClasses[columns],
         className,
       )}

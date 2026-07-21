@@ -74,13 +74,13 @@ export function IIRFormNavigation({
         )}
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex w-full min-w-0 gap-3 sm:w-auto">
         <Button
           variant="outline"
           onClick={onPrevious}
           disabled={currentSection === 1 || isSaving}
           className={cn(
-            "flex h-12 items-center gap-2 rounded-2xl",
+            "flex h-12 min-w-0 items-center gap-2 rounded-2xl",
             "border-neutral-200/50 bg-white/30 px-5 font-bold",
             "text-neutral-700 shadow-sm transition-all duration-300",
             "hover:bg-white/60 dark:border-white/10 dark:bg-white/5",
@@ -98,7 +98,7 @@ export function IIRFormNavigation({
             aria-disabled={shouldDisableNext}
             title={isNextBlocked ? nextBlockedMessage : "Next Step"}
             className={cn(
-              "flex h-12 items-center gap-2 rounded-2xl bg-primary px-6",
+              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 sm:flex-none",
               "font-black tracking-tight text-primary-foreground shadow-xl",
               "shadow-primary/20 transition-all duration-300",
               "hover:bg-primary/90 active:scale-95 sm:px-10",
@@ -128,7 +128,7 @@ export function IIRFormNavigation({
             onClick={onSubmit}
             disabled={isSaving}
             className={cn(
-              "flex h-12 items-center gap-2 rounded-2xl bg-primary",
+              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary sm:flex-none",
               "px-6 tracking-tight",
               "text-primary-foreground shadow-xl shadow-primary/20",
               "transition-all duration-300 hover:bg-primary/90",

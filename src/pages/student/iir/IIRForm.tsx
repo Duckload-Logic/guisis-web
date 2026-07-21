@@ -860,8 +860,8 @@ export default function IIRForm() {
         <AnimationStyles />
 
         {/* Main Content Container */}
-        <div className="relative z-10 mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="lg:flex lg:items-start lg:gap-10">
+        <div className="relative z-10 mx-auto w-full min-w-0 max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="min-w-0 lg:flex lg:items-start lg:gap-10">
             {/* Sidebar Progress Tracker (Desktop) */}
             <aside className="hidden w-[300px] shrink-0 lg:sticky lg:top-24 lg:block">
               <SectionProgress
@@ -882,8 +882,8 @@ export default function IIRForm() {
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1">
-              <div className="flex flex-col gap-6">
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-col gap-6">
                 {/* Mobile/Tablet Progress Tracker */}
                 <div className="lg:hidden">
                   <SectionProgress
