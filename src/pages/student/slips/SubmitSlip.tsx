@@ -23,7 +23,6 @@ import {
   ChevronRight,
   Edit2,
   AlertCircle,
-  ClipboardList,
   Layers,
   Folder,
   Plus,
@@ -44,7 +43,6 @@ import { StepProgress } from "@/features/slips/components";
 import { AnimationStyles } from "@/components/ui/animations";
 import { CreateSlipRequest } from "@/features/slips/types";
 import { usePageMetadata } from "@/context";
-import { useMe } from "@/features/users/hooks/useMe";
 import { DatePicker, Dropdown } from "@/components/form";
 import FormInput, { CustomTooltip } from "@/components/form/FormInput";
 import { ExistingFileCard } from "./components/ExistingFileCard";
@@ -52,7 +50,7 @@ import { LocalFileCard } from "./components/LocalFileCard";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
-import goodCertImage from "@/assets/images/good certificate example.png";
+import goodCertImage from "@/assets/images/good-certificate-example.png";
 import badCertImage from "@/assets/images/bad-certificate-example.png";
 
 interface SubmitSlipFormState {
@@ -80,8 +78,7 @@ const EMPTY_FORM_DATA: SubmitSlipFormState = {
 };
 
 export default function SubmitSlip() {
-  const [formData, setFormData] =
-    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
+  const [formData, setFormData] = useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
   const [currentStep, setCurrentStep] = useState(1);
   const [previewData, setPreviewData] = useState<{
     file: File;
@@ -92,7 +89,6 @@ export default function SubmitSlip() {
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const { triggerToast } = useToast();
-  const { data: me } = useMe({});
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useGetSlipCategories();
@@ -389,7 +385,6 @@ export default function SubmitSlip() {
     <>
       <AnimationStyles />
       <div className="min-h-full bg-background">
-        {/* Main Content */}
         <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="space-y-6">
             <StepProgress
