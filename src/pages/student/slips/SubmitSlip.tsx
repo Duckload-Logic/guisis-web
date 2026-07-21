@@ -52,7 +52,7 @@ import { LocalFileCard } from "./components/LocalFileCard";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
-import goodCertImage from "@/assets/images/good certificate example.png";
+import goodCertImage from "@/assets/images/good-certificate-example.png";
 import badCertImage from "@/assets/images/bad-certificate-example.png";
 
 interface SubmitSlipFormState {

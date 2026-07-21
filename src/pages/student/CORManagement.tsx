@@ -70,16 +70,12 @@ export default function CORManagement() {
       const validation = await validateCorFile(file);
 
       if (!validation.isValid) {
-        triggerToast(
-          validation.error || "Please upload a valid COR file.",
-        );
+        triggerToast(validation.error || "Please upload a valid COR file.");
         return false;
       }
 
       setSelectedFile(file);
-      triggerToast(
-        "COR file verified. You may now confirm the upload.",
-      );
+      triggerToast("COR file verified. You may now confirm the upload.");
       return true;
     },
     [triggerToast],
@@ -98,9 +94,7 @@ export default function CORManagement() {
     [validateAndSelectCorFile],
   );
 
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const isValid = await validateAndSelectCorFile(e.target.files[0]);
 
@@ -119,9 +113,7 @@ export default function CORManagement() {
       const validation = await validateCorFile(selectedFile);
 
       if (!validation.isValid) {
-        triggerToast(
-          validation.error || "Please upload a valid COR file.",
-        );
+        triggerToast(validation.error || "Please upload a valid COR file.");
         return;
       }
 
@@ -141,23 +133,18 @@ export default function CORManagement() {
   const corUrl = user?.studentCorUrl;
   const isPdf = corUrl?.toLowerCase().endsWith(".pdf");
 
-  return(
-      <div
-        className={cn(
-        "w-full mx-auto pb-12", 
-        "px-4 sm:px-6 md:px-8",
-        )}
-      >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"></div>
+  return (
+    <div className={cn("w-full mx-auto pb-12", "px-4 sm:px-6 md:px-8")}>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"></div>
       <Card
         className={cn(
-          "flex h-[400px] flex-col overflow-hidden rounded-xl",
+          "flex min-h-[620px] flex-col overflow-hidden rounded-xl",
           "border-border bg-card shadow-md backdrop-blur-md",
-          "dark:bg-card/45 sm:h-[750px]",
-          "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
+          "dark:bg-card/45 sm:h-[750px] sm:min-h-0",
+          "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
         )}
         style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-        >
+      >
         <CardHeader
           className={cn(
             "shrink-0 border-b border-border/10 bg-muted/30 p-5",
@@ -232,10 +219,7 @@ export default function CORManagement() {
                   asChild
                 >
                   <a
-                    href={
-                      `${import.meta.env.VITE_API_BASE_URL}` +
-                      `${corUrl}`
-                    }
+                    href={`${import.meta.env.VITE_API_BASE_URL}` + `${corUrl}`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -247,31 +231,33 @@ export default function CORManagement() {
           </div>
         </CardHeader>
         <CardContent
-          className={cn("relative flex-1 overflow-hidden bg-muted/30 p-0")}
+          className={cn(
+            "relative min-h-[420px] flex-1 overflow-hidden bg-muted/30 p-0",
+            "sm:min-h-0",
+          )}
         >
           {corUrl ? (
             isPdf ? (
               <iframe
                 src={
-                  `${import.meta.env.VITE_API_BASE_URL}` +
-                  `${corUrl}#toolbar=0`
+                  `${import.meta.env.VITE_API_BASE_URL}` + `${corUrl}#toolbar=0`
                 }
-                className="h-full w-full border-none"
+                className="h-full min-h-[420px] w-full border-none sm:min-h-0"
                 title="COR PDF Preview"
               />
             ) : (
               <div
                 className={cn(
-                  "flex h-full w-full items-center",
-                  "justify-center p-8",
+                  "flex min-h-[420px] w-full items-start justify-center",
+                  "overflow-auto p-2 sm:h-full sm:min-h-0 sm:items-center sm:p-8",
                 )}
               >
                 <img
                   src={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
                   alt="COR Preview"
                   className={cn(
-                    "max-h-full max-w-full rounded-xl",
-                    "object-contain shadow-2xl",
+                    "block h-auto w-full max-w-full rounded-xl object-contain",
+                    "shadow-md sm:w-auto sm:max-h-full",
                   )}
                 />
               </div>
@@ -345,7 +331,7 @@ export default function CORManagement() {
                 dragActive
                   ? "scale-95 border-primary bg-primary/10"
                   : "border-border/30 hover:border-primary/50 " +
-                    "hover:bg-primary/5",
+                      "hover:bg-primary/5",
                 selectedFile ? "border-green-500/50 bg-green-500/5" : "",
               )}
               onDragEnter={handleDrag}
@@ -544,10 +530,7 @@ export default function CORManagement() {
               )}
             >
               <div className="relative">
-                <RefreshCw
-                  size={48}
-                  className="animate-spin text-primary"
-                />
+                <RefreshCw size={48} className="animate-spin text-primary" />
                 <div
                   className={cn(
                     "absolute inset-0 animate-ping rounded-full",
