@@ -42,8 +42,8 @@ export default function InfoNavigation({
       <nav
         className={cn(
           "no-scrollbar ml-0 flex w-full items-end gap-1",
-          "overflow-x-auto overflow-y-hidden sm:ml-4 sm:w-auto",
-          "sm:overflow-visible",
+          "overflow-x-auto overflow-y-hidden sm:ml-4",
+          "xl:w-auto xl:overflow-visible",
         )}
       >
         {filteredTabs.map((tab) => {
