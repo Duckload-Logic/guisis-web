@@ -2,3 +2,4 @@
 export * from "./validation";
 export * from "./dateTime";
 export * from "./text";
+export * from "./route";

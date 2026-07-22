@@ -12,6 +12,7 @@ import { useLogout as useLogoutMutation } from "@/features/auth/hooks";
 import { User, UserRole } from "@/features/users/types/user";
 import { resetSessionUIPreferences } from "@/utils/uiPreferences";
 import { DeletePushSubscribe } from "@/features/notifications/services";
+import { isAuthPath } from "@/utils";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -40,11 +41,7 @@ export const AuthProvider: React.FC<{
   const navigate = useNavigate();
   const [sessionExpired, setSessionExpired] = useState(false);
   const isCallbackPage = window.location.pathname === "/auth/callback";
-  const isAuthPage =
-    window.location.pathname === "/" ||
-    window.location.pathname === "/login" ||
-    window.location.pathname === "/register" ||
-    window.location.pathname.startsWith("/auth");
+  const isAuthPage = isAuthPath(window.location.pathname);
   const hasSessionFlag = localStorage.getItem("session_active") === "true";
 
   const {
@@ -94,11 +91,7 @@ export const AuthProvider: React.FC<{
       setSessionExpired(true);
 
       const pathname = window.location.pathname;
-      const isAlreadyOnAuthPage =
-        pathname === "/" ||
-        pathname === "/login" ||
-        pathname === "/register" ||
-        pathname.startsWith("/auth");
+      const isAlreadyOnAuthPage = isAuthPath(pathname);
 
       if (!isAlreadyOnAuthPage) {
         navigate("/login", { replace: true });
