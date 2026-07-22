@@ -50,52 +50,52 @@ export const IIRGate = ({
   // If PDS is not completed and this is not the form page
   if (!isSubmitted && !allowOnGuidancePage) {
     return (
-      <div className="relative">
-        {/* Blurred background content */}
-        <div className="pointer-events-none select-none blur-sm">
-          {children}
-        </div>
-
-        {/* Modal overlay */}
+      <div
+        className={cn(
+          "flex-1 flex flex-col items-center justify-center",
+          "w-full min-h-[60vh] p-4",
+        )}
+      >
+        <AnimationStyles />
         <div
           className={cn(
-            "animate-fade-in fixed inset-0 z-50 flex items-center",
-            "justify-center bg-background/60 p-4 backdrop-blur-sm",
+            "animate-fade-in-scale w-full max-w-md rounded-xl border",
+            "border-border bg-card p-8 text-card-foreground shadow-xl",
           )}
         >
-          <AnimationStyles />
           <div
             className={cn(
-              "animate-fade-in-scale w-full max-w-md rounded-xl border",
-              "border-border bg-card p-8 text-card-foreground shadow-xl",
+              "mx-auto mb-4 flex h-12 w-12 items-center justify-center",
+              "rounded-full bg-yellow-100 dark:bg-yellow-900/40",
             )}
           >
-            <div
+            <AlertTriangle
               className={cn(
-                "mx-auto mb-4 flex h-12 w-12 items-center justify-center",
-                "rounded-full bg-yellow-100 dark:bg-yellow-900/40",
+                "h-6 w-6 text-yellow-600 dark:text-yellow-400",
               )}
-            >
-              <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-            <h2 className="mb-2 text-center text-2xl font-bold text-foreground">
-              Access Restricted
-            </h2>
-            <p className="mb-6 text-center text-muted-foreground">
-              You must complete your student Individual Inventory Record (IIR)
-              form first to access this service.
-            </p>
-            <a
-              href="/student/iir/form"
-              className={cn(
-                "block w-full rounded-lg bg-primary py-3 text-center",
-                "font-semibold text-primary-foreground transition-colors",
-                "hover:bg-primary/90",
-              )}
-            >
-              Go to IIR Form
-            </a>
+            />
           </div>
+          <h2
+            className={cn(
+              "mb-2 text-center text-2xl font-bold text-foreground",
+            )}
+          >
+            Access Restricted
+          </h2>
+          <p className="mb-6 text-center text-muted-foreground">
+            You must complete your student Individual Inventory Record (IIR)
+            form first to access this service.
+          </p>
+          <a
+            href="/student/iir/form"
+            className={cn(
+              "block w-full rounded-lg bg-primary py-3 text-center",
+              "font-semibold text-primary-foreground transition-colors",
+              "hover:bg-primary/90",
+            )}
+          >
+            Go to IIR Form
+          </a>
         </div>
       </div>
     );
