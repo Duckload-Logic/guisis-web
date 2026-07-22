@@ -323,7 +323,12 @@ export default function Layout({
                     />
                   )}
                   {isLoading ? (
-                    <div className="h flex min-h-[400px] w-full items-center justify-center">
+                    <div
+                      className={cn(
+                        "flex min-h-[60vh] w-full",
+                        "items-center justify-center",
+                      )}
+                    >
                       <Spinner size="lg" />
                     </div>
                   ) : null}
