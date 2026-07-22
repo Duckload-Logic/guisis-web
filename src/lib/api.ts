@@ -1,4 +1,4 @@
-import { capitalizeFirstLetter } from "@/utils";
+import { capitalizeFirstLetter, isAuthPath } from "@/utils";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { decamelizeKeys, camelizeKeys } from "humps";
 
@@ -115,11 +115,7 @@ const redirectToLoginAfterSessionExpiry = () => {
   window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
 
   const pathname = window.location.pathname;
-  const isAlreadyOnAuthPage =
-    pathname === "/" ||
-    pathname === "/login" ||
-    pathname === "/register" ||
-    pathname.startsWith("/auth");
+  const isAlreadyOnAuthPage = isAuthPath(pathname);
 
   if (!isAlreadyOnAuthPage) {
     window.location.replace("/login");
