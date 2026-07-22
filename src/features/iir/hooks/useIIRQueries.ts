@@ -21,10 +21,19 @@ export function useIIRStatus() {
   return useQuery({
     queryKey: QUERY_KEYS.iir.inventory.byUserId(userId || ""),
     queryFn: async () => {
-      const iirRecord = await GetIIRByUserId(userId || "");
-      return iirRecord?.isSubmitted;
+      try {
+        const iirRecord = await GetIIRByUserId(userId || "");
+        return iirRecord?.isSubmitted ?? false;
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (status === 404 || status === 500) {
+          return false;
+        }
+        throw error;
+      }
     },
     enabled: !!userId,
+    retry: false,
     staleTime: CACHE_TIMING.MEDIUM.staleTime,
     gcTime: CACHE_TIMING.MEDIUM.gcTime,
   });
