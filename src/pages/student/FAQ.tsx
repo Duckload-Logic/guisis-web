@@ -297,23 +297,29 @@ export default function FAQ() {
                             {isOpen ? "Hide" : "Show"}
                             <ChevronDown
                               className={cn(
-                                "h-3.5 w-3.5 transition-transform duration-200",
+                                "h-3.5 w-3.5 transition-transform duration-300",
                                 isOpen && "rotate-180",
                               )}
                             />
                           </span>
                         </button>
 
-                        {isOpen && (
-                          <div
-                            className={cn(
-                              "px-4 pb-4 pt-0 text-sm leading-7 text-muted-foreground",
-                              "break-words animate-in fade-in slide-in-from-top-1 duration-200",
-                            )}
-                          >
-                            {item.answer}
+                        <div
+                          className={cn(
+                            "grid transition-all duration-300 ease-in-out",
+                            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                          )}
+                        >
+                          <div className="overflow-hidden">
+                            <div
+                              className={cn(
+                                "px-4 pb-4 pt-0 text-sm leading-7 text-muted-foreground break-words",
+                              )}
+                            >
+                              {item.answer}
+                            </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     );
                   })}

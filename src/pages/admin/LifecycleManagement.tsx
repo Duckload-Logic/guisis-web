@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  useCourses,
+  usePrograms,
   useIIRPagination,
 } from "@/features/iir/hooks";
-import { Course, IIRProfileView } from "@/features/iir/types";
+import { Program, IIRProfileView } from "@/features/iir/types";
 import { iirService } from "@/features/iir/services/service";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Spinner } from "@/components/shared";
@@ -52,7 +52,7 @@ interface PendingAction {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function isEligibleForGraduation(student: IIRProfileView): boolean {
-  const code = student.course?.code?.toUpperCase() ?? "";
+  const code = student.program?.code?.toUpperCase() ?? "";
   const isDiploma = DIPLOMA_PREFIX.some((p) => code.startsWith(p));
   const isBachelor = code.startsWith("BS");
   return (
@@ -166,7 +166,7 @@ function StudentRow({
           </p>
         </div>
         <p className="self-center truncate text-xs text-muted-foreground">
-          {student.course?.name ?? "—"}
+          {student.program?.name ?? "—"}
         </p>
         <p className="self-center text-center text-xs text-muted-foreground">
           Year {student.yearLevel}
@@ -205,12 +205,12 @@ function StudentRow({
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function LifecycleManagement() {
-  const { data: courses } = useCourses();
+  const { data: programs } = usePrograms();
 
   // Filters
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const [courseId, setCourseId] = useState(0);
+  const [programId, setProgramId] = useState(0);
   const [yearLevel, setYearLevel] = useState(0);
   const [enrollYear, setEnrollYear] = useState(0);
   const [page, setPage] = useState(1);
@@ -220,7 +220,7 @@ export default function LifecycleManagement() {
     page,
     pageSize,
     search: debouncedSearch,
-    courseId,
+    programId,
     yearLevel,
     statusId: 1, // Default: Active students only for lifecycle management
   });
@@ -321,7 +321,7 @@ export default function LifecycleManagement() {
         graduationYear: pendingAction.needsYear ? graduationYear : undefined,
         filters: {
           search: debouncedSearch,
-          courseId,
+          programId,
           yearLevel,
           enrollYear,
         },
@@ -377,12 +377,12 @@ export default function LifecycleManagement() {
               />
             </div>
 
-            {/* Course */}
+            {/* Program */}
             <div className="relative">
               <select
-                value={courseId}
+                value={programId}
                 onChange={(e) => {
-                  setCourseId(Number(e.target.value));
+                  setProgramId(Number(e.target.value));
                   setPage(1);
                 }}
                 className={cn(
@@ -391,13 +391,13 @@ export default function LifecycleManagement() {
                   "transition-colors focus:border-primary/30 focus:outline-none",
                 )}
               >
-                <option value={0}>All Courses</option>
-                {courses?.map((c: Course) => (
+                <option value={0}>All Programs</option>
+                {programs?.map((p: Program) => (
                   <option
-                    key={c.id}
-                    value={c.id}
+                    key={p.id}
+                    value={p.id}
                   >
-                    {c.code}
+                    {p.code}
                   </option>
                 ))}
               </select>
@@ -521,7 +521,7 @@ export default function LifecycleManagement() {
                   Student
                 </p>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                  Course
+                  Program
                 </p>
                 <p
                   className={cn(

@@ -38,6 +38,7 @@ export const useAppointments = (
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
     enabled: isMe ? !!me?.email : true,
   });
 };
@@ -50,6 +51,7 @@ export const useAppointmentsStats = ({ params }: { params?: QueryParam }) => {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 };
 

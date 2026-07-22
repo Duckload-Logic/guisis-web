@@ -5,7 +5,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { Spinner, FullScreenLoader } from "@/components/shared";
+import { FullScreenLoader, FriendlyErrorState } from "@/components/shared";
 import {
   useIIRProfile,
   useUserIIR,
@@ -13,8 +13,8 @@ import {
 } from "@/features/iir/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
 import type { TabId } from "@/features/iir/constants";
-import { asText } from "@/features/iir/utils";
-import { Edit, User, Printer, Trash } from "lucide-react";
+import { getErrorMessage } from "@/lib/api";
+import { Edit, User, Printer } from "lucide-react";
 import {
   BioCard,
   InfoContent,
@@ -52,6 +52,7 @@ export default function IIRProfile() {
     isLoading: isProfileLoading,
     isError,
     error,
+    refetch: refetchProfile,
   } = useIIRProfile(finalIirId || "");
 
   useEffect(() => {
@@ -202,17 +203,18 @@ export default function IIRProfile() {
   }
 
   // Handle errors from the profile query
-  if (isError || !studentData)
+  if (isError || !studentData) {
     return (
-      <div
-        className={cn(
-          "rounded-2xl border border-border bg-card p-6",
-          "text-sm text-card-foreground",
-        )}
-      >
-        {asText(error) || "Error loading student profile data."}
-      </div>
+      <FriendlyErrorState
+        title="We couldn't load this IIR profile"
+        description={getErrorMessage(error)}
+        helperText="The record may be temporarily unavailable. Please try again, or contact the Guidance Office if the issue continues."
+        actionLabel="Reload profile"
+        onRetry={() => refetchProfile()}
+        className="mx-auto mt-4"
+      />
     );
+  }
 
   return (
     <>
@@ -259,22 +261,22 @@ export default function IIRProfile() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-        <div 
+        <div
         className={cn(
-          "mx-auto mt-4 flex w-full flex-col gap-8", 
-          "px-4 sm:px-6 md:px-8"                     
+          "mx-auto mt-4 flex w-full flex-col gap-8",
+          "px-4 sm:px-6 md:px-8"
         )}
         >
         <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
-          
-          <div 
+
+          <div
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
-            <BioCard data={studentData?.student} />
+            <BioCard data={studentData?.student} iirId={finalIirId} />
           </div>
 
-          <div 
+          <div
             className="animate-fade-in-up flex h-full flex-col gap-0 xl:col-span-3"
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >

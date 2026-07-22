@@ -4,9 +4,9 @@
  */
 
 import React from "react";
-import { AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+
+import { getErrorMessage } from "@/lib/api";
+import { FriendlyErrorState } from "./FriendlyErrorState";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -39,31 +39,12 @@ export class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div
-            className={cn(
-              "flex flex-col items-center justify-center gap-4 rounded-lg",
-              "border border-red-200 bg-red-50 p-8",
-            )}
-          >
-            <AlertCircle className="h-8 w-8 text-red-600" />
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-red-900">
-                Something went wrong
-              </h2>
-              <p className="mt-1 text-sm text-red-700">
-                {
-                  // this.state.error?.message ||
-                  "An unexpected error occurred"
-                }
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => this.setState({ hasError: false })}
-            >
-              Try again
-            </Button>
-          </div>
+          <FriendlyErrorState
+            title="Something went wrong"
+            description={getErrorMessage(this.state.error)}
+            helperText="Your session and data are safe. Please try again or refresh the page if the issue continues."
+            onRetry={() => this.setState({ hasError: false, error: null })}
+          />
         )
       );
     }

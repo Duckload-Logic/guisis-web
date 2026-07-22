@@ -46,7 +46,7 @@ const getSectionIdForField = (fieldPath: string): number => {
       fieldPath.startsWith("student.basicInfo") ||
       fieldPath.includes("suffix") ||
       fieldPath.includes("studentNumber") ||
-      fieldPath.includes("course")
+      fieldPath.includes("program")
     ) {
       return 1;
     }

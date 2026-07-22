@@ -110,7 +110,7 @@ export const CACHE_TIMING = {
 
   /**
    * IIR_LOOKUPS: 12 hours stale, 24 hours garbage collection
-   * Use for: IIR reference data (courses, genders, religions, etc.)
+   * Use for: IIR reference data (programs, genders, religions, etc.)
    */
   IIR_LOOKUPS: {
     staleTime: 12 * 60 * 60 * 1000,
@@ -130,16 +130,14 @@ export const CACHE_TIMING = {
 // Shared layout style utilities for student and admin modules
 export const LAYOUT_STYLES = {
   CARD:
-    "overflow-hidden rounded-[18px] border border-border bg-card " +
-    "shadow-sm",
+    "overflow-hidden rounded-xl border border-border bg-card " +
+    "shadow-md",
   INNER:
     "border border-border/55 bg-muted/40 shadow-md",
   ALERT:
-    "animate-fade-in-up rounded-[18px] border border-rose-400/45 " +
+    "animate-fade-in-up rounded-xl border border-rose-400/45 " +
     "bg-rose-50/80 px-5 py-4 text-rose-600 " +
     "shadow-[0_10px_26px_rgba(244,63,94,0.08)] backdrop-blur-xl " +
     "dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400 " +
     "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
 } as const;
-
-

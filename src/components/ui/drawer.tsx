@@ -32,10 +32,16 @@ const DrawerOverlay = React.forwardRef<
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
+interface DrawerContentProps extends React.ComponentPropsWithoutRef<
+  typeof DrawerPrimitive.Content
+> {
+  scrollClassName?: string;
+}
+
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DrawerContentProps
+>(({ className, children, scrollClassName, ...props }, ref) => (
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content
@@ -46,8 +52,16 @@ const DrawerContent = React.forwardRef<
       )}
       {...props}
     >
-      <div className="mx-auto my-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
-      <div className="flex-1 overflow-y-auto p-4 pt-0 sm:p-0">{children}</div>
+      <DrawerPrimitive.Handle className="mx-auto my-4 h-2 w-[100px] shrink-0 rounded-full bg-muted" />
+      <div
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pt-0",
+          "[touch-action:pan-y] [-webkit-overflow-scrolling:touch]",
+          scrollClassName,
+        )}
+      >
+        {children}
+      </div>
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ));

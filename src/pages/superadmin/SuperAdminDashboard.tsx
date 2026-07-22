@@ -296,7 +296,7 @@ export default function SuperAdminDashboard() {
       </div>
 
       {/* Operations Overview and Status Dashboard */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Core Services Health Board */}
         <Card className="col-span-1">
           <CardHeader>
@@ -312,26 +312,32 @@ export default function SuperAdminDashboard() {
               <div
                 key={service.name}
                 className={cn(
-                  "flex items-start gap-3 rounded-xl border",
+                  "flex min-w-0 items-start gap-3 rounded-xl border",
                   "border-white/5 bg-white/[0.01] p-3 text-sm",
                 )}
               >
                 <div
                   className={
-                    "mt-0.5 rounded-lg bg-muted/40 p-2 " +
+                    "mt-0.5 shrink-0 rounded-lg bg-muted/40 p-2 " +
                     "text-muted-foreground"
                   }
                 >
                   <service.icon size={16} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-foreground">
+                  <div
+                    className={cn(
+                      "flex min-w-0 flex-col gap-2",
+                      "min-[540px]:flex-row min-[540px]:items-center",
+                      "min-[540px]:justify-between",
+                    )}
+                  >
+                    <p className="min-w-0 pr-2 font-semibold text-foreground">
                       {service.name}
                     </p>
                     <span
                       className={cn(
-                        "inline-flex items-center gap-1.5",
+                        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap",
                         "rounded-full px-2 py-0.5 text-[10px] font-medium",
                         service.isHealthy
                           ? "bg-emerald-500/10 text-emerald-500"
@@ -353,7 +359,7 @@ export default function SuperAdminDashboard() {
                       {service.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 break-words text-xs text-muted-foreground">
                     {service.desc}
                   </p>
                 </div>
@@ -363,7 +369,7 @@ export default function SuperAdminDashboard() {
         </Card>
 
         {/* Live System Activity Feed */}
-        <Card className="col-span-1 lg:col-span-2">
+        <Card className="col-span-1 xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-semibold">
@@ -389,12 +395,12 @@ export default function SuperAdminDashboard() {
                       <div
                         key={log.id}
                         className={cn(
-                          "flex flex-col gap-2 py-3.5 first:pt-0",
+                          "flex min-w-0 flex-col gap-2 py-3.5 first:pt-0",
                           "last:pb-0 sm:flex-row sm:items-center",
                           "sm:justify-between",
                         )}
                       >
-                        <div className="space-y-1">
+                        <div className="min-w-0 space-y-1">
                           <div className="flex items-center gap-2">
                             <span
                               className={cn(
@@ -415,11 +421,11 @@ export default function SuperAdminDashboard() {
                               {log.action.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="break-words text-xs text-muted-foreground">
                             {log.message}
                           </p>
                         </div>
-                        <div className="text-left sm:text-right">
+                        <div className="shrink-0 text-left sm:text-right">
                           <p className="text-[10px] text-muted-foreground/60">
                             {log.userEmail || "System Agent"}
                           </p>

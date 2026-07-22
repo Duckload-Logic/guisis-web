@@ -26,6 +26,7 @@ import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { toISODateString, format12HourTime } from "@/utils";
 
 export default function Dashboard() {
@@ -132,6 +133,16 @@ export default function Dashboard() {
       }),
     ) || [];
 
+  const getUserInitials = (user?: { firstName?: string; lastName?: string }) => {
+    const firstInitial = user?.firstName?.trim()?.[0] || "";
+    const lastInitial = user?.lastName?.trim()?.[0] || "";
+    return `${firstInitial}${lastInitial}`.toUpperCase() || "ST";
+  };
+
+  const getUserFullName = (user?: { firstName?: string; lastName?: string }) => {
+    return [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Student";
+  };
+
   const visitorConfig = {
     visitors: {
       label: "Visitors",
@@ -156,8 +167,8 @@ export default function Dashboard() {
   return (
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-10", 
-          "px-4 sm:px-6 md:px-8",                   
+          "mx-auto flex w-full flex-col space-y-8 pb-10",
+          "px-4 sm:px-6 md:px-8",
         )}
       >
       {/* Outdated Academic Settings Warning */}
@@ -218,12 +229,12 @@ export default function Dashboard() {
       {showDailyTip && (
         <div
           className={cn(
-            "animate-fade-in-up relative", 
+            "animate-fade-in-up relative",
             "overflow-hidden rounded-3xl border border-red-500/20",
             "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
-            "backdrop-blur-md", 
+            "backdrop-blur-md",
           )}
-          style={{ animationDelay: "0.5s", animationFillMode: "both" }} 
+          style={{ animationDelay: "0.5s", animationFillMode: "both" }}
         >
           <div className="flex items-start gap-5">
             <div className="rounded-2xl bg-teal-500 p-3 text-white shadow-lg shadow-teal-500/20">
@@ -258,12 +269,12 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <DashboardMetrics metrics={metrics} />
         {/* Monthly Visitors Analytics */}
-        <Card 
+        <Card
           className={cn(
             "overflow-hidden shadow-md backdrop-blur-md",
             "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
           )}
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-base font-bold">
@@ -318,13 +329,13 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-8 xl:flex-row">
         {/* Main Content: Upcoming Appointments */}
-            <div className="flex-1 space-y-8">  
-            <Card 
+            <div className="flex-1 space-y-8">
+            <Card
               className={cn(
                 "overflow-hidden shadow-md backdrop-blur-md",
-                "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg" 
+                "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
               )}
-              style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+              style={{ animationDelay: "0.15s", animationFillMode: "both" }}
             >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold">
@@ -367,15 +378,18 @@ export default function Dashboard() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <Avatar className="size-8 rounded-lg">
-                                <AvatarImage src={apt.user?.profilePicture} />
+                                <AvatarImage
+                                  src={getProfilePictureUrl(apt.user?.profilePicture)}
+                                  alt={getUserFullName(apt.user)}
+                                  className="object-cover"
+                                />
                                 <AvatarFallback className="rounded-lg bg-primary/10 text-[10px] font-bold uppercase text-primary">
-                                  {apt.user?.firstName?.[0]}
-                                  {apt.user?.lastName?.[0]}
+                                  {getUserInitials(apt.user)}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                  {apt.user?.firstName} {apt.user?.lastName}
+                                  {getUserFullName(apt.user)}
                                 </p>
                                 <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
                                   {apt.user?.studentNumber}
@@ -407,9 +421,9 @@ export default function Dashboard() {
         </div>
 
         {/* Sidebar: Slips & Analytics */}
-        <div 
-          className="w-full space-y-8 xl:w-96 animate-fade-in-up" 
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }} 
+        <div
+          className="w-full space-y-8 xl:w-96 animate-fade-in-up"
+          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           {/* Slip Status Tracker */}
           <SlipStatusTracker
@@ -433,4 +447,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

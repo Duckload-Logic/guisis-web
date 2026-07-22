@@ -122,7 +122,7 @@ const personalInfoSchema = z.object({
     { message: `Must be one of: ${COMPLEXIONS.join(", ")}` },
   ),
   highSchoolGWA: numericString,
-  course: z.object({
+  program: z.object({
     id: z.number(),
     name: z.string().optional(),
     code: z.string().optional(),

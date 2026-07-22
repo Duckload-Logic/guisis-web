@@ -5,7 +5,15 @@ import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
+/**
+ * @deprecated Use `Input` from `@/components/ui/input` and `Textarea`
+ * from `@/components/ui/textarea` for new form fields. This wrapper stays
+ * temporarily to avoid breaking existing React Hook Form integrations.
+ */
 const FormInput = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   {
@@ -169,7 +177,7 @@ const FormInput = forwardRef<
         : value !== undefined && value !== null && value !== ""
           ? "bg-muted/20 border-primary/30 focus:bg-glass-bg " +
             "dark:focus:bg-glass-bg/50 focus:border-primary/50 " +
-            "focus:ring-2 focus:ring-primary/5 shadow-sm"
+            "focus:ring-2 focus:ring-primary/5 shadow-md"
           : required
             ? "hover:border-destructive/40 focus:border-destructive/50 " +
               "focus:ring-2 focus:ring-destructive/5"
@@ -230,7 +238,7 @@ const FormInput = forwardRef<
           )}
           <div className="relative w-full">
             {isTextboxType ? (
-              <textarea
+              <Textarea
                 id={id}
                 name={name}
                 ref={ref as any}
@@ -256,7 +264,7 @@ const FormInput = forwardRef<
                 maxLength={maxChars}
               />
             ) : (
-              <input
+              <Input
                 id={id}
                 name={name}
                 ref={ref as any}
@@ -288,12 +296,18 @@ const FormInput = forwardRef<
 
             {isTextboxType && browserSupportsSpeechRecognition && !disabled && (
               <div className="absolute bottom-4 right-2 z-10">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={handleMicToggle}
                   title={isListening ? "Stop Dictation" : "Start Dictation"}
+                  aria-label={
+                    isListening ? "Stop voice input" : "Start voice input"
+                  }
+                  aria-pressed={isListening}
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg p-0",
+                    "h-9 w-9 rounded-xl p-0",
                     "transition-all",
                     isListening
                       ? "animate-pulse bg-primary text-white ring-4 ring-primary/20"
@@ -301,8 +315,8 @@ const FormInput = forwardRef<
                           "hover:text-primary",
                   )}
                 >
-                  {isListening ? <MicOff size={15} /> : <Mic size={15} />}
-                </button>
+                  {isListening ? <Mic size={15} /> : <MicOff size={15} />}
+                </Button>
               </div>
             )}
           </div>
@@ -373,7 +387,7 @@ export function CustomTooltip({
         <div
           className={cn(
             "animate-in fade-in slide-in-from-bottom-2 fixed z-50",
-            "max-w-xs whitespace-normal rounded-md border-2 border-primary",
+            "max-w-xs whitespace-normal rounded-xl border-2 border-primary",
             "bg-card px-3 py-2 text-sm text-card-foreground shadow-lg",
             "duration-200",
           )}

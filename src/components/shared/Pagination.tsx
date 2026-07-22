@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,15 +14,15 @@ export interface PaginationProps {
 }
 
 /**
- * Calculate which page numbers to display in the pagination
- * Shows siblings around current page and always shows first/last pages
+ * Calculate which page numbers to display in the pagination.
+ * Shows siblings around current page and always shows first/last pages.
  */
 const calculatePaginationRange = (
   currentPage: number,
   totalPages: number,
   siblingCount: number = 1,
 ): (number | string)[] => {
-  const totalPaginationItems = siblingCount * 2 + 3; // siblings + current + first + last
+  const totalPaginationItems = siblingCount * 2 + 3;
 
   if (totalPages <= totalPaginationItems) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -36,10 +36,8 @@ const calculatePaginationRange = (
 
   const range: (number | string)[] = [];
 
-  // Always show first page
   range.push(1);
 
-  // Show left ellipsis and siblings
   if (showLeftEllipsis) {
     range.push("left-ellipsis");
   }
@@ -50,7 +48,6 @@ const calculatePaginationRange = (
     }
   }
 
-  // Show right ellipsis and last page
   if (showRightEllipsis) {
     range.push("right-ellipsis");
   }
@@ -69,28 +66,27 @@ export const Pagination: React.FC<PaginationProps> = ({
   isLoading = false,
   className,
 }) => {
-  const navRef = useRef<HTMLElement>(null);
-
-  // Validate inputs
   if (totalPages < 1) return null;
+
   if (currentPage < 1 || currentPage > totalPages) {
     console.warn("Invalid currentPage provided to Pagination component");
   }
 
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
   const paginationRange = useMemo(
-    () => calculatePaginationRange(currentPage, totalPages, siblingCount),
-    [currentPage, totalPages, siblingCount],
+    () => calculatePaginationRange(safeCurrentPage, totalPages, siblingCount),
+    [safeCurrentPage, totalPages, siblingCount],
   );
 
   const handlePageChange = (page: number) => {
-    if (!isLoading && page !== currentPage && page >= 1 && page <= totalPages) {
+    if (
+      !isLoading &&
+      page !== safeCurrentPage &&
+      page >= 1 &&
+      page <= totalPages
+    ) {
       onPageChange(page);
-      if (navRef.current?.parentElement) {
-        navRef.current.parentElement.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
     }
   };
 
@@ -106,122 +102,129 @@ export const Pagination: React.FC<PaginationProps> = ({
 
   return (
     <nav
-      ref={navRef}
       className={cn(
-        "flex flex-col-reverse gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        "flex w-full flex-col-reverse gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6",
         className,
       )}
       aria-label="Pagination navigation"
       role="navigation"
     >
-      {/* Page Info - Mobile first, then pushed to left on desktop */}
       {showPageInfo && (
-        <div className="flex items-center justify-center gap-1 sm:justify-start">
+        <div className="flex min-w-0 shrink-0 items-center justify-center gap-1 sm:justify-start">
           <span className="text-xs text-muted-foreground sm:text-sm">
             Page{" "}
-            <span className="font-semibold text-foreground">{currentPage}</span>{" "}
+            <span className="font-semibold text-foreground">
+              {safeCurrentPage}
+            </span>{" "}
             of{" "}
             <span className="font-semibold text-foreground">{totalPages}</span>
           </span>
         </div>
       )}
 
-      {/* Pagination Controls */}
-      <div className="flex items-center justify-center gap-1">
-        {/* Previous Button */}
+      <div className="flex min-w-0 items-center justify-center gap-2 sm:justify-end">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handlePageChange(currentPage - 1)}
-          onKeyDown={(e) => handleKeyDown(e, currentPage - 1)}
-          disabled={currentPage === 1 || isLoading}
+          onClick={() => handlePageChange(safeCurrentPage - 1)}
+          onKeyDown={(e) => handleKeyDown(e, safeCurrentPage - 1)}
+          disabled={safeCurrentPage === 1 || isLoading}
           aria-label="Previous page"
           title="Previous page"
-          className="hidden sm:inline-flex"
+          className="hidden h-11 shrink-0 px-4 sm:inline-flex md:min-w-[7.5rem]"
         >
           <ChevronLeft className="h-4 w-4" />
           <span className="hidden md:inline">Previous</span>
         </Button>
 
-        {/* Mobile Previous Button (Icon only) */}
         <Button
           variant="outline"
           size="icon"
-          onClick={() => handlePageChange(currentPage - 1)}
-          onKeyDown={(e) => handleKeyDown(e, currentPage - 1)}
-          disabled={currentPage === 1 || isLoading}
+          onClick={() => handlePageChange(safeCurrentPage - 1)}
+          onKeyDown={(e) => handleKeyDown(e, safeCurrentPage - 1)}
+          disabled={safeCurrentPage === 1 || isLoading}
           aria-label="Previous page"
           title="Previous page"
-          className="sm:hidden"
+          className="h-11 w-11 shrink-0 p-0 sm:hidden"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft
+            className="h-5 w-5 text-current"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          />
         </Button>
 
-        {/* Page Numbers */}
-        <div className="hidden items-center gap-1 md:flex">
-          {paginationRange.map((item, idx) => {
-            const isEllipsis = typeof item === "string";
+        <div className="flex shrink-0 items-center justify-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {paginationRange.map((item, idx) => {
+              const isEllipsis = typeof item === "string";
 
-            if (isEllipsis) {
+              if (isEllipsis) {
+                return (
+                  <div
+                    key={`ellipsis-${idx}`}
+                    className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground md:flex"
+                    aria-hidden="true"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </div>
+                );
+              }
+
+              const isActive = item === safeCurrentPage;
+
               return (
-                <div
-                  key={`ellipsis-${idx}`}
-                  className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground"
-                  aria-hidden="true"
+                <Button
+                  key={item}
+                  variant={isActive ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => handlePageChange(Number(item))}
+                  onKeyDown={(e) => handleKeyDown(e, Number(item))}
+                  disabled={isLoading}
+                  aria-current={isActive ? "page" : undefined}
+                  aria-label={`Page ${item}`}
+                  title={`Go to page ${item}`}
+                  className={cn(
+                    "h-11 w-11 shrink-0 px-0 text-sm font-semibold",
+                    !isActive && "hidden md:inline-flex",
+                  )}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
-                </div>
+                  {item}
+                </Button>
               );
-            }
-
-            const isActive = item === currentPage;
-
-            return (
-              <Button
-                key={item}
-                variant={isActive ? "default" : "outline"}
-                size="sm"
-                onClick={() => handlePageChange(Number(item))}
-                onKeyDown={(e) => handleKeyDown(e, Number(item))}
-                disabled={isLoading}
-                aria-current={isActive ? "page" : undefined}
-                aria-label={`Page ${item}`}
-                title={`Go to page ${item}`}
-                className="h-9 min-w-9 p-0"
-              >
-                {item}
-              </Button>
-            );
-          })}
+            })}
+          </div>
         </div>
 
-        {/* Next Button */}
         <Button
           variant="outline"
           size="sm"
-          onClick={() => handlePageChange(currentPage + 1)}
-          onKeyDown={(e) => handleKeyDown(e, currentPage + 1)}
-          disabled={currentPage === totalPages || isLoading}
+          onClick={() => handlePageChange(safeCurrentPage + 1)}
+          onKeyDown={(e) => handleKeyDown(e, safeCurrentPage + 1)}
+          disabled={safeCurrentPage === totalPages || isLoading}
           aria-label="Next page"
           title="Next page"
-          className="hidden sm:inline-flex"
+          className="hidden h-11 shrink-0 px-4 sm:inline-flex md:min-w-[6.5rem]"
         >
           <span className="hidden md:inline">Next</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
 
-        {/* Mobile Next Button (Icon only) */}
         <Button
           variant="outline"
           size="icon"
-          onClick={() => handlePageChange(currentPage + 1)}
-          onKeyDown={(e) => handleKeyDown(e, currentPage + 1)}
-          disabled={currentPage === totalPages || isLoading}
+          onClick={() => handlePageChange(safeCurrentPage + 1)}
+          onKeyDown={(e) => handleKeyDown(e, safeCurrentPage + 1)}
+          disabled={safeCurrentPage === totalPages || isLoading}
           aria-label="Next page"
           title="Next page"
-          className="sm:hidden"
+          className="h-11 w-11 shrink-0 p-0 sm:hidden"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight
+            className="h-5 w-5 text-current"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          />
         </Button>
       </div>
     </nav>

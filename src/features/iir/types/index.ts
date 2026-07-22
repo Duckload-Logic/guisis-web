@@ -1,4 +1,3 @@
-
 export interface Gender {
   id: number;
   name?: string;
@@ -14,7 +13,7 @@ export interface Religion {
   name?: string;
 }
 
-export interface Course {
+export interface Program {
   id: number;
   name?: string;
   code?: string;
@@ -142,6 +141,7 @@ export interface EmergencyContact {
 export interface PersonalInfo {
   id?: number;
   suffix: string;
+  twoByTwoPhotoDataUrl?: string | null;
   studentNumber: string;
   gender: Gender;
   civilStatus: CivilStatus;
@@ -151,7 +151,7 @@ export interface PersonalInfo {
   weightKg: string;
   complexion: string;
   highSchoolGWA: string;
-  course: Course;
+  program: Program;
   yearLevel: number;
   section: string;
   dateOfBirth: string;
@@ -317,7 +317,7 @@ export const ORDER_BY_OPTIONS: { [key: string]: string } = {
   firstName: "first_name",
   lastName: "last_name",
   studentId: "student_id",
-  courseId: "course_id",
+  programId: "program_id",
   iirId: "iir_id",
   yearLevel: "year_level",
   createdAt: "created_at",
@@ -328,7 +328,7 @@ export type QueryParam = {
   page?: number;
   pageSize?: number;
   search?: string;
-  courseId?: number;
+  programId?: number;
   genderId?: number;
   orderBy?: keyof typeof ORDER_BY_OPTIONS;
   yearLevel?: number;
@@ -348,7 +348,8 @@ export interface IIRProfileView {
     name: string;
   };
   email: string;
-  course: {
+  profilePicture?: string;
+  program: {
     id: number;
     name: string;
     code: string;
@@ -357,3 +358,4 @@ export interface IIRProfileView {
   status: StudentStatus;
   studentCorUrl?: string;
 }
+

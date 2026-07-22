@@ -230,31 +230,31 @@ export default function M2MManagement() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1200px] text-sm">
-                  <thead>
-                    <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Client
+                <thead>
+                  <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
+                    <th className="w-[25%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Client
+                    </th>
+                    <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Client ID
+                    </th>
+                    <th className="w-[20%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Status / Verification
+                    </th>
+                    <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Scopes
+                    </th>
+                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Last Activity
                       </th>
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Client ID
+                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Created
                       </th>
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Status / Verification
+                    <th className="w-[5%] px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Action
                       </th>
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Scopes
-                      </th>
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Last Activity
-                      </th>
-                      <th className="px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Created
-                      </th>
-                      <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
+                  </tr>
+                </thead>
 
                   <tbody>
                     {clients?.map((client) => (
@@ -262,16 +262,16 @@ export default function M2MManagement() {
                         key={client.id}
                         className="border-b border-white/10 transition-colors duration-150 hover:bg-white/35 dark:hover:bg-white/[0.03]"
                       >
-                        <td className="px-5 py-4">
-                          <div className="space-y-0.5">
-                            <div className="font-medium text-foreground">
-                              {client.clientName}
-                            </div>
-                            <div className="max-w-[200px] truncate text-[11px] text-muted-foreground">
-                              {client.clientDescription}
-                            </div>
+                      <td className="px-5 py-4 align-middle">
+                        <div className="flex min-w-0 flex-col space-y-0.5">
+                          <div className="truncate font-medium text-foreground" title={client.clientName}>
+                            {client.clientName}
                           </div>
-                        </td>
+                          <div className="truncate text-[11px] text-muted-foreground" title={client.clientDescription}>
+                            {client.clientDescription}
+                          </div>
+                        </div>
+                      </td>
 
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
@@ -296,8 +296,8 @@ export default function M2MManagement() {
                           </div>
                         </td>
 
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
+                        <td className="px-5 py-4 align-middle">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <Badge
                               variant="outline"
                               className={

@@ -15,6 +15,7 @@ export function useGetAllSlips(params?: QueryParams) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -33,6 +34,7 @@ export function useGetMySlips(params?: QueryParams) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
     enabled: !!me,
   });
 }
@@ -63,6 +65,7 @@ export function useSlips({
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
     enabled: !!me,
   });
 }
@@ -77,6 +80,7 @@ export function useGetUrgentSlips(params?: any) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -91,6 +95,7 @@ export function useGetSlipStats({ params }: { params?: any } = {}) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -109,6 +114,7 @@ export function useSlipLogs(params?: SlipLogsParams) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -122,6 +128,7 @@ export function useGetSlipById(id: string) {
     staleTime: CACHE_TIMING.SHORT.staleTime,
     gcTime: CACHE_TIMING.SHORT.gcTime,
     refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
     enabled: !!id,
   });
 }

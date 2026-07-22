@@ -1,9 +1,22 @@
 import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
 import { Dropdown, FormInput, Checkbox, DatePicker } from "@/components/form";
 import { SectionContainer } from "./SectionContainer";
-import { User, MapPin, Phone, Briefcase, Activity } from "lucide-react";
+import { FormSectionTitle } from "./shared";
+import { 
+  User, 
+  MapPin, 
+  Phone, 
+  Briefcase, 
+  Activity, 
+  Camera, 
+  Upload, 
+  Pencil, 
+  X,
+  Info,
+  CheckCircle2
+} from "lucide-react";
 import {
-  useCourses,
+  usePrograms,
   useGenders,
   useCivilStatuses,
   useReligions,
@@ -33,8 +46,16 @@ import {
 } from "@/services/validationSchema";
 import { personalInformationValidationSchema } from "@/features/iir/config/personalInfoValidationSchema";
 import { cn } from "@/lib/utils";
+import {
+  createTwoByTwoPhotoDataUrl,
+  removeIIRTwoByTwoPhoto,
+  saveIIRTwoByTwoPhoto,
+} from "@/features/iir/utils/twoByTwoPhoto";
 
 import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
+
+import formalImage from "@/assets/images/formal_image.png";
+import notFormalImage from "@/assets/images/notformal_image.png";
 
 interface FormErrors {
   [key: string]: string;
@@ -72,7 +93,7 @@ export const PersonalSection = forwardRef<
   },
   ref,
 ) {
-  const { data: courses = [], isLoading: isCoursesLoading } = useCourses();
+  const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const { data: genders = [] } = useGenders();
   const { data: civilStatuses = [] } = useCivilStatuses();
   const { data: religions = [] } = useReligions();
@@ -100,6 +121,8 @@ export const PersonalSection = forwardRef<
   const residentialAddr = residentialData.address;
   const emergencyAddr =
     (studentInfo as any)?.personalInfo?.emergencyContact?.address || {};
+  const twoByTwoPhotoDataUrl =
+    (studentInfo as any)?.personalInfo?.twoByTwoPhotoDataUrl || "";
 
   const handleResidentialRegionChange = (val: any) => {
     const regionObj = { code: val };
@@ -496,6 +519,38 @@ export const PersonalSection = forwardRef<
     }
   };
 
+  const handlePhotoUpload = async (file?: File | null) => {
+    if (!file) return;
+
+    const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
+
+    try {
+      const dataUrl = await createTwoByTwoPhotoDataUrl(file);
+      handleInputChange(fieldPath, dataUrl);
+      saveIIRTwoByTwoPhoto(dataUrl, {
+        studentNumber: studentInfo?.personalInfo?.studentNumber || null,
+        email: studentInfo?.basicInfo?.email || null,
+      });
+      clearError(fieldPath);
+    } catch (error: any) {
+      setErrors((prev: FormErrors) => ({
+        ...prev,
+        [fieldPath]:
+          error?.message || "Unable to process the selected 2x2 photo.",
+      }));
+    }
+  };
+
+  const handlePhotoRemove = () => {
+    const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
+    handleInputChange(fieldPath, null);
+    removeIIRTwoByTwoPhoto({
+      studentNumber: studentInfo?.personalInfo?.studentNumber || null,
+      email: studentInfo?.basicInfo?.email || null,
+    });
+    clearError(fieldPath);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* 1. Primary Information */}
@@ -506,6 +561,138 @@ export const PersonalSection = forwardRef<
           icon={User}
         >
           <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
+            <div className="md:col-span-6">
+              <div
+                className={cn(
+                  "space-y-4 rounded-xl border border-border/70",
+                  "bg-card/80 p-4 shadow-md",
+                )}
+              >
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-primary/40 bg-muted/50 shadow-md">
+                      {twoByTwoPhotoDataUrl ? (
+                        <img
+                          src={twoByTwoPhotoDataUrl}
+                          alt="Uploaded 2x2 student photo"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Camera className="h-9 w-9 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">
+                        2x2 Student Picture
+                      </p>
+                      <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+                        Upload a clear JPG, PNG, or WebP photo up to 5MB only. The image is automatically cropped to a strict square 2x2 layout.
+                      </p>
+                      {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl") && (
+                        <p className="mt-2 text-xs font-medium text-destructive">
+                          {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "grid w-full grid-cols-1 gap-2 xl:w-auto",
+                      twoByTwoPhotoDataUrl
+                        ? "sm:grid-cols-2 xl:min-w-[18rem]"
+                        : "sm:max-w-[14rem] xl:min-w-[14rem]",
+                    )}
+                  >
+                    <label
+                      htmlFor="iir-two-by-two-photo"
+                      className={cn(
+                        "inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 whitespace-nowrap",
+                        "rounded-xl border border-primary/30 bg-primary/10 px-4 text-sm font-medium",
+                        "text-primary shadow-md transition hover:bg-primary/15 hover:shadow-lg",
+                        "focus-within:ring-2 focus-within:ring-primary/20",
+                      )}
+                    >
+                      {twoByTwoPhotoDataUrl ? (
+                        <Pencil className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <Upload className="h-4 w-4 shrink-0" />
+                      )}
+                      <span className="truncate text-center">
+                        {twoByTwoPhotoDataUrl ? "Edit Photo" : "Upload Photo"}
+                      </span>
+                    </label>
+                    <input
+                      id="iir-two-by-two-photo"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="sr-only"
+                      onChange={(event) => {
+                        void handlePhotoUpload(event.target.files?.[0]);
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                    {twoByTwoPhotoDataUrl && (
+                      <button
+                        type="button"
+                        onClick={handlePhotoRemove}
+                        className={cn(
+                          "inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl",
+                          "border border-destructive/30 px-4 text-sm font-medium text-destructive",
+                          "shadow-md transition hover:bg-destructive/10",
+                        )}
+                      >
+                        <X className="h-4 w-4 shrink-0" />
+                        <span className="truncate">Remove</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* PROFILE PICTURE GUIDELINES */}
+              <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+                <div className="mb-3 flex items-center gap-2">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-200">
+                    Profile Picture Requirements
+                  </h4>
+                </div>
+                <p className="mb-4 text-sm text-blue-800 dark:text-blue-300">
+                  Please upload a <strong>formal 2x2 picture</strong>. Ensure you are wearing appropriate professional or school attire against a plain background. Avoid selfies, heavy filters, or cluttered environments.
+                </p>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col items-center rounded-lg border border-emerald-200 bg-white/60 p-3 shadow-sm dark:border-emerald-800/50 dark:bg-emerald-950/40">
+                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" /> Upload this
+                    </h5>
+                    <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                      <img
+                        src={formalImage}
+                        alt="Formal 2x2 Example"
+                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center rounded-lg border border-red-200 bg-white/60 p-3 shadow-sm dark:border-red-800/50 dark:bg-red-950/40">
+                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                      <X className="h-4 w-4 shrink-0" /> Do Not Upload
+                    </h5>
+                    <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                      <img
+                        src={notFormalImage}
+                        alt="Non-Formal Example"
+                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* END PROFILE PICTURE GUIDELINES */}
+            </div>
+
             <div className="md:col-span-2">
               <FormInput
                 label="First Name"
@@ -589,18 +776,21 @@ export const PersonalSection = forwardRef<
             <div className="md:col-span-3">
               <Dropdown
                 formStyle
-                label="Course"
-                options={courses}
-                value={studentInfo?.personalInfo?.course?.id || ""}
+                label="Program"
+                options={programs}
+                value={studentInfo?.personalInfo?.program?.id || ""}
                 onChange={(val: any) =>
-                  handleInputChange("student.personalInfo.course", { id: val })
+                  handleInputChange(
+                    "student.personalInfo.program",
+                    { id: val },
+                  )
                 }
-                error={errors["student.personalInfo.course"]}
+                error={errors["student.personalInfo.program"]}
                 required={isFieldRequired(
                   runtimeSchema,
-                  "student.personalInfo.course",
+                  "student.personalInfo.program",
                 )}
-                enabled={!isCoursesLoading}
+                enabled={!isProgramsLoading}
               />
             </div>
 
@@ -1032,10 +1222,7 @@ export const PersonalSection = forwardRef<
             <div className="flex flex-col gap-10">
               {/* Permanent Address */}
               <div>
-                <h4 className="mb-6 flex items-center gap-2 text-sm font-bold text-foreground/80">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  Permanent Address
-                </h4>
+                <FormSectionTitle className="mb-6">Permanent Address</FormSectionTitle>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <Dropdown
                     formStyle
@@ -1139,10 +1326,7 @@ export const PersonalSection = forwardRef<
               {/* Provincial Address */}
               <div className="border-t border-glass-border pt-8">
                 <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-foreground/80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    Provincial Address
-                  </h4>
+                  <FormSectionTitle>Provincial Address</FormSectionTitle>
                   <Checkbox
                     id="provincialSameAsResidential"
                     label="Same as permanent address"
@@ -1517,10 +1701,7 @@ export const PersonalSection = forwardRef<
 
               <div className="border-t border-glass-border pt-8">
                 <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <h4 className="flex items-center gap-2 text-sm font-bold text-foreground/80">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    Contact Address
-                  </h4>
+                  <FormSectionTitle>Contact Address</FormSectionTitle>
                   <Checkbox
                     id="emergencySameAsResidential"
                     label="Same as permanent address"

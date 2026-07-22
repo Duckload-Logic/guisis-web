@@ -14,7 +14,7 @@ export {
 
 export { useAddressSync } from "./useAddressSync";
 export {
-  useCourses,
+  usePrograms,
   useGenders,
   useEnrollmentYears,
   useCivilStatuses,

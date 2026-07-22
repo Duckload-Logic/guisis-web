@@ -8,30 +8,10 @@ interface AuthHeaderProps {
 
 export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden border-b",
-        "border-[hsl(var(--border)/0.6)] px-6 py-8 sm:px-8",
-        "lg:min-h-full lg:border-b-0 lg:border-r",
-        "lg:border-[hsl(var(--border)/0.6)] lg:px-10 lg:py-10",
-        "bg-slate-100 dark:bg-stone-800",
-      )}
-    >
-      <div
-        className={cn(
-          "absolute inset-0",
-          "bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04))]",
-        )}
-      />
-      <div
-        className={cn(
-          "absolute inset-0",
-          "bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.08),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.08),transparent_28%)]",
-        )}
-      />
-      <div className="absolute -left-8 top-0 h-32 w-32 rounded-full bg-white/10 blur-3xl" />
-      <div className="bg-red-500/8 absolute bottom-0 right-0 h-36 w-36 rounded-full blur-3xl" />
-
+    <div className="flex w-full flex-col text-left">
+      {/* Removed the outer backgrounds, absolute gradients, and padding 
+        so it blends perfectly into the parent grid panel in Login.tsx
+      */}
       <div className="relative z-10 flex h-full flex-col justify-center">
         <div
           className={cn(
@@ -68,6 +48,7 @@ export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
           {subtitle}
         </p>
 
+        {/* Horizontal Divider */}
         <div className="mt-8 h-px w-24 bg-gradient-to-r from-[hsl(var(--primary)/0.5)] to-transparent" />
       </div>
     </div>

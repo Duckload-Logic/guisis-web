@@ -158,7 +158,12 @@ export default function ConsentModal({
             type="button"
             disabled={!agreed || loading}
             onClick={onAccept}
-            className={`min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold text-white disabled:bg-slate-300 ${accentClass}`}
+            className={cn(
+              "min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold transition-all",
+              (!agreed || loading)
+                ? "border-0 border-transparent bg-slate-300 text-slate-500 outline-none ring-0 hover:bg-slate-300"
+                : `text-white ${accentClass}`
+            )}
           >
             {loading ? "Saving..." : "Continue"}
           </Button>

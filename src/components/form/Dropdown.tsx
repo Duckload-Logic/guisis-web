@@ -1,5 +1,5 @@
-import { Check, Lock, ChevronDown, X } from "lucide-react";
-import { useState } from "react";
+import { Check, Lock, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -32,6 +32,7 @@ export default function Dropdown({
   lockedReason = "Locked",
   formStyle = false,
   labelKey,
+  buttonClassName,
 }: {
   id?: string;
   label?: string;
@@ -49,8 +50,11 @@ export default function Dropdown({
   lockedReason?: string;
   formStyle?: boolean;
   labelKey?: string;
+  buttonClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const safeOptions = options || [];
   const selectedOption = safeOptions.find(
     (opt) => String(opt[identifier]) === String(value),
@@ -62,6 +66,7 @@ export default function Dropdown({
     return (
       option.label ||
       option.statusName ||
+      option.programName ||
       option.courseName ||
       option.code ||
       option.name ||
@@ -87,8 +92,36 @@ export default function Dropdown({
     }
   };
 
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnPageMovement = (event: Event) => {
+      const target = event.target;
+
+      if (
+        target instanceof Node &&
+        (contentRef.current?.contains(target) ||
+          triggerRef.current?.contains(target))
+      ) {
+        return;
+      }
+
+      setOpen(false);
+    };
+
+    window.addEventListener("scroll", closeOnPageMovement, true);
+    window.addEventListener("resize", closeOnPageMovement);
+    window.visualViewport?.addEventListener("resize", closeOnPageMovement);
+
+    return () => {
+      window.removeEventListener("scroll", closeOnPageMovement, true);
+      window.removeEventListener("resize", closeOnPageMovement);
+      window.visualViewport?.removeEventListener("resize", closeOnPageMovement);
+    };
+  }, [open]);
+
   return (
-    <div className="relative space-y-2">
+    <div className="relative min-w-0 space-y-2">
       {label && (
         <div className="text-sm font-medium text-foreground">
           <span className="truncate">{label}</span>
@@ -97,12 +130,10 @@ export default function Dropdown({
       )}
 
       <div id={id}>
-        <Popover
-          open={open}
-          onOpenChange={setOpen}
-        >
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
+              ref={triggerRef}
               disabled={!enabled || loading}
               className={cn(
                 "flex h-11 w-full items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium tracking-tight text-foreground shadow-sm outline-none transition-all duration-200",
@@ -114,6 +145,7 @@ export default function Dropdown({
                       : "border-destructive/20 bg-muted/20 hover:border-destructive/40 focus:border-destructive/50 focus:ring-2 focus:ring-destructive/5"
                     : "border-glass-border/40 hover:border-glass-border/60 dark:focus:bg-glass-bg/40 bg-muted/20 shadow-sm focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
                 error && "border-destructive/50",
+                buttonClassName,
               )}
             >
               <span
@@ -146,12 +178,25 @@ export default function Dropdown({
             </button>
           </PopoverTrigger>
           <PopoverContent
+            ref={contentRef}
             className={cn(
-              "speech-control-ignore z-50 overflow-hidden rounded-xl border-glass-border p-0",
+              "speech-control-ignore z-50 w-[var(--radix-popover-trigger-width)]",
+              "max-h-[min(22rem,var(--radix-popover-content-available-height))]",
+              "max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl",
+              "border-glass-border p-0",
               formStyle ? "bg-card" : "bg-background",
             )}
             align="start"
             sideOffset={8}
+            collisionPadding={8}
+            sticky="always"
+            hideWhenDetached
+            updatePositionStrategy="always"
+            onOpenAutoFocus={(event) => event.preventDefault()}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              triggerRef.current?.focus({ preventScroll: true });
+            }}
           >
             <Command className={formStyle ? "bg-card" : "bg-background"}>
               {label && (
@@ -162,7 +207,7 @@ export default function Dropdown({
               )}
               <CommandList
                 className={cn(
-                  "max-h-[250px] overflow-y-auto p-1",
+                  "max-h-[min(250px,var(--radix-popover-content-available-height))] overflow-y-auto overscroll-contain p-1",
                   formStyle ? "bg-card" : "bg-background",
                 )}
               >

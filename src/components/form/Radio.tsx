@@ -28,8 +28,8 @@ export default function Radio({
   const gridColsClass =
     {
       1: "grid-cols-1",
-      2: "grid-cols-2",
-      3: "grid-cols-3",
+      2: "grid-cols-1 md:grid-cols-2",
+      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
     }[columns] || "grid-cols-1";
 
   return (
@@ -38,11 +38,11 @@ export default function Radio({
         <span>{label}</span>
         {required && <span className="text-red-500">*</span>}
       </div>
-      <div className={`grid grid-cols-1 md:${gridColsClass} gap-4`}>
+      <div className={cn("grid min-w-0 gap-4", gridColsClass)}>
         {options.map((option) => (
           <label
             key={option.id}
-            className="group/radio flex cursor-pointer items-center gap-3"
+            className="group/radio flex min-w-0 cursor-pointer items-center gap-3"
           >
             <div
               className={cn(
@@ -76,7 +76,7 @@ export default function Radio({
             </div>
             <span
               className={cn(
-                "text-sm font-medium text-foreground/80 transition-colors",
+                "min-w-0 break-words text-sm font-medium text-foreground/80 transition-colors",
                 "duration-200 group-hover/radio:text-primary",
               )}
             >

@@ -27,6 +27,9 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
     commonRules.required("Email"),
     commonRules.email(),
   ],
+  "student.personalInfo.twoByTwoPhotoDataUrl": [
+    commonRules.required("2x2 profile photo"),
+  ],
 
   // Personal Details
   "student.personalInfo.studentNumber": [
@@ -60,7 +63,7 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
     },
     commonRules.noSpecialChars("Religion specification"),
   ],
-  "student.personalInfo.course": [commonRules.required("Course")],
+  "student.personalInfo.program": [commonRules.required("Program")],
   "student.personalInfo.yearLevel": [
     commonRules.required("Year level"),
     commonRules.minValue(1),

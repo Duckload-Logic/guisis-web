@@ -1,51 +1,24 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMe } from "@/features/users/hooks/useMe";
+import { AlertCircle, User } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AnimationStyles } from "@/components/ui/animations";
+import { usePageMetadata, useToast } from "@/context";
+import { useIIRProfile } from "@/features/iir/hooks";
 import {
+  useGetIIRDraft,
   useIIRFormSave,
   useSaveIIRDraft,
-  useGetIIRDraft,
   useTouchedState,
-  useIIRProfile,
 } from "@/features/iir/hooks";
-import { IIRForm as IIRFormType } from "@/features/iir/types";
 import { EMPTY_IIR_FORM } from "@/features/iir/constants";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { usePageMetadata } from "@/context";
-import { useToast } from "@/context";
-import { Button } from "@/components/ui/button";
-import { AnimationStyles } from "@/components/ui/animations";
+import { PatchIIRSubmit } from "@/features/iir/services/service";
+import type { IIRForm as IIRFormType } from "@/features/iir/types";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  AlertCircle,
-  Save,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  User,
-} from "lucide-react";
-import {
-  PersonalSection,
-  EducationSection,
-  FamilySection,
-  HealthSection,
-  InterestsSection,
-} from "@/features/iir/components/form";
-import {
-  updateNestedField,
-  createResetFormData,
-  initializeFormData,
   calculateSectionCompletion,
+  initializeFormData,
+  updateNestedField,
   validateAllSections,
   validateSection,
 } from "@/features/iir/utils/form";
@@ -55,70 +28,38 @@ import {
 } from "@/features/iir/components/form/FormErrorModal";
 import { SectionProgress } from "@/features/iir/components/form/SectionProgress";
 import ConsentDialog from "@/features/iir/components/form/ConsentDialog";
+import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
-import { PatchIIRSubmit } from "@/features/iir/services/service";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  getIIRTwoByTwoPhoto,
+  getTwoByTwoPhotoIdentityFromForm,
+  saveIIRTwoByTwoPhoto,
+} from "@/features/iir/utils/twoByTwoPhoto";
 
-function FormSectionSkeleton() {
-  return (
-    <div
-      className={cn(
-        "space-y-6 rounded-3xl border border-glass-border",
-        "bg-glass-bg p-6 shadow-md",
-      )}
-    >
-      <div className="space-y-2">
-        <Skeleton className="h-7 w-48 rounded-lg" />
-        <Skeleton className="h-4 w-72 rounded-lg" />
-      </div>
-      <hr className="border-glass-border" />
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="space-y-2"
-          >
-            <Skeleton className="h-4 w-24 rounded-md" />
-            <Skeleton className="h-11 w-full rounded-xl" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+import {
+  IIRDraftPrompt,
+  IIRFormNavigation,
+  IIRProgressPill,
+  IIRResetConfirmDialog,
+  IIRSectionRenderer,
+  IIRSuccessPopup,
+} from "./components";
+import { getActiveIIRSections } from "./config/iirFormSections";
 
-const FORM_SECTIONS = [
-  { title: "Basic Info", id: 1, key: "personal_basic", main: 1 },
-  { title: "Personal Profile", id: 2, key: "personal_profile", main: 1 },
-  { title: "Address & Contact", id: 3, key: "personal_address", main: 1 },
-  { title: "Employment", id: 4, key: "personal_employment", main: 1 },
-  { title: "Educational Background", id: 5, key: "education", main: 2 },
-  { title: "Home Environment", id: 6, key: "family_background", main: 3 },
-  { title: "Father's Information", id: 7, key: "family_father", main: 3 },
-  { title: "Mother's Information", id: 8, key: "family_mother", main: 3 },
-  { title: "Guardian & Siblings", id: 9, key: "family_others", main: 3 },
-  { title: "Health Information", id: 10, key: "health", main: 4 },
-  { title: "Interests & Hobbies", id: 11, key: "interests", main: 5 },
-];
+const PHOTO_REQUIRED_SECTION = 1;
+const PHOTO_REQUIRED_FIELD = "student.personalInfo.twoByTwoPhotoDataUrl";
+const PHOTO_REQUIRED_MESSAGE =
+  "Upload your required 2x2 profile photo before moving to the next step.";
 
 export default function IIRForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editIirId = searchParams.get("iirId") || undefined;
   const isEditMode = searchParams.get("edit") === "true" && !!editIirId;
-  const activeSections = useMemo(() => {
-    if (isEditMode) {
-      return FORM_SECTIONS.filter((s) =>
-        [1, 2, 3, 4, 7, 8, 9].includes(s.id),
-      ).map((s) => {
-        if (s.id === 9) {
-          return { ...s, title: "Guardian's Information" };
-        }
-        return s;
-      });
-    }
-    return FORM_SECTIONS;
-  }, [isEditMode]);
+  const activeSections = useMemo(
+    () => getActiveIIRSections(isEditMode),
+    [isEditMode],
+  );
 
   const { data: me } = useMe({});
 
@@ -166,6 +107,8 @@ export default function IIRForm() {
   const [sectionsWithErrors, setSectionsWithErrors] = useState<number[]>([]);
   const [showDraftPrompt, setShowDraftPrompt] = useState(false);
   const [draftData, setDraftData] = useState<IIRFormType | null>(null);
+  const [showPhotoValidationWarning, setShowPhotoValidationWarning] =
+    useState(false);
   const { triggerToast } = useToast();
 
   // Modal error state
@@ -174,6 +117,12 @@ export default function IIRForm() {
   const [totalErrors, setTotalErrors] = useState(0);
 
   const [lastChangeTimestamp, setLastChangeTimestamp] = useState(0);
+
+  const hasRequiredPhoto = Boolean(
+    localFormData?.student?.personalInfo?.twoByTwoPhotoDataUrl,
+  );
+  const isOnPhotoRequiredStep = currentSection === PHOTO_REQUIRED_SECTION;
+  const isPhotoStepBlocked = isOnPhotoRequiredStep && !hasRequiredPhoto;
 
   const scrollToTop = () => {
     const container = document.querySelector("main")?.parentElement;
@@ -189,8 +138,24 @@ export default function IIRForm() {
     setLocalFormData((prev: IIRFormType | null) =>
       updateNestedField(prev, path, value),
     );
+    if (fieldPath === PHOTO_REQUIRED_FIELD && value) {
+      setShowPhotoValidationWarning(false);
+    }
     setLastChangeTimestamp(Date.now());
   }, []);
+
+  const persistTwoByTwoPhoto = useCallback(
+    (formData?: IIRFormType | null) => {
+      const photoDataUrl = formData?.student?.personalInfo?.twoByTwoPhotoDataUrl;
+      if (!photoDataUrl) return;
+
+      saveIIRTwoByTwoPhoto(
+        photoDataUrl,
+        getTwoByTwoPhotoIdentityFromForm(formData, (me as any)?.id, editIirId),
+      );
+    },
+    [editIirId, me],
+  );
 
   useEffect(() => {
     const initializeForm = () => {
@@ -211,6 +176,17 @@ export default function IIRForm() {
         me,
         { preserveBasicInfoFromSource: isEditMode },
       );
+      const savedPhoto = getIIRTwoByTwoPhoto(
+        getTwoByTwoPhotoIdentityFromForm(
+          initializedData,
+          (me as any)?.id,
+          editIirId,
+        ),
+        initializedData,
+      );
+      if (savedPhoto) {
+        initializedData.student.personalInfo.twoByTwoPhotoDataUrl = savedPhoto;
+      }
       setLocalFormData(initializedData);
       setIsInitializing(false);
       hasInitialized.current = true;
@@ -271,7 +247,22 @@ export default function IIRForm() {
 
   const handleRestoreDraft = () => {
     if (draftData) {
-      setLocalFormData(draftData);
+      const savedPhoto = getIIRTwoByTwoPhoto(
+        getTwoByTwoPhotoIdentityFromForm(draftData, (me as any)?.id, editIirId),
+        draftData,
+      );
+      const restoredDraft = {
+        ...draftData,
+        student: {
+          ...draftData.student,
+          personalInfo: {
+            ...draftData.student.personalInfo,
+            twoByTwoPhotoDataUrl:
+              savedPhoto || draftData.student.personalInfo.twoByTwoPhotoDataUrl || null,
+          },
+        },
+      };
+      setLocalFormData(restoredDraft);
     }
     setShowDraftPrompt(false);
   };
@@ -285,6 +276,7 @@ export default function IIRForm() {
     if (!localFormData) return;
 
     try {
+      persistTwoByTwoPhoto(localFormData);
       await saveDraft(localFormData);
     } catch (err) {
       console.error("[AutoSave] Error saving draft:", err);
@@ -304,7 +296,29 @@ export default function IIRForm() {
     );
   }
 
+  const handleBlockedPhotoStep = () => {
+    setShowPhotoValidationWarning(true);
+    markFieldTouched(PHOTO_REQUIRED_FIELD);
+    personalSectionRef.current?.validate?.(PHOTO_REQUIRED_SECTION);
+    scrollToTop();
+  };
+
+  const handleSectionNavigation = (targetSection: number) => {
+    if (targetSection > currentSection && isPhotoStepBlocked) {
+      handleBlockedPhotoStep();
+      return;
+    }
+
+    setCurrentSection(targetSection);
+    setSectionsWithErrors([]);
+  };
+
   const handleNextSection = async () => {
+    if (isPhotoStepBlocked) {
+      handleBlockedPhotoStep();
+      return;
+    }
+
     // Validate current section using its ref
     const sectionRefs: Record<number, any> = {
       1: personalSectionRef,
@@ -453,6 +467,7 @@ export default function IIRForm() {
     }
 
     setIsSaving(true);
+    persistTwoByTwoPhoto(localFormData);
 
     try {
       // Submit or update backend record (service handles transformation via normalizeIIRPayload)
@@ -505,14 +520,14 @@ export default function IIRForm() {
             personalInfo: {
               ...updated.student.personalInfo,
               studentNumber: "",
-              course: { id: 0 },
+              program: { id: 0 },
               yearLevel: 1,
               section: "",
             },
           };
           fieldsToClearTouched.push(
             "student.personalInfo.studentNumber",
-            "student.personalInfo.course",
+            "student.personalInfo.program",
             "student.personalInfo.yearLevel",
             "student.personalInfo.section",
           );
@@ -845,8 +860,8 @@ export default function IIRForm() {
         <AnimationStyles />
 
         {/* Main Content Container */}
-        <div className="relative z-10 mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="lg:flex lg:items-start lg:gap-10">
+        <div className="relative z-10 mx-auto w-full min-w-0 max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="min-w-0 lg:flex lg:items-start lg:gap-10">
             {/* Sidebar Progress Tracker (Desktop) */}
             <aside className="hidden w-[300px] shrink-0 lg:sticky lg:top-24 lg:block">
               <SectionProgress
@@ -854,10 +869,7 @@ export default function IIRForm() {
                 currentSection={currentSection}
                 sectionsWithErrors={sectionsWithErrors}
                 visitedSections={visitedSections}
-                onNavigate={(id: number) => {
-                  setCurrentSection(id);
-                  setSectionsWithErrors([]);
-                }}
+                onNavigate={handleSectionNavigation}
                 calculateCompletion={(sectionIndex: number) =>
                   calculateSectionCompletion(
                     sectionIndex,
@@ -870,8 +882,8 @@ export default function IIRForm() {
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1">
-              <div className="flex flex-col gap-6">
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-col gap-6">
                 {/* Mobile/Tablet Progress Tracker */}
                 <div className="lg:hidden">
                   <SectionProgress
@@ -879,10 +891,7 @@ export default function IIRForm() {
                     currentSection={currentSection}
                     sectionsWithErrors={sectionsWithErrors}
                     visitedSections={visitedSections}
-                    onNavigate={(id: number) => {
-                      setCurrentSection(id);
-                      setSectionsWithErrors([]);
-                    }}
+                    onNavigate={handleSectionNavigation}
                     calculateCompletion={(sectionIndex: number) =>
                       calculateSectionCompletion(
                         sectionIndex,
@@ -896,92 +905,23 @@ export default function IIRForm() {
 
                 {/* Draft Restore Prompt */}
                 {showDraftPrompt && (
-                  <div className="animate-in slide-in-from-top-4 duration-500">
-                    <div
-                      className={cn(
-                        "rounded-3xl border border-primary/20 bg-primary/5 p-5",
-                        "backdrop-blur-md dark:border-primary/20",
-                        "dark:bg-primary/10 sm:flex-row",
-                      )}
-                    >
-                      <div className="mb-4 flex items-center gap-3">
-                        <div
-                          className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-2xl",
-                            "bg-primary/10 text-primary",
-                          )}
-                        >
-                          <AlertCircle className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-foreground">
-                            Unsaved Progress Found
-                          </h4>
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Would you like to restore your previous work?
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex w-full gap-2 sm:w-auto">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleDiscardDraft}
-                          className={cn(
-                            "flex-1 rounded-xl font-bold text-muted-foreground",
-                            "hover:bg-neutral-100 dark:hover:bg-neutral-800 sm:flex-none",
-                          )}
-                        >
-                          Discard
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleRestoreDraft}
-                          className={cn(
-                            "flex-1 rounded-xl bg-primary px-6 font-bold text-white",
-                            "shadow-lg shadow-primary/20 hover:bg-primary/90 sm:flex-none",
-                          )}
-                        >
-                          Restore Draft
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                  <IIRDraftPrompt
+                    onDiscard={handleDiscardDraft}
+                    onRestore={handleRestoreDraft}
+                  />
                 )}
 
                 <div className="flex flex-col">
                   {/* Form Content Wrapper */}
                   <div className="">
                     {/* Floating Completion Pill */}
-                    <div className="animate-in fade-in slide-in-from-right-4 mb-4 delay-300 duration-700">
-                      <div
-                        className={cn(
-                          "flex items-center gap-2.5 rounded-xl border",
-                          "bg-glass border-glass-border px-4 py-2",
-                          "shadow-md backdrop-blur-md",
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "h-2.5 w-2.5 animate-pulse rounded-full bg-primary",
-                            "shadow-[0_0_10px_rgba(var(--primary),0.6)]",
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            "text-[11px] uppercase",
-                            "text-neutral-700 dark:text-white",
-                          )}
-                        >
-                          {calculateSectionCompletion(
-                            currentSection,
-                            localFormData ?? null,
-                            isEditMode,
-                          )}
-                          % Form Progress
-                        </span>
-                      </div>
-                    </div>
+                    <IIRProgressPill
+                      completion={calculateSectionCompletion(
+                        currentSection,
+                        localFormData ?? null,
+                        isEditMode,
+                      )}
+                    />
 
                     {/* Individual Form Sections */}
                     <div
@@ -990,171 +930,42 @@ export default function IIRForm() {
                         "fill-mode-both duration-700 ease-out",
                       )}
                     >
-                      {isTransitioningStep ? (
-                        <FormSectionSkeleton />
-                      ) : (
-                        <>
-                          {[1, 2, 3, 4].includes(currentSection) &&
-                            localFormData?.student && (
-                              <PersonalSection
-                                ref={personalSectionRef}
-                                studentInfo={localFormData.student}
-                                onChange={handleInputChange}
-                                onFieldBlur={markFieldTouched}
-                                shouldShowError={shouldShowError}
-                                subStep={currentSection}
-                                isEditMode={isEditMode}
-                              />
-                            )}
-                          {currentSection === 5 && localFormData?.education && (
-                            <EducationSection
-                              ref={educationSectionRef}
-                              education={localFormData.education}
-                              onChange={handleInputChange}
-                              onFieldBlur={markFieldTouched}
-                              shouldShowError={shouldShowError}
-                            />
-                          )}
-                          {[6, 7, 8, 9].includes(currentSection) &&
-                            localFormData?.family && (
-                              <FamilySection
-                                ref={familySectionRef}
-                                family={localFormData.family}
-                                onChange={handleInputChange}
-                                onFieldBlur={markFieldTouched}
-                                shouldShowError={shouldShowError}
-                                subStep={currentSection - 5}
-                                isEditMode={isEditMode}
-                              />
-                            )}
-                          {currentSection === 10 && localFormData?.health && (
-                            <HealthSection
-                              ref={healthSectionRef}
-                              health={localFormData.health}
-                              onChange={handleInputChange}
-                              onFieldBlur={markFieldTouched}
-                              shouldShowError={shouldShowError}
-                              isEditMode={isEditMode}
-                            />
-                          )}
-                          {currentSection === 11 &&
-                            localFormData?.interests && (
-                              <InterestsSection
-                                ref={interestsSectionRef}
-                                interests={localFormData.interests}
-                                onChange={handleInputChange}
-                                onFieldBlur={markFieldTouched}
-                                shouldShowError={shouldShowError}
-                              />
-                            )}
-                        </>
-                      )}
+                      <IIRSectionRenderer
+                        currentSection={currentSection}
+                        formData={localFormData}
+                        isTransitioningStep={isTransitioningStep}
+                        isEditMode={isEditMode}
+                        personalSectionRef={personalSectionRef}
+                        educationSectionRef={educationSectionRef}
+                        familySectionRef={familySectionRef}
+                        healthSectionRef={healthSectionRef}
+                        interestsSectionRef={interestsSectionRef}
+                        onChange={handleInputChange}
+                        onFieldBlur={markFieldTouched}
+                        shouldShowError={shouldShowError}
+                      />
                     </div>
                   </div>
 
                   {/* Form Navigation Action Bar */}
-                  <div
-                    className={cn(
-                      "animate-in fade-in slide-in-from-bottom-4 flex",
-                      "flex-col items-center justify-between gap-4 rounded-xl",
-                      "border border-glass-border bg-glass-bg p-5",
-                      "shadow-md",
-                      "delay-500 duration-700 md:flex-row",
-                    )}
-                  >
-                    <Button
-                      variant="ghost"
-                      onClick={() => setShowResetConfirm(true)}
-                      className={cn(
-                        "rounded-xl px-4 font-bold text-neutral-400 transition-all",
-                        "duration-300 hover:bg-destructive/10 hover:text-destructive",
-                        "sm:px-6",
-                      )}
-                    >
-                      Reset Section
-                    </Button>
-
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={handlePreviousSection}
-                        disabled={currentSection === 1 || isSaving}
-                        className={cn(
-                          "flex h-12 items-center gap-2 rounded-2xl",
-                          "border-neutral-200/50 bg-white/30 px-5 font-bold",
-                          "text-neutral-700 shadow-sm transition-all duration-300",
-                          "hover:bg-white/60 dark:border-white/10 dark:bg-white/5",
-                          "dark:text-neutral-200 dark:hover:bg-white/10 sm:px-7",
-                        )}
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                        <span className="hidden sm:inline">Back</span>
-                      </Button>
-
-                      {currentIndex < activeSections.length - 1 ? (
-                        <Button
-                          onClick={handleNextSection}
-                          disabled={isSaving}
-                          className={cn(
-                            "flex h-12 items-center gap-2 rounded-2xl bg-primary px-6",
-                            "font-black tracking-tight text-primary-foreground shadow-xl",
-                            "shadow-primary/20 transition-all duration-300",
-                            "hover:bg-primary/90 active:scale-95 sm:px-10",
-                          )}
-                        >
-                          {isSaving ? (
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  "border-3 h-5 w-5 animate-spin rounded-full",
-                                  "border-primary-foreground border-t-transparent",
-                                )}
-                              />
-                              <span>Saving...</span>
-                            </div>
-                          ) : (
-                            <>
-                              <span>Next Step</span>
-                              <ChevronRight className="h-5 w-5" />
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleSubmit}
-                          disabled={isSaving}
-                          className={cn(
-                            "flex h-12 items-center gap-2 rounded-2xl bg-primary",
-                            "px-6 tracking-tight",
-                            "text-primary-foreground shadow-xl shadow-primary/20",
-                            "transition-all duration-300 hover:bg-primary/90",
-                            "active:scale-95 sm:px-10",
-                          )}
-                        >
-                          {isSubmitting ? (
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  "border-3 h-5 w-5 animate-spin rounded-full",
-                                  "border-primary-foreground border-t-transparent",
-                                )}
-                              />
-                              <span>Submitting...</span>
-                            </div>
-                          ) : (
-                            <>
-                              <Save className="h-5 w-5" />
-                              <span>
-                                {isEditMode
-                                  ? "Save Changes"
-                                  : "Complete Profile"}
-                              </span>
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  <IIRFormNavigation
+                    currentSection={currentSection}
+                    currentIndex={currentIndex}
+                    totalSections={activeSections.length}
+                    isSaving={isSaving}
+                    isSubmitting={isSubmitting}
+                    isEditMode={isEditMode}
+                    onReset={() => setShowResetConfirm(true)}
+                    isNextBlocked={isPhotoStepBlocked}
+                    nextBlockedMessage={
+                      showPhotoValidationWarning || isPhotoStepBlocked
+                        ? PHOTO_REQUIRED_MESSAGE
+                        : undefined
+                    }
+                    onPrevious={handlePreviousSection}
+                    onNext={handleNextSection}
+                    onSubmit={handleSubmit}
+                  />
                 </div>
               </div>
             </div>
@@ -1169,64 +980,17 @@ export default function IIRForm() {
           isSubmitting={isSaving}
         />
 
-        <SuccessPopup
+        <IIRSuccessPopup
           isOpen={showSuccessPopup}
           onReturn={() => navigate(isEditMode ? "/student/iir" : "/student")}
           isEditMode={isEditMode}
         />
 
-        <AlertDialog
+        <IIRResetConfirmDialog
           open={showResetConfirm}
-          onOpenChange={(open) => setShowResetConfirm(open)}
-        >
-          <AlertDialogContent
-            className={cn(
-              "max-w-sm rounded-3xl shadow-md",
-              "backdrop-blur-3xl",
-            )}
-          >
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-2xl">
-                Reset this section?
-              </AlertDialogTitle>
-              <AlertDialogDescription
-                className={cn(
-                  "font-medium text-neutral-500",
-                  "dark:text-neutral-400",
-                )}
-              >
-                This will clear all answers in the current section. This action
-                cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter
-              className={cn(
-                "mt-4 flex flex-row items-center justify-center gap-2",
-                "sm:space-x-0",
-              )}
-            >
-              <AlertDialogCancel
-                className={cn(
-                  "mt-0 flex-1 rounded-xl border border-neutral-200",
-                  "bg-transparent font-bold text-foreground",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  "dark:border-neutral-800",
-                )}
-              >
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmReset}
-                className={cn(
-                  "mt-0 flex-1 rounded-xl bg-destructive font-bold text-white",
-                  "shadow-lg shadow-destructive/20 hover:bg-destructive/90",
-                )}
-              >
-                Yes, Reset
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          onOpenChange={setShowResetConfirm}
+          onConfirm={confirmReset}
+        />
 
         <FormErrorModal
           isOpen={isErrorModalOpen}
@@ -1237,86 +1001,5 @@ export default function IIRForm() {
         />
       </div>
     </>
-  );
-}
-
-/**
- * Premium Success Popup Component
- */
-function SuccessPopup({
-  isOpen,
-  onReturn,
-  isEditMode = false,
-}: {
-  isOpen: boolean;
-  onReturn: () => void;
-  isEditMode?: boolean;
-}) {
-  return (
-    <Dialog open={isOpen}>
-      <DialogContent
-        hasCloseButton={false}
-        className={cn(
-          "max-w-md border-card bg-card p-10 text-center shadow-2xl",
-          "backdrop-blur-2xl",
-        )}
-      >
-        <div className="flex justify-center">
-          <div className="relative">
-            <div
-              className={cn(
-                "absolute inset-0 rounded-full",
-                "bg-green-500/20 blur-2xl",
-              )}
-            />
-            <div
-              className={cn(
-                "relative flex h-20 w-20 items-center justify-center",
-                "animate-bounce rounded-full bg-green-500 shadow-xl",
-                "shadow-green-500/30",
-              )}
-            >
-              <Check
-                className="h-10 w-10 text-white"
-                strokeWidth={4}
-              />
-            </div>
-          </div>
-        </div>
-
-        <h3
-          className={cn(
-            "text-3xl font-[900]",
-            "text-neutral-900 dark:text-white",
-          )}
-        >
-          All Done!
-        </h3>
-
-        <p
-          className={cn(
-            "px-4 font-medium",
-            "text-neutral-500 dark:text-neutral-400",
-          )}
-        >
-          {isEditMode
-            ? "Your Individual Inventory Record has been successfully " +
-              "updated and saved."
-            : "Your Individual Inventory Record has been successfully " +
-              "submitted and saved to our secure database."}
-        </p>
-
-        <Button
-          onClick={onReturn}
-          className={cn(
-            "h-14 w-full rounded-md bg-primary text-lg font-bold",
-            "text-primary-foreground shadow-xl transition-all",
-            "duration-300 hover:bg-primary/90 active:scale-95",
-          )}
-        >
-          Complete
-        </Button>
-      </DialogContent>
-    </Dialog>
   );
 }

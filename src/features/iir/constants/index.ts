@@ -35,6 +35,7 @@ export const EMPTY_IIR_FORM: IIRForm = {
     personalInfo: {
       id: undefined,
       suffix: "",
+      twoByTwoPhotoDataUrl: null,
       studentNumber: "",
       gender: { id: 0 },
       civilStatus: { id: 0 },
@@ -43,7 +44,7 @@ export const EMPTY_IIR_FORM: IIRForm = {
       weightKg: "",
       complexion: "",
       highSchoolGWA: "",
-      course: { id: 0 },
+      program: { id: 0 },
       yearLevel: 1,
       section: "",
       dateOfBirth: "",
@@ -158,6 +159,7 @@ export const COMPLETE_IIR_FORM: IIRForm = {
     personalInfo: {
       id: undefined,
       suffix: "",
+      twoByTwoPhotoDataUrl: null,
       studentNumber: "2022-00001-TG-0",
       gender: { id: 1 },
       civilStatus: { id: 1 },
@@ -166,7 +168,7 @@ export const COMPLETE_IIR_FORM: IIRForm = {
       weightKg: "70",
       complexion: "Tan",
       highSchoolGWA: "90",
-      course: { id: 1 },
+      program: { id: 1 },
       yearLevel: 3,
       section: "1",
       dateOfBirth: "2002-01-01",

@@ -85,11 +85,11 @@ export function SectionProgress({
     <div className="select-none">
       <div className="w-full">
         {/* === Mobile View === */}
-        <div className="relative py-2 md:hidden">
+        <div className="relative py-2 lg:hidden">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={cn(
-              "flex w-full items-center justify-between rounded-2xl border",
+              "flex w-full min-w-0 items-center justify-between rounded-2xl border",
               "border-neutral-200 bg-neutral-100 p-4 shadow-sm",
               "dark:border-neutral-800 dark:bg-neutral-900",
             )}
@@ -116,7 +116,8 @@ export function SectionProgress({
             <div
               className={cn(
                 "animate-in fade-in slide-in-from-top-2 absolute left-0",
-                "right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border",
+                "right-0 top-full z-50 mt-2 max-h-[min(70vh,32rem)]",
+                "overflow-y-auto overscroll-contain rounded-2xl border",
                 "border-neutral-200 bg-white shadow-xl dark:border-neutral-800",
                 "dark:bg-neutral-900",
               )}

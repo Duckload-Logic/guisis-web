@@ -198,8 +198,12 @@ export function DatePicker({
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-[300px] rounded-xl bg-background p-0"
+            className={cn(
+              "w-[300px] max-w-[calc(100vw-1rem)]",
+              "overflow-hidden rounded-xl bg-background p-0",
+            )}
             align="start"
+            collisionPadding={8}
           >
             <Calendar
               mode="single"

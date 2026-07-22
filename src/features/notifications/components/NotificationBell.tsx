@@ -1,9 +1,14 @@
 import { Bell } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   useGetNotifications,
   useNotificationsStream,
 } from "../hooks/useNotifications";
+import { useAuth } from "@/context/hooks";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getRolePath } from "../utils";
 
 interface Props {
   showNotifications: boolean;
@@ -16,21 +21,44 @@ export default function NotificationBell({
 }: Props) {
   useNotificationsStream();
 
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, activeRole } = useAuth();
+
   const { data } = useGetNotifications({ page: 1, pageSize: 1 });
   const fallbackUntouchedCount =
     data?.notifications?.filter((notification) => !notification.isTouched)
       .length || 0;
   const untouchedCount = data?.untouchedCount ?? fallbackUntouchedCount;
 
+  const handleClick = () => {
+    if (isMobile) {
+      const roleName = activeRole?.name || user?.roles?.[0]?.name || "student";
+      const rolePath = getRolePath(roleName);
+
+      setShowNotifications(false);
+      navigate(`/${rolePath}/notifications`, {
+        state: { from: location.pathname },
+      });
+      return;
+    }
+
+    setShowNotifications(!showNotifications);
+  };
+
   return (
-    <button
+    <Button
       type="button"
-      onClick={() => setShowNotifications(!showNotifications)}
-      aria-label="Open notifications"
-      aria-expanded={showNotifications}
+      variant="ghost"
+      size="icon"
+      data-notification-trigger="true"
+      onClick={handleClick}
+      aria-label={isMobile ? "Go to notifications" : "Open notifications"}
+      aria-expanded={!isMobile && showNotifications}
       className={cn(
-        "group relative rounded-lg p-2 text-foreground transition-colors",
-        "duration-300 hover:bg-muted/30",
+        "group relative h-11 w-11 rounded-xl p-2 text-foreground",
+        "duration-300 hover:bg-muted/30 hover:shadow-md",
       )}
     >
       <Bell
@@ -51,7 +79,6 @@ export default function NotificationBell({
           {untouchedCount > 99 ? "99+" : untouchedCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
-

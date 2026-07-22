@@ -33,6 +33,7 @@ import ActionConfirmModal from "@/features/appointments/components/ConfirmModal"
 import RescheduleModal from "@/features/appointments/components/RescheduleModal";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
@@ -124,8 +125,12 @@ export default function AppointmentDetails() {
     : "";
 
   const initials = appointment?.user
-    ? `${appointment.user.firstName[0]}${appointment.user.lastName[0]}`
-    : "??";
+    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() || "ST"
+    : "ST";
+
+  const studentProfilePictureUrl = getProfilePictureUrl(
+    appointment?.user?.profilePicture,
+  );
 
   usePageMetadata(
     useMemo(
@@ -390,7 +395,8 @@ export default function AppointmentDetails() {
                 )}
               >
                 <AvatarImage
-                  src={appointment.user?.profilePicture}
+                  src={studentProfilePictureUrl}
+                  alt={fullName || "Student profile picture"}
                   className="object-cover"
                 />
                 <AvatarFallback className="bg-muted/50 text-2xl font-bold uppercase text-foreground/80">

@@ -7,16 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
   Calendar,
-  FileCheck2,
-  FileClock,
-  FilePenLine,
   FileText,
   FileX,
-  FileX2,
   Plus,
   Tag,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import {
@@ -52,87 +47,6 @@ const ACTION_REQUIRED_ALERT = LAYOUT_STYLES.ALERT;
 const ALL_SLIP_STATUS: SlipFilterStatus = {
   id: "0",
   name: "All",
-};
-
-type SlipStatusMeta = {
-  icon: LucideIcon;
-  label: string;
-  card: string;
-  glow: string;
-  iconBox: string;
-};
-
-const SLIP_STATUS_META: Record<string, SlipStatusMeta> = {
-  pending: {
-    icon: FileClock,
-    label: "text-amber-700/85 dark:text-amber-200",
-    card: "border-amber-300/25 bg-gradient-to-br from-amber-50/35 via-white/40 to-white/30 shadow-amber-100/10 dark:border-amber-400/15 dark:from-amber-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-amber-200/15 dark:bg-amber-400/10",
-    iconBox:
-      "border-amber-300/25 bg-amber-50/35 text-amber-700 dark:border-amber-400/15 dark:bg-amber-400/10 dark:text-amber-200",
-  },
-  rejected: {
-    icon: FileX2,
-    label: "text-rose-700/85 dark:text-rose-200",
-    card: "border-rose-300/25 bg-gradient-to-br from-rose-50/35 via-white/40 to-white/30 shadow-rose-100/10 dark:border-rose-400/15 dark:from-rose-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-rose-200/15 dark:bg-rose-400/10",
-    iconBox:
-      "border-rose-300/25 bg-rose-50/35 text-rose-700 dark:border-rose-400/15 dark:bg-rose-400/10 dark:text-rose-200",
-  },
-  approved: {
-    icon: FileCheck2,
-    label: "text-emerald-700/85 dark:text-emerald-200",
-    card: "border-emerald-300/25 bg-gradient-to-br from-emerald-50/35 via-white/40 to-white/30 shadow-emerald-100/10 dark:border-emerald-400/15 dark:from-emerald-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-emerald-200/15 dark:bg-emerald-400/10",
-    iconBox:
-      "border-emerald-300/25 bg-emerald-50/35 text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/10 dark:text-emerald-200",
-  },
-  "for-revision": {
-    icon: FilePenLine,
-    label: "text-slate-700/85 dark:text-slate-200",
-    card: "border-slate-300/30 bg-gradient-to-br from-slate-50/50 via-white/40 to-white/30 shadow-slate-100/10 dark:border-slate-400/15 dark:from-slate-400/5 dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-slate-200/15 dark:bg-slate-400/10",
-    iconBox:
-      "border-slate-300/30 bg-slate-50/45 text-slate-700 dark:border-slate-400/15 dark:bg-slate-400/10 dark:text-slate-200",
-  },
-  default: {
-    icon: FileText,
-    label: "text-primary/85 dark:text-white",
-    card: "border-primary/15 bg-gradient-to-br from-primary/5 via-white/40 to-white/30 shadow-primary/5 dark:border-white/10 dark:from-white/[0.045] dark:via-white/[0.035] dark:to-white/[0.02]",
-    glow: "bg-primary/10 dark:bg-white/10",
-    iconBox:
-      "border-primary/15 bg-primary/10 text-primary dark:border-white/10 dark:bg-white/[0.05] dark:text-white",
-  },
-};
-
-const getSlipStatusCardMeta = (status?: Pick<SlipStatus, "name">) => {
-  const normalizedName = (status?.name || "")
-    .toLowerCase()
-    .trim()
-    .replace(/_/g, "-")
-    .replace(/\s+/g, "-");
-
-  if (normalizedName.includes("revision"))
-    return SLIP_STATUS_META["for-revision"];
-  if (normalizedName.includes("approve")) return SLIP_STATUS_META.approved;
-  if (normalizedName.includes("reject")) return SLIP_STATUS_META.rejected;
-  if (normalizedName.includes("pending")) return SLIP_STATUS_META.pending;
-
-  const key = getStatusColorKey(status?.name);
-
-  if (key === "success") {
-    return SLIP_STATUS_META.approved;
-  }
-
-  if (key === "danger") {
-    return SLIP_STATUS_META.rejected;
-  }
-
-  if (key === "warning") {
-    return SLIP_STATUS_META.pending;
-  }
-
-  return SLIP_STATUS_META.default;
 };
 
 export default function StudentSlips() {
@@ -416,7 +330,7 @@ export default function StudentSlips() {
     <>
       <AnimationStyles />
 
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-6", // Forces full width uniformity
           "px-4 sm:px-6 md:px-8",                   // Matches standard padding
@@ -463,96 +377,6 @@ export default function StudentSlips() {
             </AlertDescription>
           </Alert>
         ) : null}
-
-        <section
-          className={cn("grid grid-cols-2 gap-3", "md:grid-cols-4 md:gap-4")}
-        >
-          {slipStatuses.map((stat: SlipStatus, index: number) => {
-            const count =
-              statusCounts?.find((s) => String(s.id) === String(stat.id))
-                ?.count || 0;
-
-            const statusMeta = getSlipStatusCardMeta(stat);
-            const StatusIcon = statusMeta.icon;
-
-            return (
-              <Card
-                key={stat.id}
-                className={cn(
-                  GLASS_CARD,
-                  "animate-fade-in-up group relative h-[124px] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
-                  statusMeta.card,
-                )}
-                style={{
-                  animationDelay: `${0.06 * (index + 1)}s`,
-                  animationFillMode: "both",
-                }}
-              >
-                <div
-                  className={cn(
-                    "pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full blur-2xl",
-                    statusMeta.glow,
-                  )}
-                />
-
-                <div className="bg-glass-card pointer-events-none absolute inset-x-0 top-0 h-px" />
-                <div className="from-white/28 pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t to-transparent dark:from-black/15" />
-
-                <CardContent className="relative flex h-full flex-col justify-between p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p
-                        title={stat.name}
-                        className={cn(
-                          "truncate text-[11px] font-bold uppercase tracking-[0.18em]",
-                          statusMeta.label,
-                        )}
-                      >
-                        {stat.name}
-                      </p>
-
-                      <p
-                        className={cn(
-                          "mt-1 hidden text-[11px] font-medium",
-                          "text-muted-foreground/75 sm:block",
-                        )}
-                      >
-                        Admission slip status
-                      </p>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] transition-transform duration-300 group-hover:scale-105",
-                        statusMeta.iconBox,
-                      )}
-                    >
-                      <StatusIcon
-                        className="h-5 w-5"
-                        strokeWidth={2}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-end justify-between gap-3">
-                    <p className="text-[34px] tabular-nums leading-none tracking-tight text-foreground">
-                      {count}
-                    </p>
-
-                    <span
-                      className={cn(
-                        "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/85",
-                        GLASS_INNER,
-                      )}
-                    >
-                      Total
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </section>
 
         <Card className={cn(GLASS_CARD, "animate-fade-in-up")}>
           <CardHeader

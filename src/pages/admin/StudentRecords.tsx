@@ -1,32 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import StudentFilters from "@/features/counseling/components/StudentFilters";
-import StudentGrid from "@/features/counseling/components/StudentGrid";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertCircle, Users } from "lucide-react";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, LayoutGrid, List, Users } from "lucide-react";
-import {
-  useCourses,
-  useGenders,
-  useIIRPagination,
-  useStudentStatuses,
-} from "@/features/iir/hooks";
-import { IIRProfileView } from "@/features/iir/types";
-import { useDebounce } from "@/hooks/useDebounce";
-import { Spinner } from "@/components/shared";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/shared";
+import StudentGrid from "@/features/counseling/components/StudentGrid";
+import { useIIRPagination } from "@/features/iir/hooks";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 function StudentRecordsSkeleton() {
   return (
@@ -40,28 +22,26 @@ function StudentRecordsSkeleton() {
         <div
           key={index}
           className={cn(
-            "group relative overflow-hidden rounded-[28px]",
+            "group relative overflow-hidden rounded-xl",
             "border border-glass-border bg-glass-bg p-6",
-            "shadow-sm backdrop-blur-glass",
+            "shadow-md backdrop-blur-glass",
           )}
         >
-          {/* Status Badge Skeleton */}
           <div className="absolute right-4 top-4">
             <Skeleton className="h-5 w-16 rounded-full" />
           </div>
 
           <div className="relative z-10 flex flex-col gap-5">
-            {/* Header with Avatar and Name */}
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="relative">
                 <Skeleton
                   className={cn(
-                    "h-28 w-28 rounded-full border-[6px]",
+                    "h-28 w-28 rounded-xl border-[6px]",
                     "border-primary/20",
                   )}
                 />
                 <div className="absolute bottom-1 right-1">
-                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-8 w-8 rounded-xl" />
                 </div>
               </div>
 
@@ -71,11 +51,10 @@ function StudentRecordsSkeleton() {
               </div>
             </div>
 
-            {/* Info Grid Skeleton */}
             <div
               className={cn(
-                "border-glass-border/30 grid grid-cols-1 gap-3",
-                "border-t pt-4",
+                "grid grid-cols-1 gap-3 border-t",
+                "border-glass-border/30 pt-4",
               )}
             >
               <div className="flex flex-col gap-1.5">
@@ -95,7 +74,6 @@ function StudentRecordsSkeleton() {
               </div>
             </div>
 
-            {/* Actions Skeleton */}
             <div className="pt-2">
               <Skeleton className="h-10 w-full rounded-xl" />
             </div>
@@ -107,21 +85,14 @@ function StudentRecordsSkeleton() {
 }
 
 export default function StudentRecords() {
-  const {
-    data: courses,
-    isLoading: isCoursesLoading,
-    isError: isCoursesError,
-  } = useCourses();
-  const {
-    data: genders,
-    isLoading: isGendersLoading,
-    isError: isGendersError,
-  } = useGenders();
-  const {
-    data: statuses,
-    isLoading: isStatusesLoading,
-    isError: isStatusesError,
-  } = useStudentStatuses();
+  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<"tile" | "list">(() => {
+    const saved = localStorage.getItem("student_grid_view_mode");
+    return saved === "tile" ? "tile" : "list";
+  });
+  const [page, setPage] = useState(1);
+
+  const pageSize = 12;
   const yearLevels = [
     { id: 1, name: "1st Year" },
     { id: 2, name: "2nd Year" },
@@ -129,24 +100,23 @@ export default function StudentRecords() {
     { id: 4, name: "4th Year" },
   ];
 
-  const [viewMode, setViewMode] = useState<"tile" | "list">(() => {
-    const saved = localStorage.getItem("student_grid_view_mode");
-    return saved === "tile" ? "tile" : "list";
-  });
-
   const handleViewModeChange = (mode: "tile" | "list") => {
     setViewMode(mode);
     localStorage.setItem("student_grid_view_mode", mode);
   };
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  const [selectedCourseId, setSelectedCourseId] = useState(0);
-  const [selectedGenderId, setSelectedGenderId] = useState(0);
-  const [selectedYearLevelId, setSelectedYearLevelId] = useState(0);
-  const [selectedStatusId, setSelectedStatusId] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 500);
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    requestAnimationFrame(() => {
+      document.querySelector("main")?.parentElement?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  };
 
   const {
     data,
@@ -156,154 +126,68 @@ export default function StudentRecords() {
   } = useIIRPagination({
     page,
     pageSize,
-    search: debouncedSearch,
-    courseId: selectedCourseId,
-    genderId: selectedGenderId,
-    yearLevel: selectedYearLevelId,
-    statusId: selectedStatusId,
   });
 
   const allStudents = data?.students || [];
 
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<IIRProfileView | null>(
-    null,
-  );
-  const navigate = useNavigate();
-
-  const isGridLoading =
-    isCoursesLoading || isGendersLoading || isStudentsLoading;
-
-  usePageMetadata(
-    useMemo(
-      () => ({
-        title: "Student Records",
-        description:
-          "Access and manage student cumulative records and personal " +
-          "information",
-        headerActions: (
-          <div
-            className={cn(
-              "flex items-center gap-1 rounded-xl border border-glass-border p-1 shadow-md",
-              "bg-glass-bg/50 backdrop-blur-glass",
-            )}
-          >
-            <button
-              onClick={() => handleViewModeChange("list")}
-              className={cn(
-                "flex items-center justify-center",
-                "rounded-lg transition-all",
-                viewMode === "list"
-                  ? "bg-primary text-white shadow-md"
-                  : "text-muted-foreground hover:bg-glass-bg " +
-                      "hover:text-foreground",
-              )}
-              title="List View"
-            >
-              <List size={16} />
-            </button>
-            <button
-              onClick={() => handleViewModeChange("tile")}
-              className={cn(
-                "flex items-center justify-center",
-                "rounded-lg transition-all",
-                viewMode === "tile"
-                  ? "bg-primary text-white shadow-md"
-                  : "text-muted-foreground hover:bg-glass-bg " +
-                      "hover:text-foreground",
-              )}
-              title="Tile View"
-            >
-              <LayoutGrid size={16} />
-            </button>
-          </div>
-        ),
-        badgeText: "Admin Management",
-        badgeIcon: <Users className="h-4 w-4" />,
-        isLoading: false,
-      }),
-      [viewMode],
-    ),
-  );
+  usePageMetadata({
+    title: "Student Records",
+    description:
+      "Access and manage student cumulative records and personal information",
+    badgeText: "Admin Management",
+    badgeIcon: <Users className="h-4 w-4" />,
+    isLoading: false,
+  });
 
   return (
-    <>
-      <div 
-        className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-12",
-          "px-4 sm:px-6 md:px-8",
-        )}
-      > 
-        <div 
-          className="animate-fade-in-up" 
-          style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-        >
-        <StudentFilters
-          searchTerm={searchTerm}
-          onSearchChange={(value) => {
-            if (value === searchTerm) return;
-            setSearchTerm(value);
-            setPage(1);
-          }}
-          courses={courses}
-          selectedCourseId={selectedCourseId}
-          onCourseChange={(id: number) => {
-            if (id === selectedCourseId) return;
-            setSelectedCourseId(id);
-            setPage(1);
-          }}
-          genders={genders}
-          selectedGenderId={selectedGenderId}
-          onGenderChange={(id: number) => {
-            if (id === selectedGenderId) return;
-            setSelectedGenderId(id);
-            setPage(1);
-          }}
-          yearLevels={yearLevels}
-          selectedYearLevelId={selectedYearLevelId}
-          onYearLevelChange={(level: number) => {
-            if (level === selectedYearLevelId) return;
-            setSelectedYearLevelId(level);
-            setPage(1);
-          }}
-          statuses={statuses}
-          selectedStatusId={selectedStatusId}
-          onStatusChange={(id: number) => {
-            if (id === selectedStatusId) return;
-            setSelectedStatusId(id);
-            setPage(1);
-          }}
-        />
+    <div
+      className={cn(
+        "mx-auto flex w-full flex-col space-y-8 pb-12",
+        "px-4 sm:px-6 md:px-8",
+      )}
+    >
+      {isStudentsError && (
+        <Alert variant="destructive" className="rounded-xl shadow-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {(studentsError as Error)?.message ||
+              "Unable to load student records."}
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <div className="relative min-h-[400px] mt-8">
-          {isGridLoading ? (
-            <StudentRecordsSkeleton />
-          ) : (
-              <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: "0.10s", animationFillMode: "both" 
+      <div
+        className="animate-fade-in-up relative min-h-[400px]"
+        style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+      >
+        {isStudentsLoading ? (
+          <StudentRecordsSkeleton />
+        ) : (
+          <div
+            className="animate-fade-in-up space-y-8"
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+          >
+            <StudentGrid
+              students={allStudents}
+              isStudentsLoading={false}
+              onViewClick={(student) => {
+                navigate(`/admin/student-records/${student.iirId}`, {
+                  state: { student },
+                });
               }}
-              > 
-                <StudentGrid
-                students={allStudents}
-                isStudentsLoading={false} // Loading handled by parent
-                onViewClick={(student: any) => {
-                  navigate(`/admin/student-records/${student.iirId}`, {
-                    state: { student },
-                  });
-                }}
-                viewMode={viewMode}
-                yearLevels={yearLevels}
-              />
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+              yearLevels={yearLevels}
+            />
 
-              <Pagination
-                currentPage={page}
-                totalPages={data?.meta?.totalPages || 1}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </div>
+            <Pagination
+              currentPage={page}
+              totalPages={data?.meta?.totalPages || 1}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
-      </div>
-    </>
+    </div>
   );
 }

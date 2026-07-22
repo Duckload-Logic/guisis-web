@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export interface Column<T> {
-  header: string;
+  header: React.ReactNode;
   className?: string;
   render: (item: T, index: number) => React.ReactNode;
 }
@@ -43,21 +43,23 @@ export function Table<T>({
   onRowClick,
   isRowClickable,
 }: TableProps<T>) {
+  const hasMobileRenderer = Boolean(renderMobileItem);
+
   if (isLoading) {
     if (variant === "list" && renderListItem) {
       return (
-        <div className="divide-y divide-border/60 dark:divide-white/10">
+        <div className="min-w-0 divide-y divide-border/60 dark:divide-white/10">
           {Array.from({ length: loadingRows }).map((_, idx) => (
             <div
               key={idx}
               className="px-4 py-3 sm:px-5"
             >
-              <div className="flex animate-pulse items-center gap-4">
+              <div className="flex min-w-0 animate-pulse items-center gap-4">
                 <Skeleton className="hidden h-10 w-10 shrink-0 rounded-xl sm:block" />
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center justify-between gap-3">
-                    <Skeleton className="h-4 w-36 rounded" />
-                    <Skeleton className="h-6 w-20 rounded-full" />
+                  <div className="flex min-w-0 items-center justify-between gap-3">
+                    <Skeleton className="h-4 w-36 max-w-full rounded" />
+                    <Skeleton className="h-6 w-20 shrink-0 rounded-full" />
                   </div>
                   <Skeleton className="h-3 w-52 max-w-full rounded" />
                 </div>
@@ -73,7 +75,8 @@ export function Table<T>({
         {columns.length > 0 && (
           <div
             className={cn(
-              "hidden overflow-x-auto md:block",
+              hasMobileRenderer ? "hidden xl:block" : "block",
+              "max-w-full overflow-x-auto overscroll-x-contain",
               containerClassName,
             )}
           >
@@ -82,7 +85,7 @@ export function Table<T>({
             ) : (
               <table
                 className={cn(
-                  "w-full border-collapse text-sm",
+                  "w-full min-w-[42rem] border-collapse text-sm xl:min-w-full",
                   tableClassName,
                 )}
               >
@@ -124,23 +127,23 @@ export function Table<T>({
         )}
 
         {renderMobileItem && (
-          <div className="block space-y-3 px-4 pb-5 md:hidden">
+          <div className="block min-w-0 space-y-3 px-3 pb-5 sm:px-4 xl:hidden">
             {renderMobileSkeleton
               ? renderMobileSkeleton()
               : Array.from({ length: 3 }).map((_, idx) => (
                   <div
                     key={idx}
                     className={cn(
-                      "animate-pulse rounded-2xl border border-border/70",
-                      "bg-card p-4 shadow-sm backdrop-blur-xl",
+                      "animate-pulse rounded-xl border border-border/70",
+                      "bg-card p-4 shadow-md backdrop-blur-xl",
                       "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <Skeleton className="h-5 w-36 rounded" />
-                      <Skeleton className="h-6 w-16 rounded-full" />
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <Skeleton className="h-5 w-36 max-w-full rounded" />
+                      <Skeleton className="h-6 w-16 shrink-0 rounded-full" />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="mt-3 grid min-w-0 grid-cols-2 gap-3">
                       <Skeleton className="h-8 w-full rounded-xl" />
                       <Skeleton className="h-8 w-full rounded-xl" />
                     </div>
@@ -158,7 +161,7 @@ export function Table<T>({
 
   if (variant === "list" && renderListItem) {
     return (
-      <div className="divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
+      <div className="min-w-0 divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
         {data.map((item, idx) => renderListItem(item, idx))}
       </div>
     );
@@ -169,12 +172,16 @@ export function Table<T>({
       {columns.length > 0 && (
         <div
           className={cn(
-            "hidden overflow-x-auto px-3 py-3 md:block",
+            hasMobileRenderer ? "hidden xl:block" : "block",
+            "max-w-full overflow-x-auto overscroll-x-contain px-3 py-3",
             containerClassName,
           )}
         >
           <table
-            className={cn("w-full border-collapse text-sm", tableClassName)}
+            className={cn(
+              "w-full min-w-[42rem] border-collapse text-sm xl:min-w-full",
+              tableClassName,
+            )}
           >
             <thead>
               <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
@@ -231,7 +238,7 @@ export function Table<T>({
       )}
 
       {renderMobileItem && (
-        <div className="block space-y-3 px-4 pb-5 md:hidden">
+        <div className="block min-w-0 space-y-3 px-3 pb-5 sm:px-4 xl:hidden">
           {data.map((item, idx) => renderMobileItem(item, idx))}
         </div>
       )}

@@ -23,15 +23,13 @@ import {
   ChevronRight,
   Edit2,
   AlertCircle,
-  ClipboardList,
   Layers,
-  X,
   Folder,
   Plus,
-  Eye,
-  ImageIcon,
   FileText,
   RefreshCw,
+  Info,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -40,18 +38,20 @@ import {
   useUpdateSlip,
   useGetSlipById,
   useGetSlipAttachments,
-  useGetAttachmentPreview,
 } from "@/features/slips/hooks";
 import { StepProgress } from "@/features/slips/components";
 import { AnimationStyles } from "@/components/ui/animations";
 import { CreateSlipRequest } from "@/features/slips/types";
 import { usePageMetadata } from "@/context";
-import { useMe } from "@/features/users/hooks/useMe";
 import { DatePicker, Dropdown } from "@/components/form";
 import FormInput, { CustomTooltip } from "@/components/form/FormInput";
+import { ExistingFileCard } from "./components/ExistingFileCard";
+import { LocalFileCard } from "./components/LocalFileCard";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
+import goodCertImage from "@/assets/images/good-certificate-example.png";
+import badCertImage from "@/assets/images/bad-certificate-example.png";
 
 interface SubmitSlipFormState {
   dateOfAbsence: string;
@@ -77,385 +77,8 @@ const EMPTY_FORM_DATA: SubmitSlipFormState = {
   },
 };
 
-// Reusable Local File Preview Card
-function LocalFileCard({
-  file,
-  onRemove,
-  onPreview,
-}: {
-  file: File;
-  onRemove: () => void;
-  onPreview: (file: File, url: string) => void;
-}) {
-  const isImage = file.type.startsWith("image/");
-  const isPdf = file.type === "application/pdf";
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-
-  useEffect(() => {
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  };
-
-  return (
-    <>
-      {/* Desktop Grid Layout (hidden on mobile) */}
-      <div
-        className={cn(
-          "group hidden overflow-hidden rounded-xl border",
-          "border-border/60 bg-card transition-all duration-300",
-          "hover:border-primary/40 hover:shadow-lg",
-          "hover:shadow-primary/5 md:flex md:flex-col",
-        )}
-      >
-        {/* Thumbnail Area */}
-        <div
-          onClick={() => onPreview(file, previewUrl)}
-          className={cn(
-            "relative flex aspect-[4/3] cursor-pointer",
-            "items-center justify-center overflow-hidden bg-muted/30",
-          )}
-        >
-          {isImage && previewUrl ? (
-            <img
-              src={previewUrl}
-              alt={file.name}
-              className={cn(
-                "h-full w-full object-cover transition-transform",
-                "duration-500 group-hover:scale-110",
-              )}
-            />
-          ) : isPdf ? (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-red-100 p-3 shadow-sm",
-                  "dark:bg-red-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-red-600 dark:text-red-400" />
-              </div>
-              <span
-                className={cn(
-                  "rounded-full bg-red-100/50 px-2 py-0.5",
-                  "text-[8px] font-bold text-red-700",
-                  "dark:bg-red-900/40 dark:text-red-300",
-                )}
-              >
-                PDF
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-blue-100 p-3 shadow-sm",
-                  "dark:bg-blue-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          )}
-
-          {/* Hover Overlay */}
-          <div
-            className={cn(
-              "absolute inset-0 flex items-center justify-center",
-              "bg-primary/10 opacity-0 backdrop-blur-[2px]",
-              "transition-opacity duration-300 group-hover:opacity-100",
-            )}
-          >
-            <div
-              className={cn(
-                "rounded-full bg-white/90 p-2 shadow-lg",
-                "dark:bg-black/90",
-              )}
-            >
-              <Eye className="h-4 w-4 text-primary" />
-            </div>
-          </div>
-        </div>
-
-        {/* Info & Remove Area */}
-        <div
-          className={cn(
-            "flex items-center justify-between border-t",
-            "border-border/40 p-2",
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-1.5">
-            {isImage ? (
-              <ImageIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
-            ) : (
-              <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
-            )}
-            <p
-              className={cn(
-                "truncate text-[10px] font-medium",
-                "text-foreground/80",
-              )}
-            >
-              {file.name}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onRemove}
-            className={cn(
-              "rounded-full p-1 text-muted-foreground",
-              "transition-colors hover:bg-red-100",
-              "hover:text-red-500 dark:hover:bg-red-950/30",
-            )}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Listed Layout (hidden on desktop) */}
-      <div
-        className={cn(
-          "flex items-center justify-between gap-3 rounded-lg border",
-          "border-border/60 bg-card p-2 md:hidden",
-        )}
-      >
-        <div
-          onClick={() => onPreview(file, previewUrl)}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5"
-        >
-          {/* Small thumbnail / Icon */}
-          <div
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center",
-              "overflow-hidden rounded-md bg-muted/40",
-            )}
-          >
-            {isImage && previewUrl ? (
-              <img
-                src={previewUrl}
-                alt={file.name}
-                className="h-full w-full object-cover"
-              />
-            ) : isPdf ? (
-              <FileText className="h-5 w-5 text-red-500" />
-            ) : (
-              <FileText className="h-5 w-5 text-blue-500" />
-            )}
-          </div>
-
-          {/* Details */}
-          <div className="min-w-0 flex-1">
-            <p
-              className={cn(
-                "truncate text-xs font-medium",
-                "text-foreground/80",
-              )}
-            >
-              {file.name}
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              {formatSize(file.size)}
-            </p>
-          </div>
-        </div>
-
-        {/* Remove action */}
-        <button
-          type="button"
-          onClick={onRemove}
-          className={cn(
-            "rounded-full p-1.5 text-muted-foreground",
-            "transition-colors hover:bg-red-50",
-            "hover:text-red-500 dark:hover:bg-red-950/30",
-          )}
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </>
-  );
-}
-
-// Reusable Existing Attachment Preview Card
-function ExistingFileCard({
-  slipId,
-  file,
-  onRemove,
-}: {
-  slipId: string;
-  file: any;
-  onRemove: () => void;
-}) {
-  const { previewUrl, isLoading } = useGetAttachmentPreview(slipId, file.id);
-  const isImage = file.fileName?.toLowerCase().match(/\.(jpg|jpeg|png|webp)$/);
-  const isPdf = file.fileName?.toLowerCase().endsWith(".pdf");
-
-  return (
-    <>
-      {/* Desktop view card */}
-      <div
-        className={cn(
-          "group hidden overflow-hidden rounded-xl border md:flex",
-          "border-border/60 bg-card transition-all duration-300",
-          "hover:border-primary/40 hover:shadow-lg md:flex-col",
-          "hover:shadow-primary/5",
-        )}
-      >
-        <div
-          className={cn(
-            "relative flex aspect-[4/3] w-full cursor-pointer",
-            "items-center justify-center overflow-hidden bg-muted/30",
-          )}
-        >
-          {isLoading ? (
-            <div className="flex h-full w-full items-center justify-center">
-              <RefreshCw className="h-6 w-6 animate-spin text-muted" />
-            </div>
-          ) : isImage && previewUrl ? (
-            <img
-              src={previewUrl}
-              alt={file.fileName}
-              className={cn(
-                "h-full w-full object-cover transition-transform",
-                "duration-500 group-hover:scale-110",
-              )}
-            />
-          ) : isPdf ? (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-red-100 p-3 shadow-sm",
-                  "dark:bg-red-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-red-600 dark:text-red-400" />
-              </div>
-              <span
-                className={cn(
-                  "rounded-full bg-red-100/50 px-2 py-0.5",
-                  "text-[8px] font-bold text-red-700",
-                  "dark:bg-red-900/40 dark:text-red-300",
-                )}
-              >
-                PDF
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-blue-100 p-3 shadow-sm",
-                  "dark:bg-blue-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div
-          className={cn(
-            "flex items-center justify-between border-t",
-            "border-border/40 p-2",
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-1.5">
-            {isImage ? (
-              <ImageIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
-            ) : (
-              <FileText className="h-3 w-3 shrink-0 text-muted-foreground" />
-            )}
-            <p
-              className={cn(
-                "truncate text-[10px] font-medium",
-                "text-foreground/80",
-              )}
-            >
-              {file.fileName.split("/").pop()}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onRemove}
-            className={cn(
-              "rounded-full p-1 text-muted-foreground",
-              "transition-colors hover:bg-red-100",
-              "hover:text-red-500 dark:hover:bg-red-950/30",
-            )}
-          >
-            <X size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile view card */}
-      <div
-        className={cn(
-          "flex items-center justify-between gap-3 rounded-lg border",
-          "border-border/60 bg-card p-2 md:hidden",
-        )}
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          <div
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center",
-              "overflow-hidden rounded-md bg-muted/40",
-            )}
-          >
-            {isLoading ? (
-              <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-            ) : isImage && previewUrl ? (
-              <img
-                src={previewUrl}
-                alt={file.fileName}
-                className="h-full w-full object-cover"
-              />
-            ) : isPdf ? (
-              <FileText className="h-5 w-5 text-red-500" />
-            ) : (
-              <FileText className="h-5 w-5 text-blue-500" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={cn(
-                "truncate text-xs font-medium",
-                "text-foreground/80",
-              )}
-            >
-              {file.fileName.split("/").pop()}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onRemove}
-          className={cn(
-            "rounded-full p-1.5 text-muted-foreground",
-            "transition-colors hover:bg-red-50",
-            "hover:text-red-500 dark:hover:bg-red-950/30",
-          )}
-        >
-          <X size={16} />
-        </button>
-      </div>
-    </>
-  );
-}
-
 export default function SubmitSlip() {
-  const [formData, setFormData] =
-    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
+  const [formData, setFormData] = useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
   const [currentStep, setCurrentStep] = useState(1);
   const [previewData, setPreviewData] = useState<{
     file: File;
@@ -466,7 +89,6 @@ export default function SubmitSlip() {
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const { triggerToast } = useToast();
-  const { data: me } = useMe({});
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useGetSlipCategories();
@@ -763,7 +385,6 @@ export default function SubmitSlip() {
     <>
       <AnimationStyles />
       <div className="min-h-full bg-background">
-        {/* Main Content */}
         <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
           <div className="space-y-6">
             <StepProgress
@@ -1053,6 +674,15 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
+                            <div className="flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 p-4 text-violet-900 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/20 dark:text-violet-200">
+                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
+                              <div className="text-sm">
+                                <p className="mb-1 font-semibold">Excuse Letter Format Requirement:</p>
+                                <p className="text-violet-800 dark:text-violet-300">
+                                  Please ensure the letter includes the <strong>signature of your parent or guardian</strong> placed directly above their printed name.
+                                </p>
+                              </div>
+                            </div>
                             {formData.files.excuseLetter.length === 0 &&
                               getKeptFiles("excuseLetter").length === 0 && (
                                 <div
@@ -1230,6 +860,40 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                              {/* Valid Requirements */}
+                              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">
+                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                  Valid ID Requirements
+                                </h4>
+                                <ul className="ml-6 list-outside list-disc space-y-1 text-xs text-emerald-800 dark:text-emerald-300">
+                                  <li>Upload a government-issued or school-issued ID (if accepted).</li>
+                                  <li>The ID must be valid (not expired).</li>
+                                  <li>Ensure all text and photo are clear and readable.</li>
+                                  <li>Capture the entire ID (all four corners must be visible).</li>
+                                  <li>Use a plain, non-reflective background.</li>
+                                  <li>Avoid glare, shadows, blur, or filters.</li>
+                                  <li>Do not crop, edit, or cover any part of the ID.</li>
+                                  <li>Upload the front side (and back side if required).</li>
+                                </ul>
+                              </div>
+
+                              <div className="rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
+                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-red-900 dark:text-red-200">
+                                  <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+                                  Do Not Upload
+                                </h4>
+                                <ul className="ml-6 list-outside list-disc space-y-1 text-xs text-red-800 dark:text-red-300">
+                                  <li>Expired IDs.</li>
+                                  <li>Blurry or low-resolution photos.</li>
+                                  <li>Cropped or partially visible IDs.</li>
+                                  <li>IDs with glare, reflections, or shadows.</li>
+                                  <li>Screenshots or photocopies (unless explicitly allowed).</li>
+                                  <li>Edited or digitally altered IDs.</li>
+                                </ul>
+                              </div>
+                            </div>
                             {formData.files.parentId.length === 0 &&
                               getKeptFiles("parentId").length === 0 && (
                                 <div
@@ -1406,7 +1070,36 @@ export default function SubmitSlip() {
                               "px-4 py-3",
                             )}
                           >
-                            <div className="space-y-4">
+                            <div className="space-y-4">  
+                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="flex flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
+                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">
+                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                    Upload this
+                                  </h4>
+                                  <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                                    <img 
+                                      src={goodCertImage} 
+                                      alt="Example of a valid medical certificate" 
+                                      className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col items-center rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
+                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-red-900 dark:text-red-200">
+                                    <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+                                    Do Not Upload
+                                  </h4>
+                                  <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                                    <img 
+                                      src={badCertImage} 
+                                      alt="Example of an invalid medical certificate" 
+                                      className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
                               {formData.files.medicalCert.length === 0 &&
                                 getKeptFiles("medicalCert").length === 0 && (
                                   <div

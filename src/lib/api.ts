@@ -4,6 +4,59 @@ import { decamelizeKeys, camelizeKeys } from "humps";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const isStagingEnvironment = () => {
+  const environmentName = String(
+    import.meta.env.VITE_APP_ENV ||
+      import.meta.env.VITE_ENV ||
+      import.meta.env.MODE ||
+      "",
+  ).toLowerCase();
+  const baseUrl = String(API_BASE_URL || "").toLowerCase();
+  const host =
+    typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "";
+
+  return (
+    environmentName.includes("staging") ||
+    baseUrl.includes("staging") ||
+    host.includes("staging")
+  );
+};
+
+const getStagingMaskedMessage = (status?: number) => {
+  if (!isStagingEnvironment()) return "";
+  if (status === 401) return "Invalid Credentials";
+  if (status === 404) return "Network Error";
+  return "";
+};
+
+const applyStagingErrorMask = <TError extends AxiosError>(error: TError) => {
+  const maskedMessage = getStagingMaskedMessage(error.response?.status);
+  if (!maskedMessage) return error;
+
+  error.message = maskedMessage;
+
+  if (error.response) {
+    const existingData = error.response.data;
+
+    if (existingData && typeof existingData === "object") {
+      error.response.data = {
+        ...existingData,
+        message: maskedMessage,
+        error: maskedMessage,
+      };
+    } else {
+      error.response.data = {
+        status: "fail",
+        data: { message: maskedMessage },
+        message: maskedMessage,
+      };
+    }
+  }
+
+  return error;
+};
+
+
 /**
  * Extended Axios config with custom logging metadata
  * Allows partial config for use in hooks and services
@@ -99,7 +152,7 @@ apiClient.interceptors.response.use(
 
     if (isRefreshLockedOut && error.response?.status === 401) {
       redirectToLoginAfterSessionExpiry();
-      return Promise.reject(error);
+      return Promise.reject(applyStagingErrorMask(error));
     }
 
     if (
@@ -140,7 +193,7 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshError) {
         redirectToLoginAfterSessionExpiry();
-        return Promise.reject(refreshError);
+        return Promise.reject(applyStagingErrorMask(refreshError as AxiosError));
       }
     }
 
@@ -148,7 +201,7 @@ apiClient.interceptors.response.use(
       redirectToLoginAfterSessionExpiry();
     }
 
-    return Promise.reject(error);
+    return Promise.reject(applyStagingErrorMask(error));
   },
 );
 
@@ -158,6 +211,26 @@ apiClient.interceptors.response.use(
  */
 export function getErrorMessage(error: any): string {
   if (!error) return "An unexpected error occurred.";
+
+  const status = error.response?.status;
+  const maskedMessage = getStagingMaskedMessage(status);
+  if (maskedMessage) return maskedMessage;
+
+  if (status >= 500) {
+    return "We're having trouble loading this page right now. Please try again in a moment.";
+  }
+
+  if (status === 404) {
+    return "We couldn't find the requested information. It may have been moved or is no longer available.";
+  }
+
+  if (status === 403) {
+    return "You don't have permission to view this information.";
+  }
+
+  if (status === 401 && !isAuthRequest(error.config?.url)) {
+    return "Your session has expired. Please sign in again.";
+  }
 
   const responseData = error.response?.data;
   if (responseData && typeof responseData === "object") {
@@ -187,7 +260,19 @@ export function getErrorMessage(error: any): string {
     }
   }
 
-  return (
-    capitalizeFirstLetter(error.message) || "An unexpected error occurred."
-  );
+  const rawMessage = String(error.message || "");
+
+  if (/network error/i.test(rawMessage)) {
+    return "We couldn't connect to the server. Please check your connection and try again.";
+  }
+
+  if (/timeout/i.test(rawMessage)) {
+    return "The request took too long to finish. Please try again.";
+  }
+
+  if (/request failed with status code/i.test(rawMessage)) {
+    return "We couldn't complete the request. Please try again in a moment.";
+  }
+
+  return capitalizeFirstLetter(rawMessage) || "An unexpected error occurred.";
 }

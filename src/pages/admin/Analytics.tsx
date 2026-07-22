@@ -38,7 +38,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCourses, useEnrollmentYears } from "@/features/iir/hooks";
+import { usePrograms, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
 import { FullScreenLoader } from "@/components/shared";
@@ -93,8 +93,11 @@ const genderDistributionConfig = {
 } satisfies ChartConfig;
 
 export default function AnalyticsPage() {
-  const [selectedYear, setSelectedYear] = useState<string>("0");
-  const [selectedCourse, setSelectedCourse] = useState<string>("0");
+  const currentCalendarYear = useMemo(() => new Date().getFullYear(), []);
+  const [selectedYear, setSelectedYear] = useState<string>(() =>
+    currentCalendarYear.toString(),
+  );
+  const [selectedProgram, setSelectedProgram] = useState<string>("0");
 
   const { data: settings, isLoading: isSettingsLoading } = useQuery({
     queryKey: ["counselor", "academicSettings"],
@@ -113,16 +116,16 @@ export default function AnalyticsPage() {
     pdfUrl,
     isDownloading,
   } = useAnalyticsDashboard();
-  const { data: coursesData } = useCourses();
-  const courses = useMemo(() => {
+  const { data: programsData } = usePrograms();
+  const programs = useMemo(() => {
     return [
-      { value: "0", label: "All Courses" },
-      ...(coursesData || []).map((c: any) => ({
-        value: c.id.toString(),
-        label: c.code,
+      { value: "0", label: "All Programs" },
+      ...(programsData || []).map((p: any) => ({
+        value: p.id.toString(),
+        label: p.code,
       })),
     ];
-  }, [coursesData]);
+  }, [programsData]);
   const { data: enrollmentYears } = useEnrollmentYears();
 
   const [hasSetDefaultYear, setHasSetDefaultYear] = useState(false);
@@ -132,72 +135,97 @@ export default function AnalyticsPage() {
       const yearStr = settings.currentYearStart.toString();
       setSelectedYear(yearStr);
       setHasSetDefaultYear(true);
-      refresh(settings.currentYearStart, parseInt(selectedCourse), 0);
+      refresh(settings.currentYearStart, parseInt(selectedProgram), 0);
     } else if (!settings && !isSettingsLoading && !hasSetDefaultYear) {
       const fallbackYear = new Date().getFullYear();
       setSelectedYear(fallbackYear.toString());
       setHasSetDefaultYear(true);
-      refresh(fallbackYear, parseInt(selectedCourse), 0);
+      refresh(fallbackYear, parseInt(selectedProgram), 0);
     }
   }, [
     settings,
     isSettingsLoading,
     hasSetDefaultYear,
-    selectedCourse,
+    selectedProgram,
     refresh,
   ]);
 
   // Update filters and refresh
   const handleYearChange = (val: string) => {
     setSelectedYear(val);
-    refresh(parseInt(val), parseInt(selectedCourse), 0);
+    refresh(parseInt(val), parseInt(selectedProgram), 0);
   };
 
-  const handleCourseChange = (val: string) => {
-    setSelectedCourse(val);
+  const handleProgramChange = (val: string) => {
+    setSelectedProgram(val);
     refresh(parseInt(selectedYear), parseInt(val), 0);
   };
 
   const yearOptions = useMemo(() => {
-    const years = [...(enrollmentYears || [])];
-    const currentYear = settings?.currentYearStart;
-    if (currentYear && !years.includes(currentYear)) {
-      years.unshift(currentYear);
+    const yearSet = new Set<number>();
+
+    if (settings?.currentYearStart) {
+      yearSet.add(settings.currentYearStart);
     }
-    return years.map((y: number) => ({
-      value: y.toString(),
-      label: y.toString(),
-    }));
-  }, [enrollmentYears, settings]);
+
+    (enrollmentYears || []).forEach((year: number) => {
+      if (Number.isFinite(year)) yearSet.add(year);
+    });
+
+    const parsedSelectedYear = Number.parseInt(selectedYear, 10);
+    if (Number.isFinite(parsedSelectedYear) && parsedSelectedYear > 0) {
+      yearSet.add(parsedSelectedYear);
+    }
+
+    if (yearSet.size === 0) {
+      yearSet.add(currentCalendarYear);
+    }
+
+    return Array.from(yearSet)
+      .sort((a, b) => b - a)
+      .map((year: number) => ({
+        value: year.toString(),
+        label: year.toString(),
+      }));
+  }, [currentCalendarYear, enrollmentYears, selectedYear, settings]);
 
   const headerActions = useMemo(
     () => (
-      <div className="flex gap-4">
-        <Dropdown
-          name="year"
-          get="value"
-          identifier="value"
-          value={selectedYear}
-          onChange={handleYearChange}
-          options={yearOptions}
-          formStyle={false}
-        />
+      <div
+        className={cn(
+          "flex w-full flex-col gap-3",
+          "sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end",
+        )}
+      >
+        <div className="w-full min-w-[8.5rem] sm:w-36">
+          <Dropdown
+            name="year"
+            get="value"
+            identifier="value"
+            value={selectedYear}
+            onChange={handleYearChange}
+            options={yearOptions}
+            formStyle={false}
+          />
+        </div>
 
-        <Dropdown
-          name="course"
-          get="value"
-          identifier="value"
-          value={selectedCourse}
-          onChange={handleCourseChange}
-          options={courses}
-          formStyle={false}
-        />
+        <div className="w-full min-w-[11rem] sm:w-44 md:w-52">
+          <Dropdown
+            name="program"
+            get="value"
+            identifier="value"
+            value={selectedProgram}
+            onChange={handleProgramChange}
+            options={programs}
+            formStyle={false}
+          />
+        </div>
 
         <Button
           variant="outline"
           disabled={isDownloading}
           onClick={() =>
-            generatePreview(parseInt(selectedYear), parseInt(selectedCourse))
+            generatePreview(parseInt(selectedYear), parseInt(selectedProgram))
           }
           className={cn(
             "border-glass-border/40 hover:border-glass-border/60",
@@ -206,11 +234,11 @@ export default function AnalyticsPage() {
             "py-2.5 text-left text-sm font-medium tracking-tight",
             "text-foreground shadow-sm outline-none transition-all",
             "duration-200 focus:border-primary/50 focus:bg-glass-bg",
-            "focus:ring-2 focus:ring-primary/5",
+            "focus:ring-2 focus:ring-primary/5 sm:w-auto sm:min-w-[12.5rem]",
           )}
         >
-          <FileDown className="h-4 w-4" />
-          <span>Download Report</span>
+          <FileDown className="h-4 w-4 shrink-0" />
+          <span className="truncate">Download Report</span>
         </Button>
       </div>
     ),
@@ -218,9 +246,9 @@ export default function AnalyticsPage() {
       selectedYear,
       handleYearChange,
       yearOptions,
-      selectedCourse,
-      handleCourseChange,
-      courses,
+      selectedProgram,
+      handleProgramChange,
+      programs,
       isDownloading,
       generatePreview,
     ],
@@ -254,7 +282,7 @@ export default function AnalyticsPage() {
         <Button
           variant="outline"
           onClick={() =>
-            refresh(parseInt(selectedYear), parseInt(selectedCourse), 0)
+            refresh(parseInt(selectedYear), parseInt(selectedProgram), 0)
           }
           className="mt-4 border-primary/20 hover:bg-primary/5"
         >
@@ -276,16 +304,16 @@ export default function AnalyticsPage() {
         isLoading={isDownloading}
         message="Generating Document..."
       />
-      <div 
+      <div
         className={cn(
           "mx-auto flex w-full flex-col space-y-8 pb-12",
           "px-4 sm:px-6 md:px-8",
         )}
       >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           {/* Left Column: Gender Distribution Chart */}
-          <div 
-            className="lg:col-span-1 animate-fade-in-up"
+          <div
+            className="animate-fade-in-up xl:col-span-1"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
             <ChartCard
@@ -294,7 +322,10 @@ export default function AnalyticsPage() {
             >
               <ChartContainer
                 config={genderDistributionConfig}
-                className="mx-auto aspect-square max-h-[300px]"
+                className={cn(
+                  "mx-auto aspect-square h-[220px] w-full max-w-[260px]",
+                  "sm:h-[260px] sm:max-w-[300px] xl:h-[300px]",
+                )}
               >
                 <PieChart>
                   <ChartTooltip
@@ -305,8 +336,8 @@ export default function AnalyticsPage() {
                     data={data?.genderDistribution ?? []}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    innerRadius={54}
+                    outerRadius={88}
                     paddingAngle={5}
                     dataKey="total"
                     nameKey="category"
@@ -334,8 +365,8 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Right Columns: KPIs */}
-          <div 
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2 animate-fade-in-up"
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-2 animate-fade-in-up"
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
             <KPICard

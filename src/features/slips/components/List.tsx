@@ -1,15 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Dropdown } from "@/components/form";
-import { useMemo } from "react";
+import { MouseEvent, useMemo, useState } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  EyeOff,
+  Inbox,
+  RotateCcw,
+  Tag,
+  User,
+  Eye,
+} from "lucide-react";
+
 import { Pagination, Table, Column } from "@/components/shared";
-import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { Eye, Calendar, Tag, Inbox, Search, User, X } from "lucide-react";
-import type { Slip } from "../types";
-import { formatDate } from "@/utils/dateTime";
-import { SlipStatus, SlipStats } from "../types";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/utils/dateTime";
+import { Dropdown, SearchInput } from "@/components/form";
+
+import type { Slip } from "../types";
+import { SlipStatus, SlipStats } from "../types";
 
 type SortOrder = "asc" | "desc";
 
@@ -51,6 +61,20 @@ function formatCompactSlipDate(value?: string) {
   return formatDate(value) || "—";
 }
 
+function getSlipStudentName(slip: Slip) {
+  return [slip.user?.firstName, slip.user?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function getSlipKey(slip: Slip, index: number) {
+  return String(
+    slip.id ||
+      `${slip.studentNumber || slip.user?.studentNumber || "student"}-${slip.dateOfAbsence}-${index}`,
+  );
+}
+
 export function SlipList({
   title = "Admission Slip List",
   searchTerm = "",
@@ -73,79 +97,164 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
+  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(() => new Set());
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
   const statMap = useMemo(() => {
     const map: Record<string | number, SlipStats> = {};
-    (statusCounts || []).forEach((sc) => {
-      map[sc.id] = sc;
+    (statusCounts || []).forEach((status) => {
+      map[status.id] = status;
     });
     return map;
   }, [statusCounts]);
 
   const dropdownOptions = useMemo(() => {
-    return (statuses || []).map((s) => ({
-      ...s,
+    return (statuses || []).map((status) => ({
+      ...status,
       displayName:
-        String(s.id) === "0"
+        String(status.id) === "0"
           ? "All Statuses"
-          : `${s.name} (${statMap[s.id]?.count || 0})`,
+          : `${status.name} (${statMap[status.id]?.count || 0})`,
     }));
   }, [statuses, statMap]);
 
-  const handleRequiredSortChange = (value: unknown) => {
-    const nextValue = String(value ?? "").trim();
+  const categoryOptions = useMemo(() => {
+    const cats = new Set<string>();
+    slips.forEach((slip) => {
+      if (slip.category?.name) cats.add(slip.category.name);
+    });
+    return [
+      { id: "all", displayName: "All Categories" },
+      ...Array.from(cats).sort().map((c) => ({ id: c, displayName: c })),
+    ];
+  }, [slips]);
 
-    if (!nextValue) {
-      return;
-    }
+  const sortKeyName = useMemo(() => sortOptions?.find((o) => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
+  const sortKeyAbsence = useMemo(() => sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))?.id || "dateOfAbsence", [sortOptions]);
+  const sortKeyNeeded = useMemo(() => sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))?.id || "dateNeeded", [sortOptions]);
 
-    const isValidSortOption = sortOptions.some(
-      (option) => String(option.id) === nextValue,
-    );
+  const visibleSlips = useMemo(() => {
+    const filtered = slips.filter((slip, index) => {
+      if (hiddenSlipKeys.has(getSlipKey(slip, index))) return false;
 
-    if (!isValidSortOption) {
-      return;
-    }
+      const matchesCat = selectedCategory === "all" || slip.category?.name === selectedCategory;
 
-    onSortChange?.(nextValue);
+      return matchesCat;
+    });
+
+    filtered.sort((a, b) => {
+      if (selectedSort === sortKeyName) {
+        const left = getSlipStudentName(a).toLowerCase();
+        const right = getSlipStudentName(b).toLowerCase();
+        const res = left.localeCompare(right);
+        return selectedOrder === "asc" ? res : -res;
+        
+      } else if (selectedSort === sortKeyAbsence) {
+        const left = new Date(a.dateOfAbsence || 0).getTime();
+        const right = new Date(b.dateOfAbsence || 0).getTime();
+        return selectedOrder === "asc" ? left - right : right - left;
+        
+      } else if (selectedSort === sortKeyNeeded) {
+        const left = new Date(a.dateNeeded || 0).getTime();
+        const right = new Date(b.dateNeeded || 0).getTime();
+        return selectedOrder === "asc" ? left - right : right - left;
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [
+    slips, 
+    hiddenSlipKeys, 
+    selectedCategory, 
+    selectedSort, 
+    selectedOrder, 
+    sortKeyName, 
+    sortKeyAbsence, 
+    sortKeyNeeded
+  ]);
+
+  const hiddenCount = slips.length - visibleSlips.length;
+
+  const handleSearchChange = (value: string) => {
+    onSearchChange?.(value);
+    onPageChange(1);
   };
 
-  const handleRequiredOrderChange = (value: unknown) => {
-    if (value !== "asc" && value !== "desc") {
-      return;
-    }
+  const hideSlip = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
+    event?.stopPropagation();
+    setHiddenSlipKeys((previous) => {
+      const next = new Set(previous);
+      next.add(getSlipKey(slip, slips.indexOf(slip)));
+      return next;
+    });
+  };
 
-    const isValidOrderOption = orderOptions.some(
-      (option) => option.id === value,
+  const restoreHiddenSlips = () => {
+    setHiddenSlipKeys(new Set());
+  };
+
+  const handleViewClick = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
+    event?.stopPropagation();
+    onViewClick(slip);
+  };
+
+  const renderSortableHeader = (label: string, sortKey: string) => {
+    const isActive = selectedSort === sortKey;
+    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onSortChange?.(sortKey);
+          onOrderChange?.(isActive && selectedOrder === "asc" ? "desc" : "asc");
+          onPageChange(1);
+        }}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+          isActive ? "text-[#800000]" : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        {label}
+        <Icon 
+          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
+          strokeWidth={isActive ? 2.5 : 2} 
+        />
+      </button>
     );
-
-    if (!isValidOrderOption) {
-      return;
-    }
-
-    onOrderChange?.(value);
   };
 
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
-        header: "Student Name",
-        className: "min-w-[220px]",
+        header: renderSortableHeader("Student Name", sortKeyName),
+        className: "w-[28%] px-3 py-3", 
         render: (slip) => (
-          <div className="space-y-0.5">
-            <p className="font-semibold text-foreground">
-              {slip.user?.firstName} {slip.user?.lastName}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              {slip.studentNumber ||
-                slip.user?.studentNumber ||
-                "Student record"}
-            </p>
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "relative flex h-10 w-10 shrink-0 items-center justify-center",
+                "overflow-hidden rounded-xl border border-primary/20 bg-glass-bg/50",
+              )}
+            >
+              <User className="h-4/5 w-4/5 text-primary/80" />
+            </div>
+            <div className="min-w-0 space-y-0.5">
+              <p className="truncate text-sm font-bold text-foreground">
+                {getSlipStudentName(slip) || "Unnamed Student"}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                {slip.studentNumber || slip.user?.studentNumber || "Student record"}
+              </p>
+            </div>
           </div>
         ),
       },
       {
-        header: "Absence Date",
-        className: "min-w-[155px]",
+        header: renderSortableHeader("Absence Date", sortKeyAbsence),
+        className: "w-[18%] px-3 py-3",
         render: (slip) => (
           <div className="space-y-0.5">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
@@ -156,8 +265,8 @@ export function SlipList({
         ),
       },
       {
-        header: "Date Needed",
-        className: "min-w-[155px]",
+        header: renderSortableHeader("Date Needed", sortKeyNeeded),
+        className: "w-[18%] px-3 py-3",
         render: (slip) => (
           <div className="space-y-0.5">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
@@ -168,30 +277,65 @@ export function SlipList({
         ),
       },
       {
-        header: "Category",
-        className: "min-w-[150px]",
-        render: (slip) => (
-          <span
-            className={cn(
-              "inline-flex max-w-[170px] items-center rounded-full border",
-              "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
-              "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
+        header: (
+          <Dropdown
+            label=""
+            options={categoryOptions}
+            value={selectedCategory}
+            onChange={(val) => {
+              const v = String(val);
+              setSelectedCategory(!val || v === "" || v === "undefined" ? "all" : v);
+            }}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedCategory === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
             )}
-          >
-            <span className="truncate">{slip.category?.name || "-"}</span>
+          />
+        ),
+        className: "w-[18%] px-3 py-3",
+        render: (slip) => (
+          <span className="text-sm font-semibold text-[#800000]">
+            {slip.category?.name || "-"}
           </span>
         ),
       },
       {
-        header: "Status",
-        className: "min-w-[130px]",
+        header: (
+          <Dropdown
+            label=""
+            options={dropdownOptions}
+            value={selectedStatus?.id}
+            onChange={(val) => {
+              const v = String(val);
+              if (!val || v === "" || v === "undefined" || v === "0" || v === "all") {
+                const allStatus = statuses.find((s) => String(s.id) === "0") || { id: 0, name: "All Statuses" } as unknown as SlipStatus;
+                onStatusChange(allStatus);
+                onPageChange(1);
+                return;
+              }
+              const status = statuses.find((s) => String(s.id) === v);
+              if (status) {
+                onStatusChange(status);
+                onPageChange(1);
+              }
+            }}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              String(selectedStatus?.id) === "0" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+            )}
+          />
+        ),
+        className: "w-[18%] px-3 py-3",
         render: (slip) => (
           <span
             className={cn(
-              "inline-flex min-h-6 min-w-max whitespace-nowrap rounded-full border",
-              "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
-              "[overflow-wrap:normal] [word-break:normal]",
-              STATUS_COLORS[getStatusColorKey(slip.status?.name)],
+              "inline-block rounded-xl border px-2.5 py-0.5",
+              "text-[10px] font-bold uppercase shadow-md",
+              STATUS_COLORS[getStatusColorKey(slip.status?.name)] || "bg-gray-200 text-gray-700 border-gray-300",
             )}
           >
             {slip.status?.name || "-"}
@@ -199,15 +343,30 @@ export function SlipList({
         ),
       },
     ],
-    [],
+    [
+      selectedSort,
+      selectedOrder,
+      sortKeyName,
+      sortKeyAbsence,
+      sortKeyNeeded,
+      categoryOptions,
+      selectedCategory,
+      dropdownOptions,
+      selectedStatus,
+      statuses,
+      onSortChange,
+      onOrderChange,
+      onPageChange,
+      onStatusChange,
+    ],
   );
 
   const renderMobileItem = (slip: Slip) => (
     <div
-      key={slip.id}
+      key={slip.id || `${slip.studentNumber}-${slip.dateOfAbsence}`}
       className={cn(
-        "space-y-3 rounded-2xl border border-border/70 bg-card p-4",
-        "shadow-sm backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
+        "space-y-3 rounded-xl border border-border/70 bg-card p-4",
+        "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
         "dark:border-white/10 dark:bg-white/[0.04]",
       )}
     >
@@ -216,7 +375,7 @@ export function SlipList({
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <User className="h-4 w-4 text-primary" />
             <span className="truncate">
-              {slip.user?.firstName} {slip.user?.lastName}
+              {getSlipStudentName(slip) || "Unnamed Student"}
             </span>
           </div>
           <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
@@ -226,8 +385,8 @@ export function SlipList({
 
         <span
           className={cn(
-            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-full border",
-            "px-3 py-1 text-xs font-semibold leading-none shadow-sm",
+            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-xl border",
+            "px-3 py-1 text-xs font-semibold leading-none shadow-md",
             "[overflow-wrap:normal] [word-break:normal]",
             STATUS_COLORS[getStatusColorKey(slip.status?.name)],
           )}
@@ -256,10 +415,10 @@ export function SlipList({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
         <span
           className={cn(
-            "inline-flex max-w-[160px] items-center gap-1.5 rounded-full border",
+            "inline-flex max-w-[160px] items-center gap-1.5 rounded-xl border",
             "border-border/70 bg-muted/30 px-2.5 py-1 text-[11px] font-medium",
           )}
         >
@@ -267,18 +426,29 @@ export function SlipList({
           <span className="truncate">{slip.category?.name || "-"}</span>
         </span>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onViewClick(slip)}
-          className={cn(
-            "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
-            "px-3 text-[11px] font-semibold text-primary",
-          )}
-        >
-          <Eye className="h-3.5 w-3.5" />
-          View
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(event) => hideSlip(slip, event)}
+            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
+          >
+            <EyeOff className="h-3.5 w-3.5" />
+            Hide
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(event) => handleViewClick(slip, event)}
+            className={cn(
+              "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
+              "px-3 text-[11px] font-semibold text-primary",
+            )}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            View
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -293,7 +463,7 @@ export function SlipList({
       <div
         className={cn(
           "mb-4 flex h-14 w-14 items-center justify-center",
-          "rounded-full border border-dashed border-border/70 bg-muted/40",
+          "rounded-xl border border-dashed border-border/70 bg-muted/40",
         )}
       >
         <Inbox className="h-6 w-6 text-muted-foreground" />
@@ -303,10 +473,31 @@ export function SlipList({
         No admission slips found
       </h3>
 
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        There are no submissions for the current filters yet. Try changing the
-        time range or search term.
-      </p>
+      <div className="mt-2 space-y-3">
+        <p className="max-w-md text-sm text-muted-foreground">
+          {hiddenCount > 0
+            ? "All rows on this page are hidden. Restore hidden rows to show them again."
+            : "No active records match the current filters."}
+        </p>
+
+        {(selectedCategory !== "all" || String(selectedStatus?.id) !== "0") && (
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSelectedCategory("all");
+                const allStatus = statuses.find((s) => String(s.id) === "0") || { id: 0, name: "All Statuses" } as unknown as SlipStatus;
+                onStatusChange(allStatus);
+                onPageChange(1);
+              }}
+              className="rounded-xl shadow-md"
+            >
+              Show all records
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -314,25 +505,25 @@ export function SlipList({
     <table className="w-full border-collapse text-sm">
       <thead>
         <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
-          {columns.map((column) => (
+          {columns.map((column, index) => (
             <th
-              key={column.header}
+              key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
-              {column.header}
+              {typeof column.header === "string" ? column.header : <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />}
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, idx) => (
+        {Array.from({ length: 5 }).map((_, rowIndex) => (
           <tr
-            key={idx}
+            key={rowIndex}
             className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
-            {columns.map((column) => (
+            {columns.map((_, columnIndex) => (
               <td
-                key={column.header}
+                key={columnIndex}
                 className="px-4 py-3"
               >
                 <Skeleton className="h-4 w-24 rounded" />
@@ -346,18 +537,18 @@ export function SlipList({
 
   const renderMobileSkeleton = () => (
     <>
-      {Array.from({ length: 3 }).map((_, idx) => (
+      {Array.from({ length: 3 }).map((_, index) => (
         <div
-          key={idx}
+          key={index}
           className={cn(
-            "animate-pulse rounded-2xl border border-border/70",
-            "bg-card p-4 shadow-sm backdrop-blur-xl",
+            "animate-pulse rounded-xl border border-border/70",
+            "bg-card p-4 shadow-md backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
           <div className="flex items-center justify-between gap-3">
             <Skeleton className="h-5 w-36 rounded" />
-            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton className="h-6 w-16 rounded-xl" />
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <Skeleton className="h-12 w-full rounded-xl" />
@@ -369,149 +560,99 @@ export function SlipList({
   );
 
   return (
-    <Card
-      className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-border/70",
-        "bg-card shadow-md backdrop-blur-2xl transition-all duration-300",
-        "dark:border-white/10 dark:bg-white/[0.04]",
-        className,
-      )}
-    >
-      <CardHeader
-        className={cn(
-          "space-y-4 border-b border-border/70 px-5 py-5",
-          "bg-gradient-to-br from-muted/30 via-background/70 to-background",
-          "dark:border-white/10 dark:from-white/[0.04] dark:via-white/[0.025] dark:to-transparent",
-        )}
-      >
+    <div className={cn("flex flex-col space-y-6", className)}>
+      
+      <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+        
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
               {title}
             </h2>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Student details, absence date, and date needed are shown in one
-              compact table.
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Student details, absence date, and date needed are shown in one compact table.
             </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
             <div
               className={cn(
-                "self-start rounded-full border border-primary/20",
-                "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
-                "text-primary shadow-sm",
+                "flex flex-wrap items-center gap-2",
+                "sm:justify-end",
               )}
             >
-              {slips.length} record{slips.length !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-
-        <div
-          className={cn(
-            "rounded-2xl border border-border/60 bg-background/70 p-3 shadow-sm",
-            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
-          <div className="grid w-full grid-cols-1 items-end gap-3 lg:grid-cols-[minmax(0,1fr)_220px_210px_170px]">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Search
-              </label>
               <div
                 className={cn(
-                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-                  "bg-muted/50 px-3 shadow-sm transition-all duration-200",
-                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
-                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+                  "self-start rounded-xl border border-primary/20",
+                  "bg-primary/5 px-4 py-1.5 text-xs font-semibold",
+                  "text-primary shadow-sm",
                 )}
               >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchTerm ?? ""}
-                  onChange={(event) => onSearchChange?.(event.target.value)}
-                  placeholder="Search by name, email, or student number...."
-                  spellCheck={false}
-                  autoComplete="off"
-                  className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground/60"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => onSearchChange?.("")}
-                    className={cn(
-                      "grid h-7 w-7 shrink-0 place-items-center rounded-lg",
-                      "text-muted-foreground transition-colors hover:bg-background hover:text-foreground",
-                    )}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
+                {visibleSlips.length} visible / {slips.length} total
               </div>
+
+              {hiddenCount > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={restoreHiddenSlips}
+                  className={cn(
+                    "h-8 rounded-xl px-3 text-[11px]",
+                    "font-semibold shadow-md",
+                  )}
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Restore {hiddenCount}
+                </Button>
+              )}
             </div>
+          )}
+        </div>
 
-            <Dropdown
-              label="Status"
-              options={dropdownOptions}
-              value={selectedStatus?.id}
-              onChange={(val) => {
-                const status = statuses.find(
-                  (s) => String(s.id) === String(val),
-                );
-                if (status) onStatusChange(status);
-              }}
-              labelKey="displayName"
-              enabled={!isLoading}
-              formStyle={false}
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="flex flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
+            <label
+              className={cn(
+                "text-sm font-medium",
+                "text-neutral-700 dark:text-neutral-300",
+              )}
+            >
+              Search
+            </label>
+            <SearchInput
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              placeholder="Search by name, email, or student number..."
+              hasHeader={false}
             />
-
-            {sortOptions.length > 0 && onSortChange && (
-              <Dropdown
-                label="Sort By"
-                options={sortOptions}
-                value={selectedSort}
-                onChange={handleRequiredSortChange}
-                enabled={!isLoading}
-                formStyle={false}
-              />
-            )}
-
-            {orderOptions.length > 0 && onOrderChange && (
-              <Dropdown
-                label="Order"
-                options={orderOptions}
-                value={selectedOrder}
-                onChange={handleRequiredOrderChange}
-                enabled={!isLoading}
-                formStyle={false}
-              />
-            )}
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="flex-1 p-0">
+      </div>
+
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
         <Table
-          data={slips}
+          data={visibleSlips}
           columns={columns}
           renderMobileItem={renderMobileItem}
           isLoading={isLoading}
           emptyState={emptyState}
           renderDesktopSkeleton={renderDesktopSkeleton}
           renderMobileSkeleton={renderMobileSkeleton}
-          containerClassName="px-3 py-3"
+          containerClassName="px-0 py-0"
+          tableClassName="w-full table-fixed"
           onRowClick={onViewClick}
         />
-      </CardContent>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </Card>
+        <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
+      </div>
+      
+    </div>
   );
 }
