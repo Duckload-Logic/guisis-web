@@ -115,6 +115,62 @@ export const PostRegister = async (
   }
 };
 
+export interface OTPRequestPayload {
+  email: string;
+}
+
+export interface OTPRequestResponse {
+  message: string;
+}
+
+export interface OTPLoginPayload {
+  email: string;
+  otp: string;
+}
+
+export interface OTPLoginResponse {
+  userId: string;
+}
+
+/**
+ * Request an OTP for fallback authentication
+ */
+export const PostOTPRequest = async (
+  payload: OTPRequestPayload,
+  config?: AxiosConfigWithMeta,
+): Promise<OTPRequestResponse> => {
+  try {
+    const { data } = await apiClient.post(
+      API_ROUTES.auth.otpRequest,
+      payload,
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Authenticate with OTP code
+ */
+export const PostOTPLogin = async (
+  payload: OTPLoginPayload,
+  config?: AxiosConfigWithMeta,
+): Promise<OTPLoginResponse> => {
+  try {
+    const { data } = await apiClient.post(
+      API_ROUTES.auth.otpLogin,
+      payload,
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 /**
  * Get current user profile
  * @param config - Optional axios config with metadata
