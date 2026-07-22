@@ -121,7 +121,7 @@ export default function Dropdown({
   }, [open]);
 
   return (
-    <div className="relative space-y-2">
+    <div className="relative min-w-0 space-y-2">
       {label && (
         <div className="text-sm font-medium text-foreground">
           <span className="truncate">{label}</span>
@@ -181,13 +181,14 @@ export default function Dropdown({
             ref={contentRef}
             className={cn(
               "speech-control-ignore z-50 w-[var(--radix-popover-trigger-width)]",
-              "max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl",
+              "max-h-[min(22rem,var(--radix-popover-content-available-height))]",
+              "max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl",
               "border-glass-border p-0",
               formStyle ? "bg-card" : "bg-background",
             )}
             align="start"
             sideOffset={8}
-            collisionPadding={16}
+            collisionPadding={8}
             sticky="always"
             hideWhenDetached
             updatePositionStrategy="always"
@@ -206,7 +207,7 @@ export default function Dropdown({
               )}
               <CommandList
                 className={cn(
-                  "max-h-[250px] overflow-y-auto p-1",
+                  "max-h-[min(250px,var(--radix-popover-content-available-height))] overflow-y-auto overscroll-contain p-1",
                   formStyle ? "bg-card" : "bg-background",
                 )}
               >

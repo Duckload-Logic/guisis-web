@@ -59,8 +59,8 @@ export default function PersonalView({
         <SectionTitle title="Student Identity & Personal Details" />
         <div
           className={cn(
-            "mt-6 grid grid-cols-2 gap-x-10 gap-y-6",
-            "md:grid-cols-2 lg:grid-cols-3",
+            "mt-6 grid grid-cols-1 gap-x-10 gap-y-6",
+            "sm:grid-cols-2 lg:grid-cols-3",
           )}
         >
           {personalInfoFields.map((field) => (
