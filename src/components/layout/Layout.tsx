@@ -302,15 +302,26 @@ export default function Layout({
               />
             )}
 
-            <div className="relative min-w-0 max-w-full flex-1 overflow-hidden">
+            <div
+              className={cn(
+                "relative min-w-0 max-w-full flex-1 overflow-hidden",
+              )}
+            >
               <div
                 ref={scrollRef}
                 className={cn(
-                  "relative z-10 flex max-h-full min-w-0 max-w-full flex-col",
-                  "overflow-y-auto overflow-x-hidden overscroll-contain pb-24 md:pb-12",
+                  "relative z-10 flex h-full min-w-0 max-w-full flex-col",
+                  "overflow-y-auto overflow-x-hidden overscroll-contain",
+                  "pb-24 md:pb-12",
                 )}
               >
-                <main className="responsive-page-shell min-w-0 max-w-full flex-1 p-3 sm:p-4 md:p-6 xl:p-8">
+                <main
+                  className={cn(
+                    "responsive-page-shell min-w-0 max-w-full flex-1",
+                    "p-3 sm:p-4 md:p-6 xl:p-8",
+                    isLoading && "flex flex-col h-full",
+                  )}
+                >
                   {showHeader && showSubHeader && (
                     <SubHeader
                       title={title || ""}
@@ -325,14 +336,19 @@ export default function Layout({
                   {isLoading ? (
                     <div
                       className={cn(
-                        "flex min-h-[60vh] w-full",
+                        "flex-1 flex w-full",
                         "items-center justify-center",
                       )}
                     >
                       <Spinner size="lg" />
                     </div>
                   ) : null}
-                  <div className={`${isLoading ? "hidden" : "block"} h-full min-w-0 max-w-full`}>
+                  <div
+                    className={cn(
+                      isLoading ? "hidden" : "block",
+                      "h-full min-w-0 max-w-full",
+                    )}
+                  >
                     {children || <Outlet />}
                   </div>
                 </main>
