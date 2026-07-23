@@ -220,17 +220,24 @@ export default function Dropdown({
                     const key =
                       optId !== undefined ? String(optId) : `opt-${index}`;
                     const label = getLabel(option);
+                    const isDisabled = option?.disabled; 
 
                     return (
                       <CommandItem
                         key={key}
                         value={`${label}|${key}`}
-                        onSelect={() => handleSelect(String(optId))}
+                        disabled={isDisabled} 
+                        onSelect={() => {
+                          if (!isDisabled) handleSelect(String(optId));
+                        }}
                         className={cn(
-                          "mb-0.5 flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                          "mb-0.5 flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
+                          isDisabled
+                            ? "cursor-not-allowed opacity-50" 
+                            : "cursor-pointer",
                           String(optId) === String(value)
                             ? "bg-primary/10 font-bold text-primary"
-                            : "text-foreground hover:bg-primary/5",
+                            : !isDisabled && "text-foreground hover:bg-primary/5",
                         )}
                       >
                         <span className="truncate">{label}</span>
@@ -240,7 +247,7 @@ export default function Dropdown({
                       </CommandItem>
                     );
                   })}
-                </CommandGroup>
+                </CommandGroup>                                                                                                                                                                                                                                                                                                         
               </CommandList>
             </Command>
           </PopoverContent>

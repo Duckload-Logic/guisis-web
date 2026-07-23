@@ -31,6 +31,7 @@ import {
   Calendar,
   Mail,
   MoreVertical,
+  MoreHorizontal,
   Shield,
   ShieldAlert,
   UserCheck,
@@ -442,11 +443,11 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 rounded-full hover:bg-muted",
-                    "hover:text-muted-foreground",
+                    "h-8 w-8 rounded-full text-muted-foreground",
+                    "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreVertical size={16} />
+                  <MoreHorizontal size={18} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -544,7 +545,7 @@ export default function UserManagement() {
           </div>
         ),
       },
-      {
+     {
         header: (
           <div className="px-3 py-3 w-full flex items-center justify-end">
              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground pr-2">
@@ -561,11 +562,11 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 rounded-full hover:bg-muted",
-                    "hover:text-muted-foreground",
+                    "h-8 w-8 rounded-full text-muted-foreground",
+                    "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreVertical size={16} />
+                  <MoreHorizontal size={18} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent

@@ -251,47 +251,47 @@ export default function AppointmentList({
     onViewClick(appointment);
   };
 
-const renderSortableHeader = (label: string, sortKey: string) => {
-  const isActive = selectedSort === sortKey;
-  const Icon =
-    isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
+  const renderSortableHeader = (label: string, sortKey: string) => {
+    const isActive = selectedSort === sortKey;
+    const Icon =
+      isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
 
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        onSortChange?.(sortKey);
-        onOrderChange?.(
-          isActive && selectedOrder === "asc" ? "desc" : "asc"
-        );
-        onPageChange(1);
-      }}
-      className={cn(
-        "inline-flex items-center gap-2",
-        "text-left",
-        "text-[11px] font-bold uppercase tracking-[0.14em]",
-        "transition-colors",
-        isActive
-          ? "text-[#800000]"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-    >
-      <span>{label}</span>
-
-      <Icon
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onSortChange?.(sortKey);
+          onOrderChange?.(
+            isActive && selectedOrder === "asc" ? "desc" : "asc"
+          );
+          onPageChange(1);
+        }}
         className={cn(
-          "h-3.5 w-3.5 flex-shrink-0",
-          isActive ? "opacity-100" : "opacity-40"
+          "inline-flex items-center gap-2",
+          "text-left",
+          "text-[11px] font-bold uppercase tracking-[0.14em]",
+          "transition-colors",
+          isActive
+            ? "text-[#800000]"
+            : "text-muted-foreground hover:text-foreground"
         )}
-        strokeWidth={isActive ? 2.5 : 2}
-      />
-    </button>
-  );
-};
+      >
+        <span>{label}</span>
+
+        <Icon
+          className={cn(
+            "h-3.5 w-3.5 flex-shrink-0",
+            isActive ? "opacity-100" : "opacity-40"
+          )}
+          strokeWidth={isActive ? 2.5 : 2}
+        />
+      </button>
+    );
+  };
 
   const columns = useMemo<Column<Appointment>[]>(
     () => [
-          {
+      {
         header: (
           <div className="flex items-center px-3 py-3">
              {renderSortableHeader("Student Name", sortKeyName)}
@@ -351,6 +351,7 @@ const renderSortableHeader = (label: string, sortKey: string) => {
             value={selectedCategory}
             onChange={(val) => setSelectedCategory(val ? String(val) : "all")} 
             labelKey="displayName"
+            enabled={!isLoading && appointments.length > 0 && categoryOptions.length > 1}
             buttonClassName={cn(
               "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
@@ -379,7 +380,6 @@ const renderSortableHeader = (label: string, sortKey: string) => {
             value={selectedStatus?.id}
             onChange={(val) => {
               if (!val || String(val) === "all" || String(val) === "0") {
-                // Fixed double-click bug for status prop
                 const allStatus = statuses.find((s) => s.id === 0) || { id: 0, name: "All Statuses" } as AppointmentStatus;
                 onStatusChange(allStatus);
                 onPageChange(1);
@@ -392,6 +392,7 @@ const renderSortableHeader = (label: string, sortKey: string) => {
               }
             }}
             labelKey="displayName"
+            enabled={!isLoading && appointments.length > 0 && dropdownOptions.length > 1}
             buttonClassName={cn(
               "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
@@ -420,6 +421,7 @@ const renderSortableHeader = (label: string, sortKey: string) => {
             value={selectedUrgency}
             onChange={(val) => setSelectedUrgency(val ? String(val) : "all")} 
             labelKey="displayName"
+            enabled={!isLoading && appointments.length > 0 && urgencyOptions.length > 1}
             buttonClassName={cn(
               "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
@@ -448,6 +450,8 @@ const renderSortableHeader = (label: string, sortKey: string) => {
       onOrderChange,
       onPageChange,
       onStatusChange,
+      isLoading,
+      appointments.length,
     ],
   );
 
