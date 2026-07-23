@@ -317,59 +317,62 @@ export default function SuperAdminDashboard() {
               Dynamic operational health checklist of critical subsystems
             </p>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {services.map((service) => (
               <div
                 key={service.name}
                 className={cn(
-                  "flex min-w-0 items-start gap-3 rounded-xl border",
-                  "border-white/5 bg-white/[0.01] p-3 text-sm",
+                  "flex flex-col justify-between rounded-xl border",
+                  "border-white/5 bg-white/[0.01] p-3 text-sm transition-all",
+                  "hover:border-white/10 hover:bg-white/[0.02]" +
+                    " hover:scale-[1.01]",
                 )}
               >
-                <div
-                  className={
-                    "mt-0.5 shrink-0 rounded-lg bg-muted/40 p-2 " +
-                    "text-muted-foreground"
-                  }
-                >
-                  <service.icon size={16} />
-                </div>
-                <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
                   <div
                     className={cn(
-                      "flex min-w-0 flex-col gap-2",
-                      "min-[540px]:flex-row min-[540px]:items-center",
-                      "min-[540px]:justify-between",
+                      "shrink-0 rounded-lg bg-muted/40 p-2",
+                      "text-muted-foreground",
                     )}
                   >
-                    <p className="min-w-0 pr-2 font-semibold text-foreground">
-                      {service.name}
-                    </p>
+                    <service.icon size={16} />
+                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.5",
+                      "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                      service.isHealthy
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : service.status === "Degraded"
+                          ? "bg-amber-500/10 text-amber-500"
+                          : "bg-red-500/10 text-red-500",
+                    )}
+                  >
                     <span
                       className={cn(
-                        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap",
-                        "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                        "h-1.5 w-1.5 rounded-full",
                         service.isHealthy
-                          ? "bg-emerald-500/10 text-emerald-500"
+                          ? "animate-pulse bg-emerald-500"
                           : service.status === "Degraded"
-                            ? "bg-amber-500/10 text-amber-500"
-                            : "bg-red-500/10 text-red-500",
+                            ? "bg-amber-500"
+                            : "bg-red-500",
                       )}
-                    >
-                      <span
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full",
-                          service.isHealthy
-                            ? "animate-pulse bg-emerald-500"
-                            : service.status === "Degraded"
-                              ? "bg-amber-500"
-                              : "bg-red-500",
-                        )}
-                      />
-                      {service.status}
-                    </span>
-                  </div>
-                  <p className="mt-1 break-words text-xs text-muted-foreground">
+                    />
+                    {service.status === "Checking..."
+                      ? "Checking"
+                      : service.status}
+                  </span>
+                </div>
+                <div className="mt-3 min-w-0">
+                  <p className="truncate font-semibold text-foreground">
+                    {service.name}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1 line-clamp-2 text-xs",
+                      "leading-relaxed text-muted-foreground",
+                    )}
+                  >
                     {service.desc}
                   </p>
                 </div>
