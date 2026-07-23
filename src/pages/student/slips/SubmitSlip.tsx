@@ -1280,11 +1280,37 @@ export default function SubmitSlip() {
                 className="max-h-[60vh] max-w-full rounded-lg border border-border/40 object-contain shadow-md"
               />
             ) : previewData?.file.type === "application/pdf" ? (
-              <iframe
-                src={previewData.url}
-                className="h-[60vh] w-full rounded-lg border border-border/40"
-                title="PDF Preview"
-              />
+              /Android/i.test(navigator.userAgent) ? (
+                <div
+                  className={cn(
+                    "flex flex-col items-center gap-4 p-8 text-center",
+                    "rounded-2xl border border-dashed border-border/60",
+                    "bg-muted/30 max-w-sm mx-auto",
+                  )}
+                >
+                  <FileText className="h-10 w-10 text-primary" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      PDF preview not supported on Android.
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 text-xs leading-5",
+                        "text-muted-foreground",
+                      )}
+                    >
+                      Please proceed with submission. You can download and
+                      view this file once submitted.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  src={previewData.url}
+                  className="h-[60vh] w-full rounded-lg border border-border/40"
+                  title="PDF Preview"
+                />
+              )
             ) : (
               <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border/60 bg-muted/30 p-8 text-center">
                 <FileText className="h-10 w-10 text-primary" />
