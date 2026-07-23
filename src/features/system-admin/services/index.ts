@@ -470,6 +470,28 @@ export const GetWhitelist = async (
   }
 };
 
+export interface ServiceHealth {
+  name: string;
+  status: string;
+  isHealthy: boolean;
+}
+
+/**
+ * Get detailed real-time health status of all subsystems
+ */
+export const GetSystemHealth = async (
+  config?: AxiosConfigWithMeta,
+): Promise<ServiceHealth[]> => {
+  try {
+    const { data } = await apiClient.get<ServiceHealth[]>(
+      API_ROUTES.superadmin.logs.health,
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const superadminService = {
   listM2MClients: GetM2MClients,
@@ -496,4 +518,5 @@ export const superadminService = {
   getUserActivity: GetUserActivity,
   getTraceTracks: GetTraceTracks,
   getLogDetail: GetLogDetail,
+  getSystemHealth: GetSystemHealth,
 };

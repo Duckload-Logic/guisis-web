@@ -230,6 +230,7 @@ export const API_ROUTES = Object.freeze({
       activity: "/logs/activity",
       traceTracks: (traceId: string) => `/logs/trace/${traceId}`,
       detail: (id: string) => `/logs/${id}`,
+      health: "/logs/system/health",
     }),
   }),
 

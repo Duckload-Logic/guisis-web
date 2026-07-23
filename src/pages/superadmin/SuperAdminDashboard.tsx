@@ -28,6 +28,7 @@ import {
   useAuditLogs,
   useSecurityLogs,
   useLogActivity,
+  useSystemHealth,
 } from "@/features/system-admin/hooks";
 import { cn } from "@/lib/utils";
 
@@ -164,51 +165,60 @@ export default function SuperAdminDashboard() {
     },
   ];
 
-  const services = useMemo(() => {
-    const isApiHealthy = !isLoading && logStatsData !== undefined;
-    const isDbHealthy = !isLoading && logStatsData !== undefined;
-    const isRedisHealthy = !isLoading && analytics !== undefined;
-    const isAIHealthy = isApiHealthy && !hasAIError;
-    const isMailHealthy = isApiHealthy && !hasMailError;
+  const { data: systemHealthData } = useSystemHealth();
 
-    return [
-      {
-        name: "API Gateway Server",
-        status: isApiHealthy ? "Operational" : "Offline",
+  const services = useMemo(() => {
+    const serviceMeta: Record<string, { desc: string; icon: any }> = {
+      "API Gateway Server": {
         desc: "Go-Gin engine routing client & admin endpoints",
         icon: Server,
-        isHealthy: isApiHealthy,
       },
-      {
-        name: "MySQL Database",
-        status: isDbHealthy ? "Connected" : "Offline",
+      "MySQL Database": {
         desc: "Relational persistence layer, indexing guidances & accounts",
         icon: Database,
-        isHealthy: isDbHealthy,
       },
-      {
-        name: "Redis Cache Store",
-        status: isRedisHealthy ? "Connected" : "Offline",
+      "Redis Cache Store": {
         desc: "In-memory session manager tracking live web tokens",
         icon: Layers,
-        isHealthy: isRedisHealthy,
       },
-      {
-        name: "AI FastAPI Service",
-        status: isAIHealthy ? "Operational" : "Degraded",
+      "AI FastAPI Service": {
         desc: "HuggingFace model classifying student IIR submissions",
         icon: Cpu,
-        isHealthy: isAIHealthy,
       },
-      {
-        name: "Notification SMTP",
-        status: isMailHealthy ? "Active" : "Degraded",
+      "Notification SMTP": {
         desc: "Outgoing transactional mailer sending alerts & summaries",
         icon: Mail,
-        isHealthy: isMailHealthy,
       },
-    ];
-  }, [isLoading, logStatsData, analytics, hasAIError, hasMailError]);
+      "Identity Provider (IDP)": {
+        desc: "SSO server authentication gate & OTP fallback controller",
+        icon: Fingerprint,
+      },
+    };
+
+    if (!systemHealthData) {
+      return Object.entries(serviceMeta).map(([name, meta]) => ({
+        name,
+        status: "Checking...",
+        desc: meta.desc,
+        icon: meta.icon,
+        isHealthy: false,
+      }));
+    }
+
+    return systemHealthData.map((s) => {
+      const meta = serviceMeta[s.name] || {
+        desc: "System service",
+        icon: Server,
+      };
+      return {
+        name: s.name,
+        status: s.status,
+        desc: meta.desc,
+        icon: meta.icon,
+        isHealthy: s.isHealthy,
+      };
+    });
+  }, [systemHealthData]);
 
   if (isLoading) {
     return (
