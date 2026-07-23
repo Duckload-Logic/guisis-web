@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Calendar,
   FileText,
   FileX,
@@ -26,7 +28,7 @@ import {
   useGetSlipStatuses,
 } from "@/features/slips/hooks";
 import { Slip, SlipStatus } from "@/features/slips/types";
-import { Pagination, Spinner, Table } from "@/components/shared";
+import { Pagination, Table, Column } from "@/components/shared";
 import Dropdown from "@/components/form/Dropdown";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -40,6 +42,8 @@ interface StatusCount {
 type SlipFilterStatus = SlipStatus & {
   count?: number;
 };
+
+type SortOrder = "asc" | "desc";
 
 const GLASS_CARD = LAYOUT_STYLES.CARD;
 const GLASS_INNER = LAYOUT_STYLES.INNER;
@@ -61,11 +65,16 @@ export default function StudentSlips() {
   const [selectedStatus, setSelectedStatus] =
     useState<SlipFilterStatus>(ALL_SLIP_STATUS);
 
+  // Sorting states for table headers
+  const [selectedSort, setSelectedSort] = useState<string>("createdAt");
+  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
+
   const { data, isLoading: isSlipsLoading } = useGetMySlips({
     page: currentPage,
-    pageSize: 5,
+    pageSize: 10,
     statusId: selectedStatus?.id === "0" ? undefined : selectedStatus?.id,
   });
+  
   const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({});
 
   const isLoading = isStatsLoading || isStatusesLoading;
@@ -87,15 +96,32 @@ export default function StudentSlips() {
     [slipStats],
   );
 
-  const dropdownOptions = useMemo(() => {
-    return statsWithAll.map((filter) => ({
-      id: filter.id,
-      name: `${filter.name} (${filter.count || 0})`,
-    }));
-  }, [statsWithAll]);
-
   const slips = data?.slips || [];
-  const statusCounts = (slipStats || []) as StatusCount[];
+
+  // Local sorting calculation supporting category, absence date, and date needed
+  const sortedSlips = useMemo(() => {
+    let result = [...slips];
+    result.sort((a, b) => {
+      if (selectedSort === "category") {
+        const catA = (a.category?.name || "").toLowerCase();
+        const catB = (b.category?.name || "").toLowerCase();
+        const res = catA.localeCompare(catB);
+        return selectedOrder === "asc" ? res : -res;
+      }
+      if (selectedSort === "dateOfAbsence") {
+        const dateA = new Date(a.dateOfAbsence).getTime();
+        const dateB = new Date(b.dateOfAbsence).getTime();
+        return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      if (selectedSort === "dateNeeded") {
+        const dateA = new Date(a.dateNeeded).getTime();
+        const dateB = new Date(b.dateNeeded).getTime();
+        return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      return 0;
+    });
+    return result;
+  }, [slips, selectedSort, selectedOrder]);
 
   const pageBadgeIcon = useMemo(() => <FileText className="h-3.5 w-3.5" />, []);
 
@@ -147,12 +173,11 @@ export default function StudentSlips() {
 
   const formatCompactDate = (value?: string) => {
     if (!value) return "—";
-
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "—";
 
     return parsed.toLocaleDateString("en-US", {
-      month: "long",
+      month: "short",
       day: "numeric",
       year: "numeric",
     });
@@ -163,106 +188,135 @@ export default function StudentSlips() {
     return STATUS_COLORS[key] || STATUS_COLORS.secondary;
   };
 
-  const renderListItem = useCallback(
-    (slip: Slip, index: number) => (
-      <div
-        key={slip.id}
-        className={cn(
-          "animate-fade-in-up cursor-pointer p-4",
-          "transition-colors duration-200 hover:bg-muted/50",
-          "sm:p-5",
-        )}
-        style={{
-          animationDelay: `${0.05 * (index + 1)}s`,
-          animationFillMode: "both",
+  const renderSortableHeader = (label: string, sortKey: string) => {
+    const isActive = selectedSort === sortKey;
+    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedSort(sortKey);
+          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+          setCurrentPage(1);
         }}
-        onClick={() => navigate(`/student/slips/${slip.id}`)}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
+        )}
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div
-              className={cn(
-                "hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-                "border border-primary/15 bg-primary/10 text-primary shadow-sm",
-                "backdrop-blur-md sm:flex",
-              )}
-            >
-              <FileText className="h-5 w-5" />
-            </div>
+        {label}
+        <Icon 
+          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
+          strokeWidth={isActive ? 2.5 : 2} 
+        />
+      </button>
+    );
+  };
 
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "border-white/45 bg-white/40 text-xs",
-                    "font-medium backdrop-blur-xl",
-                    "dark:border-white/10 dark:bg-white/[0.05]",
-                  )}
-                >
-                  <Tag className="mr-1 h-3 w-3" />
-                  {slip.category?.name}
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs hover:opacity-90",
-                    getStatusColor(slip.status?.name),
-                  )}
-                >
-                  {slip.status?.name}
-                </Badge>
-              </div>
-
-              <p
+  const slipColumns = useMemo<Column<Slip>[]>(
+    () => [
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Category & Reason", "category")}
+          </div>
+        ),
+        className: "w-[35%] p-0",
+        render: (slip: Slip) => (
+          <div className="px-4 py-3 flex flex-col gap-1 text-left">
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
                 className={cn(
-                  "mt-1.5 line-clamp-1 text-sm",
-                  "text-muted-foreground/90",
+                  "border-white/45 bg-white/40 text-[11px]",
+                  "font-medium backdrop-blur-xl",
+                  "dark:border-white/10 dark:bg-white/[0.05]",
                 )}
               >
-                {slip.reason}
-              </p>
+                <Tag className="mr-1 h-3 w-3" />
+                {slip.category?.name}
+              </Badge>
             </div>
+            <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">
+              {slip.reason}
+            </p>
           </div>
-
-          <div
-            className={cn(
-              "flex shrink-0 flex-col gap-1.5 text-sm text-muted-foreground",
-              "md:ml-auto md:flex-row md:items-center md:justify-end md:gap-4",
-            )}
-          >
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <Calendar className="h-4 w-4" />
-              <span>Date Requested: {formatCompactDate(slip.createdAt)}</span>
-            </div>
-
-            <span
-              className={cn("hidden text-muted-foreground/40", "md:inline")}
-            >
-              •
-            </span>
-
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <Calendar className="h-4 w-4" />
-              <span>Absence: {formatCompactDate(slip.dateOfAbsence)}</span>
-            </div>
-
-            <span
-              className={cn("hidden text-muted-foreground/40", "md:inline")}
-            >
-              •
-            </span>
-
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <Calendar className="h-4 w-4" />
-              <span>Needed: {formatCompactDate(slip.dateNeeded)}</span>
-            </div>
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Absence Date", "dateOfAbsence")}
           </div>
-        </div>
-      </div>
-    ),
-    [navigate, formatCompactDate, getStatusColor],
+        ),
+        className: "w-[20%] p-0",
+        render: (slip: Slip) => (
+          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar size={14} className="shrink-0" />
+            <span className="whitespace-nowrap">{formatCompactDate(slip.dateOfAbsence)}</span>
+          </div>
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Date Needed", "dateNeeded")}
+          </div>
+        ),
+        className: "w-[20%] p-0",
+        render: (slip: Slip) => (
+          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar size={14} className="shrink-0" />
+            <span className="whitespace-nowrap">{formatCompactDate(slip.dateNeeded)}</span>
+          </div>
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full">
+            <Dropdown
+              label=""
+              options={statsWithAll.map((s) => ({
+                id: s.id,
+                displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
+                disabled: String(s.id) !== "0" && (s.count || 0) === 0,
+              }))}
+              value={selectedStatus.id}
+              onChange={(val) => {
+                const found = statsWithAll.find((s) => String(s.id) === String(val));
+                if (found) {
+                  setSelectedStatus(found);
+                  setCurrentPage(1);
+                }
+              }}
+              labelKey="displayName"
+              buttonClassName={cn(
+                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+                String(selectedStatus.id) === "0" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+              )}
+            />
+          </div>
+        ),
+        className: "w-[25%] p-0",
+        render: (slip: Slip) => (
+          <div className="px-3 py-3 flex items-center">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs hover:opacity-95 font-semibold px-2.5 py-0.5",
+                getStatusColor(slip.status?.name),
+              )}
+            >
+              {slip.status?.name}
+            </Badge>
+          </div>
+        ),
+      },
+    ],
+    [selectedSort, selectedOrder, statsWithAll, selectedStatus]
   );
 
   const emptyState = useMemo(
@@ -333,8 +387,8 @@ export default function StudentSlips() {
 
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-6", // Forces full width uniformity
-          "px-4 sm:px-6 md:px-8",                   // Matches standard padding
+          "mx-auto flex w-full flex-col space-y-6",
+          "px-4 sm:px-6 md:px-8",
           "relative isolate overflow-visible"
         )}
       >
@@ -379,21 +433,25 @@ export default function StudentSlips() {
           </Alert>
         ) : null}
 
-        <Card className={cn(GLASS_CARD, "animate-fade-in-up")}>
+        <Card className={cn(GLASS_CARD, "animate-fade-in-up overflow-hidden")}>
           <CardHeader
             className={cn(
               "border-b border-white/30 px-4 py-3.5",
               "dark:border-white/10",
             )}
           >
-            {/* Mobile Dropdown */}
+            {/* Mobile Dropdown - Preserved for small screens */}
             <div className="w-full max-w-xs md:hidden">
               {isLoading ? (
                 <Skeleton className="h-10 w-full rounded-xl" />
               ) : (
                 <Dropdown
                   label="Admission Slip Status"
-                  options={dropdownOptions}
+                  options={statsWithAll.map((s) => ({
+                    id: s.id,
+                    displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
+                    disabled: String(s.id) !== "0" && (s.count || 0) === 0,
+                  }))}
                   value={selectedStatus.id}
                   onChange={(val) => {
                     const selected = statsWithAll.find(
@@ -404,72 +462,25 @@ export default function StudentSlips() {
                       setCurrentPage(1);
                     }
                   }}
+                  labelKey="displayName"
                 />
               )}
             </div>
-
-            {/* Desktop Tabs */}
-            <div className="hidden flex-wrap gap-2 md:flex">
-              {isLoading ? (
-                Array.from({ length: 4 }).map((_, idx) => (
-                  <Skeleton
-                    key={idx}
-                    className="h-9 w-24 rounded-xl"
-                  />
-                ))
-              ) : (
-                statsWithAll.map((filter) => {
-                  const isActive =
-                    String(selectedStatus.id) === String(filter.id);
-
-                  return (
-                    <Button
-                      key={filter.id}
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedStatus(filter);
-                        setCurrentPage(1);
-                      }}
-                      className={cn(
-                        "group h-9 rounded-xl px-4 text-xs font-bold",
-                        "transition-all",
-                        isActive
-                          ? "shadow-md"
-                          : cn(
-                              "border-glass-border bg-glass-bg",
-                              "hover:bg-primary/10 hover:text-primary",
-                              "hover:opacity-90"
-                            )
-                      )}
-                    >
-                      <span>{filter.name}</span>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
-                          "font-bold transition-all",
-                          isActive
-                            ? "bg-primary-foreground text-primary"
-                            : "bg-muted/60 text-muted-foreground"
-                        )}
-                      >
-                        {filter.count || 0}
-                      </Badge>
-                    </Button>
-                  );
-                })
-              )}
+            <div className="hidden md:block">
+              {/* Optional: Add a subtle prompt or search bar here if desired later, keeping the header clean for now */}
+              <span className="text-sm text-muted-foreground italic">Track and manage your admission slip requests.</span>
             </div>
           </CardHeader>
 
           <CardContent className="p-0">
             <Table
-              variant="list"
-              data={slips}
-              renderListItem={renderListItem}
+              data={sortedSlips}
+              columns={slipColumns}
               isLoading={isSlipsLoading}
               emptyState={emptyState}
+              onRowClick={(slip) => navigate(`/student/slips/${slip.id}`)}
+              containerClassName="overflow-x-auto"
+              tableClassName="w-full table-fixed min-w-[800px]"
             />
 
             <Separator className="bg-white/25 dark:bg-white/10" />
@@ -486,4 +497,3 @@ export default function StudentSlips() {
     </>
   );
 }
-

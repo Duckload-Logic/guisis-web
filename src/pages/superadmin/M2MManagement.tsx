@@ -230,29 +230,29 @@ export default function M2MManagement() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1200px] text-sm">
-                <thead>
+<thead>
                   <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
                     <th className="w-[25%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Client
+                      Client
                     </th>
                     <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Client ID
+                      Client ID
                     </th>
                     <th className="w-[20%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Status / Verification
+                      Status / Verification
                     </th>
-                    <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Scopes
+                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Scopes
                     </th>
                     <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Last Activity
-                      </th>
+                    </th>
                     <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Created
-                      </th>
-                    <th className="w-[5%] px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    </th>
+                    <th className="w-[10%] whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Action
-                      </th>
+                    </th>
                   </tr>
                 </thead>
 
