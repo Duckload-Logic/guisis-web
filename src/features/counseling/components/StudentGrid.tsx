@@ -30,15 +30,13 @@ interface StudentGridProps {
 }
 
 type StudentSortOrder = "asc" | "desc";
-type StudentSortKey = "studentName" | "studentNumber" | "program" | "email";
-
+type StudentSortKey = "studentName" | "studentNumber" | "email";
 
 function getStudentName(student: IIRProfileView) {
   return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
     .replace(/\s+/g, " ")
     .trim();
 }
-
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
   return getIIRTwoByTwoPhoto({
@@ -79,60 +77,87 @@ export default function StudentGrid({
 }: StudentGridProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
-  const [selectedSort, setSelectedSort] =
-    useState<StudentSortKey>("studentName");
-  const [selectedOrder, setSelectedOrder] =
-    useState<StudentSortOrder>("asc");
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
+  const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
 
-  const isSortingByStudentName = selectedSort === "studentName";
-  const nextStudentSortOrder: StudentSortOrder =
-    isSortingByStudentName && selectedOrder === "asc" ? "desc" : "asc";
-  const SortArrow = nextStudentSortOrder === "asc" ? ArrowUp : ArrowDown;
+  const [selectedSort, setSelectedSort] = useState<StudentSortKey>("studentName");
+  const [selectedOrder, setSelectedOrder] = useState<StudentSortOrder>("asc");
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const statusOptions = useMemo(() => {
     const statusMap = new Map<string, { id: string; name: string; count: number }>();
-
     students.forEach((student) => {
       const id = String(student.status?.id || "unknown");
       const name = student.status?.name || "Unknown";
       const existing = statusMap.get(id);
-
-      statusMap.set(id, {
-        id,
-        name,
-        count: existing ? existing.count + 1 : 1,
-      });
+      statusMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
     });
 
     return [
       { id: "all", name: "All Statuses", count: students.length },
-      ...Array.from(statusMap.values()).sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
+      ...Array.from(statusMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
     ].map((status) => ({
       ...status,
-      displayName:
-        status.id === "all"
-          ? status.name
-          : `${status.name} (${status.count})`,
+      displayName: status.id === "all" ? status.name : `${status.name} (${status.count})`,
+      disabled: status.id !== "all" && status.count === 0,
     }));
   }, [students]);
 
+  const programOptions = useMemo(() => {
+    const programMap = new Map<string, { id: string; name: string; count: number }>();
+    students.forEach((student) => {
+      if (!student.program) return;
+      const id = String(student.program.id);
+      const name = student.program.code || student.program.name;
+      const existing = programMap.get(id);
+      programMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
+    });
+
+    return [
+      { id: "all", name: "All Programs", count: students.length },
+      ...Array.from(programMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+    ].map((program) => ({
+      ...program,
+      displayName: program.id === "all" ? program.name : `${program.name} (${program.count})`,
+      disabled: program.id !== "all" && program.count === 0,
+    }));
+  }, [students]);
+
+  const yearLevelOptions = useMemo(() => {
+    const yearMap = new Map<string, { id: string; name: string; count: number }>();
+    students.forEach((student) => {
+      if (!student.yearLevel) return;
+      const id = String(student.yearLevel);
+      const yrData = yearLevels.find((level) => level.id === student.yearLevel);
+      const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
+      const existing = yearMap.get(id);
+      yearMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
+    });
+
+    return [
+      { id: "all", name: "All Year Levels", count: students.length },
+      ...Array.from(yearMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+    ].map((year) => ({
+      ...year,
+      displayName: year.id === "all" ? year.name : `${year.name} (${year.count})`,
+      disabled: year.id !== "all" && year.count === 0,
+    }));
+  }, [students, yearLevels]);
+
   const sortOptions = useMemo(
     () => [
-      { id: "studentName", name: "Student Name" },
-      { id: "studentNumber", name: "Student Number" },
-      { id: "program", name: "Program" },
-      { id: "email", name: "Email Address" },
+      { id: "studentName", displayName: "Student Name" },
+      { id: "studentNumber", displayName: "Student Number" },
+      { id: "email", displayName: "Email Address" },
     ],
     [],
   );
 
   const orderOptions = useMemo(
     () => [
-      { id: "asc", name: "Ascending" },
-      { id: "desc", name: "Descending" },
+      { id: "asc", displayName: "Ascending" },
+      { id: "desc", displayName: "Descending" },
     ],
     [],
   );
@@ -142,10 +167,13 @@ export default function StudentGrid({
 
     return students.filter((student) => {
       const matchesStatus =
-        selectedStatusId === "all" ||
-        String(student.status?.id || "unknown") === selectedStatusId;
+        selectedStatusId === "all" || String(student.status?.id || "unknown") === selectedStatusId;
+      const matchesProgram =
+        selectedProgramId === "all" || String(student.program?.id || "unknown") === selectedProgramId;
+      const matchesYearLevel =
+        selectedYearLevelId === "all" || String(student.yearLevel || "unknown") === selectedYearLevelId;
 
-      if (!matchesStatus) return false;
+      if (!matchesStatus || !matchesProgram || !matchesYearLevel) return false;
       if (!normalizedSearch) return true;
 
       return [
@@ -158,13 +186,12 @@ export default function StudentGrid({
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(normalizedSearch));
     });
-  }, [searchTerm, selectedStatusId, students]);
+  }, [searchTerm, selectedStatusId, selectedProgramId, selectedYearLevelId, students]);
 
   const sortedVisibleStudents = useMemo(() => {
     return [...filteredStudents].sort((a, b) => {
       const getSortValue = (student: IIRProfileView) => {
         if (selectedSort === "studentNumber") return student.studentNumber || "";
-        if (selectedSort === "program") return student.program?.code || "";
         if (selectedSort === "email") return student.email || "";
         return getStudentName(student);
       };
@@ -201,11 +228,6 @@ export default function StudentGrid({
     5: "bg-red-500/10 text-red-600 border-red-500/20",
   };
 
-  const handleStudentNameSort = () => {
-    setSelectedSort("studentName");
-    setSelectedOrder(nextStudentSortOrder);
-  };
-
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
   };
@@ -215,57 +237,127 @@ export default function StudentGrid({
     requestAnimationFrame(() => searchInputRef.current?.focus());
   };
 
-  const handleStatusFilterChange = (statusId: string) => {
-    setSelectedStatusId(statusId);
-  };
-
-  const handleSortChange = (value: unknown) => {
-    const validKeys = [
-      "studentName",
-      "studentNumber",
-      "program",
-      "email",
-    ];
-    const strValue = String(value);
-    if (!validKeys.includes(strValue)) {
-      return;
-    }
-    setSelectedSort(strValue as StudentSortKey);
-  };
-
-  const handleOrderChange = (value: unknown) => {
-    if (value !== "asc" && value !== "desc") return;
-    setSelectedOrder(value);
-  };
-
   const handleViewClick = (
     student: IIRProfileView,
-    event?: MouseEvent<HTMLButtonElement>,
+    event?: MouseEvent<HTMLDivElement | HTMLButtonElement>,
   ) => {
     event?.stopPropagation();
     onViewClick(student);
   };
 
+  const renderSortableHeader = (label: string, sortKey: StudentSortKey) => {
+    const isActive = selectedSort === sortKey;
+    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedSort(sortKey);
+          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+        }}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        {label}
+        <Icon
+          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")}
+          strokeWidth={isActive ? 2.5 : 2}
+        />
+      </button>
+    );
+  };
+
+  const searchInput = (
+    <div
+      className={cn(
+        "flex h-11 items-center gap-2 rounded-xl border border-border/70",
+        "bg-muted/50 px-3 shadow-md transition-all duration-200",
+        "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
+        "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
+      )}
+    >
+      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <Input
+        ref={searchInputRef}
+        type="text"
+        value={searchTerm}
+        onChange={(event) => handleSearchChange(event.target.value)}
+        placeholder="Search by name, email, or student number..."
+        spellCheck={false}
+        autoComplete="off"
+        className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+      />
+      {searchTerm && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onMouseDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+          onClick={handleClearSearch}
+          className={cn(
+            "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
+            "text-muted-foreground hover:bg-background hover:text-foreground",
+          )}
+          aria-label="Clear search"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+
+  const viewToggle = (
+    <div className="flex items-center gap-1 rounded-xl border border-glass-border bg-background/70 p-1 shadow-md">
+      <button
+        type="button"
+        onClick={() => onViewModeChange("list")}
+        className={cn(
+          "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
+          "text-[11px] font-semibold transition-all",
+          viewMode === "list"
+            ? "bg-primary text-primary-foreground shadow-md"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+        aria-pressed={viewMode === "list"}
+      >
+        <List className="h-3.5 w-3.5" />
+        List
+      </button>
+      <button
+        type="button"
+        onClick={() => onViewModeChange("tile")}
+        className={cn(
+          "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
+          "text-[11px] font-semibold transition-all",
+          viewMode === "tile"
+            ? "bg-primary text-primary-foreground shadow-md"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+        )}
+        aria-pressed={viewMode === "tile"}
+      >
+        <LayoutGrid className="h-3.5 w-3.5" />
+        Cards
+      </button>
+    </div>
+  );
+
   const columns = [
     {
       header: (
-        <button
-          type="button"
-          onClick={handleStudentNameSort}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
-            "text-[11px] font-bold uppercase tracking-[0.14em]",
-            "transition hover:bg-muted/70 hover:text-foreground",
-            isSortingByStudentName ? "text-primary" : "text-muted-foreground",
-          )}
-          title={`Sort student name ${nextStudentSortOrder === "asc" ? "ascending" : "descending"}`}
-        >
-          Student Name
-          <SortArrow className="h-3.5 w-3.5" />
-        </button>
+        <div className="w-full flex items-center justify-start pl-2">
+          {renderSortableHeader("Student Name", "studentName")}
+        </div>
       ),
+      className: "w-[25%] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pl-2">
           <div
             className={cn(
               "relative flex h-10 w-10 shrink-0 items-center",
@@ -288,68 +380,112 @@ export default function StudentGrid({
       ),
     },
     {
-      header: "Student Number",
+      header: (
+        <div className="w-full flex items-center justify-start">
+          {renderSortableHeader("Student Number", "studentNumber")}
+        </div>
+      ),
+      className: "w-[15%] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-xs font-bold uppercase text-primary/60">
+        <span className="text-xs font-bold uppercase text-primary/60 px-2">
           {student.studentNumber}
         </span>
       ),
     },
     {
-      header: "Email Address",
+      header: (
+        <div className="w-full flex items-center justify-start">
+          {renderSortableHeader("Email Address", "email")}
+        </div>
+      ),
+      className: "w-[22%] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-sm font-medium text-foreground/80">
+        <span className="text-sm font-medium text-foreground/80 px-2 truncate block">
           {student.email}
         </span>
       ),
     },
     {
-      header: "Program & Year",
-      render: (student: IIRProfileView) => {
-        const yrName =
-          yearLevels
-            .find((level) => level.id === student.yearLevel)
-            ?.name.split(" ")[0] || "N/A";
-        return (
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-primary/80">
-              {student.program.code}
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              {yrName} Year
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      header: "Status",
+      header: (
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={programOptions}
+            value={selectedProgramId}
+            onChange={(val) => setSelectedProgramId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedProgramId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
+        </div>
+      ),
+      className: "w-[14%] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span
-          className={cn(
-            "inline-block rounded-xl border px-2.5 py-0.5",
-            "text-[10px] font-bold uppercase shadow-md",
-            statusColors[student.status?.id] || "bg-gray-200",
-          )}
-        >
-          {student.status?.name || "Unknown"}
+        <span className="text-sm font-semibold text-primary/80 px-2">
+          {student.program.code}
         </span>
       ),
     },
     {
-      header: "Actions",
+      header: (
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={yearLevelOptions}
+            value={selectedYearLevelId}
+            onChange={(val) => setSelectedYearLevelId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedYearLevelId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
+        </div>
+      ),
+      className: "w-[12%] px-2 py-3",
+      render: (student: IIRProfileView) => {
+        const yrName =
+          yearLevels.find((level) => level.id === student.yearLevel)?.name.split(" ")[0] || "N/A";
+        return (
+          <span className="text-xs text-muted-foreground px-2">
+            {yrName} Year
+          </span>
+        );
+      },
+    },
+    {
+      header: (
+        <div className="w-full pr-4">
+          <Dropdown
+            label=""
+            options={statusOptions}
+            value={selectedStatusId}
+            onChange={(val) => setSelectedStatusId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedStatusId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
+        </div>
+      ),
+      className: "w-[12%] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={(event) => handleViewClick(student, event)}
-            className="h-8 rounded-xl border-primary/20 bg-primary/5 px-3 text-[11px] font-semibold text-primary"
+        <div className="px-2">
+          <span
+            className={cn(
+              "inline-block rounded-xl border px-2.5 py-0.5",
+              "text-[10px] font-bold uppercase shadow-md",
+              statusColors[student.status?.id] || "bg-gray-200",
+            )}
           >
-            <Eye className="mr-1 h-3.5 w-3.5" />
-            View
-          </Button>
+            {student.status?.name || "Unknown"}
+          </span>
         </div>
       ),
     },
@@ -357,9 +493,7 @@ export default function StudentGrid({
 
   const renderMobileItem = (student: IIRProfileView) => {
     const yrName =
-      yearLevels
-        .find((level) => level.id === student.yearLevel)
-        ?.name.split(" ")[0] || "N/A";
+      yearLevels.find((level) => level.id === student.yearLevel)?.name.split(" ")[0] || "N/A";
 
     return (
       <div
@@ -435,18 +569,20 @@ export default function StudentGrid({
   if (sortedVisibleStudents.length === 0) {
     return (
       <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
-        <NothingFound
-          message="No students match the current filters."
-        />
+        <NothingFound message="No students match the current filters." />
         <div className="flex flex-wrap justify-center gap-2">
-          {selectedStatusId !== "all" && (
+          {(selectedStatusId !== "all" || selectedProgramId !== "all" || selectedYearLevelId !== "all") && (
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleStatusFilterChange("all")}
+              onClick={() => {
+                setSelectedStatusId("all");
+                setSelectedProgramId("all");
+                setSelectedYearLevelId("all");
+              }}
               className="rounded-xl shadow-md"
             >
-              Show all statuses
+              Clear all filters
             </Button>
           )}
         </div>
@@ -456,140 +592,83 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-      <div className="space-y-3 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs font-medium text-muted-foreground">
-            Click Student Name to sort directly. Use the search, status, sort by, and order controls to refine the list.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 rounded-xl border border-glass-border bg-background/70 p-1 shadow-md">
-              <button
-                type="button"
-                onClick={() => onViewModeChange("list")}
-                className={cn(
-                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
-                  "text-[11px] font-semibold transition-all",
-                  viewMode === "list"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-                aria-pressed={viewMode === "list"}
-              >
-                <List className="h-3.5 w-3.5" />
-                List
-              </button>
-              <button
-                type="button"
-                onClick={() => onViewModeChange("tile")}
-                className={cn(
-                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3",
-                  "text-[11px] font-semibold transition-all",
-                  viewMode === "tile"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-                aria-pressed={viewMode === "tile"}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Cards
-              </button>
-            </div>
+      
+      {viewMode === "list" ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
+          <div className="w-full sm:max-w-md">
+            {searchInput}
+          </div>
+          <div className="flex items-center shrink-0">
+            {viewToggle}
           </div>
         </div>
-
-        <div
-          className={cn(
-            "rounded-xl border border-border/60 bg-background/70 p-3 shadow-md",
-            "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
-          )}
-        >
-          <div
-            className={cn(
-              "grid w-full min-w-0 grid-cols-1 items-end gap-3",
-              "md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_220px_210px_170px]",
-            )}
-          >
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Search
-              </label>
-              <div
-                className={cn(
-                  "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-                  "bg-muted/50 px-3 shadow-md transition-all duration-200",
-                  "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
-                  "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
-                )}
-              >
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Search by name, email, or student number..."
-                  spellCheck={false}
-                  autoComplete="off"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+      ) : (
+        <div className="flex flex-col gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-4 shadow-md backdrop-blur-glass">
+          <div className="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-4">
+            <div className="flex flex-1 flex-wrap items-end gap-3">
+              <div className="w-full md:w-[260px] xl:w-[300px]">
+                <label className="mb-2 block text-sm font-medium text-foreground">
+                  Search
+                </label>
+                {searchInput}
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Program"
+                  options={programOptions}
+                  value={selectedProgramId}
+                  onChange={(val) => setSelectedProgramId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
                 />
-                {searchTerm && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={handleClearSearch}
-                    className={cn(
-                      "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-                      "text-muted-foreground hover:bg-background hover:text-foreground",
-                    )}
-                    aria-label="Clear search"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Year Level"
+                  options={yearLevelOptions}
+                  value={selectedYearLevelId}
+                  onChange={(val) => setSelectedYearLevelId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Status"
+                  options={statusOptions}
+                  value={selectedStatusId}
+                  onChange={(val) => setSelectedStatusId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Sort By"
+                  options={sortOptions}
+                  value={selectedSort}
+                  onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Order"
+                  options={orderOptions}
+                  value={selectedOrder}
+                  onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
               </div>
             </div>
-
-            <div className="min-w-0">
-              <Dropdown
-                label="Status"
-                options={statusOptions}
-                value={selectedStatusId}
-                onChange={(value) => handleStatusFilterChange(String(value))}
-                labelKey="displayName"
-                enabled={!isStudentsLoading}
-                formStyle={false}
-              />
-            </div>
-
-            <div className="min-w-0">
-              <Dropdown
-                label="Sort By"
-                options={sortOptions}
-                value={selectedSort}
-                onChange={handleSortChange}
-                enabled={!isStudentsLoading}
-                formStyle={false}
-              />
-            </div>
-
-            <div className="min-w-0">
-              <Dropdown
-                label="Order"
-                options={orderOptions}
-                value={selectedOrder}
-                onChange={handleOrderChange}
-                enabled={!isStudentsLoading}
-                formStyle={false}
-              />
+            <div className="flex w-full items-center justify-end 2xl:w-auto shrink-0 pb-[1px]">
+              {viewToggle}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {viewMode === "tile" ? (
         <div
@@ -602,12 +681,13 @@ export default function StudentGrid({
             <div
               key={student.email}
               className={cn(
-                "group relative overflow-hidden hover:bg-glass-bg/40",
+                "group relative cursor-pointer overflow-hidden hover:bg-glass-bg/40",
                 "rounded-xl border border-glass-border bg-glass-bg p-3 md:p-6",
                 "shadow-md backdrop-blur-glass transition-all duration-500",
                 "hover:-translate-y-1.5 hover:border-primary/30",
                 "hover:shadow-md active:scale-[0.98]",
               )}
+              onClick={() => onViewClick(student)}
             >
               <div
                 className={cn(
@@ -673,8 +753,8 @@ export default function StudentGrid({
                   <div className="space-y-0.5 md:space-y-1">
                     <h3
                       className={cn(
-                        "line-clamp-1 text-xs font-bold md:text-xl",
-                        "tracking-tight text-foreground transition-colors",
+                        "line-clamp-1 text-xs font-bold tracking-tight md:text-xl",
+                        "text-foreground transition-colors",
                         "group-hover:text-primary",
                       )}
                     >
@@ -700,7 +780,7 @@ export default function StudentGrid({
 
                 <div
                   className={cn(
-                    "border-glass-border/30 border-t pt-2",
+                    "border-t border-glass-border/30 pt-2",
                     "flex flex-col gap-1.5 md:gap-3",
                   )}
                 >

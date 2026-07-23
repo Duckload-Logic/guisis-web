@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Calendar,
   CalendarClock,
   CalendarX,
@@ -14,7 +16,6 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Appointment,
   AppointmentStatus,
@@ -23,7 +24,7 @@ import {
 import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
 import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
-import { Pagination, Table } from "@/components/shared";
+import { Pagination, Table, Column } from "@/components/shared";
 import Dropdown from "@/components/form/Dropdown";
 import { format12HourTime, formatDate } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
@@ -38,12 +39,13 @@ const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
   name: "All",
 };
 
+type SortOrder = "asc" | "desc";
+
 export default function StudentAppointments() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { data: appointmentStatuses = [], isLoading: isStatusesLoading } =
-    useStatuses();
+  const { data: appointmentStatuses = [] } = useStatuses();
 
   const filterStatuses = useMemo(
     () => [ALL_APPOINTMENT_STATUS, ...appointmentStatuses],
@@ -54,35 +56,49 @@ export default function StudentAppointments() {
   const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>(
     ALL_APPOINTMENT_STATUS,
   );
+  
+  // Sorting states for table headers
+  const [selectedSort, setSelectedSort] = useState<string>("whenDate");
+  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
 
   const { data, isLoading: isAppointmentsLoading } = useAppointments({
     isMe: true,
     params: {
       page: currentPage,
-      pageSize: 5,
+      pageSize: 10,
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
     },
   });
 
-  const { data: appointmentStats, isLoading: isStatsLoading } =
-    useAppointmentsStats({});
+  const { data: appointmentStats } = useAppointmentsStats({});
 
   const appointments = data?.appointments || [];
   const statusCounts = appointmentStats || ([] as StatusCount[]);
-  const isGlobalLoading = isStatsLoading || isStatusesLoading;
 
-  const dropdownOptions = useMemo(() => {
-    return filterStatuses.map((filter) => {
-      const count =
-        filter.id === 0
-          ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
-          : statusCounts?.find((s) => s.id === filter.id)?.count || 0;
-      return {
-        id: filter.id,
-        name: `${filter.name} (${count})`,
-      };
+  // Local sorting calculation supporting category, date requested, and appointment date
+  const sortedAppointments = useMemo(() => {
+    let result = [...appointments];
+    result.sort((a, b) => {
+      if (selectedSort === "category") {
+        const catA = (a.appointmentCategory?.name || "").toLowerCase();
+        const catB = (b.appointmentCategory?.name || "").toLowerCase();
+        const res = catA.localeCompare(catB);
+        return selectedOrder === "asc" ? res : -res;
+      }
+      if (selectedSort === "createdAt") {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime(); 
+        return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      if (selectedSort === "whenDate") {
+        const dateA = new Date(a.whenDate || 0).getTime();
+        const dateB = new Date(b.whenDate || 0).getTime();
+        return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      return 0;
     });
-  }, [filterStatuses, statusCounts]);
+    return result;
+  }, [appointments, selectedSort, selectedOrder]);
 
   const pageBadgeIcon = useMemo(() => <Calendar className="h-3 w-3" />, []);
 
@@ -122,6 +138,7 @@ export default function StudentAppointments() {
     ),
     [user?.studentCorUrl, user?.isStudentCorValid, hasValidCor],
   );
+
   usePageMetadata({
     title: "My Appointments",
     description: "View and manage your counseling appointments",
@@ -130,6 +147,7 @@ export default function StudentAppointments() {
     isLoading: false,
     headerActions: pageHeaderActions,
   });
+
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
 
@@ -153,111 +171,155 @@ export default function StudentAppointments() {
 
   const formatCompactDate = (value?: string) => {
     if (!value) return "—";
-
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return "—";
 
     return parsed.toLocaleDateString("en-US", {
-      month: "long",
+      month: "short",
       day: "numeric",
       year: "numeric",
     });
   };
 
-  const renderListItem = useCallback(
-    (appointment: Appointment, index: number) => (
-      <div
-        key={appointment.id}
-        className={cn(
-          "animate-fade-in-up cursor-pointer p-4",
-          "max-w-full overflow-hidden transition-colors duration-200 hover:bg-muted/50",
-          "sm:p-5",
-        )}
-        style={{
-          animationDelay: `${0.04 * (index + 1)}s`,
-          animationFillMode: "both",
+  const renderSortableHeader = (label: string, sortKey: string) => {
+    const isActive = selectedSort === sortKey;
+    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedSort(sortKey);
+          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+          setCurrentPage(1);
         }}
-        onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
+          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
+        )}
       >
-        <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div
-              className={cn(
-                "hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-                "border border-primary/15 bg-primary/10 text-primary shadow-sm",
-                "backdrop-blur-md sm:flex",
-              )}
-            >
-              <Calendar className="h-5 w-5" />
-            </div>
+        {label}
+        <Icon 
+          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
+          strokeWidth={isActive ? 2.5 : 2} 
+        />
+      </button>
+    );
+  };
 
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "border-white/45 bg-white/40 text-xs",
-                    "font-medium backdrop-blur-xl",
-                    "dark:border-white/10 dark:bg-white/[0.05]",
-                  )}
-                >
-                  <Tag className="mr-1 h-3 w-3" />
-                  {appointment.appointmentCategory.name}
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-xs hover:opacity-90",
-                    getStatusColor(appointment.status?.name),
-                  )}
-                >
-                  {appointment.status?.name}
-                </Badge>
-              </div>
-
-              <p
+  const appointmentColumns = useMemo<Column<Appointment>[]>(
+    () => [
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Category & Reason", "category")}
+          </div>
+        ),
+        className: "w-[35%] p-0",
+        render: (appointment: Appointment) => (
+          <div className="px-4 py-3 flex flex-col gap-1 text-left">
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
                 className={cn(
-                  "mt-1.5 line-clamp-1 text-sm",
-                  "text-muted-foreground/90",
+                  "border-white/45 bg-white/40 text-[11px]",
+                  "font-medium backdrop-blur-xl",
+                  "dark:border-white/10 dark:bg-white/[0.05]",
                 )}
               >
-                {appointment.reason}
-              </p>
+                <Tag className="mr-1 h-3 w-3" />
+                {appointment.appointmentCategory.name}
+              </Badge>
             </div>
+            <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">
+              {appointment.reason}
+            </p>
           </div>
-
-          <div
-            className={cn(
-              "grid min-w-0 grid-cols-1 gap-1.5 text-sm text-muted-foreground",
-              "sm:grid-cols-2 xl:ml-auto xl:flex xl:shrink-0 xl:items-center xl:justify-end xl:gap-4",
-            )}
-          >
-            <div className="flex min-w-0 items-center gap-2">
-              <Calendar className="h-4 w-4 shrink-0" />
-              <span className="min-w-0 break-words">
-                Date Requested: {formatCompactDate(appointment.createdAt)}
-              </span>
-            </div>
-
-            <span
-              className={cn("hidden text-muted-foreground/40", "xl:inline")}
-            >
-              •
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Date Requested", "createdAt")}
+          </div>
+        ),
+        className: "w-[20%] p-0",
+        render: (appointment: Appointment) => (
+          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar size={14} className="shrink-0" />
+            <span className="whitespace-nowrap">{formatCompactDate(appointment.createdAt)}</span>
+          </div>
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full flex items-center justify-start">
+            {renderSortableHeader("Appointment Date", "whenDate")}
+          </div>
+        ),
+        className: "w-[25%] p-0",
+        render: (appointment: Appointment) => (
+          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <CalendarClock size={14} className="shrink-0" />
+            <span className="whitespace-nowrap font-medium text-foreground">
+              {formatDate(appointment.whenDate)} • {format12HourTime(appointment.timeSlot.time)}
             </span>
-
-            <div className="flex min-w-0 items-center gap-2">
-              <CalendarClock className="h-4 w-4 shrink-0" />
-              <span className="min-w-0 break-words">
-                Appointment: {formatDate(appointment.whenDate)}{" "}
-                {format12HourTime(appointment.timeSlot.time)}
-              </span>
-            </div>
           </div>
-        </div>
-      </div>
-    ),
-    [navigate, getStatusColor, formatCompactDate],
+        ),
+      },
+      {
+        header: (
+          <div className="px-3 py-3 w-full">
+            <Dropdown
+              label=""
+              options={filterStatuses.map((s) => {
+                const count =
+                  s.id === 0
+                    ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
+                    : statusCounts?.find((sc) => sc.id === s.id)?.count || 0;
+
+                return {
+                  id: s.id,
+                  displayName: s.id === 0 ? "All Statuses" : `${s.name} (${count})`,
+                  disabled: s.id !== 0 && count === 0,
+                };
+              })}
+              value={selectedStatus.id}
+              onChange={(val) => {
+                const found = filterStatuses.find((s) => String(s.id) === String(val));
+                if (found) {
+                  setSelectedStatus(found);
+                  setCurrentPage(1);
+                }
+              }}
+              labelKey="displayName"
+              enabled={!isAppointmentsLoading}
+              buttonClassName={cn(
+                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+                selectedStatus.id === 0 ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+              )}
+            />
+          </div>
+        ),
+        className: "w-[20%] p-0",
+        render: (appointment: Appointment) => (
+          <div className="px-3 py-3 flex items-center">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs hover:opacity-95 font-semibold px-2.5 py-0.5",
+                getStatusColor(appointment.status?.name),
+              )}
+            >
+              {appointment.status?.name}
+            </Badge>
+          </div>
+        ),
+      },
+    ],
+    [selectedSort, selectedOrder, filterStatuses, selectedStatus, statusCounts, isAppointmentsLoading]
   );
 
   const emptyState = useMemo(
@@ -378,104 +440,15 @@ export default function StudentAppointments() {
       ) : null}
 
       <Card className={cn(GLASS_CARD, "min-w-0 animate-fade-in-up overflow-hidden")}>
-        <CardHeader
-          className={cn(
-            "border-b border-white/30 px-4 py-3.5",
-            "dark:border-white/10",
-          )}
-        >
-          <div className="w-full max-w-xs md:hidden">
-            {isGlobalLoading ? (
-              <Skeleton className="h-10 w-full rounded-xl" />
-            ) : (
-              <Dropdown
-                label="Appointment Status"
-                options={dropdownOptions}
-                value={selectedStatus.id}
-                onChange={(val) => {
-                  const selected = filterStatuses.find(
-                    (s) => String(s.id) === String(val),
-                  );
-                  if (selected) {
-                    setSelectedStatus(selected);
-                    setCurrentPage(1);
-                  }
-                }}
-              />
-            )}
-          </div>
-
-          <div className="hidden flex-wrap gap-2 md:flex">
-            {isGlobalLoading ? (
-              Array.from({ length: 4 }).map((_, idx) => (
-                <Skeleton
-                  key={idx}
-                  className="h-9 w-24 rounded-xl"
-                />
-              ))
-            ) : (
-              filterStatuses.map((filter) => {
-                const isActive =
-                  String(selectedStatus.id) === String(filter.id);
-                const count =
-                  filter.id === 0
-                    ? statusCounts.reduce(
-                        (sum, item) => sum + (item.count || 0),
-                        0,
-                      )
-                    : (statusCounts?.find(
-                        (s) => s.id === filter.id,
-                      )?.count || 0);
-
-                return (
-                  <Button
-                    key={filter.id}
-                    variant={isActive ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setSelectedStatus(filter);
-                      setCurrentPage(1);
-                    }}
-                    className={cn(
-                      "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
-                      isActive
-                        ? "shadow-md"
-                        : cn(
-                            "border-glass-border bg-glass-bg",
-                            "hover:bg-primary/10 hover:text-primary",
-                            "hover:opacity-90"
-                          )
-                    )}
-                  >
-                    <span>{filter.name}</span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
-                        "font-bold transition-all",
-                        isActive
-                          ? "bg-primary-foreground text-primary"
-                          : "bg-muted/60 text-muted-foreground",
-                        "group-hover:bg-primary",
-                        "group-hover:text-primary-foreground"
-                      )}
-                    >
-                      {count}
-                    </Badge>
-                  </Button>
-                );
-              })
-            )}
-          </div>
-        </CardHeader>
-
         <CardContent className="bg-glass-bg p-0">
           <Table
-            variant="list"
-            data={appointments}
-            renderListItem={renderListItem}
+            data={sortedAppointments}
+            columns={appointmentColumns}
             isLoading={isAppointmentsLoading}
             emptyState={emptyState}
+            onRowClick={(appointment) => navigate(`/student/appointments/${appointment.id}`)}
+            containerClassName="overflow-x-auto"
+            tableClassName="w-full table-fixed min-w-[800px]"
           />
 
           <Separator className="bg-white/25 dark:bg-white/10" />

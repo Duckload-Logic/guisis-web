@@ -293,3 +293,13 @@ export function useWhitelist() {
   });
 }
 
+export function useSystemHealth() {
+  return useQuery({
+    queryKey: ["superadmin", "system", "health"],
+    queryFn: () => superadminService.getSystemHealth(),
+    refetchInterval: 10000, // Poll every 10 seconds for real-time accuracy
+    refetchIntervalInBackground: false,
+    staleTime: 5000,
+  });
+}
+
