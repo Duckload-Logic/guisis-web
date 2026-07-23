@@ -113,6 +113,7 @@ export const API_ROUTES = Object.freeze({
     register: "/auth/register",
     idpAuthorizeUrl: "/auth/idp/authorize",
     idpToken: "/auth/idp/token",
+    idpStatus: "/auth/idp/status",
     otpRequest: "/auth/otp/request",
     otpLogin: "/auth/otp/login",
   }),

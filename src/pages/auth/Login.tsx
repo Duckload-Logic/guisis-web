@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AuthHeader,
   LoginForm,
@@ -10,7 +10,11 @@ import { IDPLoginButton } from "@/features/auth/components/IDPLoginButton";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useLogin } from "@/features/auth/hooks";
 import { ArrowLeft } from "lucide-react";
-import { PostOTPRequest, PostOTPLogin } from "@/features/auth/services";
+import {
+  PostOTPRequest,
+  PostOTPLogin,
+  GetIDPStatus,
+} from "@/features/auth/services";
 import { FormField } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 
@@ -28,8 +32,28 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [isOTPLoading, setIsOTPLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isCheckingIDP, setIsCheckingIDP] = useState(isFallback);
 
-  const isLoading = isNativeLoggingIn || isOTPLoading;
+  useEffect(() => {
+    if (!isFallback) return;
+
+    const checkIDP = async () => {
+      try {
+        const res = await GetIDPStatus();
+        if (res.up) {
+          navigate("/login", { replace: true });
+        }
+      } catch (err) {
+        // Keep fallback UI if error or backend is unreachable
+      } finally {
+        setIsCheckingIDP(false);
+      }
+    };
+
+    checkIDP();
+  }, [isFallback, navigate]);
+
+  const isLoading = isNativeLoggingIn || isOTPLoading || isCheckingIDP;
 
   const handleNativeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

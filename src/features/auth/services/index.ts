@@ -170,6 +170,26 @@ export const PostOTPLogin = async (
   }
 };
 
+export interface IDPStatusResponse {
+  up: boolean;
+}
+
+/**
+ * Get current IDP status
+ */
+export const GetIDPStatus = async (
+  config?: AxiosConfigWithMeta,
+): Promise<IDPStatusResponse> => {
+  try {
+    const { data } = await apiClient.get(
+      API_ROUTES.auth.idpStatus,
+      config,
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 /**
  * Get current user profile

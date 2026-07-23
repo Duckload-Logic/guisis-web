@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Appointment,
   AppointmentStatus,
@@ -121,16 +122,14 @@ export default function StudentAppointments() {
     ),
     [user?.studentCorUrl, user?.isStudentCorValid, hasValidCor],
   );
-
   usePageMetadata({
     title: "My Appointments",
     description: "View and manage your counseling appointments",
     badgeText: "Appointments",
     badgeIcon: pageBadgeIcon,
-    isLoading: isGlobalLoading,
+    isLoading: false,
     headerActions: pageHeaderActions,
   });
-
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
 
@@ -386,68 +385,87 @@ export default function StudentAppointments() {
           )}
         >
           <div className="w-full max-w-xs md:hidden">
-            <Dropdown
-              label="Appointment Status"
-              options={dropdownOptions}
-              value={selectedStatus.id}
-              onChange={(val) => {
-                const selected = filterStatuses.find(
-                  (s) => String(s.id) === String(val),
-                );
-                if (selected) {
-                  setSelectedStatus(selected);
-                  setCurrentPage(1);
-                }
-              }}
-            />
+            {isGlobalLoading ? (
+              <Skeleton className="h-10 w-full rounded-xl" />
+            ) : (
+              <Dropdown
+                label="Appointment Status"
+                options={dropdownOptions}
+                value={selectedStatus.id}
+                onChange={(val) => {
+                  const selected = filterStatuses.find(
+                    (s) => String(s.id) === String(val),
+                  );
+                  if (selected) {
+                    setSelectedStatus(selected);
+                    setCurrentPage(1);
+                  }
+                }}
+              />
+            )}
           </div>
 
           <div className="hidden flex-wrap gap-2 md:flex">
-            {filterStatuses.map((filter) => {
-              const isActive = String(selectedStatus.id) === String(filter.id);
-              const count =
-                filter.id === 0
-                  ? statusCounts.reduce(
-                      (sum, item) => sum + (item.count || 0),
-                      0,
-                    )
-                  : statusCounts?.find((s) => s.id === filter.id)?.count || 0;
+            {isGlobalLoading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <Skeleton
+                  key={idx}
+                  className="h-9 w-24 rounded-xl"
+                />
+              ))
+            ) : (
+              filterStatuses.map((filter) => {
+                const isActive =
+                  String(selectedStatus.id) === String(filter.id);
+                const count =
+                  filter.id === 0
+                    ? statusCounts.reduce(
+                        (sum, item) => sum + (item.count || 0),
+                        0,
+                      )
+                    : (statusCounts?.find(
+                        (s) => s.id === filter.id,
+                      )?.count || 0);
 
-              return (
-                <Button
-                  key={filter.id}
-                  variant={isActive ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setSelectedStatus(filter);
-                    setCurrentPage(1);
-                  }}
-                  className={cn(
-                    "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
-                    isActive
-                      ? "shadow-md"
-                      : cn(
-                          "border-glass-border bg-glass-bg",
-                          "hover:bg-primary/10 hover:text-primary hover:opacity-90",
-                        ),
-                  )}
-                >
-                  <span>{filter.name}</span>
-                  <Badge
-                    variant="outline"
+                return (
+                  <Button
+                    key={filter.id}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setSelectedStatus(filter);
+                      setCurrentPage(1);
+                    }}
                     className={cn(
-                      "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
-                      "font-bold transition-all",
+                      "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
                       isActive
-                        ? "bg-primary-foreground text-primary"
-                        : "bg-muted/60 text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground",
+                        ? "shadow-md"
+                        : cn(
+                            "border-glass-border bg-glass-bg",
+                            "hover:bg-primary/10 hover:text-primary",
+                            "hover:opacity-90"
+                          )
                     )}
                   >
-                    {count}
-                  </Badge>
-                </Button>
-              );
-            })}
+                    <span>{filter.name}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
+                        "font-bold transition-all",
+                        isActive
+                          ? "bg-primary-foreground text-primary"
+                          : "bg-muted/60 text-muted-foreground",
+                        "group-hover:bg-primary",
+                        "group-hover:text-primary-foreground"
+                      )}
+                    >
+                      {count}
+                    </Badge>
+                  </Button>
+                );
+              })
+            )}
           </div>
         </CardHeader>
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LAYOUT_STYLES,
   STATUS_COLORS,
@@ -140,7 +141,7 @@ export default function StudentSlips() {
     description: "Manage your admission slip requests and track their status",
     badgeText: "My Requests",
     badgeIcon: pageBadgeIcon,
-    isLoading,
+    isLoading: false,
     headerActions: pageHeaderActions,
   });
 
@@ -387,63 +388,78 @@ export default function StudentSlips() {
           >
             {/* Mobile Dropdown */}
             <div className="w-full max-w-xs md:hidden">
-              <Dropdown
-                label="Admission Slip Status"
-                options={dropdownOptions}
-                value={selectedStatus.id}
-                onChange={(val) => {
-                  const selected = statsWithAll.find(
-                    (s) => String(s.id) === String(val),
-                  );
-                  if (selected) {
-                    setSelectedStatus(selected);
-                    setCurrentPage(1);
-                  }
-                }}
-              />
+              {isLoading ? (
+                <Skeleton className="h-10 w-full rounded-xl" />
+              ) : (
+                <Dropdown
+                  label="Admission Slip Status"
+                  options={dropdownOptions}
+                  value={selectedStatus.id}
+                  onChange={(val) => {
+                    const selected = statsWithAll.find(
+                      (s) => String(s.id) === String(val),
+                    );
+                    if (selected) {
+                      setSelectedStatus(selected);
+                      setCurrentPage(1);
+                    }
+                  }}
+                />
+              )}
             </div>
 
             {/* Desktop Tabs */}
             <div className="hidden flex-wrap gap-2 md:flex">
-              {statsWithAll.map((filter) => {
-                const isActive =
-                  String(selectedStatus.id) === String(filter.id);
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <Skeleton
+                    key={idx}
+                    className="h-9 w-24 rounded-xl"
+                  />
+                ))
+              ) : (
+                statsWithAll.map((filter) => {
+                  const isActive =
+                    String(selectedStatus.id) === String(filter.id);
 
-                return (
-                  <Button
-                    key={filter.id}
-                    variant={isActive ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setSelectedStatus(filter);
-                      setCurrentPage(1);
-                    }}
-                    className={cn(
-                      "group h-9 rounded-xl px-4 text-xs font-bold transition-all",
-                      isActive
-                        ? "shadow-md"
-                        : cn(
-                            "border-glass-border bg-glass-bg",
-                            "hover:bg-primary/10 hover:text-primary hover:opacity-90",
-                          ),
-                    )}
-                  >
-                    <span>{filter.name}</span>
-                    <Badge
-                      variant="outline"
+                  return (
+                    <Button
+                      key={filter.id}
+                      variant={isActive ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedStatus(filter);
+                        setCurrentPage(1);
+                      }}
                       className={cn(
-                        "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
-                        "font-bold transition-all",
+                        "group h-9 rounded-xl px-4 text-xs font-bold",
+                        "transition-all",
                         isActive
-                          ? "bg-primary-foreground text-primary"
-                          : "bg-muted/60 text-muted-foreground",
+                          ? "shadow-md"
+                          : cn(
+                              "border-glass-border bg-glass-bg",
+                              "hover:bg-primary/10 hover:text-primary",
+                              "hover:opacity-90"
+                            )
                       )}
                     >
-                      {filter.count || 0}
-                    </Badge>
-                  </Button>
-                );
-              })}
+                      <span>{filter.name}</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "ml-2 rounded-lg px-1.5 py-0.5 text-[10px]",
+                          "font-bold transition-all",
+                          isActive
+                            ? "bg-primary-foreground text-primary"
+                            : "bg-muted/60 text-muted-foreground"
+                        )}
+                      >
+                        {filter.count || 0}
+                      </Badge>
+                    </Button>
+                  );
+                })
+              )}
             </div>
           </CardHeader>
 
