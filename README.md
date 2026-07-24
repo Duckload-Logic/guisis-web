@@ -1,77 +1,64 @@
 # DuckLoad Web Frontend
 
-PUP Student Guidance System Capstone - React + Vite Frontend
+The user-facing student portal and admin dashboard for the PUP Student Guidance
+System Capstone (GuiSIS). Built with React, Vite, TypeScript, and Tailwind CSS.
 
-## Setup Instructions
+For developer guidelines and standards, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### Prerequisites
+## Tech Stack
 
-- Node.js v22+ installed
-- npm v10+
-
-### Installation
-
-```bash
-# From the web/ directory
-npm install
-```
-
-### Running Development Server
-
-```bash
-# Start the React dev server (runs on http://localhost:5173)
-npm run dev
-```
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-### Running Linter
-
-```bash
-npm run lint
-```
+- **Framework**: React (v18) + Vite
+- **Language**: TypeScript
+- **Routing**: React Router DOM (v6)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **HTTP Client**: Axios
 
 ## Project Structure
 
 ```
 src/
-├── components/        # Reusable UI components (shadcn/ui)
-├── features/         # Feature modules (students, appointments, etc.)
-├── pages/            # Page components (Login, StudentForm, etc.)
-├── routes/           # Route definitions
-├── context/          # React Context (AuthContext)
+├── assets/           # Images, logo assets, and static files
+├── components/        # Reusable global UI components (shadcn/ui)
+├── context/          # React Context providers (AuthContext, etc.)
+├── features/         # Feature modules (students, appointments, slips)
 ├── hooks/            # Custom React hooks
-├── services/         # API services
-├── config/           # Configuration files
-├── assets/           # Images and icons
-├── lib/              # Utilities and helpers
-├── App.jsx           # Main app component
-└── main.jsx          # Entry point
+├── lib/              # Shared utility functions and helpers
+├── pages/            # Page-level components
+├── routes/           # Routing configuration
+└── services/         # API integration services (Axios client)
 ```
 
-## Tech Stack
+## Setup Instructions
 
-- **React** 18.2.0 - UI library
-- **Vite** ^5.0.0 - Build tool
-- **React Router** 6.18.0 - Routing
-- **Tailwind CSS** 3.3.0 - Styling
-- **shadcn/ui** - Component library
-- **Axios** - HTTP client
+### Prerequisites
 
-## Environment Variables
+- Node.js v22+
+- npm v10+
 
-Create a `.env` file in the web directory:
+### Installation
 
-```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-```
+1. Navigate to the `guisis-web` folder.
+2. Install npm dependencies:
+   ```bash
+   npm install
+   ```
+3. Initialize configuration by creating a `.env` file in the root of the
+   `guisis-web` directory:
+   ```env
+   VITE_API_BASE_URL=http://localhost:8000/api/v1
+   ```
 
-## Notes
+### Running Locally
 
-- Backend API runs on port 8000 (see `/api` directory)
-- Mock authentication uses localStorage for testing
-- Default test credentials: email: `student`, password: `password`
+- **Start development server**:
+  ```bash
+  npm run dev
+  ```
+- **Build production assets**:
+  ```bash
+  npm run build
+  ```
+- **Run ESLint checking**:
+  ```bash
+  npm run lint
+  ```
