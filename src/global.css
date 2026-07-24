@@ -408,7 +408,7 @@
 
 @layer components {
   .glass-card {
-    @apply rounded-md border border-glass-border bg-glass-bg shadow-md backdrop-blur-[var(--glass-blur)];
+    @apply rounded-xl border border-glass-border bg-glass-bg shadow-md backdrop-blur-[var(--glass-blur)];
   }
 
   .glass-button {
@@ -535,16 +535,10 @@
     animation: sidebar-tilt 0.35s ease-in-out;
   }
 
-  .card-elevated {
-    box-shadow:
-      0 14px 34px rgba(15, 23, 42, 0.1),
-      0 4px 12px rgba(15, 23, 42, 0.06) !important;
-  }
-
-  .dark .card-elevated {
-    box-shadow:
-      0 18px 45px rgba(0, 0, 0, 0.45),
-      0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  .card-elevated,
+  [data-ui="card"] {
+    border-radius: 0.75rem !important;
+    box-shadow: var(--shadow-md) !important;
   }
 
   .dyslexic-mode,
@@ -576,10 +570,12 @@
     max-width: 100%;
   }
 
-  .card-elevated {
+  .card-elevated,
+  [data-ui="card"],
+  .glass-card {
     min-width: 0;
     max-width: 100%;
-    border-radius: 0.75rem;
-    box-shadow: var(--shadow-md);
+    border-radius: 0.75rem !important;
+    box-shadow: var(--shadow-md) !important;
   }
 }
