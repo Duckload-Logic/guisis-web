@@ -183,8 +183,8 @@ export const SpeechControl: React.FC = () => {
         aria-label={readerActive ? "Turn off reader mode" : "Turn on reader mode"}
         aria-pressed={readerActive}
         className={cn(
-          "group pointer-events-auto relative flex touch-manipulation items-center",
-          "justify-center rounded-full border border-white/25 bg-primary",
+          "group pointer-events-auto relative flex shrink-0 touch-manipulation items-center",
+          "justify-center rounded-full border border-white/25 bg-primary p-0",
           "h-12 w-12 sm:h-14 sm:w-14 xl:h-16 xl:w-16",
           "text-primary-foreground shadow-md outline-none",
           "transition-transform duration-200 hover:scale-105 active:scale-95",
@@ -193,10 +193,15 @@ export const SpeechControl: React.FC = () => {
         )}
       >
         {readerActive ? (
-          <Ear className="h-6 w-6 xl:h-7 xl:w-7" aria-hidden="true" />
+          <Ear
+            className="h-6 w-6 shrink-0 xl:h-7 xl:w-7"
+            strokeWidth={2.5}
+            aria-hidden="true"
+          />
         ) : (
           <AudioLines
-            className="h-6 w-6 xl:h-7 xl:w-7"
+            className="h-6 w-6 shrink-0 xl:h-7 xl:w-7"
+            strokeWidth={2.5}
             aria-hidden="true"
           />
         )}
