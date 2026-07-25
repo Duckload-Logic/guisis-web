@@ -9,8 +9,9 @@ export const UI_STORAGE_KEYS = {
   PERFORMANCE: "performance_mode",
 } as const;
 
+// Theme is intentionally excluded. Dark/light mode is a persistent device
+// preference and must remain applied when the authenticated session ends.
 const SESSION_UI_STORAGE_KEYS = [
-  UI_STORAGE_KEYS.DARK_MODE,
   UI_STORAGE_KEYS.GRAYSCALE,
   UI_STORAGE_KEYS.DYSLEXIA,
   UI_STORAGE_KEYS.FONT_SCALE,
@@ -19,7 +20,7 @@ const SESSION_UI_STORAGE_KEYS = [
   UI_STORAGE_KEYS.PERFORMANCE,
 ];
 
-const isUIPreferenceKey = (storedKey: string) =>
+const isSessionUIPreferenceKey = (storedKey: string) =>
   SESSION_UI_STORAGE_KEYS.some(
     (preferenceKey) =>
       storedKey === preferenceKey || storedKey.startsWith(`${preferenceKey}-`),
@@ -27,14 +28,16 @@ const isUIPreferenceKey = (storedKey: string) =>
 
 export const clearUIPreferences = () => {
   Object.keys(localStorage)
-    .filter(isUIPreferenceKey)
+    .filter(isSessionUIPreferenceKey)
     .forEach((key) => localStorage.removeItem(key));
 };
 
 export const resetAppliedUIPreferences = () => {
   const root = document.documentElement;
 
-  root.classList.remove("dark", "dyslexic-mode", "perf-mode");
+  // Do not remove the dark class here. The saved theme must remain active on
+  // the login/logout redirect instead of briefly flashing back to light mode.
+  root.classList.remove("dyslexic-mode", "perf-mode");
   root.style.filter = "";
   root.style.fontSize = "";
 };

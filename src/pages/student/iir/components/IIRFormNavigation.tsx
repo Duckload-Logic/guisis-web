@@ -38,11 +38,9 @@ export function IIRFormNavigation({
   return (
     <div
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-4 flex",
-        "flex-col items-center justify-between gap-4 rounded-xl",
-        "border border-glass-border bg-glass-bg p-5",
-        "shadow-md",
-        "delay-500 duration-700 md:flex-row",
+        "flex flex-col items-center justify-between gap-4 rounded-xl",
+        "border border-glass-border bg-glass-bg p-5 shadow-md",
+        "md:flex-row",
       )}
     >
       <div className="flex w-full flex-col gap-3 md:w-auto">
