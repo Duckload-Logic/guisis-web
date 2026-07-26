@@ -2,6 +2,7 @@
  * Dynamic validation schema system
  * Defines validation rules for forms without hardcoding them
  */
+import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 
 export type ValidationRule = {
   type?: string;
@@ -31,9 +32,7 @@ export const commonRules = {
           value.id !== 0 &&
           value.id !== "0";
         const hasCode =
-          value.code !== undefined &&
-          value.code !== null &&
-          value.code !== "";
+          value.code !== undefined && value.code !== null && value.code !== "";
         return hasId || hasCode;
       }
       return value !== undefined && value !== null && value !== "";
@@ -187,7 +186,8 @@ export const commonRules = {
       if (value === undefined || value === null || value === "") return true;
       return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(String(value));
     },
-    message: "Must contain only letters, spaces, hyphens, periods, or apostrophes",
+    message:
+      "Must contain only letters, spaces, hyphens, periods, or apostrophes",
   }),
 
   studentNumber: (): ValidationRule => ({
@@ -251,7 +251,7 @@ export const commonRules = {
   noSpecialChars: (fieldName: string): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s,\.\-\/']+$/.test(String(value));
+      return !SPECIAL_CHARS_REGEX.test(String(value));
     },
     message: `${fieldName} contains invalid special characters`,
   }),
