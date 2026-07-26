@@ -8,11 +8,19 @@ import type {
   ListUsersParams,
 } from "../types";
 
+export interface M2MQueryParams {
+  includeRevoked?: boolean;
+  sort_by?: string;
+  sort_order?: string;
+}
+
 // M2M Client hooks
-export function useM2MClients(includeRevoked = false) {
+export function useM2MClients(params: M2MQueryParams = {}) {
+  const includeRevoked = params.includeRevoked ?? false;
+  
   return useQuery({
-    queryKey: QUERY_KEYS.superadmin.m2mClients(includeRevoked),
-    queryFn: () => superadminService.listM2MClients(includeRevoked),
+    queryKey: [...QUERY_KEYS.superadmin.m2mClients(includeRevoked), params.sort_by, params.sort_order],
+    queryFn: () => superadminService.listM2MClients(params),
     staleTime: CACHE_TIMING.MEDIUM.staleTime,
     gcTime: CACHE_TIMING.MEDIUM.gcTime,
   });
@@ -284,10 +292,10 @@ export function useRemoveUserFromWhitelist() {
   });
 }
 
-export function useWhitelist() {
+export function useWhitelist(params?: { sort_by?: string; sort_order?: string; search?: string; role_id?: number }) {
   return useQuery({
-    queryKey: QUERY_KEYS.superadmin.whitelist,
-    queryFn: () => superadminService.getWhitelist(),
+    queryKey: [...QUERY_KEYS.superadmin.whitelist, params],
+    queryFn: () => superadminService.getWhitelist(params),
     staleTime: CACHE_TIMING.MEDIUM.staleTime,
     gcTime: CACHE_TIMING.MEDIUM.gcTime,
   });
