@@ -21,11 +21,24 @@ import type {
   WhitelistEntry,
 } from "../types";
 
+export interface M2MQueryParams {
+  includeRevoked?: boolean;
+  sort_by?: string;
+  sort_order?: string;
+}
+
+export interface WhitelistQueryParams {
+  sort_by?: string;
+  sort_order?: string;
+  search?: string;
+  role_id?: number;
+}
+
 /**
  * Get all M2M clients
  */
 export const GetM2MClients = async (
-  includeRevoked = false,
+  params: M2MQueryParams = {},
   config?: AxiosConfigWithMeta,
 ): Promise<M2MClient[]> => {
   try {
@@ -33,7 +46,11 @@ export const GetM2MClients = async (
       API_ROUTES.superadmin.m2mClients.list,
       {
         ...config,
-        params: { include_revoked: includeRevoked },
+        params: { 
+          include_revoked: params.includeRevoked ?? false,
+          sort_by: params.sort_by,
+          sort_order: params.sort_order
+        },
       },
     );
     return data;
@@ -457,12 +474,16 @@ export const PostRemoveUserFromWhitelist = async (
  * Get all whitelisted users
  */
 export const GetWhitelist = async (
+  params?: WhitelistQueryParams,
   config?: AxiosConfigWithMeta,
 ): Promise<WhitelistEntry[]> => {
   try {
     const { data } = await apiClient.get<WhitelistEntry[]>(
       API_ROUTES.superadmin.users.whitelist,
-      config,
+      {
+        ...config,
+        params,
+      },
     );
     return data;
   } catch (error) {
