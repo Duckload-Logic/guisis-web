@@ -32,6 +32,7 @@ import CreateAppointment from "@/pages/student/appointments/CreateAppointment";
 import Profile from "@/pages/shared/Profile";
 import Callback from "@/pages/auth/Callback";
 import NotificationsPage from "@/pages/shared/Notifications";
+import SupportManagement from "@/pages/shared/SupportManagement";
 import About from "@/pages/shared/About";
 import Contact from "@/pages/shared/Contact";
 import Login from "@/pages/auth/Login";
@@ -244,6 +245,10 @@ export const routes: RouteObject[] = [
         element: <NotificationsPage />,
       },
       {
+        path: "support",
+        element: <SupportManagement />,
+      },
+      {
         path: "academic-settings",
         element: <AcademicSettings />,
       },
@@ -270,6 +275,7 @@ export const routes: RouteObject[] = [
       { path: ":logType/:id", element: <LogDetails /> },
       { path: "profile", element: <Profile /> },
       { path: "notifications", element: <NotificationsPage /> },
+      { path: "support", element: <SupportManagement /> },
     ],
   },
 
