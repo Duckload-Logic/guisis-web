@@ -155,6 +155,33 @@ export const EducationSection = forwardRef<
       }
     }
 
+    // Re-validate the entire school slot to properly track empty/optional states
+    const match = fieldPath.match(/^education\.schools\.(\d+)\./);
+    if (match) {
+      const idx = parseInt(match[1], 10);
+      const schoolFields = [
+        "schoolName",
+        "schoolAddress",
+        "schoolType",
+        "yearStarted",
+        "yearCompleted",
+        "awards",
+      ];
+      schoolFields.forEach((field) => {
+        const path = `education.schools.${idx}.${field}`;
+        const val = updatedEducation?.schools?.[idx]?.[field];
+        const rules = educationValidationSchema[path];
+        if (rules) {
+          const err = validateField(val, rules, { education: updatedEducation });
+          if (err) {
+            newErrors[path] = err;
+          } else {
+            delete newErrors[path];
+          }
+        }
+      });
+    }
+
     // Re-validate all years to handle cross-field / cross-level changes
     const isYearField =
       fieldPath.endsWith(".yearStarted") ||
@@ -219,6 +246,11 @@ export const EducationSection = forwardRef<
       "yearCompleted",
     ];
 
+    const hasData = [
+      ...requiredFields,
+      "awards",
+    ].some((field) => !!school[field]?.toString().trim());
+
     const filledCount = requiredFields.filter(
       (field) => !!school[field]?.toString().trim(),
     ).length;
@@ -228,8 +260,14 @@ export const EducationSection = forwardRef<
       path.startsWith(`education.schools.${idx}.`),
     );
 
-    if (filledCount === 0)
+    const isRequiredSlot = idx === 1 || idx === 2; // Junior & Senior High
+
+    if (!hasData) {
+      if (isRequiredSlot) {
+        return { color: "bg-amber-500", text: "Incomplete", icon: AlertCircle };
+      }
       return { color: "bg-muted", text: "Empty", icon: null };
+    }
 
     // Incomplete if not all fields filled OR there's a validation error anywhere in the slot
     if (filledCount < requiredFields.length || hasError)
