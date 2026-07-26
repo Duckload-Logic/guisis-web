@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AudioLines, Ear, MousePointer2, X } from "lucide-react";
+import { AudioLines, Ear, MousePointer2, X, ChevronDown } from "lucide-react";
 
 import { useUI, useAuth } from "@/context";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -213,7 +213,7 @@ export const SpeechControl: React.FC = () => {
         )}
       >
         {readerActive ? (
-          <Ear
+          <ChevronDown
             className="h-6 w-6 shrink-0 xl:h-7 xl:w-7"
             strokeWidth={2.5}
             aria-hidden="true"
