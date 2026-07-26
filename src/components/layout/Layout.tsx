@@ -322,7 +322,7 @@ export default function Layout({
                 className={cn(
                   "relative z-10 flex h-full min-w-0 max-w-full flex-col",
                   "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  "pb-24 md:pb-12",
+                  isLoggedIn ? "pb-24 md:pb-12" : "pb-0",
                 )}
               >
                 <main
