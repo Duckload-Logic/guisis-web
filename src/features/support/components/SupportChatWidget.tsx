@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   MessageSquare,
   Send,
@@ -16,7 +17,6 @@ import { useAuth } from "@/context";
 import { FormInput } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -55,13 +55,28 @@ export function SupportChatWidget() {
   const isStaff = isAdmin || isSuperAdmin || isDeveloper;
   const isMobile = useIsMobile();
 
+  useEffect(() => {
+    if (!isMobile || !isOpen || typeof document === "undefined") return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+    };
+  }, [isMobile, isOpen]);
+
   const renderChatContent = () => {
     return (
-      <div className="flex h-full flex-col">
+      <div className="flex h-full min-h-0 flex-col">
         {/* Header */}
         <div
           className={cn(
-            "flex items-center justify-between bg-primary px-4 py-3",
+            "flex shrink-0 items-center justify-between bg-primary px-4 py-3",
             "text-primary-foreground",
           )}
         >
@@ -132,7 +147,7 @@ export function SupportChatWidget() {
         </div>
 
         {/* Body */}
-        <div className="scrollbar-thin flex-1 overflow-y-auto p-4">
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
           {viewMode === "history" ? (
             isLoadingHistory ? (
               <div className="flex h-full items-center justify-center">
@@ -342,7 +357,7 @@ export function SupportChatWidget() {
         {viewMode === "chat" && ticketId && (
           <form
             onSubmit={handleSendMessage}
-            className="border-t border-glass-border p-3 space-y-2"
+            className="shrink-0 space-y-2 border-t border-glass-border p-3"
           >
             <div className="flex items-start gap-2">
               <FormInput
@@ -351,7 +366,7 @@ export function SupportChatWidget() {
                 onChange={setMessage}
                 placeholder="Type your reply..."
                 noSpecialCharacters={false}
-                className="flex-1"
+                className="min-w-0 flex-1"
                 error={
                   message.trim().split(/\s+/).filter(Boolean).length > 100
                     ? "Message cannot exceed 100 words"
@@ -391,7 +406,7 @@ export function SupportChatWidget() {
         {viewMode === "history-detail" && (
           <div
             className={cn(
-              "border-t border-glass-border bg-muted/20 p-3",
+              "shrink-0 border-t border-glass-border bg-muted/20 p-3",
               "text-center text-xs text-muted-foreground",
             )}
           >
@@ -534,23 +549,41 @@ export function SupportChatWidget() {
         )}
       </div>
 
-      {/* Mobile Drawer Chat Window */}
-      {isMobile && (
-        <Drawer
-          open={isOpen}
-          onOpenChange={setIsOpen}
-          handleOnly
-          fixed
-          autoFocus={false}
-        >
-          <DrawerContent
-            className="h-[85dvh] max-h-[85dvh] overflow-hidden"
-            scrollClassName="overflow-hidden flex flex-col h-full p-0"
+      {/* Mobile, iPad, and tablet chat window */}
+      {isMobile &&
+        isOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className={cn(
+              "fixed inset-0 z-[100] flex items-end justify-center",
+              "bg-black/75 sm:p-4",
+            )}
+            role="presentation"
           >
-            {renderChatContent()}
-          </DrawerContent>
-        </Drawer>
-      )}
+            <button
+              type="button"
+              className="absolute inset-0 cursor-default"
+              onClick={handleClose}
+              aria-label="Close support chat"
+            />
+
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="GuiSIS Support Chat"
+              className={cn(
+                "relative z-10 flex h-[100dvh] min-h-0 w-full flex-col",
+                "overflow-hidden border border-glass-border bg-background",
+                "shadow-2xl sm:h-[85dvh] sm:max-h-[720px] sm:max-w-[640px]",
+                "sm:rounded-xl",
+              )}
+            >
+              {renderChatContent()}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
