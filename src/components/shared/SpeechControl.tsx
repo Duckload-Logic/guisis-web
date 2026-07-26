@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { AudioLines, Ear, MousePointer2, X } from "lucide-react";
 
-import { useUI } from "@/context";
+import { useUI, useAuth } from "@/context";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cn } from "@/lib/utils";
 
 export const SpeechControl: React.FC = () => {
   const isMobile = useIsMobile();
+  const {
+    isStudent,
+    isAdmin,
+    isSuperAdmin,
+    isDeveloper,
+  } = useAuth();
   const { voices, speechRate, speechVoice } = useUI();
   const { speak, stop } = useSpeechSynthesis(voices);
   const [isVisible, setIsVisible] = useState(false);
@@ -40,7 +46,7 @@ export const SpeechControl: React.FC = () => {
     localStorage.setItem("speech_tip_viewed_v2", "true");
   };
 
-  const handleToggle = () => {
+  const handleToggle = React.useCallback(() => {
     dismissTip();
 
     const nextState = !readerActive;
@@ -52,7 +58,7 @@ export const SpeechControl: React.FC = () => {
         el.classList.remove("reader-highlight");
       });
     }
-  };
+  }, [readerActive, stop]);
 
   useEffect(() => {
     if (!readerActive) return;
@@ -117,9 +123,23 @@ export const SpeechControl: React.FC = () => {
     };
   }, [readerActive, speak, speechRate, speechVoice, stop, voices]);
 
+  useEffect(() => {
+    const handleExternalToggle = () => {
+      handleToggle();
+    };
+    window.addEventListener("toggle-speech-reader", handleExternalToggle);
+    return () => {
+      window.removeEventListener(
+        "toggle-speech-reader",
+        handleExternalToggle
+      );
+    };
+  }, [readerActive, handleToggle]);
+
   if (!isVisible) return null;
 
   return (
+    <>
     <div
       className={cn(
         "speech-control-ui pointer-events-none fixed z-[60] flex flex-col items-end gap-3",
@@ -228,10 +248,30 @@ export const SpeechControl: React.FC = () => {
           />
         )}
       </button>
-
+    </div>
       <span className="sr-only" aria-live="polite">
         {readerActive ? "Live reader is active" : "Live reader is inactive"}
       </span>
-    </div>
+
+      {readerActive && (
+        <div
+          className="speech-control-ui select-none fixed bottom-4 left-4
+            z-[70] flex items-center gap-2 rounded-xl bg-primary px-3 py-2
+            text-xs font-semibold text-primary-foreground shadow-lg border
+            border-white/10 animate-in slide-in-from-left-4 fade-in
+            duration-300 sm:bottom-5 sm:left-5 xl:bottom-8 xl:left-8"
+        >
+          <AudioLines className="h-4 w-4 animate-pulse" />
+          <span>Live Reader Active</span>
+          <button
+            onClick={handleToggle}
+            className="ml-2 rounded-lg p-1 hover:bg-white/15 transition-colors"
+            aria-label="Stop Reader"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+    </>
   );
 };

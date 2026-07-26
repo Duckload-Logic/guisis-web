@@ -26,7 +26,7 @@ export default function Landing() {
   const cardStyle = cn(
     "rounded-xl border p-6 shadow-md border-border bg-card",
     "text-card-foreground transition-all duration-300",
-    "hover:-translate-y-1 hover:border-primary/40",
+    "hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/40",
   );
 
   const featureCards = [
@@ -71,7 +71,8 @@ export default function Landing() {
     {
       title: "Email",
       icon: Mail,
-      description: "Tech Support: ducklogic7116@gmail.com",
+      description:
+        "Guidance Office: \n" + "Tech Support: supportguisis@gmail.com",
     },
     {
       title: "Campus Office",
@@ -114,8 +115,8 @@ export default function Landing() {
         <section
           className={cn(
             "relative overflow-hidden rounded-xl border border-glass-border",
-            "bg-glass-bg text-foreground shadow-md",
-            "bg-grid",
+            "bg-glass-bg text-foreground shadow-md bg-grid",
+            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
           )}
         >
           {/* Ambient Glows */}
@@ -134,14 +135,20 @@ export default function Landing() {
             />
           </div>
 
-          <div className="relative mx-auto max-w-7xl px-4 py-12 sm:py-20 lg:py-24">
-            <div className="mx-auto max-w-3xl space-y-6 text-center">
+          <div
+            className={cn(
+              "relative mx-auto max-w-6xl px-4 py-8",
+              "sm:py-12 lg:py-16",
+            )}
+          >
+            <div className="mx-auto max-w-2xl space-y-6 text-center">
               <div
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full border",
                   "border-border bg-background/50 px-4 py-1.5 text-xs",
                   "font-semibold uppercase tracking-[0.2em] sm:tracking-[0.35em]",
                   "text-muted-foreground shadow-sm backdrop-blur",
+                  "animate-fade-in-down",
                 )}
               >
                 PUP-Taguig GuiSIS
@@ -150,8 +157,9 @@ export default function Landing() {
                 <p
                   className={cn(
                     "text-xs font-bold uppercase tracking-[0.15em] sm:text-sm",
-                    "text-secondary sm:tracking-[0.25em]",
+                    "text-secondary sm:tracking-[0.25em] animate-fade-in-up",
                   )}
+                  style={{ animationDelay: "150ms", animationFillMode: "both" }}
                 >
                   Polytechnic University of the Philippines – Taguig
                 </p>
@@ -159,7 +167,9 @@ export default function Landing() {
                   className={cn(
                     "text-2xl font-extrabold sm:text-4xl lg:text-5xl",
                     "leading-tight tracking-tight text-foreground",
+                    "animate-fade-in-up",
                   )}
+                  style={{ animationDelay: "300ms", animationFillMode: "both" }}
                 >
                   Your guidance journey starts with a{" "}
                   <span className="text-gradient">secure, modern platform</span>
@@ -168,15 +178,23 @@ export default function Landing() {
                 <p
                   className={cn(
                     "text-sm leading-relaxed sm:text-base md:text-lg",
-                    "mx-auto max-w-2xl text-muted-foreground",
+                    "mx-auto max-w-xl text-muted-foreground",
+                    "animate-fade-in-up",
                   )}
+                  style={{ animationDelay: "450ms", animationFillMode: "both" }}
                 >
                   Request counseling appointments, admission slips, and guidance
                   services through the PUP Guidance Services Information System.
                 </p>
               </div>
 
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center gap-4",
+                  "sm:flex-row animate-fade-in-up",
+                )}
+                style={{ animationDelay: "600ms", animationFillMode: "both" }}
+              >
                 {isProd ? (
                   <Button onClick={() => window.open(loginUrl, "_self")}>
                     Proceed to Login
@@ -204,9 +222,17 @@ export default function Landing() {
         {/* Features Section */}
         <section
           id="features"
-          className="relative overflow-hidden rounded-xl text-foreground"
+          className={cn(
+            "relative overflow-hidden text-foreground",
+            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
+          )}
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              "mx-auto max-w-6xl px-4 py-8",
+              "sm:px-6 lg:px-8",
+            )}
+          >
             <div className="mx-auto max-w-2xl text-center">
               <p
                 className={cn(
@@ -249,11 +275,21 @@ export default function Landing() {
         {/* About Section */}
         <section
           id="about"
-          className="relative scroll-mt-24 overflow-hidden rounded-xl text-foreground"
+          className={cn(
+            "relative scroll-mt-24 overflow-hidden rounded-xl",
+            "border border-glass-border bg-glass-bg bg-grid shadow-md",
+            "text-foreground min-h-[calc(100vh-13rem)] flex flex-col",
+            "justify-center",
+          )}
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              "mx-auto max-w-6xl px-4 py-8",
+              "sm:px-6 lg:px-8",
+            )}
+          >
             <div className="grid items-center gap-10 lg:grid-cols-2">
-              <div className="space-y-4">
+              <div className="space-y-4 max-w-lg">
                 <p
                   className={cn(
                     "text-xs font-bold uppercase sm:text-sm",
@@ -276,7 +312,9 @@ export default function Landing() {
               <div
                 className={cn(
                   "space-y-6 rounded-2xl border border-border bg-card",
-                  "p-6 shadow-md sm:p-8",
+                  "p-6 shadow-md sm:p-8 max-w-lg lg:ml-auto w-full",
+                  "transition-all duration-300 hover:-translate-y-1",
+                  "hover:scale-[1.02] hover:border-primary/40",
                 )}
               >
                 <div className="space-y-2">
@@ -305,9 +343,17 @@ export default function Landing() {
         {/* FAQs Section */}
         <section
           id="faq"
-          className="relative scroll-mt-24 overflow-hidden rounded-xl text-foreground"
+          className={cn(
+            "relative scroll-mt-24 overflow-hidden text-foreground",
+            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
+          )}
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              "mx-auto max-w-6xl px-4 py-8",
+              "sm:px-6 lg:px-8",
+            )}
+          >
             <div className="mx-auto max-w-2xl text-center">
               <p
                 className={cn(
@@ -329,8 +375,8 @@ export default function Landing() {
                   key={index}
                   className={cn(
                     "rounded-xl border border-border bg-card p-5 sm:p-6",
-                    "shadow-sm transition-all duration-200",
-                    "hover:border-primary/20",
+                    "shadow-sm transition-all duration-300",
+                    "hover:scale-[1.01] hover:border-primary/30 hover:shadow-md",
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -365,10 +411,17 @@ export default function Landing() {
           id="contact"
           className={cn(
             "relative scroll-mt-24 overflow-hidden rounded-xl",
-            "text-foreground",
+            "border border-glass-border bg-glass-bg bg-grid shadow-md",
+            "text-foreground min-h-[calc(100vh-13rem)] flex flex-col",
+            "justify-center",
           )}
         >
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              "mx-auto max-w-6xl px-4 py-8",
+              "sm:px-6 lg:px-8",
+            )}
+          >
             <div className="mx-auto max-w-2xl text-center">
               <p
                 className={cn(
@@ -398,7 +451,12 @@ export default function Landing() {
                       </div>
                       <h3 className="text-lg font-semibold">{item.title}</h3>
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    <p
+                      className={cn(
+                        "mt-2 text-sm leading-relaxed",
+                        "whitespace-pre-line text-muted-foreground",
+                      )}
+                    >
                       {item.description}
                     </p>
                   </div>
