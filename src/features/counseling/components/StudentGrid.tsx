@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
-import { IIRProfileView } from "@/features/iir/types";
+import { IIRProfileView, ORDER_BY_OPTIONS } from "@/features/iir/types";
 import { ProfileFemale, ProfileMale } from "@/assets/icons";
 import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
@@ -43,7 +43,7 @@ interface StudentGridProps {
 }
 
 type StudentSortOrder = "asc" | "desc";
-type StudentSortKey = "studentName" | "studentNumber" | "email";
+type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 
 function getStudentName(student: IIRProfileView) {
   return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
@@ -251,9 +251,10 @@ export default function StudentGrid({
 
   const sortOptions = useMemo(
     () => [
-      { id: "studentName", displayName: "Student Name" },
-      { id: "studentNumber", displayName: "Student Number" },
-      { id: "email", displayName: "Email Address" },
+      { id: "firstName", displayName: "Student Name" },
+      { id: "studentId", displayName: "Student Number" },
+      { id: "programId", displayName: "Program" },
+      { id: "yearLevel", displayName: "Year Level" },
     ],
     [],
   );
@@ -426,7 +427,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start pl-2">
-          {renderSortableHeader("Student Name", "studentName")}
+          {renderSortableHeader("Student Name", "firstName")}
         </div>
       ),
       className: "w-[25%] px-2 py-3",
@@ -456,7 +457,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          {renderSortableHeader("Student Number", "studentNumber")}
+          {renderSortableHeader("Student Number", "studentId")}
         </div>
       ),
       className: "w-[15%] px-2 py-3",
@@ -469,7 +470,9 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          {renderSortableHeader("Email Address", "email")}
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+            Email Address
+          </span>
         </div>
       ),
       className: "w-[22%] px-2 py-3",

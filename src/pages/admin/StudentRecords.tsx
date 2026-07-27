@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/shared";
 import StudentGrid from "@/features/counseling/components/StudentGrid";
 import { useIIRPagination } from "@/features/iir/hooks";
+import { ORDER_BY_OPTIONS } from "@/features/iir/types";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -97,7 +98,7 @@ export default function StudentRecords() {
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
   
-  const [selectedSort, setSelectedSort] = useState<"studentName" | "studentNumber" | "email">("studentName");
+  const [selectedSort, setSelectedSort] = useState<keyof typeof ORDER_BY_OPTIONS>("firstName");
   const [selectedOrder, setSelectedOrder] = useState<"asc" | "desc">("asc");
 
   const debouncedSearch = useDebounce(searchTerm, 500);

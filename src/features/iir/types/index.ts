@@ -318,7 +318,6 @@ export const ORDER_BY_OPTIONS: { [key: string]: string } = {
   lastName: "last_name",
   studentId: "student_id",
   programId: "program_id",
-  iirId: "iir_id",
   yearLevel: "year_level",
   createdAt: "created_at",
   updatedAt: "updated_at",
