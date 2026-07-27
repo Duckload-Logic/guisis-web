@@ -330,7 +330,7 @@ export type QueryParam = {
   programId?: number;
   genderId?: number;
   orderBy?: string;
-  order?: "asc" | "desc";
+  sortOrder?: "asc" | "desc";
   yearLevel?: number;
   statusId?: number;
 };

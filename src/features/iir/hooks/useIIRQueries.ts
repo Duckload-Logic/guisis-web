@@ -86,7 +86,7 @@ export function useIIRPagination(params: QueryParam) {
       params.statusId,
       params.page,
       params.orderBy,
-      params.order,
+      params.sortOrder,
     ],
     queryFn: () =>
       GetStudents({

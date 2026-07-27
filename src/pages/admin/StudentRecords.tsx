@@ -144,7 +144,7 @@ export default function StudentRecords() {
     yearLevel:
       selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
     orderBy: ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
-    order: selectedOrder,
+    sortOrder: selectedOrder,
   });
 
   const allStudents = data?.students || [];
