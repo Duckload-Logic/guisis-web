@@ -258,7 +258,7 @@ export default function StudentGrid({
 
   const sortOptions = useMemo(
     () => [
-      { id: "firstName", displayName: "Student Name" },
+      { id: "lastName", displayName: "Student Name" },
       { id: "studentId", displayName: "Student Number" },
       { id: "programId", displayName: "Program" },
       { id: "yearLevel", displayName: "Year Level" },
@@ -434,7 +434,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start pl-2">
-          {renderSortableHeader("Student Name", "firstName")}
+          {renderSortableHeader("Student Name", "lastName")}
         </div>
       ),
       className: "w-[25%] px-2 py-3",
