@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type MouseEvent } from "react";
+import { useMemo, useRef, useState, useEffect, type MouseEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -27,6 +27,19 @@ interface StudentGridProps {
   viewMode: "tile" | "list";
   onViewModeChange: (mode: "tile" | "list") => void;
   yearLevels: { id: number; name: string }[];
+  
+  searchTerm: string;
+  setSearchTerm: (val: string) => void;
+  selectedStatusId: string;
+  setSelectedStatusId: (val: string) => void;
+  selectedProgramId: string;
+  setSelectedProgramId: (val: string) => void;
+  selectedYearLevelId: string;
+  setSelectedYearLevelId: (val: string) => void;
+  selectedSort: StudentSortKey;
+  setSelectedSort: (val: StudentSortKey) => void;
+  selectedOrder: StudentSortOrder;
+  setSelectedOrder: (val: StudentSortOrder) => void;
 }
 
 type StudentSortOrder = "asc" | "desc";
@@ -85,65 +98,155 @@ export default function StudentGrid({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // --- Dynamic Matching Helpers for Cascading Filters ---
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const checkSearchMatch = (student: IIRProfileView) => {
+    if (!normalizedSearch) return true;
+    return [
+      getStudentName(student),
+      student.studentNumber,
+      student.email,
+      student.program?.code,
+      student.status?.name,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(normalizedSearch));
+  };
+
+  const checkStatusMatch = (student: IIRProfileView) =>
+    selectedStatusId === "all" || String(student.status?.id || "unknown") === selectedStatusId;
+
+  const checkProgramMatch = (student: IIRProfileView) =>
+    selectedProgramId === "all" || String(student.program?.id || "unknown") === selectedProgramId;
+
+  const checkYearMatch = (student: IIRProfileView) =>
+    selectedYearLevelId === "all" || String(student.yearLevel || "unknown") === selectedYearLevelId;
+
+  // --- Context-Aware Option Generators ---
+  
   const statusOptions = useMemo(() => {
     const statusMap = new Map<string, { id: string; name: string; count: number }>();
+    
+    // 1. Register all existing statuses so options don't vanish entirely
     students.forEach((student) => {
       const id = String(student.status?.id || "unknown");
-      const name = student.status?.name || "Unknown";
-      const existing = statusMap.get(id);
-      statusMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
+      if (!statusMap.has(id)) {
+        statusMap.set(id, { id, name: student.status?.name || "Unknown", count: 0 });
+      }
     });
 
+    // 2. Count based only on OTHER active filters
+    students.forEach((student) => {
+      if (checkProgramMatch(student) && checkYearMatch(student) && checkSearchMatch(student)) {
+        const id = String(student.status?.id || "unknown");
+        const existing = statusMap.get(id);
+        if (existing) existing.count += 1;
+      }
+    });
+
+    const totalMatching = Array.from(statusMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+
     return [
-      { id: "all", name: "All Statuses", count: students.length },
+      { id: "all", name: "All Statuses", count: totalMatching },
       ...Array.from(statusMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
     ].map((status) => ({
       ...status,
       displayName: status.id === "all" ? status.name : `${status.name} (${status.count})`,
       disabled: status.id !== "all" && status.count === 0,
     }));
-  }, [students]);
+  }, [students, selectedProgramId, selectedYearLevelId, normalizedSearch]);
 
   const programOptions = useMemo(() => {
     const programMap = new Map<string, { id: string; name: string; count: number }>();
+    
     students.forEach((student) => {
       if (!student.program) return;
       const id = String(student.program.id);
-      const name = student.program.code || student.program.name;
-      const existing = programMap.get(id);
-      programMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
+      if (!programMap.has(id)) {
+        programMap.set(id, { id, name: student.program.code || student.program.name, count: 0 });
+      }
     });
 
+    students.forEach((student) => {
+      if (checkStatusMatch(student) && checkYearMatch(student) && checkSearchMatch(student)) {
+        if (!student.program) return;
+        const id = String(student.program.id);
+        const existing = programMap.get(id);
+        if (existing) existing.count += 1;
+      }
+    });
+
+    const totalMatching = Array.from(programMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+
     return [
-      { id: "all", name: "All Programs", count: students.length },
+      { id: "all", name: "All Programs", count: totalMatching },
       ...Array.from(programMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
     ].map((program) => ({
       ...program,
       displayName: program.id === "all" ? program.name : `${program.name} (${program.count})`,
       disabled: program.id !== "all" && program.count === 0,
     }));
-  }, [students]);
+  }, [students, selectedStatusId, selectedYearLevelId, normalizedSearch]);
 
   const yearLevelOptions = useMemo(() => {
     const yearMap = new Map<string, { id: string; name: string; count: number }>();
+    
     students.forEach((student) => {
       if (!student.yearLevel) return;
       const id = String(student.yearLevel);
-      const yrData = yearLevels.find((level) => level.id === student.yearLevel);
-      const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
-      const existing = yearMap.get(id);
-      yearMap.set(id, { id, name, count: existing ? existing.count + 1 : 1 });
+      if (!yearMap.has(id)) {
+        const yrData = yearLevels.find((level) => level.id === student.yearLevel);
+        const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
+        yearMap.set(id, { id, name, count: 0 });
+      }
     });
 
+    students.forEach((student) => {
+      if (checkStatusMatch(student) && checkProgramMatch(student) && checkSearchMatch(student)) {
+        if (!student.yearLevel) return;
+        const id = String(student.yearLevel);
+        const existing = yearMap.get(id);
+        if (existing) existing.count += 1;
+      }
+    });
+
+    const totalMatching = Array.from(yearMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+
     return [
-      { id: "all", name: "All Year Levels", count: students.length },
+      { id: "all", name: "All Year Levels", count: totalMatching },
       ...Array.from(yearMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
     ].map((year) => ({
       ...year,
       displayName: year.id === "all" ? year.name : `${year.name} (${year.count})`,
       disabled: year.id !== "all" && year.count === 0,
     }));
-  }, [students, yearLevels]);
+  }, [students, yearLevels, selectedStatusId, selectedProgramId, normalizedSearch]);
+
+  // --- Auto-Reset Impossible Combinations ---
+  // If user switches a filter that turns their other selection into an impossible combination (0 results),
+  // this will automatically clear the broken filter so the table doesn't incorrectly show empty.
+  
+  useEffect(() => {
+    if (selectedStatusId !== "all") {
+      const opt = statusOptions.find(o => o.id === selectedStatusId);
+      if (opt && opt.count === 0) setSelectedStatusId("all");
+    }
+  }, [statusOptions, selectedStatusId]);
+
+  useEffect(() => {
+    if (selectedProgramId !== "all") {
+      const opt = programOptions.find(o => o.id === selectedProgramId);
+      if (opt && opt.count === 0) setSelectedProgramId("all");
+    }
+  }, [programOptions, selectedProgramId]);
+
+  useEffect(() => {
+    if (selectedYearLevelId !== "all") {
+      const opt = yearLevelOptions.find(o => o.id === selectedYearLevelId);
+      if (opt && opt.count === 0) setSelectedYearLevelId("all");
+    }
+  }, [yearLevelOptions, selectedYearLevelId]);
 
   const sortOptions = useMemo(
     () => [
@@ -163,30 +266,13 @@ export default function StudentGrid({
   );
 
   const filteredStudents = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    return students.filter((student) => {
-      const matchesStatus =
-        selectedStatusId === "all" || String(student.status?.id || "unknown") === selectedStatusId;
-      const matchesProgram =
-        selectedProgramId === "all" || String(student.program?.id || "unknown") === selectedProgramId;
-      const matchesYearLevel =
-        selectedYearLevelId === "all" || String(student.yearLevel || "unknown") === selectedYearLevelId;
-
-      if (!matchesStatus || !matchesProgram || !matchesYearLevel) return false;
-      if (!normalizedSearch) return true;
-
-      return [
-        getStudentName(student),
-        student.studentNumber,
-        student.email,
-        student.program?.code,
-        student.status?.name,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedSearch));
-    });
-  }, [searchTerm, selectedStatusId, selectedProgramId, selectedYearLevelId, students]);
+    return students.filter((student) => 
+      checkStatusMatch(student) && 
+      checkProgramMatch(student) && 
+      checkYearMatch(student) && 
+      checkSearchMatch(student)
+    );
+  }, [students, selectedStatusId, selectedProgramId, selectedYearLevelId, normalizedSearch]);
 
   const sortedVisibleStudents = useMemo(() => {
     return [...filteredStudents].sort((a, b) => {

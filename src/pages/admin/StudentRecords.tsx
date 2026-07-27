@@ -9,6 +9,7 @@ import StudentGrid from "@/features/counseling/components/StudentGrid";
 import { useIIRPagination } from "@/features/iir/hooks";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 function StudentRecordsSkeleton() {
   return (
@@ -91,6 +92,15 @@ export default function StudentRecords() {
     return saved === "tile" ? "tile" : "list";
   });
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
+  const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
+  const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
+  
+  const [selectedSort, setSelectedSort] = useState<"studentName" | "studentNumber" | "email">("studentName");
+  const [selectedOrder, setSelectedOrder] = useState<"asc" | "desc">("asc");
+
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const pageSize = 12;
   const yearLevels = [
@@ -107,9 +117,7 @@ export default function StudentRecords() {
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
-
     window.scrollTo({ top: 0, behavior: "smooth" });
-
     requestAnimationFrame(() => {
       document.querySelector("main")?.parentElement?.scrollTo({
         top: 0,
@@ -118,6 +126,7 @@ export default function StudentRecords() {
     });
   };
 
+  // 2. Feed lifted state into the API hook
   const {
     data,
     isLoading: isStudentsLoading,
@@ -126,18 +135,26 @@ export default function StudentRecords() {
   } = useIIRPagination({
     page,
     pageSize,
+    search: debouncedSearch,
+    programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
+    statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
+    yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+    sort_by: selectedSort,
+    sort_order: selectedOrder,
   });
 
   const allStudents = data?.students || [];
 
   usePageMetadata({
     title: "Student Records",
-    description:
-      "Access and manage student cumulative records and personal information",
+    description: "Access and manage student cumulative records and personal information",
     badgeText: "Admin Management",
     badgeIcon: <Users className="h-4 w-4" />,
     isLoading: false,
   });
+
+  // Helper to reset pagination when a filter changes
+  const handleFilterChange = () => setPage(1);
 
   return (
     <div
@@ -150,8 +167,7 @@ export default function StudentRecords() {
         <Alert variant="destructive" className="rounded-xl shadow-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {(studentsError as Error)?.message ||
-              "Unable to load student records."}
+            {(studentsError as Error)?.message || "Unable to load student records."}
           </AlertDescription>
         </Alert>
       )}
@@ -169,7 +185,7 @@ export default function StudentRecords() {
           >
             <StudentGrid
               students={allStudents}
-              isStudentsLoading={false}
+              isStudentsLoading={isStudentsLoading}
               onViewClick={(student) => {
                 navigate(`/admin/student-records/${student.iirId}`, {
                   state: { student },
@@ -178,6 +194,19 @@ export default function StudentRecords() {
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               yearLevels={yearLevels}
+              
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              selectedStatusId={selectedStatusId}
+              setSelectedStatusId={(val) => { setSelectedStatusId(val); handleFilterChange(); }}
+              selectedProgramId={selectedProgramId}
+              setSelectedProgramId={(val) => { setSelectedProgramId(val); handleFilterChange(); }}
+              selectedYearLevelId={selectedYearLevelId}
+              setSelectedYearLevelId={(val) => { setSelectedYearLevelId(val); handleFilterChange(); }}
+              selectedSort={selectedSort}
+              setSelectedSort={setSelectedSort}
+              selectedOrder={selectedOrder}
+              setSelectedOrder={setSelectedOrder}
             />
 
             <Pagination
