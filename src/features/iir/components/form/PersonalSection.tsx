@@ -56,6 +56,7 @@ import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
 
 import formalImage from "@/assets/images/formal_image.png";
 import notFormalImage from "@/assets/images/notformal_image.png";
+import { useToast } from "@/context";
 
 interface FormErrors {
   [key: string]: string;
@@ -100,6 +101,7 @@ export const PersonalSection = forwardRef<
   const { data: studentRelationshipTypes = [] } = useStudentRelationshipTypes();
   const { data: regions = [] } = useGetRegions();
   const [errors, setErrors] = useState<FormErrors>({});
+  const { triggerToast } = useToast();
 
   // Stable indices for address array
   const PROVINCIAL_IDX = 0;
@@ -519,10 +521,27 @@ export const PersonalSection = forwardRef<
     }
   };
 
-  const handlePhotoUpload = async (file?: File | null) => {
+const handlePhotoUpload = async (file?: File | null) => {
     if (!file) return;
 
     const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
+
+    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; 
+    
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const errorMsg = "File is too large. Maximum size allowed is 5MB.";
+      
+      if (triggerToast) {
+        triggerToast(errorMsg); 
+      }
+      
+      setErrors((prev: FormErrors) => ({
+        ...prev,
+        [fieldPath]: errorMsg,
+      }));
+      
+      return; 
+    }
 
     try {
       const dataUrl = await createTwoByTwoPhotoDataUrl(file);
