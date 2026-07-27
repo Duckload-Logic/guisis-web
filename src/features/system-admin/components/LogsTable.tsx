@@ -171,15 +171,12 @@ const params = useMemo<
   const processedLogs = useMemo(() => {
     let list = [...(data?.logs ?? [])];
 
-const processedLogs = useMemo(() => {
-  let list = [...(data?.logs ?? [])];
+    if (selectedAction !== "all") {
+      list = list.filter((log) => log.action === selectedAction);
+    }
 
-  if (selectedAction !== "all") {
-    list = list.filter((log) => log.action === selectedAction);
-  }
-
-  return list;
-}, [data?.logs, selectedAction]);
+    return list;
+  }, [data?.logs, selectedAction]);
   const totalPages = data?.meta?.totalPages ?? 1;
   const total = data?.meta?.total ?? 0;
   const hasActiveFilters = Boolean(startDate || endDate || selectedAction !== "all");
