@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -59,6 +60,10 @@ function getStudentName(student: IIRProfileView) {
 }
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
+  if (student.profilePicture) {
+    return getProfilePictureUrl(student.profilePicture);
+  }
+
   return getIIRTwoByTwoPhoto({
     iirId: student.iirId,
     userId: student.userId,
