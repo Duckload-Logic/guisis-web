@@ -140,8 +140,8 @@ export default function StudentRecords() {
     programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
     yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    sort_by: selectedSort,
-    sort_order: selectedOrder,
+    orderBy: selectedSort,
+    order: selectedOrder,
   });
 
   const allStudents = data?.students || [];
