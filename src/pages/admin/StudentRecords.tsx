@@ -97,8 +97,9 @@ export default function StudentRecords() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
-  
-  const [selectedSort, setSelectedSort] = useState<keyof typeof ORDER_BY_OPTIONS>("firstName");
+
+  const [selectedSort, setSelectedSort] =
+    useState<keyof typeof ORDER_BY_OPTIONS>("lastName");
   const [selectedOrder, setSelectedOrder] = useState<"asc" | "desc">("asc");
 
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -137,10 +138,12 @@ export default function StudentRecords() {
     page,
     pageSize,
     search: debouncedSearch,
-    programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
+    programId:
+      selectedProgramId === "all" ? undefined : Number(selectedProgramId),
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
-    yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    orderBy: selectedSort,
+    yearLevel:
+      selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+    orderBy: ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
     order: selectedOrder,
   });
 
@@ -148,7 +151,8 @@ export default function StudentRecords() {
 
   usePageMetadata({
     title: "Student Records",
-    description: "Access and manage student cumulative records and personal information",
+    description:
+      "Access and manage student cumulative records and personal information",
     badgeText: "Admin Management",
     badgeIcon: <Users className="h-4 w-4" />,
     isLoading: false,
@@ -165,10 +169,14 @@ export default function StudentRecords() {
       )}
     >
       {isStudentsError && (
-        <Alert variant="destructive" className="rounded-xl shadow-md">
+        <Alert
+          variant="destructive"
+          className="rounded-xl shadow-md"
+        >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {(studentsError as Error)?.message || "Unable to load student records."}
+            {(studentsError as Error)?.message ||
+              "Unable to load student records."}
           </AlertDescription>
         </Alert>
       )}
@@ -195,15 +203,23 @@ export default function StudentRecords() {
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               yearLevels={yearLevels}
-              
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               selectedStatusId={selectedStatusId}
-              setSelectedStatusId={(val) => { setSelectedStatusId(val); handleFilterChange(); }}
+              setSelectedStatusId={(val) => {
+                setSelectedStatusId(val);
+                handleFilterChange();
+              }}
               selectedProgramId={selectedProgramId}
-              setSelectedProgramId={(val) => { setSelectedProgramId(val); handleFilterChange(); }}
+              setSelectedProgramId={(val) => {
+                setSelectedProgramId(val);
+                handleFilterChange();
+              }}
               selectedYearLevelId={selectedYearLevelId}
-              setSelectedYearLevelId={(val) => { setSelectedYearLevelId(val); handleFilterChange(); }}
+              setSelectedYearLevelId={(val) => {
+                setSelectedYearLevelId(val);
+                handleFilterChange();
+              }}
               selectedSort={selectedSort}
               setSelectedSort={setSelectedSort}
               selectedOrder={selectedOrder}

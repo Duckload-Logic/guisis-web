@@ -316,7 +316,7 @@ export interface IIRForm {
 export const ORDER_BY_OPTIONS: { [key: string]: string } = {
   firstName: "first_name",
   lastName: "last_name",
-  studentId: "student_id",
+  studentId: "student_number",
   programId: "program_id",
   yearLevel: "year_level",
   createdAt: "created_at",
@@ -329,7 +329,7 @@ export type QueryParam = {
   search?: string;
   programId?: number;
   genderId?: number;
-  orderBy?: keyof typeof ORDER_BY_OPTIONS;
+  orderBy?: string;
   order?: "asc" | "desc";
   yearLevel?: number;
   statusId?: number;
