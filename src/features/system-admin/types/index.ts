@@ -51,6 +51,8 @@ export interface ListUsersParams {
   role_id?: number;
   search?: string;
   active?: boolean;
+  sort_by?: string;
+  sort_order?: string;
 }
 
 export interface ListUsersResponse {
@@ -125,6 +127,8 @@ export interface SystemLogsParams {
   user_email?: string;
   start_date?: string;
   end_date?: string;
+  sort_by?: string;     // Added for backend sorting
+  sort_order?: string;  // Added for backend sorting
 }
 
 export interface LogStats {

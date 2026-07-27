@@ -81,7 +81,6 @@ function formatLogDate(value?: string) {
 
 const formatAction = (action: string) => capitalizeWords(action.replace(/_/g, " "));
 
-
 export function TraceTracksViewer({ traceId, currentLogId }: { traceId: string; currentLogId: number }) {
   const { data: tracks, isLoading, error } = useTraceTracks(traceId);
 
@@ -132,36 +131,55 @@ export default function LogsTable({
   const [selectedSort, setSelectedSort] = useState<string>("timestamp");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
 
-  const params = useMemo<SystemLogsParams>(() => {
-    const p: SystemLogsParams = { page: currentPage, page_size: PAGE_SIZE };
-    if (selectedAction !== "all") p.action = selectedAction;
-    if (startDate) p.start_date = startDate;
-    if (endDate) p.end_date = endDate;
-    return p;
-  }, [currentPage, selectedAction, startDate, endDate]);
+const params = useMemo<
+  SystemLogsParams & { sort_by?: string; sort_order?: string }
+>(() => {
+  const p: SystemLogsParams & {
+    sort_by?: string;
+    sort_order?: string;
+  } = {
+    page: currentPage,
+    page_size: PAGE_SIZE,
+    sort_by: selectedSort,
+    sort_order: selectedOrder,
+  };
+
+  if (selectedAction !== "all") {
+    p.action = selectedAction;
+  }
+
+  if (startDate) {
+    p.start_date = startDate;
+  }
+
+  if (endDate) {
+    p.end_date = endDate;
+  }
+
+  return p;
+}, [
+  currentPage,
+  selectedAction,
+  startDate,
+  endDate,
+  selectedSort,
+  selectedOrder,
+]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
 
   const processedLogs = useMemo(() => {
     let list = [...(data?.logs ?? [])];
 
-    list.sort((a, b) => {
-      let res = 0;
-      if (selectedSort === "timestamp") {
-        res = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      } else if (selectedSort === "actor") {
-        res = (a.userEmail || "").localeCompare(b.userEmail || "");
-      } else if (selectedSort === "message") {
-        res = (a.message || "").localeCompare(b.message || "");
-      } else if (selectedSort === "ipAddress") {
-        res = (a.ipAddress || "").localeCompare(b.ipAddress || "");
-      }
-      return selectedOrder === "asc" ? res : -res;
-    });
+const processedLogs = useMemo(() => {
+  let list = [...(data?.logs ?? [])];
 
-    return list;
-  }, [data?.logs, selectedSort, selectedOrder]);
+  if (selectedAction !== "all") {
+    list = list.filter((log) => log.action === selectedAction);
+  }
 
+  return list;
+}, [data?.logs, selectedAction]);
   const totalPages = data?.meta?.totalPages ?? 1;
   const total = data?.meta?.total ?? 0;
   const hasActiveFilters = Boolean(startDate || endDate || selectedAction !== "all");
