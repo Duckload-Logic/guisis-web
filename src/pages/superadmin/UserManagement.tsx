@@ -84,6 +84,8 @@ export default function UserManagement() {
     page_size: 10,
     search: debounceSearch,
     role_id: roleFilter,
+    sort_by: selectedSort,
+    sort_order: selectedOrder,
   });
 
   const { data: whitelistData, isLoading: isWhitelistLoading } = useWhitelist();
@@ -102,23 +104,8 @@ export default function UserManagement() {
     if (statusFilter === "active") result = result.filter(u => u.isActive);
     if (statusFilter === "blocked") result = result.filter(u => !u.isActive);
 
-    result.sort((a, b) => {
-      if (selectedSort === "userName") {
-        const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
-        const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
-        const res = nameA.localeCompare(nameB);
-        return selectedOrder === "asc" ? res : -res;
-      }
-      if (selectedSort === "joinedDate") {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
-      }
-      return 0;
-    });
-
     return result;
-  }, [data?.users, statusFilter, selectedSort, selectedOrder]);
+  }, [data?.users, statusFilter]);
 
   const filteredWhitelist = useMemo(() => {
     return (whitelistData || []).filter((entry) => {
@@ -210,7 +197,6 @@ export default function UserManagement() {
       year: "numeric",
     });
   };
-
 
   const getInitials = (user: UserAccount) => {
     const first = user.firstName?.trim()?.[0] || "";

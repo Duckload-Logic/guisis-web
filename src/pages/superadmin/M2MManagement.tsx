@@ -12,6 +12,8 @@ import {
   Ban,
   RefreshCw,
   Fingerprint,
+  ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,9 +50,15 @@ import {
 import type { M2MClient } from "@/features/system-admin/types";
 import { Checkbox, FormInput } from "@/components/form";
 import { formatDate } from "@/utils/dateTime";
+import { cn } from "@/lib/utils";
+
+type SortOrder = "asc" | "desc";
 
 export default function M2MManagement() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
+  const [selectedSort, setSelectedSort] = useState<string>("createdAt");
+  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<M2MClient | null>(null);
   const [rotateTarget, setRotateTarget] = useState<M2MClient | null>(null);
@@ -61,7 +69,12 @@ export default function M2MManagement() {
   const [copied, setCopied] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
 
-  const { data: clients = [], isLoading } = useM2MClients(includeRevoked);
+  const { data: clients = [], isLoading } = useM2MClients({
+    includeRevoked,
+    sort_by: selectedSort,
+    sort_order: selectedOrder,
+  });
+  
   const revokeMutation = useRevokeM2MClient();
   const rotateMutation = useRotateM2MSecret();
   const verifyMutation = useVerifyM2MClient();
@@ -142,6 +155,32 @@ export default function M2MManagement() {
       "Manage Machine-to-Machine clients for integration, " +
       "automation, and infrastructure services.",
   });
+
+  const renderSortableHeader = (label: string, sortKey: string) => {
+    const isActive = selectedSort === sortKey;
+    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedSort(sortKey);
+          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+        }}
+        className={cn(
+          "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
+          "text-xs font-semibold uppercase tracking-[0.14em] transition-colors",
+          isActive ? "text-[#800000]" : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        {label}
+        <Icon 
+          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
+          strokeWidth={isActive ? 2.5 : 2} 
+        />
+      </button>
+    );
+  };
 
   return (
     <>
@@ -230,10 +269,10 @@ export default function M2MManagement() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1200px] text-sm">
-<thead>
+                <thead>
                   <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
-                    <th className="w-[25%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Client
+                    <th className="w-[25%] px-5 py-4">
+                      {renderSortableHeader("Client", "clientName")}
                     </th>
                     <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Client ID
@@ -247,8 +286,8 @@ export default function M2MManagement() {
                     <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Last Activity
                     </th>
-                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Created
+                    <th className="w-[10%] px-5 py-4">
+                      {renderSortableHeader("Created", "createdAt")}
                     </th>
                     <th className="w-[10%] whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Action
