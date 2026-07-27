@@ -87,14 +87,15 @@ export default function StudentGrid({
   viewMode,
   onViewModeChange,
   yearLevels,
+  selectedSort,
+  setSelectedSort,
+  selectedOrder,
+  setSelectedOrder,
 }: StudentGridProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
-
-  const [selectedSort, setSelectedSort] = useState<StudentSortKey>("studentName");
-  const [selectedOrder, setSelectedOrder] = useState<StudentSortOrder>("asc");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -274,20 +275,7 @@ export default function StudentGrid({
     );
   }, [students, selectedStatusId, selectedProgramId, selectedYearLevelId, normalizedSearch]);
 
-  const sortedVisibleStudents = useMemo(() => {
-    return [...filteredStudents].sort((a, b) => {
-      const getSortValue = (student: IIRProfileView) => {
-        if (selectedSort === "studentNumber") return student.studentNumber || "";
-        if (selectedSort === "email") return student.email || "";
-        return getStudentName(student);
-      };
-
-      const left = getSortValue(a).toLowerCase();
-      const right = getSortValue(b).toLowerCase();
-      const result = left.localeCompare(right);
-      return selectedOrder === "asc" ? result : -result;
-    });
-  }, [filteredStudents, selectedOrder, selectedSort]);
+  const sortedVisibleStudents = filteredStudents;
 
   if (isStudentsLoading || !students) {
     return (

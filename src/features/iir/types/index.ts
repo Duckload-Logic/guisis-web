@@ -331,6 +331,7 @@ export type QueryParam = {
   programId?: number;
   genderId?: number;
   orderBy?: keyof typeof ORDER_BY_OPTIONS;
+  order?: "asc" | "desc";
   yearLevel?: number;
   statusId?: number;
 };
@@ -358,4 +359,3 @@ export interface IIRProfileView {
   status: StudentStatus;
   studentCorUrl?: string;
 }
-
