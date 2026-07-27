@@ -130,7 +130,7 @@ export async function createTwoByTwoPhotoDataUrl(file: File) {
   return canvas.toDataURL("image/jpeg", 0.92);
 }
 
-const dataUrlToFile = (dataUrl: string, fileName: string) => {
+export const dataUrlToFile = (dataUrl: string, fileName: string) => {
   const [metadata, base64Data] = dataUrl.split(",");
   const mimeType = metadata.match(/data:(.*?);/)?.[1] || "image/jpeg";
   const binaryString = window.atob(base64Data);

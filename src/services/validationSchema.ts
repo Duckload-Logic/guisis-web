@@ -2,6 +2,7 @@
  * Dynamic validation schema system
  * Defines validation rules for forms without hardcoding them
  */
+import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 
 export type ValidationRule = {
   type?: string;
@@ -31,9 +32,7 @@ export const commonRules = {
           value.id !== 0 &&
           value.id !== "0";
         const hasCode =
-          value.code !== undefined &&
-          value.code !== null &&
-          value.code !== "";
+          value.code !== undefined && value.code !== null && value.code !== "";
         return hasId || hasCode;
       }
       return value !== undefined && value !== null && value !== "";
@@ -134,7 +133,6 @@ export const commonRules = {
   },
 
   validDate: (): ValidationRule => {
-    const currentYear = new Date().getFullYear();
     return {
       validate: (value: any) => {
         if (!value || typeof value !== "string") return true;
@@ -143,23 +141,26 @@ export const commonRules = {
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-        if (
-          year < 1900 ||
-          year > currentYear ||
-          month < 1 ||
-          month > 12 ||
-          day < 1 ||
-          day > 31
-        )
-          return false;
+        
         const d = new Date(year, month - 1, day);
-        return (
-          d.getFullYear() === year &&
-          d.getMonth() === month - 1 &&
-          d.getDate() === day
-        );
+        if (
+          d.getFullYear() !== year ||
+          d.getMonth() !== month - 1 ||
+          d.getDate() !== day
+        ) {
+          return false;
+        }
+
+        if (year < 1900) return false;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (d > today) return false;
+
+        return true;
       },
-      message: `Must be a valid date (year between 1900 and ${new Date().getFullYear()})`,
+      message: "Must be a valid past or present date (since 1900)",
     };
   },
 
@@ -185,9 +186,10 @@ export const commonRules = {
   nameFormat: (): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^[a-zA-Z\s\-\.]+$/.test(String(value));
+      return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(String(value));
     },
-    message: "Must contain only letters, spaces, hyphens, or periods",
+    message:
+      "Must contain only letters, spaces, hyphens, periods, or apostrophes",
   }),
 
   studentNumber: (): ValidationRule => ({
@@ -251,7 +253,7 @@ export const commonRules = {
   noSpecialChars: (fieldName: string): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^[a-zA-Z0-9\s,\.\-\/]+$/.test(String(value));
+      return !SPECIAL_CHARS_REGEX.test(String(value));
     },
     message: `${fieldName} contains invalid special characters`,
   }),

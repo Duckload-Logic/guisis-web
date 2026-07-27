@@ -9,7 +9,7 @@ customHeaders:
           https://fonts.googleapis.com https://fonts.cdnfonts.com;
           font-src 'self' data: https://fonts.gstatic.com
           https://fonts.cdnfonts.com;
-          img-src 'self' data: blob: https://*.tawk.to;
+          img-src 'self' data: blob: https://*.tawk.to https://*.dllbsit2027.com;
           connect-src 'self' http://localhost:8080
           https://*.dllbsit2027.com https://*.tawk.to wss://*.tawk.to;
           frame-src 'self' blob: https://*.dllbsit2027.com

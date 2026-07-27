@@ -14,6 +14,7 @@ import {
   BookOpen,
   ClipboardList,
   HelpCircle,
+  MessageSquare,
 } from "lucide-react";
 
 export interface NavItem {
@@ -88,6 +89,11 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       href: "/admin/academic-settings",
       icon: <GraduationCap size={ICON_SIZE} />,
     },
+    {
+      label: "Support Chat",
+      href: "/admin/support",
+      icon: <MessageSquare size={ICON_SIZE} />,
+    },
   ],
   superadmin: [
     {
@@ -124,6 +130,11 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       label: "System Logs",
       href: "/superadmin/system-logs",
       icon: <Activity size={ICON_SIZE} />,
+    },
+    {
+      label: "Support Chat",
+      href: "/superadmin/support",
+      icon: <MessageSquare size={ICON_SIZE} />,
     },
   ],
   developer: [

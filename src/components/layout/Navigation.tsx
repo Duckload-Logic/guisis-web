@@ -190,7 +190,12 @@ export default function Navigation({
 
     return (
       <>
-        <nav className="fixed inset-x-0 bottom-0 z-50 w-full shrink-0 border-t bg-background xl:hidden">
+        <nav
+          className={cn(
+            "fixed inset-x-0 bottom-0 z-[10000] w-full shrink-0 border-t",
+            "bg-background xl:hidden",
+          )}
+        >
           <div className="flex h-16 items-center justify-around px-2">
             {homeItem && (
               <NavItem
@@ -282,7 +287,11 @@ export default function Navigation({
 
   return (
     <div
-      className={`relative z-[90] hidden h-full shrink-0 items-center transition-all duration-300 xl:flex ${sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]"}`}
+      className={cn(
+        "relative z-[10000] hidden h-full shrink-0 items-center",
+        "transition-all duration-300 xl:flex",
+        sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]",
+      )}
     >
       <aside
         onMouseEnter={handleMouseEnter}

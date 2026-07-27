@@ -13,6 +13,7 @@ import { ErrorBoundary } from "../shared/ErrorBoundary";
 import Navigation from "./Navigation";
 import SubHeader from "./SubHeader";
 import { SpeechControl } from "../shared/SpeechControl";
+import { UISettingsModal } from "../shared/UISettingsModal";
 import { AnimationStyles } from "../ui/animations";
 import ScrollToTop from "@/utils/componentUtils";
 import ConsentModal from "@/features/consents/components/ConsentModal";
@@ -103,8 +104,17 @@ export default function Layout({
     return sessionStorage.getItem("session_consent_accepted") === "true";
   });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [uiSettingsOpen, setUiSettingsOpen] = useState(false);
   const { toasts, triggerToast } = useToast();
   const [termsOpen, setTermsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setUiSettingsOpen(true);
+    window.addEventListener("open-ui-settings", handleOpen);
+    return () => {
+      window.removeEventListener("open-ui-settings", handleOpen);
+    };
+  }, []);
 
   const mustAcceptTerms = !sessionAccepted && !!user && isLoggedIn;
 
@@ -263,7 +273,7 @@ export default function Layout({
               : ""
           }`}
         >
-            {showHeader && (
+          {showHeader && (
             <>
               <Header
                 title={title}
@@ -283,7 +293,7 @@ export default function Layout({
             </>
           )}
 
-          <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col-reverse bg-background xl:flex-row">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col-reverse bg-background xl:flex-row">
             {/* <div
               className={cn(
     "absolute inset-0 z-0 bg-[url('/src/assets/images/bg.gif')]",
@@ -304,7 +314,7 @@ export default function Layout({
 
             <div
               className={cn(
-                "relative min-w-0 max-w-full flex-1 overflow-hidden",
+                "relative h-full min-w-0 max-w-full flex-1 overflow-hidden",
               )}
             >
               <div
@@ -312,14 +322,14 @@ export default function Layout({
                 className={cn(
                   "relative z-10 flex h-full min-w-0 max-w-full flex-col",
                   "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  "pb-24 md:pb-12",
+                  isLoggedIn ? "pb-24 md:pb-12" : "pb-0",
                 )}
               >
                 <main
                   className={cn(
                     "responsive-page-shell min-w-0 max-w-full flex-1",
                     "p-3 sm:p-4 md:p-6 xl:p-8",
-                    isLoading && "flex flex-col h-full",
+                    isLoading && "flex h-full flex-col",
                   )}
                 >
                   {showHeader && showSubHeader && (
@@ -336,7 +346,7 @@ export default function Layout({
                   {isLoading ? (
                     <div
                       className={cn(
-                        "flex-1 flex w-full",
+                        "flex w-full flex-1",
                         "items-center justify-center",
                       )}
                     >
@@ -377,6 +387,10 @@ export default function Layout({
 
         <Toast toasts={toasts} />
         <SpeechControl />
+        <UISettingsModal
+          isOpen={uiSettingsOpen}
+          onClose={() => setUiSettingsOpen(false)}
+        />
         <AnimationStyles />
       </div>
     </ErrorBoundary>
