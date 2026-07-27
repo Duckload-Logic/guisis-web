@@ -703,22 +703,29 @@ export default function M2MManagement() {
             <div className="space-y-4 py-4">
               <div
                 className={
-                  "flex items-center justify-between " +
-                  "rounded-xl border border-border bg-muted/20 p-4"
+                  "flex items-center gap-3 rounded-xl border " +
+                  "border-primary/20 bg-primary/5 px-4 py-4 shadow-sm"
                 }
               >
-                <div className="space-y-0.5">
-                  <label className="text-sm font-bold text-foreground">
+                <div className="rounded-full bg-primary/10 p-1.5">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <label
+                    htmlFor="grant-personal-info-access"
+                    className="text-sm font-bold text-foreground"
+                  >
                     Grant Student Personal Info Access
                   </label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs leading-relaxed text-muted-foreground">
                     Allow access to addresses, contacts, and student profiles.
                   </p>
                 </div>
                 <Switch
+                  id="grant-personal-info-access"
                   checked={verifyPersonalInfo}
                   onCheckedChange={setVerifyPersonalInfo}
-                  className="min-w-1/2"
+                  aria-label="Grant student personal information access"
                 />
               </div>
             </div>

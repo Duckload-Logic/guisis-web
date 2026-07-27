@@ -566,30 +566,6 @@ export default function StudentGrid({
     );
   };
 
-  if (sortedVisibleStudents.length === 0) {
-    return (
-      <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
-        <NothingFound message="No students match the current filters." />
-        <div className="flex flex-wrap justify-center gap-2">
-          {(selectedStatusId !== "all" || selectedProgramId !== "all" || selectedYearLevelId !== "all") && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setSelectedStatusId("all");
-                setSelectedProgramId("all");
-                setSelectedYearLevelId("all");
-              }}
-              className="rounded-xl shadow-md"
-            >
-              Clear all filters
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-w-0 max-w-full space-y-6">
       
@@ -670,7 +646,39 @@ export default function StudentGrid({
         </div>
       )}
 
-      {viewMode === "tile" ? (
+      {sortedVisibleStudents.length === 0 ? (
+        <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
+          <NothingFound message="No students match the current search or filters." />
+          <div className="flex flex-wrap justify-center gap-2">
+            {searchTerm.trim() && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClearSearch}
+                className="rounded-xl shadow-md"
+              >
+                Clear search
+              </Button>
+            )}
+            {(selectedStatusId !== "all" ||
+              selectedProgramId !== "all" ||
+              selectedYearLevelId !== "all") && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSelectedStatusId("all");
+                  setSelectedProgramId("all");
+                  setSelectedYearLevelId("all");
+                }}
+                className="rounded-xl shadow-md"
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : viewMode === "tile" ? (
         <div
           className={cn(
             "grid gap-4",

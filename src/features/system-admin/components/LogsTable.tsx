@@ -131,32 +131,55 @@ export default function LogsTable({
   const [selectedSort, setSelectedSort] = useState<string>("timestamp");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
 
-  const params = useMemo<SystemLogsParams & { sort_by?: string; sort_order?: string }>(() => {
-    const p: SystemLogsParams & { sort_by?: string; sort_order?: string } = { 
-      page: currentPage, 
-      page_size: PAGE_SIZE,
-      sort_by: selectedSort,
-      sort_order: selectedOrder,
-    };
-    if (startDate) p.start_date = startDate;
-    if (endDate) p.end_date = endDate;
-    return p;
-  }, [currentPage, startDate, endDate, selectedSort, selectedOrder]);
+const params = useMemo<
+  SystemLogsParams & { sort_by?: string; sort_order?: string }
+>(() => {
+  const p: SystemLogsParams & {
+    sort_by?: string;
+    sort_order?: string;
+  } = {
+    page: currentPage,
+    page_size: PAGE_SIZE,
+    sort_by: selectedSort,
+    sort_order: selectedOrder,
+  };
+
+  if (selectedAction !== "all") {
+    p.action = selectedAction;
+  }
+
+  if (startDate) {
+    p.start_date = startDate;
+  }
+
+  if (endDate) {
+    p.end_date = endDate;
+  }
+
+  return p;
+}, [
+  currentPage,
+  selectedAction,
+  startDate,
+  endDate,
+  selectedSort,
+  selectedOrder,
+]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
 
   const processedLogs = useMemo(() => {
     let list = [...(data?.logs ?? [])];
 
-    if (selectedAction !== "all") {
-      list = list.filter((log) => log.action === selectedAction);
-    }
+const processedLogs = useMemo(() => {
+  let list = [...(data?.logs ?? [])];
 
-    // Frontend sorting removed here!
+  if (selectedAction !== "all") {
+    list = list.filter((log) => log.action === selectedAction);
+  }
 
-    return list;
-  }, [data?.logs, selectedAction]);
-
+  return list;
+}, [data?.logs, selectedAction]);
   const totalPages = data?.meta?.totalPages ?? 1;
   const total = data?.meta?.total ?? 0;
   const hasActiveFilters = Boolean(startDate || endDate || selectedAction !== "all");
@@ -213,25 +236,10 @@ export default function LogsTable({
       },
       {
         header: (
-          <div className="px-3 py-3 w-full">
-            <Dropdown
-              label=""
-              options={[
-                { id: "all", displayName: "All Actions" },
-                ...actionOptions.map((action) => ({ id: action, displayName: formatAction(action) })),
-              ]}
-              value={selectedAction}
-              onChange={(val) => {
-                setSelectedAction(String(val));
-                setCurrentPage(1);
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                selectedAction === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
-              )}
-            />
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Action
+            </span>
           </div>
         ),
         className: "w-[18%] p-0",
@@ -278,7 +286,7 @@ export default function LogsTable({
     }
 
     return cols;
-  }, [showIPAddress, selectedSort, selectedOrder, selectedAction, actionOptions]);
+  }, [showIPAddress, selectedSort, selectedOrder]);
 
   const renderMobileItem = (log: SystemLog) => (
     <button
@@ -336,25 +344,63 @@ export default function LogsTable({
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button
-            variant={showFilters ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className={cn("h-10 rounded-xl transition-all", showFilters ? "px-4" : "border-border/70 shadow-sm")}
-          >
-            <Filter size={14} className="mr-2" />
-            Date Filters
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            className="h-10 rounded-xl border-border/70 shadow-sm"
-          >
-            <RefreshCw size={14} className={cn("mr-2", isFetching && "animate-spin")} />
-            Refresh
-          </Button>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+          <div className="w-full sm:w-[240px]">
+            <Dropdown
+              label="Action"
+              options={[
+                { id: "all", displayName: "All Actions" },
+                ...actionOptions.map((action) => ({
+                  id: action,
+                  displayName: formatAction(action),
+                })),
+              ]}
+              value={selectedAction}
+              onChange={(val) => {
+                setSelectedAction(String(val));
+                setCurrentPage(1);
+              }}
+              labelKey="displayName"
+              enabled={!isLoading}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "h-10 rounded-xl transition-all",
+                showFilters ? "px-4" : "border-border/70 shadow-sm",
+              )}
+            >
+              <Filter size={14} className="mr-2" />
+              Date Filters
+            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="h-10 rounded-xl border-border/70 shadow-sm"
+              >
+                Clear Filters
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="h-10 rounded-xl border-border/70 shadow-sm"
+            >
+              <RefreshCw
+                size={14}
+                className={cn("mr-2", isFetching && "animate-spin")}
+              />
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
