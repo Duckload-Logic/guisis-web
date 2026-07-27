@@ -46,9 +46,16 @@ type StudentSortOrder = "asc" | "desc";
 type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 
 function getStudentName(student: IIRProfileView) {
-  return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
-    .replace(/\s+/g, " ")
-    .trim();
+  const parts = [];
+  const lastNameWithSuffix = `${student.lastName || ""}${student.suffixName ? ` ${student.suffixName}` : ""}`.trim();
+  
+  if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
+  
+  const firstNameWithMI = `${student.firstName || ""}${student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""}`.trim();
+  
+  if (firstNameWithMI) parts.push(firstNameWithMI);
+  
+  return parts.join(", ");
 }
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
