@@ -100,23 +100,9 @@ export function SlipList({
   const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(() => new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  const statMap = useMemo(() => {
-    const map: Record<string | number, SlipStats> = {};
-    (statusCounts || []).forEach((status) => {
-      map[status.id] = status;
-    });
-    return map;
-  }, [statusCounts]);
-
-  const dropdownOptions = useMemo(() => {
-    return (statuses || []).map((status) => ({
-      ...status,
-      displayName:
-        String(status.id) === "0"
-          ? "All Statuses"
-          : `${status.name} (${statMap[status.id]?.count || 0})`,
-    }));
-  }, [statuses, statMap]);
+  const sortKeyName = useMemo(() => sortOptions?.find((o) => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
+  const sortKeyAbsence = useMemo(() => sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))?.id || "dateOfAbsence", [sortOptions]);
+  const sortKeyNeeded = useMemo(() => sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))?.id || "dateNeeded", [sortOptions]);
 
   const categoryOptions = useMemo(() => {
     const cats = new Set<string>();
@@ -129,17 +115,48 @@ export function SlipList({
     ];
   }, [slips]);
 
-  const sortKeyName = useMemo(() => sortOptions?.find((o) => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
-  const sortKeyAbsence = useMemo(() => sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))?.id || "dateOfAbsence", [sortOptions]);
-  const sortKeyNeeded = useMemo(() => sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))?.id || "dateNeeded", [sortOptions]);
-
-  const visibleSlips = useMemo(() => {
-    const filtered = slips.filter((slip, index) => {
+  const baseFilteredSlips = useMemo(() => {
+    return slips.filter((slip, index) => {
       if (hiddenSlipKeys.has(getSlipKey(slip, index))) return false;
 
       const matchesCat = selectedCategory === "all" || slip.category?.name === selectedCategory;
 
       return matchesCat;
+    });
+  }, [slips, hiddenSlipKeys, selectedCategory]);
+
+  const dynamicStatMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    
+    (statuses || []).forEach((status) => {
+      if (String(status.id) !== "0") {
+        map[String(status.id)] = 0;
+      }
+    });
+
+    baseFilteredSlips.forEach((slip) => {
+      if (slip.status?.id) {
+        map[String(slip.status.id)] = (map[String(slip.status.id)] || 0) + 1;
+      }
+    });
+
+    return map;
+  }, [baseFilteredSlips, statuses]);
+
+  const dropdownOptions = useMemo(() => {
+    return (statuses || []).map((status) => ({
+      ...status,
+      displayName:
+        String(status.id) === "0"
+          ? "All Statuses"
+          : `${status.name} (${dynamicStatMap[String(status.id)] || 0})`,
+    }));
+  }, [statuses, dynamicStatMap]);
+
+  const visibleSlips = useMemo(() => {
+    let filtered = baseFilteredSlips.filter((slip) => {
+      if (!selectedStatus || String(selectedStatus.id) === "0") return true;
+      return String(slip.status?.id) === String(selectedStatus.id);
     });
 
     filtered.sort((a, b) => {
@@ -164,9 +181,8 @@ export function SlipList({
 
     return filtered;
   }, [
-    slips, 
-    hiddenSlipKeys, 
-    selectedCategory, 
+    baseFilteredSlips, 
+    selectedStatus, 
     selectedSort, 
     selectedOrder, 
     sortKeyName, 

@@ -131,40 +131,40 @@ export default function LogsTable({
   const [selectedSort, setSelectedSort] = useState<string>("timestamp");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
 
-const params = useMemo<
-  SystemLogsParams & { sort_by?: string; sort_order?: string }
->(() => {
-  const p: SystemLogsParams & {
-    sort_by?: string;
-    sort_order?: string;
-  } = {
-    page: currentPage,
-    page_size: PAGE_SIZE,
-    sort_by: selectedSort,
-    sort_order: selectedOrder,
-  };
+  const params = useMemo<
+    SystemLogsParams & { sort_by?: string; sort_order?: string }
+  >(() => {
+    const p: SystemLogsParams & {
+      sort_by?: string;
+      sort_order?: string;
+    } = {
+      page: currentPage,
+      page_size: PAGE_SIZE,
+      sort_by: selectedSort,
+      sort_order: selectedOrder,
+    };
 
-  if (selectedAction !== "all") {
-    p.action = selectedAction;
-  }
+    if (selectedAction !== "all") {
+      p.action = selectedAction;
+    }
 
-  if (startDate) {
-    p.start_date = startDate;
-  }
+    if (startDate) {
+      p.start_date = startDate;
+    }
 
-  if (endDate) {
-    p.end_date = endDate;
-  }
+    if (endDate) {
+      p.end_date = endDate;
+    }
 
-  return p;
-}, [
-  currentPage,
-  selectedAction,
-  startDate,
-  endDate,
-  selectedSort,
-  selectedOrder,
-]);
+    return p;
+  }, [
+    currentPage,
+    selectedAction,
+    startDate,
+    endDate,
+    selectedSort,
+    selectedOrder,
+  ]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
 

@@ -154,24 +154,6 @@ export default function AppointmentList({
   const sortKeyRequested = useMemo(() => sortOptions?.find(o => /created|request/i.test(o.id) || /created|request/i.test(o.name))?.id || "createdAt", [sortOptions]);
   const sortKeyAppointment = useMemo(() => sortOptions?.find(o => /nearest|when|appoint/i.test(o.id) || /nearest|when|appoint/i.test(o.name))?.id || "nearestAppointment", [sortOptions]);
 
-  const statMap = useMemo(() => {
-    const map: Record<number, StatusCount> = {};
-    statusCounts.forEach((status) => {
-      map[status.id] = status;
-    });
-    return map;
-  }, [statusCounts]);
-
-  const dropdownOptions = useMemo(() => {
-    return statuses.map((status) => ({
-      ...status,
-      displayName:
-        status.id === 0
-          ? "All Statuses"
-          : `${status.name} (${statMap[status.id]?.count || 0})`,
-    }));
-  }, [statuses, statMap]);
-
   const categoryOptions = useMemo(() => {
     const cats = new Set<string>();
     appointments.forEach((a) => {
@@ -195,14 +177,47 @@ export default function AppointmentList({
     ];
   }, [appointments]);
 
-  const visibleAppointments = useMemo(() => {
-    let filtered = appointments.filter((appointment) => {
+  const baseFilteredAppointments = useMemo(() => {
+    return appointments.filter((appointment) => {
       if (hiddenAppointmentIds.has(String(appointment.id))) return false;
 
       const matchesCat = selectedCategory === "all" || appointment.appointmentCategory?.name === selectedCategory;
       const matchesUrg = selectedUrgency === "all" || getUrgencyValue(appointment)?.label === selectedUrgency;
 
       return matchesCat && matchesUrg;
+    });
+  }, [appointments, hiddenAppointmentIds, selectedCategory, selectedUrgency]);
+
+  const dynamicStatMap = useMemo(() => {
+    const map: Record<number, number> = {};
+    
+    statuses.forEach((status) => {
+      if (status.id !== 0) map[status.id] = 0;
+    });
+
+    baseFilteredAppointments.forEach((apt) => {
+      if (apt.status?.id) {
+        map[apt.status.id] = (map[apt.status.id] || 0) + 1;
+      }
+    });
+
+    return map;
+  }, [baseFilteredAppointments, statuses]);
+
+  const dropdownOptions = useMemo(() => {
+    return statuses.map((status) => ({
+      ...status,
+      displayName:
+        status.id === 0
+          ? "All Statuses"
+          : `${status.name} (${dynamicStatMap[status.id] || 0})`,
+    }));
+  }, [statuses, dynamicStatMap]);
+
+  const visibleAppointments = useMemo(() => {
+    let filtered = baseFilteredAppointments.filter((appointment) => {
+      if (!selectedStatus || selectedStatus.id === 0) return true;
+      return appointment.status?.id === selectedStatus.id;
     });
 
     filtered.sort((a, b) => {
@@ -224,7 +239,7 @@ export default function AppointmentList({
     });
 
     return filtered;
-  }, [appointments, hiddenAppointmentIds, selectedCategory, selectedUrgency, selectedSort, selectedOrder, sortKeyName, sortKeyRequested, sortKeyAppointment]);
+  }, [baseFilteredAppointments, selectedStatus, selectedSort, selectedOrder, sortKeyName, sortKeyRequested, sortKeyAppointment]);
 
   const hiddenCount = appointments.length - visibleAppointments.length;
 
@@ -297,7 +312,7 @@ export default function AppointmentList({
              {renderSortableHeader("Student Name", sortKeyName)}
           </div>
         ),
-        className: "min-w-[220px] p-0", // p-0 is critical here
+        className: "min-w-[220px] p-0",
         render: (apt) => (
           <div className="px-3 py-3 space-y-0.5">
             <p className="font-semibold text-foreground">
