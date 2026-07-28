@@ -18,7 +18,7 @@ import { FormInput } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function SupportChatWidget() {
   const { isAdmin, isSuperAdmin, isDeveloper } = useAuth();
@@ -436,8 +436,15 @@ export function SupportChatWidget() {
         )}
       >
         {/* Floating Action Menu / Updrop Button */}
+        <AnimatePresence>
         {!isOpen && (
-          <div className="relative flex flex-col items-center gap-3">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            className="relative flex flex-col items-center gap-3"
+          >
             {/* Expanded Menu Items */}
             {menuExpanded && (
               <div className="animate-in slide-in-from-bottom-5 fade-in mb-2 flex flex-col items-center gap-3 duration-200">
@@ -530,12 +537,18 @@ export function SupportChatWidget() {
                 <Accessibility className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
               )}
             </button>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         {/* Desktop Chat Window Panel */}
+        <AnimatePresence>
         {!isMobile && isOpen && (
-          <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 18 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 18 }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
             className={cn(
               "flex flex-col overflow-hidden rounded-xl border",
               "border-glass-border bg-background/95 shadow-2xl",
@@ -545,8 +558,9 @@ export function SupportChatWidget() {
             )}
           >
             {renderChatContent()}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
 
       {/* Mobile, iPad, and tablet chat window */}
