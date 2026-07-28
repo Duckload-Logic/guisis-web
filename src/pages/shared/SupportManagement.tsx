@@ -240,9 +240,23 @@ export function SupportManagement() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] min-h-[500px] overflow-hidden rounded-3xl border border-glass-border bg-background/50 shadow-lg backdrop-blur-xl">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className={
+        "flex h-[calc(100dvh-9rem)] min-h-[560px] flex-col overflow-hidden " +
+        "rounded-xl border border-glass-border bg-background/50 shadow-md " +
+        "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:flex-row"
+      }
+    >
       {/* Tickets List Sidebar */}
-      <div className="flex w-80 flex-col border-r border-glass-border">
+      <div
+        className={
+          "flex max-h-[42%] w-full shrink-0 flex-col border-b " +
+          "border-glass-border md:max-h-none md:w-80 md:border-b-0 md:border-r"
+        }
+      >
         <div className="border-b border-glass-border p-4">
           <h2 className="flex items-center gap-2 text-sm font-bold">
             <MessageSquare className="h-4 w-4 text-primary" />
@@ -276,8 +290,12 @@ export function SupportManagement() {
               );
 
               return (
-                <button
+                <motion.button
                   key={g.key}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ x: 3 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedGroupKey(g.key)}
                   className={`w-full p-4 text-left transition-colors hover:bg-muted/50 ${isSelected ? "bg-primary/10 text-primary" : ""}`}
                 >
@@ -343,7 +361,7 @@ export function SupportManagement() {
                       </div>
                     </div>
                   </div>
-                </button>
+                </motion.button>
               );
             })
           )}
@@ -373,11 +391,15 @@ export function SupportManagement() {
       </div>
 
       {/* Conversation Area */}
-      <div className="flex flex-1 flex-col bg-background/20">
+      <div className="flex min-h-0 flex-1 flex-col bg-background/20">
         {selectedGroup ? (
           <>
             {/* Conversation Header */}
-            <div className="flex items-center justify-between border-b border-glass-border bg-muted/20 p-4">
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-wrap items-center justify-between gap-3 border-b border-glass-border bg-muted/20 p-4"
+            >
               <div className="flex items-center gap-3">
                 {(() => {
                   const latestTicket =
@@ -431,7 +453,7 @@ export function SupportManagement() {
                   Mark as Resolved
                 </button>
               )}
-            </div>
+            </motion.div>
 
             {/* Conversation Messages */}
             <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -568,7 +590,7 @@ export function SupportManagement() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
