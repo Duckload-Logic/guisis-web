@@ -151,8 +151,7 @@ export default function StudentRecords() {
 
   usePageMetadata({
     title: "Student Records",
-    description:
-      "Access and manage student cumulative records and personal information",
+    description: "Access and manage student cumulative records and personal information",
     badgeText: "Admin Management",
     badgeIcon: <Users className="h-4 w-4" />,
     isLoading: false,
@@ -175,8 +174,7 @@ export default function StudentRecords() {
         >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {(studentsError as Error)?.message ||
-              "Unable to load student records."}
+            {(studentsError as Error)?.message || "Unable to load student records."}
           </AlertDescription>
         </Alert>
       )}
