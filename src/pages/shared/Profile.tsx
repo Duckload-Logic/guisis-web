@@ -196,13 +196,14 @@ export default function Profile() {
               </Avatar>
             </div>
 
-            {/* <button
+            <button
+              type="button"
               onClick={triggerFileInput}
               className={cn(
                 "absolute bottom-2 right-2 z-20 transform rounded-full",
                 "bg-primary p-3.5 text-primary-foreground shadow-2xl",
-                "transition-all duration-300 hover:rotate-12 hover:scale-110",
-                "active:scale-95",
+                "transition-all duration-300 hover:scale-110",
+                "active:scale-95 disabled:cursor-not-allowed disabled:opacity-60",
               )}
               title={
                 isUploadingPicture ? "Uploading..." : "Change profile picture"
@@ -210,7 +211,7 @@ export default function Profile() {
               disabled={isUploadingPicture}
             >
               <Camera size={20} />
-            </button> */}
+            </button>
             <input
               type="file"
               ref={fileInputRef}

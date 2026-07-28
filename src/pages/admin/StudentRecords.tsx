@@ -143,7 +143,7 @@ export default function StudentRecords() {
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
     yearLevel:
       selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    orderBy: ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
+    orderBy: String(ORDER_BY_OPTIONS[selectedSort] || selectedSort),
     sortOrder: selectedOrder,
   });
 
