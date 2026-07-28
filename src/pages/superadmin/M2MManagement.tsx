@@ -691,49 +691,72 @@ export default function M2MManagement() {
             }
           }}
         >
-          <DialogContent className="backdrop-blur-2xl sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Verify M2M Client</DialogTitle>
-              <DialogDescription>
+          <DialogContent
+            className={cn(
+              "overflow-hidden rounded-xl border border-glass-border",
+              "bg-background/95 p-0 shadow-md backdrop-blur-2xl",
+              "sm:max-w-md",
+            )}
+          >
+            <DialogHeader className="space-y-1.5 border-b border-border/60 px-6 py-5">
+              <DialogTitle className="text-lg font-semibold tracking-tight">
+                Verify M2M Client
+              </DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed">
                 Confirm verification for client &quot;
                 {verifyTarget?.clientName}&quot;.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="px-6 py-5">
               <div
-                className={
-                  "flex items-center gap-3 rounded-xl border " +
-                  "border-primary/20 bg-primary/5 px-4 py-4 shadow-sm"
-                }
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border px-4 py-4",
+                  "border-border/70 bg-muted/30 shadow-md",
+                  "transition-colors duration-200 hover:bg-muted/50",
+                )}
               >
-                <div className="rounded-full bg-primary/10 p-1.5">
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center",
+                    "rounded-xl border border-primary/15 bg-primary/10",
+                  )}
+                >
                   <ShieldCheck className="h-5 w-5 text-primary" />
                 </div>
-                <div className="min-w-0 flex-1 space-y-0.5">
-                  <label
-                    htmlFor="grant-personal-info-access"
-                    className="text-sm font-bold text-foreground"
-                  >
+
+                <label
+                  htmlFor="grant-personal-info-access"
+                  className="min-w-0 flex-1 cursor-pointer"
+                >
+                  <span className="block text-sm font-semibold leading-snug text-foreground">
                     Grant Student Personal Info Access
-                  </label>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
                     Allow access to addresses, contacts, and student profiles.
-                  </p>
-                </div>
+                  </span>
+                </label>
+
                 <Switch
                   id="grant-personal-info-access"
                   checked={verifyPersonalInfo}
                   onCheckedChange={setVerifyPersonalInfo}
                   aria-label="Grant student personal information access"
+                  className="!h-6 !min-h-0 !w-11 !min-w-0 shrink-0"
                 />
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter
+              className={cn(
+                "flex-row justify-end gap-2 border-t border-border/60",
+                "bg-muted/20 px-6 py-4",
+              )}
+            >
               <Button
                 variant="ghost"
                 onClick={() => setVerifyTarget(null)}
+                className="rounded-xl px-5"
               >
                 Cancel
               </Button>
@@ -743,6 +766,7 @@ export default function M2MManagement() {
                   await handleVerify(verifyTarget.id, verifyPersonalInfo);
                   setVerifyTarget(null);
                 }}
+                className="rounded-xl px-5 shadow-md"
               >
                 Verify & Grant Access
               </Button>
