@@ -126,6 +126,19 @@ export default function Header({
                 About
               </a>
               <a
+                href="#faq"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleNavClick("faq");
+                }}
+                className={cn(
+                  "text-sm font-medium text-foreground/70 transition-colors",
+                  "hover:text-foreground",
+                )}
+              >
+                FAQ
+              </a>
+              <a
                 href="#contact"
                 onClick={(event) => {
                   event.preventDefault();
@@ -233,6 +246,17 @@ export default function Header({
                 )}
               >
                 About
+              </a>
+              <a
+                href="#faq"
+                onClick={() => handleNavClick("faq")}
+                className={cn(
+                  "text-sm font-medium text-foreground/70",
+                  "transition-colors hover:text-foreground",
+                  "border-b border-border/40 py-2",
+                )}
+              >
+                FAQ
               </a>
               <a
                 href="#contact"

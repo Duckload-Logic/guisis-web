@@ -75,7 +75,7 @@ export function useIIRProfile(iirId: string) {
 /**
  * Hook for paginated student IIR records (Admin/Staff view)
  */
-export function useIIRPagination(params: QueryParam & { sort_by?: string; sort_order?: string }) {
+export function useIIRPagination(params: QueryParam & { orderBy?: string; sortOrder?: string }) {
   return useQuery({
     queryKey: [
       ...QUERY_KEYS.iir.inventory.all,
@@ -85,8 +85,8 @@ export function useIIRPagination(params: QueryParam & { sort_by?: string; sort_o
       params.yearLevel,
       params.statusId,
       params.page,
-      params.sort_by,
-      params.sort_order,
+      params.orderBy,
+      params.sortOrder,
     ],
     queryFn: () =>
       GetStudents({

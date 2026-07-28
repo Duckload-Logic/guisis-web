@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { AudioLines, Ear, MousePointer2, X } from "lucide-react";
+import { AudioLines, Ear, MousePointer2, X, ChevronDown } from "lucide-react";
 
-import { useUI } from "@/context";
+import { useUI, useAuth } from "@/context";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { cn } from "@/lib/utils";
 
 export const SpeechControl: React.FC = () => {
   const isMobile = useIsMobile();
+  const {
+    isStudent,
+    isAdmin,
+    isSuperAdmin,
+    isDeveloper,
+  } = useAuth();
   const { voices, speechRate, speechVoice } = useUI();
   const { speak, stop } = useSpeechSynthesis(voices);
   const [isVisible, setIsVisible] = useState(false);
@@ -40,7 +46,7 @@ export const SpeechControl: React.FC = () => {
     localStorage.setItem("speech_tip_viewed_v2", "true");
   };
 
-  const handleToggle = () => {
+  const handleToggle = React.useCallback(() => {
     dismissTip();
 
     const nextState = !readerActive;
@@ -52,7 +58,7 @@ export const SpeechControl: React.FC = () => {
         el.classList.remove("reader-highlight");
       });
     }
-  };
+  }, [readerActive, stop]);
 
   useEffect(() => {
     if (!readerActive) return;
@@ -117,116 +123,46 @@ export const SpeechControl: React.FC = () => {
     };
   }, [readerActive, speak, speechRate, speechVoice, stop, voices]);
 
+  useEffect(() => {
+    const handleExternalToggle = () => {
+      handleToggle();
+    };
+    window.addEventListener("toggle-speech-reader", handleExternalToggle);
+    return () => {
+      window.removeEventListener(
+        "toggle-speech-reader",
+        handleExternalToggle
+      );
+    };
+  }, [readerActive, handleToggle]);
+
   if (!isVisible) return null;
 
   return (
-    <div
-      className={cn(
-        "speech-control-ui pointer-events-none fixed z-[60] flex flex-col items-end gap-3",
-        "right-4 sm:right-5 xl:right-8",
-        // Phones and tablets use a fixed 4rem bottom navigation. Keep the
-        // reader completely above it, including the device safe-area inset.
-        "bottom-[calc(4rem+env(safe-area-inset-bottom)+1rem)]",
-        "sm:bottom-[calc(4rem+env(safe-area-inset-bottom)+1.25rem)]",
-        // Desktop has no bottom navigation, so maintain a clean edge gap.
-        "xl:bottom-8",
-        "transition-[bottom,right,opacity,transform] duration-300",
-      )}
-    >
-      {showTip && !readerActive && !isMobile && (
-        <div
-          className={cn(
-            "animate-in slide-in-from-right-4 fade-in pointer-events-auto",
-            "relative mb-1 mr-1 max-w-[220px] rounded-xl bg-primary p-4",
-            "text-primary-foreground shadow-md duration-500",
-          )}
-        >
-          <button
-            type="button"
-            onClick={dismissTip}
-            aria-label="Dismiss reader mode tip"
-            className={cn(
-              "absolute -right-1 -top-1 rounded-full border border-white/20",
-              "bg-slate-900 p-1 text-white",
-            )}
-          >
-            <X size={10} aria-hidden="true" />
-          </button>
-
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
-            <Ear size={14} aria-hidden="true" /> Interactive Reader
-          </p>
-
-          <p className="text-[10px] leading-tight opacity-90">
-            Turn it on and click any part of the page to have it read aloud.
-          </p>
-        </div>
-      )}
-
-      {readerActive && !isMobile && (
-        <div
-          className={cn(
-            "animate-in slide-in-from-bottom-4 fade-in pointer-events-none",
-            "mb-1 flex items-center rounded-full border border-white/20",
-            "bg-primary px-3 py-1.5 text-[10px] font-bold uppercase",
-            "text-primary-foreground shadow-md duration-300",
-          )}
-          aria-hidden="true"
-        >
-          <MousePointer2 size={12} className="mr-2" /> Live Reader
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-label={readerActive ? "Turn off reader mode" : "Turn on reader mode"}
-        aria-pressed={readerActive}
-        className={cn(
-          "group pointer-events-auto relative flex touch-manipulation items-center",
-          "justify-center rounded-full border border-white/25 bg-primary",
-          "h-12 w-12 sm:h-14 sm:w-14 xl:h-16 xl:w-16",
-          "text-primary-foreground shadow-md outline-none",
-          "transition-transform duration-200 hover:scale-105 active:scale-95",
-          "focus-visible:ring-2 focus-visible:ring-primary",
-          "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        )}
-      >
-        {readerActive ? (
-          <Ear className="h-6 w-6 xl:h-7 xl:w-7" aria-hidden="true" />
-        ) : (
-          <AudioLines
-            className="h-6 w-6 xl:h-7 xl:w-7"
-            aria-hidden="true"
-          />
-        )}
-
-        {!readerActive && !isMobile && (
-          <span
-            className={cn(
-              "pointer-events-none absolute right-full mr-3 translate-x-2",
-              "whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5",
-              "text-xs font-medium text-white opacity-0 shadow-md",
-              "transition-all duration-200 group-hover:translate-x-0",
-              "group-hover:opacity-100 group-focus-visible:translate-x-0",
-              "group-focus-visible:opacity-100",
-            )}
-          >
-            Turn On Reader Mode
-          </span>
-        )}
-
-        {readerActive && !isMobile && (
-          <span
-            className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20"
-            aria-hidden="true"
-          />
-        )}
-      </button>
-
+    <>
       <span className="sr-only" aria-live="polite">
         {readerActive ? "Live reader is active" : "Live reader is inactive"}
       </span>
-    </div>
+
+      {readerActive && (
+        <div
+          className="speech-control-ui select-none fixed bottom-4 left-4
+            z-[70] flex items-center gap-2 rounded-xl bg-primary px-3 py-2
+            text-xs font-semibold text-primary-foreground shadow-lg border
+            border-white/10 animate-in slide-in-from-left-4 fade-in
+            duration-300 sm:bottom-5 sm:left-5 xl:bottom-8 xl:left-8"
+        >
+          <AudioLines className="h-4 w-4 animate-pulse" />
+          <span>Live Reader Active</span>
+          <button
+            onClick={handleToggle}
+            className="ml-2 rounded-lg p-1 hover:bg-white/15 transition-colors"
+            aria-label="Stop Reader"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+    </>
   );
 };

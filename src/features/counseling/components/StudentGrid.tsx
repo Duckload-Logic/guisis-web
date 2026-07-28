@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
-import { IIRProfileView } from "@/features/iir/types";
+import { IIRProfileView, ORDER_BY_OPTIONS } from "@/features/iir/types";
 import { ProfileFemale, ProfileMale } from "@/assets/icons";
 import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -43,15 +44,26 @@ interface StudentGridProps {
 }
 
 type StudentSortOrder = "asc" | "desc";
-type StudentSortKey = "studentName" | "studentNumber" | "email";
+type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 
 function getStudentName(student: IIRProfileView) {
-  return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
-    .replace(/\s+/g, " ")
-    .trim();
+  const parts = [];
+  const lastNameWithSuffix = `${student.lastName || ""}${student.suffixName ? ` ${student.suffixName}` : ""}`.trim();
+  
+  if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
+  
+  const firstNameWithMI = `${student.firstName || ""}${student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""}`.trim();
+  
+  if (firstNameWithMI) parts.push(firstNameWithMI);
+  
+  return parts.join(", ");
 }
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
+  if (student.profilePicture) {
+    return getProfilePictureUrl(student.profilePicture);
+  }
+
   return getIIRTwoByTwoPhoto({
     iirId: student.iirId,
     userId: student.userId,
@@ -87,14 +99,15 @@ export default function StudentGrid({
   viewMode,
   onViewModeChange,
   yearLevels,
+  selectedSort,
+  setSelectedSort,
+  selectedOrder,
+  setSelectedOrder,
 }: StudentGridProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
-
-  const [selectedSort, setSelectedSort] = useState<StudentSortKey>("studentName");
-  const [selectedOrder, setSelectedOrder] = useState<StudentSortOrder>("asc");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -250,9 +263,10 @@ export default function StudentGrid({
 
   const sortOptions = useMemo(
     () => [
-      { id: "studentName", displayName: "Student Name" },
-      { id: "studentNumber", displayName: "Student Number" },
-      { id: "email", displayName: "Email Address" },
+      { id: "lastName", displayName: "Student Name" },
+      { id: "studentId", displayName: "Student Number" },
+      { id: "programId", displayName: "Program" },
+      { id: "yearLevel", displayName: "Year Level" },
     ],
     [],
   );
@@ -438,7 +452,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start pl-2">
-          {renderSortableHeader("Student Name", "studentName")}
+          {renderSortableHeader("Student Name", "lastName")}
         </div>
       ),
       className: "w-[25%] px-2 py-3",
@@ -468,7 +482,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          {renderSortableHeader("Student Number", "studentNumber")}
+          {renderSortableHeader("Student Number", "studentId")}
         </div>
       ),
       className: "w-[15%] px-2 py-3",
@@ -481,7 +495,9 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          {renderSortableHeader("Email Address", "email")}
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+            Email Address
+          </span>
         </div>
       ),
       className: "w-[22%] px-2 py-3",
@@ -652,30 +668,6 @@ export default function StudentGrid({
     );
   };
 
-  if (sortedVisibleStudents.length === 0) {
-    return (
-      <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
-        <NothingFound message="No students match the current filters." />
-        <div className="flex flex-wrap justify-center gap-2">
-          {(selectedStatusId !== "all" || selectedProgramId !== "all" || selectedYearLevelId !== "all") && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setSelectedStatusId("all");
-                setSelectedProgramId("all");
-                setSelectedYearLevelId("all");
-              }}
-              className="rounded-xl shadow-md"
-            >
-              Clear all filters
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-w-0 max-w-full space-y-6">
       
@@ -756,7 +748,39 @@ export default function StudentGrid({
         </div>
       )}
 
-      {viewMode === "tile" ? (
+      {sortedVisibleStudents.length === 0 ? (
+        <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
+          <NothingFound message="No students match the current search or filters." />
+          <div className="flex flex-wrap justify-center gap-2">
+            {searchTerm.trim() && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClearSearch}
+                className="rounded-xl shadow-md"
+              >
+                Clear search
+              </Button>
+            )}
+            {(selectedStatusId !== "all" ||
+              selectedProgramId !== "all" ||
+              selectedYearLevelId !== "all") && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSelectedStatusId("all");
+                  setSelectedProgramId("all");
+                  setSelectedYearLevelId("all");
+                }}
+                className="rounded-xl shadow-md"
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : viewMode === "tile" ? (
         <div
           className={cn(
             "grid gap-4",

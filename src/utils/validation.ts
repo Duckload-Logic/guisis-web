@@ -14,14 +14,22 @@ export interface ValidationResult {
 }
 
 // invalidate inputs with special characters
-// Matches anything that is NOT: alphanumeric, space, period, comma, or hyphen
-export const SPECIAL_CHARS_REGEX = /[^a-zA-Z0-9\s.,'"?!()\/ -]/;
+// Matches anything that is NOT: alphanumeric, space, period, comma, hyphen, single quote, double quote, question mark, exclamation mark, parenthesis, slash, accent marks
+export const SPECIAL_CHARS_REGEX =
+  /[^a-zA-Z0-9\s.,'"?!()\/ \-ñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ]/;
 
 /**
  * Checks if a string contains special characters
  */
 export const hasSpecialCharacters = (value: string): boolean => {
   return SPECIAL_CHARS_REGEX.test(value);
+};
+
+// Name validation
+export const isValidName = (name: string): boolean => {
+  // Allows letters (including accents/enye), spaces, periods, apostrophes, and hyphens.
+  const nameRegex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s.'\-]+$/;
+  return nameRegex.test(name);
 };
 
 // Email validation
@@ -137,6 +145,18 @@ export const validateField = (
         return {
           field: fieldName,
           message: "Username must be 3-50 characters",
+        };
+      }
+      break;
+
+    case "name":
+    case "firstName":
+    case "lastName":
+    case "middleName":
+      if (!isValidName(String(value))) {
+        return {
+          field: fieldName,
+          message: "Name contains invalid characters",
         };
       }
       break;

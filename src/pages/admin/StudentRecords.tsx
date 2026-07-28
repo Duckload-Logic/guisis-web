@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/shared";
 import StudentGrid from "@/features/counseling/components/StudentGrid";
 import { useIIRPagination } from "@/features/iir/hooks";
+import { ORDER_BY_OPTIONS } from "@/features/iir/types";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -96,8 +97,9 @@ export default function StudentRecords() {
   const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
-  
-  const [selectedSort, setSelectedSort] = useState<"studentName" | "studentNumber" | "email">("studentName");
+
+  const [selectedSort, setSelectedSort] =
+    useState<keyof typeof ORDER_BY_OPTIONS>("lastName");
   const [selectedOrder, setSelectedOrder] = useState<"asc" | "desc">("asc");
 
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -136,11 +138,13 @@ export default function StudentRecords() {
     page,
     pageSize,
     search: debouncedSearch,
-    programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
+    programId:
+      selectedProgramId === "all" ? undefined : Number(selectedProgramId),
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
-    yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    sort_by: selectedSort,
-    sort_order: selectedOrder,
+    yearLevel:
+      selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+    orderBy: String(ORDER_BY_OPTIONS[selectedSort] || selectedSort),
+    sortOrder: selectedOrder,
   });
 
   const allStudents = data?.students || [];
@@ -164,7 +168,10 @@ export default function StudentRecords() {
       )}
     >
       {isStudentsError && (
-        <Alert variant="destructive" className="rounded-xl shadow-md">
+        <Alert
+          variant="destructive"
+          className="rounded-xl shadow-md"
+        >
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {(studentsError as Error)?.message || "Unable to load student records."}
@@ -194,15 +201,23 @@ export default function StudentRecords() {
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
               yearLevels={yearLevels}
-              
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               selectedStatusId={selectedStatusId}
-              setSelectedStatusId={(val) => { setSelectedStatusId(val); handleFilterChange(); }}
+              setSelectedStatusId={(val) => {
+                setSelectedStatusId(val);
+                handleFilterChange();
+              }}
               selectedProgramId={selectedProgramId}
-              setSelectedProgramId={(val) => { setSelectedProgramId(val); handleFilterChange(); }}
+              setSelectedProgramId={(val) => {
+                setSelectedProgramId(val);
+                handleFilterChange();
+              }}
               selectedYearLevelId={selectedYearLevelId}
-              setSelectedYearLevelId={(val) => { setSelectedYearLevelId(val); handleFilterChange(); }}
+              setSelectedYearLevelId={(val) => {
+                setSelectedYearLevelId(val);
+                handleFilterChange();
+              }}
               selectedSort={selectedSort}
               setSelectedSort={setSelectedSort}
               selectedOrder={selectedOrder}

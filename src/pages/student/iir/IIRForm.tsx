@@ -13,7 +13,7 @@ import {
   useTouchedState,
 } from "@/features/iir/hooks";
 import { EMPTY_IIR_FORM } from "@/features/iir/constants";
-import { PatchIIRSubmit } from "@/features/iir/services/service";
+import { PatchIIRSubmit, UploadIIRTwoByTwoPhoto } from "@/features/iir/services/service";
 import type { IIRForm as IIRFormType } from "@/features/iir/types";
 import {
   calculateSectionCompletion,
@@ -34,6 +34,7 @@ import {
   getIIRTwoByTwoPhoto,
   getTwoByTwoPhotoIdentityFromForm,
   saveIIRTwoByTwoPhoto,
+  dataUrlToFile,
 } from "@/features/iir/utils/twoByTwoPhoto";
 
 import {
@@ -470,6 +471,16 @@ export default function IIRForm() {
     persistTwoByTwoPhoto(localFormData);
 
     try {
+      const photoDataUrl = localFormData.student?.personalInfo?.twoByTwoPhotoDataUrl;
+      if (photoDataUrl && photoDataUrl.startsWith("data:image/")) {
+        try {
+          const fileToUpload = dataUrlToFile(photoDataUrl, "iir-profile-photo.jpg");
+          await UploadIIRTwoByTwoPhoto(fileToUpload);
+        } catch (uploadErr) {
+          console.error("Failed to upload 2x2 photo to server:", uploadErr);
+        }
+      }
+
       // Submit or update backend record (service handles transformation via normalizeIIRPayload)
       if (isEditMode && editIirId) {
         await PatchIIRSubmit(editIirId, localFormData);
