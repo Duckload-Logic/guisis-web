@@ -128,7 +128,6 @@ export default function StudentRecords() {
     });
   };
 
-  // 2. Feed lifted state into the API hook
   const {
     data,
     isLoading: isStudentsLoading,
@@ -143,7 +142,9 @@ export default function StudentRecords() {
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
     yearLevel:
       selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    orderBy: String(ORDER_BY_OPTIONS[selectedSort] || selectedSort),
+    orderBy: String(
+    ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
+    ),
     sortOrder: selectedOrder,
   });
 

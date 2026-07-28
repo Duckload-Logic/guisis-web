@@ -20,6 +20,9 @@ import { Dropdown, SearchInput } from "@/components/form";
 
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
 
+import { exportToCSV } from "@/lib/csvExport";
+import { appointmentExportColumns } from "./appointmentExportColumns";
+
 function getUrgencyValue(apt: Appointment) {
   const raw = apt.urgencyLevel ?? apt.urgency;
   if (!raw) return null;
@@ -717,6 +720,19 @@ export default function AppointmentList({
               hasHeader={false}
             />
           </div>
+
+          {!isLoading && appointments.length > 0 && (
+            <button
+              onClick={() => exportToCSV(visibleAppointments, appointmentExportColumns, "appointments")}
+              disabled={visibleAppointments.length === 0}
+              className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
+            >
+              <svg className="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export CSV
+            </button>
+          )}
         </div>
       </div>
 

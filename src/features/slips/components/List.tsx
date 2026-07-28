@@ -21,6 +21,9 @@ import { Dropdown, SearchInput } from "@/components/form";
 import type { Slip } from "../types";
 import { SlipStatus, SlipStats } from "../types";
 
+import { exportToCSV } from "@/lib/csvExport";
+import { slipExportColumns } from "./slipExportColumns";
+
 type SortOrder = "asc" | "desc";
 
 type SortOption = {
@@ -577,31 +580,24 @@ export function SlipList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-      
       <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
-        
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
-            <h2 className="text-xl font-bold tracking-tight text-foreground">
-              {title}
-            </h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Student details, absence date, and date needed are shown in one compact table.
-            </p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
+            {title}
+          </h2>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Student details, absence date, and date needed are shown in one compact table.
+          </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
-            <div
-              className={cn(
-                "flex flex-wrap items-center gap-2",
-                "sm:justify-end",
-              )}
-            >
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               <div
                 className={cn(
                   "self-start rounded-xl border border-primary/20",
-                  "bg-primary/5 px-4 py-1.5 text-xs font-semibold",
-                  "text-primary shadow-sm",
+                  "bg-primary/10 px-3 py-1 text-[11px] font-semibold",
+                  "text-primary shadow-md",
                 )}
               >
                 {visibleSlips.length} visible / {slips.length} total
@@ -613,10 +609,7 @@ export function SlipList({
                   variant="outline"
                   size="sm"
                   onClick={restoreHiddenSlips}
-                  className={cn(
-                    "h-8 rounded-xl px-3 text-[11px]",
-                    "font-semibold shadow-md",
-                  )}
+                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
                   Restore {hiddenCount}
@@ -627,13 +620,8 @@ export function SlipList({
         </div>
 
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
-            <label
-              className={cn(
-                "text-sm font-medium",
-                "text-neutral-700 dark:text-neutral-300",
-              )}
-            >
+          <div className="flex flex-1 flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
+            <label className={cn("text-sm font-medium", "text-neutral-700 dark:text-neutral-300")}>
               Search
             </label>
             <SearchInput
@@ -643,8 +631,20 @@ export function SlipList({
               hasHeader={false}
             />
           </div>
-        </div>
 
+          {!isLoading && slips.length > 0 && (
+            <button
+              onClick={() => exportToCSV(visibleSlips, slipExportColumns, "admission-slips")}
+              disabled={visibleSlips.length === 0}
+              className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
+            >
+              <svg className="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export CSV
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
