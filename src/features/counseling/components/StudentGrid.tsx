@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, type MouseEvent } from "react";
+import { useMemo, useRef, type MouseEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -20,6 +20,8 @@ import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
+import { exportToCSV } from "@/lib/csvExport";
+import { studentExportColumns } from "@/features/counseling/components/studentExportColumns";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -28,7 +30,7 @@ interface StudentGridProps {
   viewMode: "tile" | "list";
   onViewModeChange: (mode: "tile" | "list") => void;
   yearLevels: { id: number; name: string }[];
-  
+
   searchTerm: string;
   setSearchTerm: (val: string) => void;
   selectedStatusId: string;
@@ -49,13 +51,13 @@ type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 function getStudentName(student: IIRProfileView) {
   const parts = [];
   const lastNameWithSuffix = `${student.lastName || ""}${student.suffixName ? ` ${student.suffixName}` : ""}`.trim();
-  
+
   if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
-  
+
   const firstNameWithMI = `${student.firstName || ""}${student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""}`.trim();
-  
+
   if (firstNameWithMI) parts.push(firstNameWithMI);
-  
+
   return parts.join(", ");
 }
 
@@ -99,66 +101,37 @@ export default function StudentGrid({
   viewMode,
   onViewModeChange,
   yearLevels,
+  searchTerm,
+  setSearchTerm,
+  selectedStatusId,
+  setSelectedStatusId,
+  selectedProgramId,
+  setSelectedProgramId,
+  selectedYearLevelId,
+  setSelectedYearLevelId,
   selectedSort,
   setSelectedSort,
   selectedOrder,
   setSelectedOrder,
 }: StudentGridProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
-  const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
-  const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
-
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Dynamic Matching Helpers for Cascading Filters ---
-  const normalizedSearch = searchTerm.trim().toLowerCase();
+  // students is already filtered/sorted server-side via useIIRPagination,
+  // so no client-side re-filtering is needed here anymore.
+  const sortedVisibleStudents = students;
 
-  const checkSearchMatch = (student: IIRProfileView) => {
-    if (!normalizedSearch) return true;
-    return [
-      getStudentName(student),
-      student.studentNumber,
-      student.email,
-      student.program?.code,
-      student.status?.name,
-    ]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(normalizedSearch));
-  };
-
-  const checkStatusMatch = (student: IIRProfileView) =>
-    selectedStatusId === "all" || String(student.status?.id || "unknown") === selectedStatusId;
-
-  const checkProgramMatch = (student: IIRProfileView) =>
-    selectedProgramId === "all" || String(student.program?.id || "unknown") === selectedProgramId;
-
-  const checkYearMatch = (student: IIRProfileView) =>
-    selectedYearLevelId === "all" || String(student.yearLevel || "unknown") === selectedYearLevelId;
-
-  // --- Context-Aware Option Generators ---
-  
   const statusOptions = useMemo(() => {
     const statusMap = new Map<string, { id: string; name: string; count: number }>();
-    
-    // 1. Register all existing statuses so options don't vanish entirely
+
     students.forEach((student) => {
       const id = String(student.status?.id || "unknown");
       if (!statusMap.has(id)) {
         statusMap.set(id, { id, name: student.status?.name || "Unknown", count: 0 });
       }
+      statusMap.get(id)!.count += 1;
     });
 
-    // 2. Count based only on OTHER active filters
-    students.forEach((student) => {
-      if (checkProgramMatch(student) && checkYearMatch(student) && checkSearchMatch(student)) {
-        const id = String(student.status?.id || "unknown");
-        const existing = statusMap.get(id);
-        if (existing) existing.count += 1;
-      }
-    });
-
-    const totalMatching = Array.from(statusMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+    const totalMatching = students.length;
 
     return [
       { id: "all", name: "All Statuses", count: totalMatching },
@@ -168,29 +141,21 @@ export default function StudentGrid({
       displayName: status.id === "all" ? status.name : `${status.name} (${status.count})`,
       disabled: status.id !== "all" && status.count === 0,
     }));
-  }, [students, selectedProgramId, selectedYearLevelId, normalizedSearch]);
+  }, [students]);
 
   const programOptions = useMemo(() => {
     const programMap = new Map<string, { id: string; name: string; count: number }>();
-    
+
     students.forEach((student) => {
       if (!student.program) return;
       const id = String(student.program.id);
       if (!programMap.has(id)) {
         programMap.set(id, { id, name: student.program.code || student.program.name, count: 0 });
       }
+      programMap.get(id)!.count += 1;
     });
 
-    students.forEach((student) => {
-      if (checkStatusMatch(student) && checkYearMatch(student) && checkSearchMatch(student)) {
-        if (!student.program) return;
-        const id = String(student.program.id);
-        const existing = programMap.get(id);
-        if (existing) existing.count += 1;
-      }
-    });
-
-    const totalMatching = Array.from(programMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+    const totalMatching = students.length;
 
     return [
       { id: "all", name: "All Programs", count: totalMatching },
@@ -200,11 +165,11 @@ export default function StudentGrid({
       displayName: program.id === "all" ? program.name : `${program.name} (${program.count})`,
       disabled: program.id !== "all" && program.count === 0,
     }));
-  }, [students, selectedStatusId, selectedYearLevelId, normalizedSearch]);
+  }, [students]);
 
   const yearLevelOptions = useMemo(() => {
     const yearMap = new Map<string, { id: string; name: string; count: number }>();
-    
+
     students.forEach((student) => {
       if (!student.yearLevel) return;
       const id = String(student.yearLevel);
@@ -213,18 +178,10 @@ export default function StudentGrid({
         const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
         yearMap.set(id, { id, name, count: 0 });
       }
+      yearMap.get(id)!.count += 1;
     });
 
-    students.forEach((student) => {
-      if (checkStatusMatch(student) && checkProgramMatch(student) && checkSearchMatch(student)) {
-        if (!student.yearLevel) return;
-        const id = String(student.yearLevel);
-        const existing = yearMap.get(id);
-        if (existing) existing.count += 1;
-      }
-    });
-
-    const totalMatching = Array.from(yearMap.values()).reduce((acc, curr) => acc + curr.count, 0);
+    const totalMatching = students.length;
 
     return [
       { id: "all", name: "All Year Levels", count: totalMatching },
@@ -234,32 +191,7 @@ export default function StudentGrid({
       displayName: year.id === "all" ? year.name : `${year.name} (${year.count})`,
       disabled: year.id !== "all" && year.count === 0,
     }));
-  }, [students, yearLevels, selectedStatusId, selectedProgramId, normalizedSearch]);
-
-  // --- Auto-Reset Impossible Combinations ---
-  // If user switches a filter that turns their other selection into an impossible combination (0 results),
-  // this will automatically clear the broken filter so the table doesn't incorrectly show empty.
-  
-  useEffect(() => {
-    if (selectedStatusId !== "all") {
-      const opt = statusOptions.find(o => o.id === selectedStatusId);
-      if (opt && opt.count === 0) setSelectedStatusId("all");
-    }
-  }, [statusOptions, selectedStatusId]);
-
-  useEffect(() => {
-    if (selectedProgramId !== "all") {
-      const opt = programOptions.find(o => o.id === selectedProgramId);
-      if (opt && opt.count === 0) setSelectedProgramId("all");
-    }
-  }, [programOptions, selectedProgramId]);
-
-  useEffect(() => {
-    if (selectedYearLevelId !== "all") {
-      const opt = yearLevelOptions.find(o => o.id === selectedYearLevelId);
-      if (opt && opt.count === 0) setSelectedYearLevelId("all");
-    }
-  }, [yearLevelOptions, selectedYearLevelId]);
+  }, [students, yearLevels]);
 
   const sortOptions = useMemo(
     () => [
@@ -448,6 +380,74 @@ export default function StudentGrid({
     </div>
   );
 
+  const exportButton = (
+    <button
+      onClick={() => exportToCSV(sortedVisibleStudents, studentExportColumns, "student-records")}
+      className="flex items-center h-10 px-4 text-sm font-medium text-red-800 border border-red-800/30 rounded-xl hover:bg-red-800/10 transition-colors bg-white/50 shadow-sm"
+    >
+      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      Export CSV
+    </button>
+  );
+
+  // Shared filter controls, reused identically by both List and Cards toolbars
+  const filterControls = (
+    <>
+      <div className="w-full sm:w-[150px] xl:flex-1">
+        <Dropdown
+          label="Program"
+          options={programOptions}
+          value={selectedProgramId}
+          onChange={(val) => setSelectedProgramId(String(val))}
+          labelKey="displayName"
+          enabled={!isStudentsLoading}
+        />
+      </div>
+      <div className="w-full sm:w-[150px] xl:flex-1">
+        <Dropdown
+          label="Year Level"
+          options={yearLevelOptions}
+          value={selectedYearLevelId}
+          onChange={(val) => setSelectedYearLevelId(String(val))}
+          labelKey="displayName"
+          enabled={!isStudentsLoading}
+        />
+      </div>
+      <div className="w-full sm:w-[150px] xl:flex-1">
+        <Dropdown
+          label="Status"
+          options={statusOptions}
+          value={selectedStatusId}
+          onChange={(val) => setSelectedStatusId(String(val))}
+          labelKey="displayName"
+          enabled={!isStudentsLoading}
+        />
+      </div>
+      <div className="w-full sm:w-[150px] xl:flex-1">
+        <Dropdown
+          label="Sort By"
+          options={sortOptions}
+          value={selectedSort}
+          onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
+          labelKey="displayName"
+          enabled={!isStudentsLoading}
+        />
+      </div>
+      <div className="w-full sm:w-[150px] xl:flex-1">
+        <Dropdown
+          label="Order"
+          options={orderOptions}
+          value={selectedOrder}
+          onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
+          labelKey="displayName"
+          enabled={!isStudentsLoading}
+        />
+      </div>
+    </>
+  );
+
   const columns = [
     {
       header: (
@@ -509,19 +509,10 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-1">
-          <Dropdown
-            label=""
-            options={programOptions}
-            value={selectedProgramId}
-            onChange={(val) => setSelectedProgramId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedProgramId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
-            )}
-          />
+        <div className="w-full flex items-center justify-start">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+            Program
+          </span>
         </div>
       ),
       className: "w-[14%] px-2 py-3",
@@ -533,19 +524,10 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-1">
-          <Dropdown
-            label=""
-            options={yearLevelOptions}
-            value={selectedYearLevelId}
-            onChange={(val) => setSelectedYearLevelId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedYearLevelId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
-            )}
-          />
+        <div className="w-full flex items-center justify-start">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+            Year Level
+          </span>
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -561,19 +543,10 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-4">
-          <Dropdown
-            label=""
-            options={statusOptions}
-            value={selectedStatusId}
-            onChange={(val) => setSelectedStatusId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedStatusId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
-            )}
-          />
+        <div className="w-full flex items-center justify-start">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+            Status
+          </span>
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -670,13 +643,17 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-      
-      {viewMode === "list" ? (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
-          <div className="w-full sm:max-w-md">
+
+        {viewMode === "list" ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-4 shadow-md backdrop-blur-glass">
+          {/* Search Bar - Widened slightly and vertically centered without the label */}
+          <div className="w-full sm:w-[320px] xl:w-[400px]">
             {searchInput}
           </div>
-          <div className="flex items-center shrink-0">
+
+          {/* Action Buttons */}
+          <div className="flex w-full items-center justify-end gap-3 sm:w-auto shrink-0">
+            {exportButton}
             {viewToggle}
           </div>
         </div>
@@ -690,58 +667,11 @@ export default function StudentGrid({
                 </label>
                 {searchInput}
               </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
-                  label="Program"
-                  options={programOptions}
-                  value={selectedProgramId}
-                  onChange={(val) => setSelectedProgramId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
-                  label="Year Level"
-                  options={yearLevelOptions}
-                  value={selectedYearLevelId}
-                  onChange={(val) => setSelectedYearLevelId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
-                  label="Status"
-                  options={statusOptions}
-                  value={selectedStatusId}
-                  onChange={(val) => setSelectedStatusId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
-                  label="Sort By"
-                  options={sortOptions}
-                  value={selectedSort}
-                  onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
-                  label="Order"
-                  options={orderOptions}
-                  value={selectedOrder}
-                  onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
+              {filterControls}
             </div>
-            <div className="flex w-full items-center justify-end 2xl:w-auto shrink-0 pb-[1px]">
+
+            <div className="flex w-full items-center justify-end gap-3 2xl:w-auto shrink-0 pb-[1px]">
+              {exportButton}
               {viewToggle}
             </div>
           </div>
