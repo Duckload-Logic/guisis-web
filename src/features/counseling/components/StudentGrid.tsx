@@ -211,6 +211,30 @@ export default function StudentGrid({
     [],
   );
 
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => 
+      checkStatusMatch(student) && 
+      checkProgramMatch(student) && 
+      checkYearMatch(student) && 
+      checkSearchMatch(student)
+    );
+  }, [students, selectedStatusId, selectedProgramId, selectedYearLevelId, normalizedSearch]);
+
+  const sortedVisibleStudents = useMemo(() => {
+    return [...filteredStudents].sort((a, b) => {
+      const getSortValue = (student: IIRProfileView) => {
+        if (selectedSort === "studentNumber") return student.studentNumber || "";
+        if (selectedSort === "email") return student.email || "";
+        return getStudentName(student);
+      };
+
+      const left = getSortValue(a).toLowerCase();
+      const right = getSortValue(b).toLowerCase();
+      const result = left.localeCompare(right);
+      return selectedOrder === "asc" ? result : -result;
+    });
+  }, [filteredStudents, selectedOrder, selectedSort]);
+
   if (isStudentsLoading || !students) {
     return (
       <div className="flex min-h-screen items-center justify-center">
