@@ -42,6 +42,7 @@ import { format } from "date-fns";
 import { getDateRange, getFilterLabel, type TimeFilter } from "@/utils";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 type SortOrder = "asc" | "desc";
 
@@ -320,6 +321,16 @@ export default function ReviewSlips() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         totalPages={totalPages}
+        exportEndpoint={API_ROUTES.slips.all}
+        exportParams={{
+          search: debouncedSearch,
+          statusId:
+            String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          sortBy: selectedSort,
+          sortOrder: selectedOrder,
+        }}
       />
 
       <AlertDialog

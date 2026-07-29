@@ -20,8 +20,7 @@ import { Dropdown, SearchInput } from "@/components/form";
 
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
 
-import { exportToCSV } from "@/lib/csvExport";
-import { appointmentExportColumns } from "./appointmentExportColumns";
+import { exportBackendCSV, type ExportQueryParams } from "@/lib/csvExport";
 
 function getUrgencyValue(apt: Appointment) {
   const raw = apt.urgencyLevel ?? apt.urgency;
@@ -122,6 +121,8 @@ interface AppointmentListProps {
   currentPage: number;
   onPageChange: (p: number) => void;
   totalPages: number;
+  exportEndpoint?: string;
+  exportParams?: ExportQueryParams;
   className?: string;
 }
 
@@ -145,6 +146,8 @@ export default function AppointmentList({
   currentPage,
   onPageChange,
   totalPages,
+  exportEndpoint,
+  exportParams,
   className,
 }: AppointmentListProps) {
 
@@ -267,6 +270,23 @@ export default function AppointmentList({
   const handleViewClick = (appointment: Appointment, event?: MouseEvent<HTMLButtonElement>) => {
     event?.stopPropagation();
     onViewClick(appointment);
+  };
+
+  const handleExportCSV = () => {
+    if (!exportEndpoint) return;
+
+    void exportBackendCSV(
+      exportEndpoint,
+      {
+        ...exportParams,
+        statusId: selectedStatus?.id || undefined,
+        orderBy: selectedSort,
+        sortOrder: selectedOrder,
+        category: selectedCategory === "all" ? undefined : selectedCategory,
+        urgency: selectedUrgency === "all" ? undefined : selectedUrgency,
+      },
+      "appointments",
+    );
   };
 
   const renderSortableHeader = (label: string, sortKey: string) => {
@@ -723,7 +743,7 @@ export default function AppointmentList({
 
           {!isLoading && appointments.length > 0 && (
             <button
-              onClick={() => exportToCSV(visibleAppointments, appointmentExportColumns, "appointments")}
+              onClick={handleExportCSV}
               disabled={visibleAppointments.length === 0}
               className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
             >

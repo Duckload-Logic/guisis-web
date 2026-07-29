@@ -32,6 +32,7 @@ import {
 import { CalendarPlus, Archive } from "lucide-react";
 import { formatDate } from "@/utils";
 import { cn } from "@/lib/utils";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 const chartConfig = {
   pending: {
@@ -475,6 +476,16 @@ export default function AppointmentsManagement() {
               currentPage={currentPage}
               totalPages={totalPages}
               isLoading={isLoading}
+              exportEndpoint={API_ROUTES.appointments.all}
+              exportParams={{
+                search: debouncedSearch,
+                statusId:
+                  selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
+                startDate: getLocalDateString(selectedDate, startDate),
+                endDate: getLocalDateString(selectedDate, endDate),
+                orderBy: selectedSort,
+                sortOrder: selectedOrder,
+              }}
             />
           </div>
         </div>

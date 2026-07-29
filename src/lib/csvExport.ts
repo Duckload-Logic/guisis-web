@@ -5,7 +5,7 @@ export interface CSVColumn<T> {
   accessor: (row: T) => string | number | null | undefined;
 }
 
-type ExportQueryParams = Record<
+export type ExportQueryParams = Record<
   string,
   string | number | boolean | null | undefined
 >;
