@@ -22,6 +22,9 @@ import { useTraceTracks } from "../hooks";
 import type { SystemLog, SystemLogsParams, SystemLogsResponse } from "../types";
 import type { UseQueryResult } from "@tanstack/react-query";
 
+// --- NEW IMPORT ---
+import { exportBackendCSV } from "@/lib/csvExport";
+
 interface LogsTableProps {
   title: string;
   icon: React.ReactNode;
@@ -29,6 +32,7 @@ interface LogsTableProps {
   useLogsHook: (params?: SystemLogsParams) => UseQueryResult<SystemLogsResponse>;
   actionOptions: string[];
   showIPAddress?: boolean;
+  exportEndpoint?: string; // <-- NEW PROP
 }
 
 type SortOrder = "asc" | "desc";
@@ -120,6 +124,7 @@ export default function LogsTable({
   useLogsHook,
   actionOptions,
   showIPAddress = false,
+  exportEndpoint,
 }: LogsTableProps) {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
@@ -186,6 +191,23 @@ export default function LogsTable({
     setStartDate("");
     setEndDate("");
     setCurrentPage(1);
+  };
+
+  // --- NEW EXPORT HANDLER ---
+  const handleExportCSV = () => {
+    if (!exportEndpoint) return;
+
+    exportBackendCSV(
+      exportEndpoint,
+      {
+        action: selectedAction !== "all" ? selectedAction : undefined,
+        sort_by: selectedSort,
+        sort_order: selectedOrder,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+      `${title.replace(/\s+/g, "_").toLowerCase()}_report`
+    );
   };
 
   usePageMetadata({
@@ -397,6 +419,21 @@ export default function LogsTable({
               />
               Refresh
             </Button>
+
+            {/* --- NEW EXPORT BUTTON --- */}
+            {exportEndpoint && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                className="h-10 rounded-xl border-red-800/30 text-red-800 hover:bg-red-800/10 shadow-sm bg-white/50 dark:bg-transparent transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export CSV
+              </Button>
+            )}
           </div>
         </div>
       </div>

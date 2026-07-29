@@ -1,6 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import LogsTable from "@/features/system-admin/components/LogsTable";
 import { useAuditLogs } from "@/features/system-admin/hooks";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 const AUDIT_ACTIONS = [
   "USER_CREATED",
@@ -55,6 +56,7 @@ export default function AuditLogs() {
       useLogsHook={useAuditLogs}
       actionOptions={AUDIT_ACTIONS}
       showIPAddress={true}
+      exportEndpoint={API_ROUTES.superadmin.logs.audit}
     />
   );
 }
