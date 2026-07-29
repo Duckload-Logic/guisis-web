@@ -7,9 +7,7 @@ import {
 import { useMe } from "@/features/users/hooks/useMe";
 import { QUERY_KEYS } from "@/config/queryKeys";
 import { CACHE_TIMING } from "@/config/constants";
-import { IIRForm, QueryParam } from "../types";
-
-const STUDENTS_PAGE_SIZE = 24;
+import { IIRForm, QueryParam, StudentListResponse } from "../types";
 
 /**
  * Hook to check if the current user has submitted an IIR
@@ -76,7 +74,7 @@ export function useIIRProfile(iirId: string) {
  * Hook for paginated student IIR records (Admin/Staff view)
  */
 export function useIIRPagination(params: QueryParam & { orderBy?: string; sortOrder?: string }) {
-  return useQuery({
+  return useQuery<StudentListResponse>({
     queryKey: [
       ...QUERY_KEYS.iir.inventory.all,
       params.programId,
@@ -85,14 +83,11 @@ export function useIIRPagination(params: QueryParam & { orderBy?: string; sortOr
       params.yearLevel,
       params.statusId,
       params.page,
+      params.pageSize,
       params.orderBy,
       params.sortOrder,
     ],
-    queryFn: () =>
-      GetStudents({
-        ...params,
-        pageSize: STUDENTS_PAGE_SIZE,
-      }),
+    queryFn: () => GetStudents(params),
     placeholderData: (prevData) => prevData,
   });
 }
