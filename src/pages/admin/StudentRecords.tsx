@@ -11,6 +11,9 @@ import { ORDER_BY_OPTIONS } from "@/features/iir/types";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { API_ROUTES } from "@/config/apiRoutes";
+
+import { exportBackendCSV } from "@/lib/csvExport";
 
 function StudentRecordsSkeleton() {
   return (
@@ -143,7 +146,7 @@ export default function StudentRecords() {
     yearLevel:
       selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
     orderBy: String(
-    ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
+      ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
     ),
     sortOrder: selectedOrder,
   });
@@ -160,6 +163,23 @@ export default function StudentRecords() {
 
   // Helper to reset pagination when a filter changes
   const handleFilterChange = () => setPage(1);
+
+  const handleExportCSV = () => {
+    exportBackendCSV(
+      API_ROUTES.iir.inventory.all,
+      {
+        search: debouncedSearch,
+        programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
+        statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
+        yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+        orderBy: String(
+          ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
+        ),
+        sortOrder: selectedOrder,
+      },
+      "student_records_report"
+    );
+  };
 
   return (
     <div
@@ -223,6 +243,7 @@ export default function StudentRecords() {
               setSelectedSort={setSelectedSort}
               selectedOrder={selectedOrder}
               setSelectedOrder={setSelectedOrder}
+              onExportCSV={handleExportCSV}
             />
 
             <Pagination

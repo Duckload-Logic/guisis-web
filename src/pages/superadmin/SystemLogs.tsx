@@ -1,6 +1,7 @@
 import { Server } from "lucide-react";
 import LogsTable from "@/features/system-admin/components/LogsTable";
 import { useSystemLogs } from "@/features/system-admin/hooks";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 const SYSTEM_ACTIONS = [
   "M2M_CLIENT_CREATED",
@@ -27,6 +28,7 @@ export default function SystemLogs() {
       description="Track system-level events such as API key operations and settings changes."
       useLogsHook={useSystemLogs}
       actionOptions={SYSTEM_ACTIONS}
+      exportEndpoint={API_ROUTES.superadmin.logs.system}
     />
   );
 }

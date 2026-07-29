@@ -1,6 +1,7 @@
 import { Shield } from "lucide-react";
 import LogsTable from "@/features/system-admin/components/LogsTable";
 import { useSecurityLogs } from "@/features/system-admin/hooks";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 const SECURITY_ACTIONS = [
   "LOGIN_SUCCESS",
@@ -30,6 +31,7 @@ export default function SecurityLogs() {
       useLogsHook={useSecurityLogs}
       actionOptions={SECURITY_ACTIONS}
       showIPAddress
+      exportEndpoint={API_ROUTES.superadmin.logs.security}
     />
   );
 }

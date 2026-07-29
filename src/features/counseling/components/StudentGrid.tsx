@@ -20,8 +20,6 @@ import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
-import { exportToCSV } from "@/lib/csvExport";
-import { studentExportColumns } from "@/features/counseling/components/studentExportColumns";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -30,7 +28,6 @@ interface StudentGridProps {
   viewMode: "tile" | "list";
   onViewModeChange: (mode: "tile" | "list") => void;
   yearLevels: { id: number; name: string }[];
-
   searchTerm: string;
   setSearchTerm: (val: string) => void;
   selectedStatusId: string;
@@ -43,6 +40,7 @@ interface StudentGridProps {
   setSelectedSort: (val: StudentSortKey) => void;
   selectedOrder: StudentSortOrder;
   setSelectedOrder: (val: StudentSortOrder) => void;
+  onExportCSV: () => void;
 }
 
 type StudentSortOrder = "asc" | "desc";
@@ -113,6 +111,7 @@ export default function StudentGrid({
   setSelectedSort,
   selectedOrder,
   setSelectedOrder,
+  onExportCSV,
 }: StudentGridProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,30 +209,6 @@ export default function StudentGrid({
     ],
     [],
   );
-
-  const filteredStudents = useMemo(() => {
-    return students.filter((student) => 
-      checkStatusMatch(student) && 
-      checkProgramMatch(student) && 
-      checkYearMatch(student) && 
-      checkSearchMatch(student)
-    );
-  }, [students, selectedStatusId, selectedProgramId, selectedYearLevelId, normalizedSearch]);
-
-  const sortedVisibleStudents = useMemo(() => {
-    return [...filteredStudents].sort((a, b) => {
-      const getSortValue = (student: IIRProfileView) => {
-        if (selectedSort === "studentNumber") return student.studentNumber || "";
-        if (selectedSort === "email") return student.email || "";
-        return getStudentName(student);
-      };
-
-      const left = getSortValue(a).toLowerCase();
-      const right = getSortValue(b).toLowerCase();
-      const result = left.localeCompare(right);
-      return selectedOrder === "asc" ? result : -result;
-    });
-  }, [filteredStudents, selectedOrder, selectedSort]);
 
   if (isStudentsLoading || !students) {
     return (
@@ -382,7 +357,7 @@ export default function StudentGrid({
 
   const exportButton = (
     <button
-      onClick={() => exportToCSV(sortedVisibleStudents, studentExportColumns, "student-records")}
+      onClick={onExportCSV}
       className="flex items-center h-10 px-4 text-sm font-medium text-red-800 border border-red-800/30 rounded-xl hover:bg-red-800/10 transition-colors bg-white/50 shadow-sm"
     >
       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,7 +367,6 @@ export default function StudentGrid({
     </button>
   );
 
-  // Shared filter controls, reused identically by both List and Cards toolbars
   const filterControls = (
     <>
       <div className="w-full sm:w-[150px] xl:flex-1">
