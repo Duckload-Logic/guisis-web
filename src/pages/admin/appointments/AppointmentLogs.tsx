@@ -17,6 +17,7 @@ import { usePageMetadata } from "@/context";
 import { Button } from "@/components/ui/button";
 import { ReportModal } from "@/components/shared/ReportModal";
 import { appointmentService } from "@/features/appointments/services";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 export default function AppointmentLogs() {
   const navigate = useNavigate();
@@ -236,6 +237,13 @@ return (
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             totalPages={totalPages}
+            exportEndpoint={API_ROUTES.appointments.all}
+            exportParams={{
+              search: debouncedSearch,
+              statusId: statusFilter || undefined,
+              startDate: dateRange.startDate,
+              endDate: dateRange.endDate,
+            }}
           />
         </div>
 

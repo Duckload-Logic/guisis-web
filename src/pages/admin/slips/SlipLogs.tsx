@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ReportModal } from "@/components/shared/ReportModal";
 import { slipService } from "@/features/slips/services";
 import { cn } from "@/lib/utils";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 export default function SlipLogs() {
   const navigate = useNavigate();
@@ -225,6 +226,13 @@ export default function SlipLogs() {
             statusCounts={[]}
             onStatusChange={function (status: SlipStatus): void {
               throw new Error("Function not implemented.");
+            }}
+            exportEndpoint={API_ROUTES.slips.all}
+            exportParams={{
+              search: debouncedSearch,
+              statusId: statusFilter === "0" ? undefined : statusFilter,
+              startDate: dateRange.startDate,
+              endDate: dateRange.endDate,
             }}
           />
         </div>

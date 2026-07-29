@@ -21,8 +21,7 @@ import { Dropdown, SearchInput } from "@/components/form";
 import type { Slip } from "../types";
 import { SlipStatus, SlipStats } from "../types";
 
-import { exportToCSV } from "@/lib/csvExport";
-import { slipExportColumns } from "./slipExportColumns";
+import { exportBackendCSV, type ExportQueryParams } from "@/lib/csvExport";
 
 type SortOrder = "asc" | "desc";
 
@@ -56,6 +55,8 @@ interface SlipListProps {
   currentPage: number;
   onPageChange: (p: number) => void;
   totalPages?: number;
+  exportEndpoint?: string;
+  exportParams?: ExportQueryParams;
   className?: string;
 }
 
@@ -98,6 +99,8 @@ export function SlipList({
   currentPage,
   onPageChange,
   totalPages = 1,
+  exportEndpoint,
+  exportParams,
   className,
 }: SlipListProps) {
   const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(() => new Set());
@@ -216,6 +219,23 @@ export function SlipList({
   const handleViewClick = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
     event?.stopPropagation();
     onViewClick(slip);
+  };
+
+  const handleExportCSV = () => {
+    if (!exportEndpoint) return;
+
+    void exportBackendCSV(
+      exportEndpoint,
+      {
+        ...exportParams,
+        statusId:
+          String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
+        sortBy: selectedSort,
+        sortOrder: selectedOrder,
+        category: selectedCategory === "all" ? undefined : selectedCategory,
+      },
+      "admission-slips",
+    );
   };
 
   const renderSortableHeader = (label: string, sortKey: string) => {
@@ -634,7 +654,7 @@ export function SlipList({
 
           {!isLoading && slips.length > 0 && (
             <button
-              onClick={() => exportToCSV(visibleSlips, slipExportColumns, "admission-slips")}
+              onClick={handleExportCSV}
               disabled={visibleSlips.length === 0}
               className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
             >
