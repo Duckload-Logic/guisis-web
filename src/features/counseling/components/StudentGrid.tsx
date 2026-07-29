@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
-import { IIRProfileView, ORDER_BY_OPTIONS } from "@/features/iir/types";
+import {
+  IIRProfileView,
+  ORDER_BY_OPTIONS,
+  StudentFilterCounts,
+} from "@/features/iir/types";
 import { ProfileFemale, ProfileMale } from "@/assets/icons";
 import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
@@ -23,6 +27,8 @@ import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 interface StudentGridProps {
   students: IIRProfileView[];
+  totalMatchingStudents: number;
+  filterCounts?: StudentFilterCounts;
   isStudentsLoading: boolean;
   onViewClick: (student: IIRProfileView) => void;
   viewMode: "tile" | "list";
@@ -94,6 +100,8 @@ function renderStudentAvatar(
 
 export default function StudentGrid({
   students,
+  totalMatchingStudents,
+  filterCounts,
   isStudentsLoading,
   onViewClick,
   viewMode,
@@ -120,77 +128,60 @@ export default function StudentGrid({
   const sortedVisibleStudents = students;
 
   const statusOptions = useMemo(() => {
-    const statusMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      const id = String(student.status?.id || "unknown");
-      if (!statusMap.has(id)) {
-        statusMap.set(id, { id, name: student.status?.name || "Unknown", count: 0 });
-      }
-      statusMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const counts = filterCounts?.statuses || [];
 
     return [
-      { id: "all", name: "All Statuses", count: totalMatching },
-      ...Array.from(statusMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Statuses", count: totalMatchingStudents },
+      ...counts.map((status) => ({
+        id: String(status.id),
+        name: status.name,
+        count: status.count,
+      })),
     ].map((status) => ({
       ...status,
-      displayName: status.id === "all" ? status.name : `${status.name} (${status.count})`,
+      displayName:
+        status.id === "all" ? status.name : `${status.name} (${status.count})`,
       disabled: status.id !== "all" && status.count === 0,
     }));
-  }, [students]);
+  }, [filterCounts?.statuses, totalMatchingStudents]);
 
   const programOptions = useMemo(() => {
-    const programMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      if (!student.program) return;
-      const id = String(student.program.id);
-      if (!programMap.has(id)) {
-        programMap.set(id, { id, name: student.program.code || student.program.name, count: 0 });
-      }
-      programMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const counts = filterCounts?.programs || [];
 
     return [
-      { id: "all", name: "All Programs", count: totalMatching },
-      ...Array.from(programMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Programs", count: totalMatchingStudents },
+      ...counts.map((program) => ({
+        id: String(program.id),
+        name: program.code || program.name,
+        count: program.count,
+      })),
     ].map((program) => ({
       ...program,
-      displayName: program.id === "all" ? program.name : `${program.name} (${program.count})`,
+      displayName:
+        program.id === "all" ? program.name : `${program.name} (${program.count})`,
       disabled: program.id !== "all" && program.count === 0,
     }));
-  }, [students]);
+  }, [filterCounts?.programs, totalMatchingStudents]);
 
   const yearLevelOptions = useMemo(() => {
-    const yearMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      if (!student.yearLevel) return;
-      const id = String(student.yearLevel);
-      if (!yearMap.has(id)) {
-        const yrData = yearLevels.find((level) => level.id === student.yearLevel);
-        const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
-        yearMap.set(id, { id, name, count: 0 });
-      }
-      yearMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const countByYear = new Map(
+      (filterCounts?.yearLevels || []).map((year) => [year.id, year.count]),
+    );
 
     return [
-      { id: "all", name: "All Year Levels", count: totalMatching },
-      ...Array.from(yearMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Year Levels", count: totalMatchingStudents },
+      ...yearLevels.map((year) => ({
+        id: String(year.id),
+        name: year.name,
+        count: countByYear.get(year.id) || 0,
+      })),
     ].map((year) => ({
       ...year,
-      displayName: year.id === "all" ? year.name : `${year.name} (${year.count})`,
+      displayName:
+        year.id === "all" ? year.name : `${year.name} (${year.count})`,
       disabled: year.id !== "all" && year.count === 0,
     }));
-  }, [students, yearLevels]);
+  }, [filterCounts?.yearLevels, totalMatchingStudents, yearLevels]);
 
   const sortOptions = useMemo(
     () => [
