@@ -240,16 +240,17 @@ export function SupportManagement() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className={
-        "flex h-[calc(100dvh-9rem)] min-h-[560px] flex-col overflow-hidden " +
-        "rounded-xl border border-glass-border bg-background/50 shadow-md " +
-        "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:flex-row"
-      }
-    >
+    <div className="mx-auto flex w-full flex-col px-4 pb-12 sm:px-6 md:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className={
+          "flex h-[calc(100dvh-9rem)] min-h-[560px] flex-col overflow-hidden " +
+          "rounded-xl border border-glass-border bg-background/50 shadow-md " +
+          "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:flex-row"
+        }
+      >
       {/* Tickets List Sidebar */}
       <div
         className={
@@ -590,7 +591,8 @@ export function SupportManagement() {
           </div>
         )}
       </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 }
 
