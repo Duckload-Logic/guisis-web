@@ -8,7 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, FileText } from "lucide-react";
-import { useSlipLogs, useGetSlipStats } from "@/features/slips/hooks";
+import {
+  useSlipLogs,
+  useGetSlipStats,
+  useGetSlipCategories,
+} from "@/features/slips/hooks";
 import type { Slip, SlipStatus } from "@/features/slips/types";
 import { SlipList } from "@/features/slips/components";
 import { getMonthsList, getYearsList, getMonthRange } from "@/utils";
@@ -58,6 +62,8 @@ export default function SlipLogs() {
 
   // State for other filters
   const [statusFilter, setStatusFilter] = useState<string>("0");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const { data: slipCategories } = useGetSlipCategories();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -94,6 +100,8 @@ export default function SlipLogs() {
   const { data, isLoading } = useSlipLogs({
     page: currentPage,
     statusId: statusFilter !== "0" ? statusFilter : undefined,
+    categoryId:
+      selectedCategory !== "all" ? selectedCategory : undefined,
     search: debouncedSearch,
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
@@ -103,6 +111,8 @@ export default function SlipLogs() {
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
+      categoryId:
+        selectedCategory !== "all" ? selectedCategory : undefined,
     },
   });
   const slipStatusesWithAll = useMemo(() => {
@@ -219,13 +229,19 @@ export default function SlipLogs() {
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             totalPages={totalPages}
-            statuses={[]}
-            // @ts-ignore
-            selectedStatus={undefined}
-            statusCounts={[]}
-            onStatusChange={function (status: SlipStatus): void {
-              throw new Error("Function not implemented.");
+            statuses={slipStatusesWithAll as any}
+            selectedStatus={{ id: statusFilter } as any}
+            statusCounts={slipStats || []}
+            onStatusChange={(status: SlipStatus) => {
+              setStatusFilter(status.id);
+              setCurrentPage(1);
             }}
+            selectedCategory={selectedCategory}
+            onCategoryChange={(cat) => {
+              setSelectedCategory(cat);
+              setCurrentPage(1);
+            }}
+            categories={slipCategories || []}
           />
         </div>
 

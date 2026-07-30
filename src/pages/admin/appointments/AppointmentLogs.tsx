@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   useAppointments,
   useAppointmentsStats,
+  useCategories,
 } from "@/features/appointments/hooks";
 import type { Appointment } from "@/features/appointments/types";
 import { AppointmentList } from "@/features/appointments/components";
@@ -17,6 +18,13 @@ import { usePageMetadata } from "@/context";
 import { Button } from "@/components/ui/button";
 import { ReportModal } from "@/components/shared/ReportModal";
 import { appointmentService } from "@/features/appointments/services";
+
+const APPOINTMENT_URGENCIES = [
+  { id: "Low", name: "Low" },
+  { id: "Medium", name: "Medium" },
+  { id: "High", name: "High" },
+  { id: "Critical", name: "Critical" },
+];
 
 export default function AppointmentLogs() {
   const navigate = useNavigate();
@@ -57,6 +65,9 @@ export default function AppointmentLogs() {
 
   // State for other filters
   const [statusFilter, setStatusFilter] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const { data: categories } = useCategories();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -95,6 +106,10 @@ export default function AppointmentLogs() {
     params: {
       page: currentPage,
       statusId: statusFilter !== 0 ? statusFilter : undefined,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
+      urgency:
+        selectedUrgency === "all" ? undefined : selectedUrgency,
       search: debouncedSearch,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -106,6 +121,10 @@ export default function AppointmentLogs() {
       params: {
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
+        categoryId:
+          selectedCategory === "all" ? undefined : selectedCategory,
+        urgency:
+          selectedUrgency === "all" ? undefined : selectedUrgency,
       },
     });
 
@@ -233,6 +252,18 @@ return (
               setStatusFilter(status.id);
               setCurrentPage(1);
             }}
+            selectedCategory={selectedCategory}
+            onCategoryChange={(cat) => {
+              setSelectedCategory(cat);
+              setCurrentPage(1);
+            }}
+            categories={categories || []}
+            selectedUrgency={selectedUrgency}
+            onUrgencyChange={(urg) => {
+              setSelectedUrgency(urg);
+              setCurrentPage(1);
+            }}
+            urgencies={APPOINTMENT_URGENCIES}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             totalPages={totalPages}

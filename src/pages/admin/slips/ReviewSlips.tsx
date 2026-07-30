@@ -22,6 +22,7 @@ import { useToast } from "@/context";
 import {
   useGetSlipStats,
   useGetSlipStatuses,
+  useGetSlipCategories,
   useSlips,
   useClaimTicket,
 } from "@/features/slips/hooks";
@@ -78,6 +79,8 @@ export default function ReviewSlips() {
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
     },
   });
 
@@ -98,6 +101,9 @@ export default function ReviewSlips() {
     colorKey: "stale",
   } as any);
 
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const { data: slipCategories } = useGetSlipCategories();
+
   const { data, isLoading } = useSlips({
     isAdmin: true,
     params: {
@@ -105,6 +111,8 @@ export default function ReviewSlips() {
       search: debouncedSearch,
       statusId:
         String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
       sortBy: selectedSort,
@@ -305,6 +313,12 @@ export default function ReviewSlips() {
           setSelectedStatus(status);
           setCurrentPage(1);
         }}
+        selectedCategory={selectedCategory}
+        onCategoryChange={(cat) => {
+          setSelectedCategory(cat);
+          setCurrentPage(1);
+        }}
+        categories={slipCategories || []}
         sortOptions={SLIP_SORT_OPTIONS}
         selectedSort={selectedSort}
         onSortChange={(sortValue: string) => {

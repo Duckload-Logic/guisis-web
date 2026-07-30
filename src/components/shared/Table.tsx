@@ -156,6 +156,73 @@ export function Table<T>({
   }
 
   if (data.length === 0) {
+    if (variant === "table" && columns.length > 0) {
+      return (
+        <>
+          <div
+            className={cn(
+              hasMobileRenderer ? "hidden xl:block" : "block",
+              "max-w-full overflow-x-auto overscroll-x-contain",
+              containerClassName,
+            )}
+          >
+            <table
+              className={cn(
+                "w-full min-w-[42rem] border-collapse text-sm xl:min-w-full",
+                tableClassName,
+              )}
+            >
+              <thead>
+                <tr
+                  className={cn(
+                    "border-b border-border/70",
+                    "text-muted-foreground",
+                    "dark:border-white/10"
+                  )}
+                >
+                  {columns.map((col, idx) => (
+                    <th
+                      key={idx}
+                      className={cn(
+                        "px-4 py-3 text-left",
+                        "text-[11px] font-bold uppercase",
+                        "tracking-[0.14em]",
+                        col.className,
+                      )}
+                    >
+                      {col.header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  className={cn(
+                    "border-0 bg-transparent",
+                    "hover:bg-transparent"
+                  )}
+                >
+                  <td
+                    colSpan={columns.length}
+                    className={cn(
+                      "p-0 border-0 bg-transparent",
+                      "hover:bg-transparent"
+                    )}
+                  >
+                    {emptyState}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {hasMobileRenderer && (
+            <div className="block xl:hidden">
+              {emptyState}
+            </div>
+          )}
+        </>
+      );
+    }
     return <>{emptyState}</>;
   }
 

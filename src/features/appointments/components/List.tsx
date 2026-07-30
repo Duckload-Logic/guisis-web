@@ -110,6 +110,12 @@ interface AppointmentListProps {
   selectedStatus: AppointmentStatus;
   statusCounts: StatusCount[];
   onStatusChange: (status: AppointmentStatus) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
+  categories?: { id: number | string; name?: string }[];
+  selectedUrgency?: string;
+  onUrgencyChange?: (urgency: string) => void;
+  urgencies?: { id: string; name?: string }[];
   sortOptions?: SortOption[];
   selectedSort?: string;
   onSortChange?: (sortValue: string) => void;
@@ -133,6 +139,12 @@ export default function AppointmentList({
   selectedStatus,
   statusCounts,
   onStatusChange,
+  selectedCategory: selectedCategoryProp,
+  onCategoryChange: onCategoryChangeProp,
+  categories: categoriesProp,
+  selectedUrgency: selectedUrgencyProp,
+  onUrgencyChange: onUrgencyChangeProp,
+  urgencies: urgenciesProp,
   sortOptions = [],
   selectedSort,
   onSortChange,
@@ -147,28 +159,96 @@ export default function AppointmentList({
   totalPages,
   className,
 }: AppointmentListProps) {
+  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<
+    Set<string>
+  >(() => new Set());
 
-  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(() => new Set());
-  
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const [localCategory, setLocalCategory] = useState<string>("all");
+  const [localUrgency, setLocalUrgency] = useState<string>("all");
 
-  const sortKeyName = useMemo(() => sortOptions?.find(o => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
-  const sortKeyRequested = useMemo(() => sortOptions?.find(o => /created|request/i.test(o.id) || /created|request/i.test(o.name))?.id || "createdAt", [sortOptions]);
-  const sortKeyAppointment = useMemo(() => sortOptions?.find(o => /nearest|when|appoint/i.test(o.id) || /nearest|when|appoint/i.test(o.name))?.id || "nearestAppointment", [sortOptions]);
+  const isServerFiltered = selectedCategoryProp !== undefined;
+
+  const currentCategory = isServerFiltered
+    ? selectedCategoryProp
+    : localCategory;
+  const currentUrgency = isServerFiltered
+    ? selectedUrgencyProp
+    : localUrgency;
+
+  const handleCategoryChange = (val: string) => {
+    if (isServerFiltered) {
+      onCategoryChangeProp?.(val);
+    } else {
+      setLocalCategory(val);
+    }
+  };
+
+  const handleUrgencyChange = (val: string) => {
+    if (isServerFiltered) {
+      onUrgencyChangeProp?.(val);
+    } else {
+      setLocalUrgency(val);
+    }
+  };
+
+  const sortKeyName = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) =>
+          /name|student/i.test(o.id) || /name|student/i.test(o.name),
+      )?.id || "studentName",
+    [sortOptions],
+  );
+  const sortKeyRequested = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) =>
+          /created|request/i.test(o.id) || /created|request/i.test(o.name),
+      )?.id || "createdAt",
+    [sortOptions],
+  );
+  const sortKeyAppointment = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) =>
+          /nearest|when|appoint/i.test(o.id) ||
+          /nearest|when|appoint/i.test(o.name),
+      )?.id || "nearestAppointment",
+    [sortOptions],
+  );
 
   const categoryOptions = useMemo(() => {
+    if (isServerFiltered && categoriesProp) {
+      return [
+        { id: "all", displayName: "All Categories" },
+        ...categoriesProp.map((c) => ({
+          id: String(c.id),
+          displayName: c.name || "",
+        })),
+      ];
+    }
     const cats = new Set<string>();
     appointments.forEach((a) => {
       if (a.appointmentCategory?.name) cats.add(a.appointmentCategory.name);
     });
     return [
       { id: "all", displayName: "All Categories" },
-      ...Array.from(cats).sort().map((c) => ({ id: c, displayName: c })),
+      ...Array.from(cats)
+        .sort()
+        .map((c) => ({ id: c, displayName: c })),
     ];
-  }, [appointments]);
+  }, [appointments, categoriesProp, isServerFiltered]);
 
   const urgencyOptions = useMemo(() => {
+    if (isServerFiltered && urgenciesProp) {
+      return [
+        { id: "all", displayName: "All Urgencies" },
+        ...urgenciesProp.map((u) => ({
+          id: u.id,
+          displayName: u.name || "",
+        })),
+      ];
+    }
     const urgs = new Set<string>();
     appointments.forEach((a) => {
       const u = getUrgencyValue(a)?.label;
@@ -176,24 +256,38 @@ export default function AppointmentList({
     });
     return [
       { id: "all", displayName: "All Urgencies" },
-      ...Array.from(urgs).sort().map((u) => ({ id: u, displayName: u })),
+      ...Array.from(urgs)
+        .sort()
+        .map((u) => ({ id: u, displayName: u })),
     ];
-  }, [appointments]);
+  }, [appointments, urgenciesProp, isServerFiltered]);
 
   const baseFilteredAppointments = useMemo(() => {
     return appointments.filter((appointment) => {
       if (hiddenAppointmentIds.has(String(appointment.id))) return false;
 
-      const matchesCat = selectedCategory === "all" || appointment.appointmentCategory?.name === selectedCategory;
-      const matchesUrg = selectedUrgency === "all" || getUrgencyValue(appointment)?.label === selectedUrgency;
+      if (isServerFiltered) return true;
+
+      const matchesCat =
+        currentCategory === "all" ||
+        appointment.appointmentCategory?.name === currentCategory;
+      const matchesUrg =
+        currentUrgency === "all" ||
+        getUrgencyValue(appointment)?.label === currentUrgency;
 
       return matchesCat && matchesUrg;
     });
-  }, [appointments, hiddenAppointmentIds, selectedCategory, selectedUrgency]);
+  }, [
+    appointments,
+    hiddenAppointmentIds,
+    currentCategory,
+    currentUrgency,
+    isServerFiltered,
+  ]);
 
   const dynamicStatMap = useMemo(() => {
     const map: Record<number, number> = {};
-    
+
     statuses.forEach((status) => {
       if (status.id !== 0) map[status.id] = 0;
     });
@@ -208,14 +302,22 @@ export default function AppointmentList({
   }, [baseFilteredAppointments, statuses]);
 
   const dropdownOptions = useMemo(() => {
-    return statuses.map((status) => ({
-      ...status,
-      displayName:
-        status.id === 0
-          ? "All Statuses"
-          : `${status.name} (${dynamicStatMap[status.id] || 0})`,
-    }));
-  }, [statuses, dynamicStatMap]);
+    return statuses.map((status) => {
+      const serverCountObj = statusCounts?.find(
+        (sc) => sc.id === status.id,
+      );
+      const count = serverCountObj
+        ? serverCountObj.count
+        : dynamicStatMap[status.id] || 0;
+      return {
+        ...status,
+        displayName:
+          status.id === 0
+            ? "All Statuses"
+            : `${status.name} (${count})`,
+      };
+    });
+  }, [statuses, statusCounts, dynamicStatMap]);
 
   const visibleAppointments = useMemo(() => {
     let filtered = baseFilteredAppointments.filter((appointment) => {
@@ -366,14 +468,21 @@ export default function AppointmentList({
           <Dropdown
             label=""
             options={categoryOptions}
-            value={selectedCategory}
-            onChange={(val) => setSelectedCategory(val ? String(val) : "all")} 
+            value={currentCategory}
+            onChange={(val) =>
+              handleCategoryChange(val ? String(val) : "all")
+            }
             labelKey="displayName"
-            enabled={!isLoading && appointments.length > 0 && categoryOptions.length > 1}
+            enabled={!isLoading}
             buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-              selectedCategory === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+              "h-auto w-full justify-between border-0 bg-transparent",
+              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
+              "focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition-colors",
+              currentCategory === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000]",
             )}
           />
         ),
@@ -398,23 +507,33 @@ export default function AppointmentList({
             value={selectedStatus?.id}
             onChange={(val) => {
               if (!val || String(val) === "all" || String(val) === "0") {
-                const allStatus = statuses.find((s) => s.id === 0) || { id: 0, name: "All Statuses" } as AppointmentStatus;
-                onStatusChange(allStatus);
+                const allStatus = statuses.find((s) => s.id === 0) || {
+                  id: 0,
+                  name: "All Statuses",
+                };
+                onStatusChange(allStatus as AppointmentStatus);
                 onPageChange(1);
                 return;
               }
-              const status = statuses.find((s) => String(s.id) === String(val));
+              const status = statuses.find(
+                (s) => String(s.id) === String(val),
+              );
               if (status) {
                 onStatusChange(status);
                 onPageChange(1);
               }
             }}
             labelKey="displayName"
-            enabled={!isLoading && appointments.length > 0 && dropdownOptions.length > 1}
+            enabled={!isLoading}
             buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-              selectedStatus?.id === 0 ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+              "h-auto w-full justify-between border-0 bg-transparent",
+              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
+              "focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition-colors",
+              selectedStatus?.id === 0
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000]",
             )}
           />
         ),
@@ -436,14 +555,21 @@ export default function AppointmentList({
           <Dropdown
             label=""
             options={urgencyOptions}
-            value={selectedUrgency}
-            onChange={(val) => setSelectedUrgency(val ? String(val) : "all")} 
+            value={currentUrgency}
+            onChange={(val) =>
+              handleUrgencyChange(val ? String(val) : "all")
+            }
             labelKey="displayName"
-            enabled={!isLoading && appointments.length > 0 && urgencyOptions.length > 1}
+            enabled={!isLoading}
             buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent px-0 py-0 shadow-none outline-none hover:bg-transparent focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-              selectedUrgency === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+              "h-auto w-full justify-between border-0 bg-transparent",
+              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
+              "focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "transition-colors",
+              currentUrgency === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000]",
             )}
           />
         ),
@@ -455,8 +581,8 @@ export default function AppointmentList({
       selectedSort,
       selectedOrder,
       selectedStatus,
-      selectedCategory,
-      selectedUrgency,
+      currentCategory,
+      currentUrgency,
       dropdownOptions,
       categoryOptions,
       urgencyOptions,
@@ -468,8 +594,9 @@ export default function AppointmentList({
       onOrderChange,
       onPageChange,
       onStatusChange,
+      handleCategoryChange,
+      handleUrgencyChange,
       isLoading,
-      appointments.length,
     ],
   );
 
