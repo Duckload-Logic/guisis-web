@@ -1,4 +1,4 @@
-import { MouseEvent, useMemo, useState } from "react";
+import { MouseEvent, useMemo, useState, useCallback } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -371,43 +371,52 @@ export default function AppointmentList({
     onViewClick(appointment);
   };
 
-  const renderSortableHeader = (label: string, sortKey: string) => {
-    const isActive = selectedSort === sortKey;
-    const Icon =
-      isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
+  const renderSortableHeader = useCallback(
+    (label: string, sortKey: string) => {
+      const isActive = selectedSort === sortKey;
+      const Icon =
+        isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
 
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          onSortChange?.(sortKey);
-          onOrderChange?.(
-            isActive && selectedOrder === "asc" ? "desc" : "asc"
-          );
-          onPageChange(1);
-        }}
-        className={cn(
-          "inline-flex items-center gap-2",
-          "text-left",
-          "text-[11px] font-bold uppercase tracking-[0.14em]",
-          "transition-colors",
-          isActive
-            ? "text-[#800000]"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        <span>{label}</span>
-
-        <Icon
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            onSortChange?.(sortKey);
+            onOrderChange?.(
+              isActive && selectedOrder === "asc" ? "desc" : "asc"
+            );
+            onPageChange(1);
+          }}
           className={cn(
-            "h-3.5 w-3.5 flex-shrink-0",
-            isActive ? "opacity-100" : "opacity-40"
+            "inline-flex items-center gap-2",
+            "text-left",
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "transition-colors",
+            isActive
+              ? "text-[#800000]"
+              : "text-muted-foreground hover:text-foreground"
           )}
-          strokeWidth={isActive ? 2.5 : 2}
-        />
-      </button>
-    );
-  };
+        >
+          <span>{label}</span>
+
+          <Icon
+            className={cn(
+              "h-3.5 w-3.5 flex-shrink-0",
+              isActive ? "opacity-100" : "opacity-40"
+            )}
+            strokeWidth={isActive ? 2.5 : 2}
+          />
+        </button>
+      );
+    },
+    [
+      selectedSort,
+      selectedOrder,
+      onSortChange,
+      onOrderChange,
+      onPageChange,
+    ]
+  );
 
   const columns = useMemo<Column<Appointment>[]>(
     () => [
@@ -593,10 +602,11 @@ export default function AppointmentList({
       onSortChange,
       onOrderChange,
       onPageChange,
-      onStatusChange,
       handleCategoryChange,
       handleUrgencyChange,
       isLoading,
+      renderSortableHeader,
+      onStatusChange,
     ],
   );
 

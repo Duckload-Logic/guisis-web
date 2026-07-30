@@ -4,7 +4,6 @@ import {
   Archive,
   Clock3,
   FileText,
-  XCircle,
   Ticket,
   ShieldCheck,
   User,
@@ -14,9 +13,6 @@ import {
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FormInput } from "@/components/form";
 import { useToast } from "@/context";
 
 import {
@@ -75,7 +71,7 @@ export default function ReviewSlips() {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const dateRange = useMemo(() => getDateRange(timeFilter), [timeFilter]);
 
-  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
+  const { data: slipStats } = useGetSlipStats({
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,

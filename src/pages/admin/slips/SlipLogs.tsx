@@ -135,10 +135,7 @@ export default function SlipLogs() {
   const slips = data?.slips || [];
   const totalPages = data?.totalPages || 1;
 
-  // Calculate total count for the selected month
-  const totalCountForMonth = useMemo(() => {
-    return data?.total || slips.length;
-  }, [data, slips]);
+
 
   // Handle actions
   const handleViewSlip = (slip: Slip) => {
