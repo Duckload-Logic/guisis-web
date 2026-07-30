@@ -603,14 +603,20 @@ export function SlipList({
             : "No active records match the current filters."}
         </p>
 
-        {(selectedCategory !== "all" || String(selectedStatus?.id) !== "0") && (
+        {(currentCategory !== "all" ||
+          String(selectedStatus?.id) !== "0") && (
           <div className="pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                setSelectedCategory("all");
-                const allStatus = statuses.find((s) => String(s.id) === "0") || { id: 0, name: "All Statuses" } as unknown as SlipStatus;
+                handleCategoryChange("all");
+                const allStatus = statuses.find(
+                  (s) => String(s.id) === "0"
+                ) || ({
+                  id: 0,
+                  name: "All Statuses",
+                } as unknown as SlipStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
               }}

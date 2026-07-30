@@ -722,15 +722,18 @@ export default function AppointmentList({
             : "No active records match the current filters."}
         </p>
 
-        {(selectedCategory !== "all" || selectedStatus?.id !== 0 || selectedUrgency !== "all") && (
+        {(currentCategory !== "all" ||
+          selectedStatus?.id !== 0 ||
+          currentUrgency !== "all") && (
           <div className="pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                setSelectedCategory("all");
-                setSelectedUrgency("all");
-                const allStatus = statuses.find((s) => s.id === 0) || { id: 0, name: "All Statuses" } as AppointmentStatus;
+                handleCategoryChange("all");
+                handleUrgencyChange("all");
+                const allStatus = statuses.find((s) => s.id === 0) ||
+                  ({ id: 0, name: "All Statuses" } as AppointmentStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
               }}

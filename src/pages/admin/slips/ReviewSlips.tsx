@@ -61,6 +61,13 @@ export default function ReviewSlips() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("dateNeeded");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<SlipStatus>({
+    id: "0",
+    name: "All Statuses",
+    colorKey: "stale",
+  } as any);
+
   const [ticketCode, setTicketCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [pendingSlip, setPendingSlip] = useState<Slip | null>(null);
@@ -83,6 +90,8 @@ export default function ReviewSlips() {
   const { data: slipStatuses, isLoading: isStatusesLoading } =
     useGetSlipStatuses();
 
+  const { data: slipCategories } = useGetSlipCategories();
+
   const statusWithAll = useMemo(() => {
     if (!slipStatuses) return [];
     return [
@@ -90,15 +99,6 @@ export default function ReviewSlips() {
       ...slipStatuses,
     ];
   }, [slipStatuses]);
-
-  const [selectedStatus, setSelectedStatus] = useState<SlipStatus>({
-    id: "0",
-    name: "All Statuses",
-    colorKey: "stale",
-  } as any);
-
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const { data: slipCategories } = useGetSlipCategories();
 
   const { data, isLoading } = useSlips({
     isAdmin: true,
