@@ -226,6 +226,7 @@ export const API_ROUTES = Object.freeze({
       security: "/logs/security",
       system: "/logs/system",
       audit: "/logs/audit",
+      m2m: "/logs/m2m",
       stats: "/logs/stats",
       activity: "/logs/activity",
       traceTracks: (traceId: string) => `/logs/trace/${traceId}`,

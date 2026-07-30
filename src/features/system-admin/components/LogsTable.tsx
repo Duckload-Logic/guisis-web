@@ -8,6 +8,7 @@ import {
   ArrowDown,
   ArrowUp,
   Inbox,
+  ChevronDown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Pagination, Table, Column } from "@/components/shared";
 import { usePageMetadata } from "@/context";
 import { Dropdown, DatePicker, SearchInput } from "@/components/form";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import { capitalizeWords, truncateText } from "@/utils";
@@ -262,10 +269,73 @@ export default function LogsTable({
       },
       {
         header: (
-          <div className="flex w-full items-center justify-start px-3 py-3">
-            <span className="px-2 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              Action
-            </span>
+          <div
+            className={cn(
+              "flex w-full items-center justify-start px-3 py-3"
+            )}
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-xl",
+                    "px-2 py-1 whitespace-nowrap outline-none",
+                    "text-[11px] font-bold uppercase tracking-[0.14em]",
+                    "transition-colors",
+                    selectedAction !== "all"
+                      ? "text-[#800000]"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span>
+                    Action{" "}
+                    {selectedAction !== "all" &&
+                      `(${formatAction(selectedAction)})`}
+                  </span>
+                  <ChevronDown
+                    className="h-3.5 w-3.5 shrink-0 opacity-60"
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="max-h-[300px] w-56 overflow-y-auto"
+              >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedAction("all");
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg",
+                    "px-3 py-2 text-xs font-semibold cursor-pointer",
+                    selectedAction === "all"
+                      ? "bg-primary/10 text-primary"
+                      : "text-foreground"
+                  )}
+                >
+                  All Actions
+                </DropdownMenuItem>
+                {actionOptions.map((action) => (
+                  <DropdownMenuItem
+                    key={action}
+                    onClick={() => {
+                      setSelectedAction(action);
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg",
+                      "px-3 py-2 text-xs font-semibold cursor-pointer",
+                      selectedAction === action
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground"
+                    )}
+                  >
+                    {formatAction(action)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ),
         className: "w-[18%] p-0",
@@ -389,25 +459,6 @@ export default function LogsTable({
             />
           </div>
 
-          <div className="w-full sm:w-[240px]">
-            <Dropdown
-              label="Action"
-              options={[
-                { id: "all", displayName: "All Actions" },
-                ...actionOptions.map((action) => ({
-                  id: action,
-                  displayName: formatAction(action),
-                })),
-              ]}
-              value={selectedAction}
-              onChange={(val) => {
-                setSelectedAction(String(val));
-                setCurrentPage(1);
-              }}
-              labelKey="displayName"
-              enabled={!isLoading}
-            />
-          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -422,16 +473,7 @@ export default function LogsTable({
               <Filter size={14} className="mr-2" />
               Date Filters
             </Button>
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="h-10 rounded-xl border-border/70 shadow-sm"
-              >
-                Clear Filters
-              </Button>
-            )}
+
             <Button
               variant="outline"
               size="sm"

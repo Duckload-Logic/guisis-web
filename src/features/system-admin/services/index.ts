@@ -278,6 +278,24 @@ export const GetAuditLogs = async (
 };
 
 /**
+ * Get M2M logs
+ */
+export const GetM2MLogs = async (
+  params?: SystemLogsParams,
+  config?: AxiosConfigWithMeta,
+): Promise<SystemLogsResponse> => {
+  try {
+    const { data } = await apiClient.get(
+      API_ROUTES.superadmin.logs.m2m,
+      { ...config, params },
+    );
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Get log statistics
  */
 export const GetLogStats = async (
@@ -532,6 +550,7 @@ export const superadminService = {
   getSecurityLogs: GetSecurityLogs,
   getSystemLogs: GetSystemLogs,
   getAuditLogs: GetAuditLogs,
+  getM2MLogs: GetM2MLogs,
   getLogStats: GetLogStats,
   getLogActivity: GetLogActivity,
   getUserSessions: GetUserSessions,

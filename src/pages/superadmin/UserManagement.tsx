@@ -65,16 +65,18 @@ export default function UserManagement() {
   const [activeTab, setActiveTab] = useState<"users" | "whitelist">("users");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  
+
   const [roleFilter, setRoleFilter] = useState<number | undefined>();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSort, setSelectedSort] = useState<string>("userName");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
 
   const [userToToggle, setUserToToggle] = useState<UserAccount | null>(null);
-  const [userToManageRoles, setUserToManageRoles] = useState<UserAccount | null>(null);
-  const [editingWhitelistEntry, setEditingWhitelistEntry] = useState<WhitelistEntry | null>(null);
-  
+  const [userToManageRoles, setUserToManageRoles] =
+    useState<UserAccount | null>(null);
+  const [editingWhitelistEntry, setEditingWhitelistEntry] =
+    useState<WhitelistEntry | null>(null);
+
   const debounceSearch = useDebounce(search, 500);
   const navigate = useNavigate();
   const { triggerToast } = useToast();
@@ -96,21 +98,27 @@ export default function UserManagement() {
   const removeWhitelistMutation = useRemoveUserFromWhitelist();
 
   const [isWhitelistOpen, setIsWhitelistOpen] = useState(false);
-  const [userToRemoveWhitelist, setUserToRemoveWhitelist] = useState<string | null>(null);
+  const [userToRemoveWhitelist, setUserToRemoveWhitelist] = useState<
+    string | null
+  >(null);
 
   const processedUsers = useMemo(() => {
     let result = [...(data?.users || [])];
 
-    if (statusFilter === "active") result = result.filter(u => u.isActive);
-    if (statusFilter === "blocked") result = result.filter(u => !u.isActive);
+    if (statusFilter === "active") result = result.filter((u) => u.isActive);
+    if (statusFilter === "blocked") result = result.filter((u) => !u.isActive);
 
     return result;
   }, [data?.users, statusFilter]);
 
   const filteredWhitelist = useMemo(() => {
     return (whitelistData || []).filter((entry) => {
-      const matchesSearch = entry.email.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = roleFilter === undefined || entry.roles.some((r) => r.id === roleFilter);
+      const matchesSearch = entry.email
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      const matchesRole =
+        roleFilter === undefined ||
+        entry.roles.some((r) => r.id === roleFilter);
       return matchesSearch && matchesRole;
     });
   }, [whitelistData, search, roleFilter]);
@@ -159,7 +167,8 @@ export default function UserManagement() {
     title: "User Management",
     badgeText: "System-wide Accounts",
     badgeIcon: <Users className="h-3 w-3" />,
-    description: "Manage, audit, and secure all user accounts across the platform.",
+    description:
+      "Manage, audit, and secure all user accounts across the platform.",
   });
 
   const handleToggleStatus = async () => {
@@ -174,7 +183,11 @@ export default function UserManagement() {
     }
   };
 
-  const handleUpdateRoles = async (roleIds: number[], reason: string, referenceId: string) => {
+  const handleUpdateRoles = async (
+    roleIds: number[],
+    reason: string,
+    referenceId: string,
+  ) => {
     if (!userToManageRoles) return;
     try {
       await updateRolesMutation.mutateAsync({
@@ -258,26 +271,37 @@ export default function UserManagement() {
 
   const renderSortableHeader = (label: string, sortKey: string) => {
     const isActive = selectedSort === sortKey;
-    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+    const Icon = isActive
+      ? selectedOrder === "desc"
+        ? ArrowDown
+        : ArrowUp
+      : ArrowUp;
 
     return (
       <button
         type="button"
         onClick={() => {
           setSelectedSort(sortKey);
-          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+          setSelectedOrder(
+            isActive && selectedOrder === "asc" ? "desc" : "asc",
+          );
           setPage(1);
         }}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2 py-1 outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-          isActive ? "text-[#800000]" : "text-muted-foreground hover:text-foreground"
+          isActive
+            ? "text-[#800000]"
+            : "text-muted-foreground hover:text-foreground",
         )}
       >
         {label}
-        <Icon 
-          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
-          strokeWidth={isActive ? 2.5 : 2} 
+        <Icon
+          className={cn(
+            "h-3.5 w-3.5 shrink-0",
+            isActive ? "opacity-100" : "opacity-40",
+          )}
+          strokeWidth={isActive ? 2.5 : 2}
         />
       </button>
     );
@@ -287,13 +311,13 @@ export default function UserManagement() {
     () => [
       {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
+          <div className="flex w-full items-center justify-start px-3 py-3">
             {renderSortableHeader("User", "userName")}
           </div>
         ),
         className: "w-[30%] p-0",
         render: (user: UserAccount) => (
-          <div className="px-3 py-3 flex items-center gap-3 text-left">
+          <div className="flex items-center gap-3 px-3 py-3 text-left">
             <div
               className={cn(
                 "relative flex aspect-square h-10 w-10 shrink-0 items-center justify-center overflow-hidden",
@@ -313,22 +337,25 @@ export default function UserManagement() {
                 />
               )}
             </div>
-            <div className="space-y-0.5 min-w-0">
-              <div className="font-semibold text-foreground truncate">
+            <div className="min-w-0 space-y-0.5">
+              <div className="truncate font-semibold text-foreground">
                 {user.firstName} {user.lastName}{" "}
                 {user.suffixName && <span> {user.suffixName}</span>}
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
-                <Mail size={12} className="shrink-0" />
+              <div className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+                <Mail
+                  size={12}
+                  className="shrink-0"
+                />
                 <span className="truncate">{user.email}</span>
               </div>
             </div>
           </div>
         ),
-        },
+      },
       {
         header: (
-          <div className="px-3 py-3 w-full">
+          <div className="w-full px-3 py-3">
             <Dropdown
               label=""
               options={roleOptions}
@@ -341,14 +368,16 @@ export default function UserManagement() {
               buttonClassName={cn(
                 "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
                 "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+                roleFilter === undefined
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-[#800000]",
               )}
             />
           </div>
         ),
         className: "w-[25%] p-0",
         render: (user: UserAccount) => (
-          <div className="px-3 py-3 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 px-3 py-3">
             {user.roles.map((role: any) => (
               <Badge
                 key={role.id}
@@ -366,7 +395,7 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="px-3 py-3 w-full">
+          <div className="w-full px-3 py-3">
             <Dropdown
               label=""
               options={statusOptions}
@@ -380,49 +409,58 @@ export default function UserManagement() {
               buttonClassName={cn(
                 "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
                 "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                statusFilter === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+                statusFilter === "all"
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-[#800000]",
               )}
             />
           </div>
         ),
         className: "w-[15%] p-0",
         render: (user: UserAccount) => (
-          <div className="px-3 py-3 flex items-center gap-1.5 font-bold tracking-tight">
+          <div className="flex items-center gap-1.5 px-3 py-3 font-bold tracking-tight">
             <div
               className={cn(
-                "h-2 w-2 rounded-full shrink-0",
+                "h-2 w-2 shrink-0 rounded-full",
                 user.isActive ? "bg-emerald-500" : "bg-primary",
               )}
             />
-            <span className="text-sm">{user.isActive ? "Active" : "Blocked"}</span>
+            <span className="text-sm">
+              {user.isActive ? "Active" : "Blocked"}
+            </span>
           </div>
         ),
       },
       {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
+          <div className="flex w-full items-center justify-start px-3 py-3">
             {renderSortableHeader("Joined Date", "joinedDate")}
           </div>
         ),
         className: "w-[20%] p-0",
         render: (user: UserAccount) => (
-          <div className="px-3 py-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Calendar size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{formatDate(user.createdAt)}</span>
+          <div className="flex items-center gap-1.5 px-3 py-3 text-sm text-muted-foreground">
+            <Calendar
+              size={14}
+              className="shrink-0"
+            />
+            <span className="whitespace-nowrap">
+              {formatDate(user.createdAt)}
+            </span>
           </div>
         ),
       },
       {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-end">
-            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground pr-2">
+          <div className="flex w-full items-center justify-end px-3 py-3">
+            <span className="pr-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Actions
             </span>
           </div>
         ),
         className: "w-[10%] p-0",
         render: (user: UserAccount) => (
-          <div className="px-3 py-3 flex justify-end">
+          <div className="flex justify-end px-3 py-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -459,47 +497,62 @@ export default function UserManagement() {
         ),
       },
     ],
-    [navigate, userToManageRoles, userToToggle, roleFilter, statusFilter, selectedSort, selectedOrder],
+    [
+      navigate,
+      userToManageRoles,
+      userToToggle,
+      roleFilter,
+      statusFilter,
+      selectedSort,
+      selectedOrder,
+    ],
   );
 
   const whitelistColumns = useMemo<Column<WhitelistEntry>[]>(
     () => [
       {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start pl-4">
-             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-               Email Address
-             </span>
+          <div className="flex w-full items-center justify-start px-3 py-3 pl-4">
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Email Address
+            </span>
           </div>
         ),
         className: "w-[35%] p-0",
         render: (entry: WhitelistEntry) => (
-          <div className="px-3 py-3 flex items-center gap-2 pl-4 font-medium text-foreground">
-            <Mail size={14} className="text-muted-foreground shrink-0" />
+          <div className="flex items-center gap-2 px-3 py-3 pl-4 font-medium text-foreground">
+            <Mail
+              size={14}
+              className="shrink-0 text-muted-foreground"
+            />
             <span className="truncate">{entry.email}</span>
           </div>
         ),
       },
       {
         header: (
-          <div className="px-3 py-3 w-full">
+          <div className="w-full px-3 py-3">
             <Dropdown
               label=""
               options={roleOptions}
               value={roleFilter === undefined ? "all" : roleFilter}
-              onChange={(val) => setRoleFilter(val === "all" ? undefined : Number(val))}
+              onChange={(val) =>
+                setRoleFilter(val === "all" ? undefined : Number(val))
+              }
               labelKey="displayName"
               buttonClassName={cn(
                 "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
                 "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+                roleFilter === undefined
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-[#800000]",
               )}
             />
           </div>
         ),
         className: "w-[30%] p-0",
         render: (entry: WhitelistEntry) => (
-          <div className="px-3 py-3 flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 px-3 py-3">
             {entry.roles.map((role: any) => (
               <Badge
                 key={role.id}
@@ -517,31 +570,36 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-               Date Whitelisted
-             </span>
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Date Whitelisted
+            </span>
           </div>
         ),
         className: "w-[25%] p-0",
         render: (entry: WhitelistEntry) => (
-          <div className="px-3 py-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Calendar size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{formatDate(entry.createdAt)}</span>
+          <div className="flex items-center gap-1.5 px-3 py-3 text-sm text-muted-foreground">
+            <Calendar
+              size={14}
+              className="shrink-0"
+            />
+            <span className="whitespace-nowrap">
+              {formatDate(entry.createdAt)}
+            </span>
           </div>
         ),
       },
-     {
+      {
         header: (
-          <div className="px-3 py-3 w-full flex items-center justify-end">
-             <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground pr-2">
-               Actions
-             </span>
+          <div className="flex w-full items-center justify-end px-3 py-3">
+            <span className="pr-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Actions
+            </span>
           </div>
         ),
         className: "w-[10%] p-0",
         render: (entry: WhitelistEntry) => (
-          <div className="px-3 py-3 flex justify-end">
+          <div className="flex justify-end px-3 py-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -643,12 +701,12 @@ export default function UserManagement() {
           />
         </div>
 
-        <div className="flex items-center shrink-0">
+        <div className="flex shrink-0 items-center">
           <Button
             onClick={() => setIsWhitelistOpen(true)}
             className={cn(
-              "h-10 rounded-xl bg-primary/75 text-primary-foreground",
-              "flex items-center gap-2 hover:bg-primary shadow-sm",
+              "h-10 rounded-xl bg-primary text-primary-foreground",
+              "hover:brightness-115 flex items-center gap-2 shadow-sm",
             )}
           >
             <UserPlus size={16} />
@@ -658,7 +716,7 @@ export default function UserManagement() {
       </div>
 
       {activeTab === "users" ? (
-        <Card className="overflow-hidden border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40 rounded-2xl">
+        <Card className="overflow-hidden rounded-2xl border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
           <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
@@ -677,21 +735,24 @@ export default function UserManagement() {
               )}
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
             <Table
               data={processedUsers}
               columns={userColumns}
               isLoading={isLoading}
               emptyState={
-                <div className="py-20 flex flex-col items-center text-center text-muted-foreground">
-                  <Inbox className="h-10 w-10 mb-3 opacity-50" />
+                <div className="flex flex-col items-center py-20 text-center text-muted-foreground">
+                  <Inbox className="mb-3 h-10 w-10 opacity-50" />
                   <p>No user accounts found matching your filters.</p>
                   {(roleFilter !== undefined || statusFilter !== "all") && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => { setRoleFilter(undefined); setStatusFilter("all"); }} 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setRoleFilter(undefined);
+                        setStatusFilter("all");
+                      }}
                       className="mt-4 rounded-xl shadow-md"
                     >
                       Clear Filters
@@ -699,7 +760,7 @@ export default function UserManagement() {
                   )}
                 </div>
               }
-              containerClassName="overflow-x-auto" 
+              containerClassName="overflow-x-auto"
               tableClassName="w-full table-fixed min-w-[800px]"
             />
           </CardContent>
@@ -716,7 +777,7 @@ export default function UserManagement() {
           )}
         </Card>
       ) : (
-        <Card className="overflow-hidden border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40 rounded-2xl">
+        <Card className="overflow-hidden rounded-2xl border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
           <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
@@ -733,21 +794,21 @@ export default function UserManagement() {
               </Badge>
             </div>
           </CardHeader>
-          
+
           <CardContent className="p-0">
             <Table
               data={filteredWhitelist}
               columns={whitelistColumns}
               isLoading={isWhitelistLoading}
               emptyState={
-                <div className="py-20 flex flex-col items-center text-center text-muted-foreground">
-                  <Inbox className="h-10 w-10 mb-3 opacity-50" />
+                <div className="flex flex-col items-center py-20 text-center text-muted-foreground">
+                  <Inbox className="mb-3 h-10 w-10 opacity-50" />
                   <p>No pending whitelisted accounts found.</p>
                   {roleFilter !== undefined && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setRoleFilter(undefined)} 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRoleFilter(undefined)}
                       className="mt-4 rounded-xl shadow-md"
                     >
                       Clear Role Filter
@@ -762,7 +823,10 @@ export default function UserManagement() {
         </Card>
       )}
 
-      <AlertDialog open={!!userToToggle} onOpenChange={(open) => !open && setUserToToggle(null)}>
+      <AlertDialog
+        open={!!userToToggle}
+        onOpenChange={(open) => !open && setUserToToggle(null)}
+      >
         <AlertDialogContent className="border-card bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -780,7 +844,9 @@ export default function UserManagement() {
               onClick={handleToggleStatus}
               className={cn(
                 "rounded-xl text-white",
-                userToToggle?.isActive ? "bg-red-500 hover:bg-red-600" : "bg-emerald-500 hover:bg-emerald-600",
+                userToToggle?.isActive
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-emerald-500 hover:bg-emerald-600",
               )}
             >
               {toggleStatusMutation.isPending
@@ -813,12 +879,16 @@ export default function UserManagement() {
         initialRoleIds={editingWhitelistEntry?.roles.map((r) => r.id)}
       />
 
-      <AlertDialog open={!!userToRemoveWhitelist} onOpenChange={(open) => !open && setUserToRemoveWhitelist(null)}>
+      <AlertDialog
+        open={!!userToRemoveWhitelist}
+        onOpenChange={(open) => !open && setUserToRemoveWhitelist(null)}
+      >
         <AlertDialogContent className="border-card bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Remove from Whitelist?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove "{userToRemoveWhitelist}" from the registration whitelist?
+              Are you sure you want to remove "{userToRemoveWhitelist}" from the
+              registration whitelist?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

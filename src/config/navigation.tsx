@@ -122,6 +122,11 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       icon: <FileText size={ICON_SIZE} />,
     },
     {
+      label: "M2M Logs",
+      href: "/superadmin/m2m-logs",
+      icon: <Code size={ICON_SIZE} />,
+    },
+    {
       label: "Security Logs",
       href: "/superadmin/security-logs",
       icon: <Shield size={ICON_SIZE} />,

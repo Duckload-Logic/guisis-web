@@ -189,6 +189,15 @@ export function useAuditLogs(params?: SystemLogsParams) {
   });
 }
 
+export function useM2MLogs(params?: SystemLogsParams) {
+  return useQuery({
+    queryKey: QUERY_KEYS.superadmin.m2mLogs(params),
+    queryFn: () => superadminService.getM2MLogs(params),
+    staleTime: CACHE_TIMING.MEDIUM.staleTime,
+    gcTime: CACHE_TIMING.MEDIUM.gcTime,
+  });
+}
+
 export function useLogStats(startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: QUERY_KEYS.superadmin.logStats(startDate, endDate),

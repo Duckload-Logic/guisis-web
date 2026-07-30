@@ -43,6 +43,45 @@ const ACTION_BADGE_COLORS: Record<string, string> = {
     "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   STUDENT_RECORD_UPDATED:
     "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  M2M_CLIENT_CREATED:
+    "border-emerald-500/20 bg-emerald-500/10 " +
+    "text-emerald-700 dark:text-emerald-400",
+  M2M_CLIENT_REVOKED:
+    "border-red-500/20 bg-red-500/10 " +
+    "text-red-700 dark:text-red-400",
+  M2M_CLIENT_VERIFIED:
+    "border-emerald-500/20 bg-emerald-500/10 " +
+    "text-emerald-700 dark:text-emerald-400",
+  M2M_CLIENT_SECRET_ROTATED:
+    "border-amber-500/20 bg-amber-500/10 " +
+    "text-amber-700 dark:text-amber-400",
+  M2M_CLIENT_USED:
+    "border-blue-500/20 bg-blue-500/10 " +
+    "text-blue-700 dark:text-blue-400",
+  M2M_CLIENT_INVALID:
+    "border-red-500/20 bg-red-500/10 " +
+    "text-red-700 dark:text-red-400",
+  M2M_AUTH_SUCCESS:
+    "border-emerald-500/20 bg-emerald-500/10 " +
+    "text-emerald-700 dark:text-emerald-400",
+  M2M_AUTH_FAILED:
+    "border-red-500/20 bg-red-500/10 " +
+    "text-red-700 dark:text-red-400",
+  M2M_TOKEN_REFRESHED:
+    "border-blue-500/20 bg-blue-500/10 " +
+    "text-blue-700 dark:text-blue-400",
+  M2M_DATA_ACCESS:
+    "border-blue-500/20 bg-blue-500/10 " +
+    "text-blue-700 dark:text-blue-400",
+  M2M_DATA_ACCESS_DENIED:
+    "border-red-500/20 bg-red-500/10 " +
+    "text-red-700 dark:text-red-400",
+  BACKUP_COMPLETED:
+    "border-emerald-500/20 bg-emerald-500/10 " +
+    "text-emerald-700 dark:text-emerald-400",
+  BACKUP_FAILED:
+    "border-red-500/20 bg-red-500/10 " +
+    "text-red-700 dark:text-red-400",
 };
 
 export default function LogDetails() {

@@ -48,6 +48,7 @@ import AnalyticsOverview from "@/pages/superadmin/AnalyticsOverview";
 import SecurityLogs from "@/pages/superadmin/SecurityLogs";
 import SystemLogs from "@/pages/superadmin/SystemLogs";
 import AuditLogs from "@/pages/superadmin/AuditLogs";
+import M2MLogs from "@/pages/superadmin/M2MLogs";
 import UserActivity from "@/pages/superadmin/UserActivity";
 import UserSessions from "@/pages/superadmin/UserSessions";
 import LogDetails from "@/pages/superadmin/LogDetails";
@@ -270,6 +271,7 @@ export const routes: RouteObject[] = [
       { path: "security-logs", element: <SecurityLogs /> },
       { path: "system-logs", element: <SystemLogs /> },
       { path: "audit-logs", element: <AuditLogs /> },
+      { path: "m2m-logs", element: <M2MLogs /> },
       { path: "users/:userId/activity", element: <UserActivity /> },
       { path: "users/:userId/sessions", element: <UserSessions /> },
       { path: ":logType/:id", element: <LogDetails /> },

@@ -18,6 +18,8 @@ const SYSTEM_ACTIONS = [
   "EMAIL_SEND_FAILED",
   "OCR_PROCESSING_SUCCESS",
   "OCR_PROCESSING_FAILED",
+  "BACKUP_COMPLETED",
+  "BACKUP_FAILED",
 ];
 
 export default function SystemLogs() {

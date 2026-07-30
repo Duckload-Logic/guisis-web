@@ -160,6 +160,8 @@ export const QUERY_KEYS = {
       ["superadmin", "logs", "system", params] as const,
     auditLogs: (params?: any) =>
       ["superadmin", "logs", "audit", params] as const,
+    m2mLogs: (params?: any) =>
+      ["superadmin", "logs", "m2m", params] as const,
     logStats: (startDate?: string, endDate?: string) =>
       ["superadmin", "logs", "stats", { startDate, endDate }] as const,
     logActivity: ["superadmin", "logs", "activity"] as const,
