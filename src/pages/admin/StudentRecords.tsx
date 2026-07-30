@@ -213,6 +213,8 @@ export default function StudentRecords() {
           >
             <StudentGrid
               students={allStudents}
+              totalMatchingStudents={data?.meta?.total || 0}
+              filterCounts={data?.filterCounts}
               isStudentsLoading={isStudentsLoading}
               onViewClick={(student) => {
                 navigate(`/admin/student-records/${student.iirId}`, {

@@ -1,4 +1,4 @@
-import { MouseEvent, useMemo, useState } from "react";
+import { MouseEvent, useMemo, useState, useCallback } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -43,6 +43,9 @@ interface SlipListProps {
   selectedStatus: SlipStatus;
   statusCounts: SlipStats[];
   onStatusChange: (status: SlipStatus) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
+  categories?: { id: number | string; name?: string }[];
   sortOptions?: SortOption[];
   selectedSort?: string;
   onSortChange?: (sortValue: string) => void;
@@ -87,6 +90,9 @@ export function SlipList({
   selectedStatus,
   statusCounts,
   onStatusChange,
+  selectedCategory: selectedCategoryProp,
+  onCategoryChange: onCategoryChangeProp,
+  categories: categoriesProp,
   sortOptions = [],
   selectedSort,
   onSortChange,
@@ -103,37 +109,87 @@ export function SlipList({
   exportParams,
   className,
 }: SlipListProps) {
-  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(() => new Set());
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [localCategory, setLocalCategory] = useState<string>("all");
 
-  const sortKeyName = useMemo(() => sortOptions?.find((o) => /name|student/i.test(o.id) || /name|student/i.test(o.name))?.id || "studentName", [sortOptions]);
-  const sortKeyAbsence = useMemo(() => sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))?.id || "dateOfAbsence", [sortOptions]);
-  const sortKeyNeeded = useMemo(() => sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))?.id || "dateNeeded", [sortOptions]);
+  const isServerFiltered = selectedCategoryProp !== undefined;
+
+  const currentCategory = isServerFiltered
+    ? selectedCategoryProp
+    : localCategory;
+
+  const handleCategoryChange = (val: string) => {
+    if (isServerFiltered) {
+      onCategoryChangeProp?.(val);
+    } else {
+      setLocalCategory(val);
+    }
+  };
+
+  const sortKeyName = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) =>
+          /name|student/i.test(o.id) || /name|student/i.test(o.name),
+      )?.id || "studentName",
+    [sortOptions],
+  );
+  const sortKeyAbsence = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) => /absence/i.test(o.id) || /absence/i.test(o.name),
+      )?.id || "dateOfAbsence",
+    [sortOptions],
+  );
+  const sortKeyNeeded = useMemo(
+    () =>
+      sortOptions?.find(
+        (o) => /needed/i.test(o.id) || /needed/i.test(o.name),
+      )?.id || "dateNeeded",
+    [sortOptions],
+  );
 
   const categoryOptions = useMemo(() => {
+    if (isServerFiltered && categoriesProp) {
+      return [
+        { id: "all", displayName: "All Categories" },
+        ...categoriesProp.map((c) => ({
+          id: String(c.id),
+          displayName: c.name || "",
+        })),
+      ];
+    }
     const cats = new Set<string>();
     slips.forEach((slip) => {
       if (slip.category?.name) cats.add(slip.category.name);
     });
     return [
       { id: "all", displayName: "All Categories" },
-      ...Array.from(cats).sort().map((c) => ({ id: c, displayName: c })),
+      ...Array.from(cats)
+        .sort()
+        .map((c) => ({ id: c, displayName: c })),
     ];
-  }, [slips]);
+  }, [slips, categoriesProp, isServerFiltered]);
 
   const baseFilteredSlips = useMemo(() => {
     return slips.filter((slip, index) => {
       if (hiddenSlipKeys.has(getSlipKey(slip, index))) return false;
 
-      const matchesCat = selectedCategory === "all" || slip.category?.name === selectedCategory;
+      if (isServerFiltered) return true;
+
+      const matchesCat =
+        currentCategory === "all" ||
+        slip.category?.name === currentCategory;
 
       return matchesCat;
     });
-  }, [slips, hiddenSlipKeys, selectedCategory]);
+  }, [slips, hiddenSlipKeys, currentCategory, isServerFiltered]);
 
   const dynamicStatMap = useMemo(() => {
     const map: Record<string, number> = {};
-    
+
     (statuses || []).forEach((status) => {
       if (String(status.id) !== "0") {
         map[String(status.id)] = 0;
@@ -142,7 +198,8 @@ export function SlipList({
 
     baseFilteredSlips.forEach((slip) => {
       if (slip.status?.id) {
-        map[String(slip.status.id)] = (map[String(slip.status.id)] || 0) + 1;
+        map[String(slip.status.id)] =
+          (map[String(slip.status.id)] || 0) + 1;
       }
     });
 
@@ -150,14 +207,22 @@ export function SlipList({
   }, [baseFilteredSlips, statuses]);
 
   const dropdownOptions = useMemo(() => {
-    return (statuses || []).map((status) => ({
-      ...status,
-      displayName:
-        String(status.id) === "0"
-          ? "All Statuses"
-          : `${status.name} (${dynamicStatMap[String(status.id)] || 0})`,
-    }));
-  }, [statuses, dynamicStatMap]);
+    return (statuses || []).map((status) => {
+      const serverCountObj = statusCounts?.find(
+        (sc) => String(sc.id) === String(status.id),
+      );
+      const count = serverCountObj
+        ? serverCountObj.count
+        : dynamicStatMap[String(status.id)] || 0;
+      return {
+        ...status,
+        displayName:
+          String(status.id) === "0"
+            ? "All Statuses"
+            : `${status.name} (${count})`,
+      };
+    });
+  }, [statuses, statusCounts, dynamicStatMap]);
 
   const visibleSlips = useMemo(() => {
     let filtered = baseFilteredSlips.filter((slip) => {
@@ -320,16 +385,20 @@ export function SlipList({
           <Dropdown
             label=""
             options={categoryOptions}
-            value={selectedCategory}
+            value={currentCategory}
             onChange={(val) => {
               const v = String(val);
-              setSelectedCategory(!val || v === "" || v === "undefined" ? "all" : v);
+              handleCategoryChange(
+                !val || v === "" || v === "undefined" ? "all" : v,
+              );
             }}
             labelKey="displayName"
             buttonClassName={cn(
               "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedCategory === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+              currentCategory === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000]",
             )}
           />
         ),
@@ -348,8 +417,16 @@ export function SlipList({
             value={selectedStatus?.id}
             onChange={(val) => {
               const v = String(val);
-              if (!val || v === "" || v === "undefined" || v === "0" || v === "all") {
-                const allStatus = statuses.find((s) => String(s.id) === "0") || { id: 0, name: "All Statuses" } as unknown as SlipStatus;
+              if (
+                !val ||
+                v === "" ||
+                v === "undefined" ||
+                v === "0" ||
+                v === "all"
+              ) {
+                const allStatus = statuses.find(
+                  (s) => String(s.id) === "0",
+                ) || ({ id: 0, name: "All Statuses" } as unknown as SlipStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
                 return;
@@ -364,7 +441,9 @@ export function SlipList({
             buttonClassName={cn(
               "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              String(selectedStatus?.id) === "0" ? "text-muted-foreground hover:text-foreground" : "text-[#800000]"
+              String(selectedStatus?.id) === "0"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000]",
             )}
           />
         ),
@@ -374,7 +453,8 @@ export function SlipList({
             className={cn(
               "inline-block rounded-xl border px-2.5 py-0.5",
               "text-[10px] font-bold uppercase shadow-md",
-              STATUS_COLORS[getStatusColorKey(slip.status?.name)] || "bg-gray-200 text-gray-700 border-gray-300",
+              STATUS_COLORS[getStatusColorKey(slip.status?.name)] ||
+                "bg-gray-200 text-gray-700 border-gray-300",
             )}
           >
             {slip.status?.name || "-"}
@@ -389,7 +469,7 @@ export function SlipList({
       sortKeyAbsence,
       sortKeyNeeded,
       categoryOptions,
-      selectedCategory,
+      currentCategory,
       dropdownOptions,
       selectedStatus,
       statuses,
@@ -397,6 +477,8 @@ export function SlipList({
       onOrderChange,
       onPageChange,
       onStatusChange,
+      handleCategoryChange,
+      renderSortableHeader,
     ],
   );
 
@@ -519,14 +601,20 @@ export function SlipList({
             : "No active records match the current filters."}
         </p>
 
-        {(selectedCategory !== "all" || String(selectedStatus?.id) !== "0") && (
+        {(currentCategory !== "all" ||
+          String(selectedStatus?.id) !== "0") && (
           <div className="pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
-                setSelectedCategory("all");
-                const allStatus = statuses.find((s) => String(s.id) === "0") || { id: 0, name: "All Statuses" } as unknown as SlipStatus;
+                handleCategoryChange("all");
+                const allStatus = statuses.find(
+                  (s) => String(s.id) === "0"
+                ) || ({
+                  id: 0,
+                  name: "All Statuses",
+                } as unknown as SlipStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
               }}

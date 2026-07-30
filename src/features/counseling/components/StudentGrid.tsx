@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
-import { IIRProfileView, ORDER_BY_OPTIONS } from "@/features/iir/types";
+import {
+  IIRProfileView,
+  ORDER_BY_OPTIONS,
+  StudentFilterCounts,
+} from "@/features/iir/types";
 import { ProfileFemale, ProfileMale } from "@/assets/icons";
 import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
@@ -23,21 +27,23 @@ import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 interface StudentGridProps {
   students: IIRProfileView[];
+  totalMatchingStudents: number;
+  filterCounts?: StudentFilterCounts;
   isStudentsLoading: boolean;
   onViewClick: (student: IIRProfileView) => void;
   viewMode: "tile" | "list";
   onViewModeChange: (mode: "tile" | "list") => void;
   yearLevels: { id: number; name: string }[];
   searchTerm: string;
-  setSearchTerm: (val: string) => void;
+  setSearchTerm: (value: string) => void;
   selectedStatusId: string;
-  setSelectedStatusId: (val: string) => void;
+  setSelectedStatusId: (value: string) => void;
   selectedProgramId: string;
-  setSelectedProgramId: (val: string) => void;
+  setSelectedProgramId: (value: string) => void;
   selectedYearLevelId: string;
-  setSelectedYearLevelId: (val: string) => void;
+  setSelectedYearLevelId: (value: string) => void;
   selectedSort: StudentSortKey;
-  setSelectedSort: (val: StudentSortKey) => void;
+  setSelectedSort: (value: StudentSortKey) => void;
   selectedOrder: StudentSortOrder;
   setSelectedOrder: (val: StudentSortOrder) => void;
   onExportCSV: () => void;
@@ -47,23 +53,12 @@ type StudentSortOrder = "asc" | "desc";
 type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 
 function getStudentName(student: IIRProfileView) {
-  const parts = [];
-  const lastNameWithSuffix = `${student.lastName || ""}${student.suffixName ? ` ${student.suffixName}` : ""}`.trim();
-
-  if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
-
-  const firstNameWithMI = `${student.firstName || ""}${student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""}`.trim();
-
-  if (firstNameWithMI) parts.push(firstNameWithMI);
-
-  return parts.join(", ");
+  return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
-  if (student.profilePicture) {
-    return getProfilePictureUrl(student.profilePicture);
-  }
-
   return getIIRTwoByTwoPhoto({
     iirId: student.iirId,
     userId: student.userId,
@@ -94,6 +89,8 @@ function renderStudentAvatar(
 
 export default function StudentGrid({
   students,
+  totalMatchingStudents,
+  filterCounts,
   isStudentsLoading,
   onViewClick,
   viewMode,
@@ -114,83 +111,63 @@ export default function StudentGrid({
   onExportCSV,
 }: StudentGridProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // students is already filtered/sorted server-side via useIIRPagination,
-  // so no client-side re-filtering is needed here anymore.
   const sortedVisibleStudents = students;
 
   const statusOptions = useMemo(() => {
-    const statusMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      const id = String(student.status?.id || "unknown");
-      if (!statusMap.has(id)) {
-        statusMap.set(id, { id, name: student.status?.name || "Unknown", count: 0 });
-      }
-      statusMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const counts = filterCounts?.statuses || [];
 
     return [
-      { id: "all", name: "All Statuses", count: totalMatching },
-      ...Array.from(statusMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Statuses", count: totalMatchingStudents },
+      ...counts.map((status) => ({
+        id: String(status.id),
+        name: status.name,
+        count: status.count,
+      })),
     ].map((status) => ({
       ...status,
-      displayName: status.id === "all" ? status.name : `${status.name} (${status.count})`,
+      displayName:
+        status.id === "all" ? status.name : `${status.name} (${status.count})`,
       disabled: status.id !== "all" && status.count === 0,
     }));
-  }, [students]);
+  }, [filterCounts?.statuses, totalMatchingStudents]);
 
   const programOptions = useMemo(() => {
-    const programMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      if (!student.program) return;
-      const id = String(student.program.id);
-      if (!programMap.has(id)) {
-        programMap.set(id, { id, name: student.program.code || student.program.name, count: 0 });
-      }
-      programMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const counts = filterCounts?.programs || [];
 
     return [
-      { id: "all", name: "All Programs", count: totalMatching },
-      ...Array.from(programMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Programs", count: totalMatchingStudents },
+      ...counts.map((program) => ({
+        id: String(program.id),
+        name: program.code || program.name,
+        count: program.count,
+      })),
     ].map((program) => ({
       ...program,
-      displayName: program.id === "all" ? program.name : `${program.name} (${program.count})`,
+      displayName:
+        program.id === "all" ? program.name : `${program.name} (${program.count})`,
       disabled: program.id !== "all" && program.count === 0,
     }));
-  }, [students]);
+  }, [filterCounts?.programs, totalMatchingStudents]);
 
   const yearLevelOptions = useMemo(() => {
-    const yearMap = new Map<string, { id: string; name: string; count: number }>();
-
-    students.forEach((student) => {
-      if (!student.yearLevel) return;
-      const id = String(student.yearLevel);
-      if (!yearMap.has(id)) {
-        const yrData = yearLevels.find((level) => level.id === student.yearLevel);
-        const name = yrData ? `${yrData.name.split(" ")[0]} Year` : "Unknown";
-        yearMap.set(id, { id, name, count: 0 });
-      }
-      yearMap.get(id)!.count += 1;
-    });
-
-    const totalMatching = students.length;
+    const countByYear = new Map(
+      (filterCounts?.yearLevels || []).map((year) => [year.id, year.count]),
+    );
 
     return [
-      { id: "all", name: "All Year Levels", count: totalMatching },
-      ...Array.from(yearMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      { id: "all", name: "All Year Levels", count: totalMatchingStudents },
+      ...yearLevels.map((year) => ({
+        id: String(year.id),
+        name: year.name,
+        count: countByYear.get(year.id) || 0,
+      })),
     ].map((year) => ({
       ...year,
-      displayName: year.id === "all" ? year.name : `${year.name} (${year.count})`,
+      displayName:
+        year.id === "all" ? year.name : `${year.name} (${year.count})`,
       disabled: year.id !== "all" && year.count === 0,
     }));
-  }, [students, yearLevels]);
+  }, [filterCounts?.yearLevels, totalMatchingStudents, yearLevels]);
 
   const sortOptions = useMemo(
     () => [
@@ -218,9 +195,6 @@ export default function StudentGrid({
     );
   }
 
-  if (students.length === 0) {
-    return <NothingFound message="No students found." />;
-  }
 
   const genderColors: Record<number, string> = {
     1: "bg-blue-500",
@@ -360,9 +334,6 @@ export default function StudentGrid({
       onClick={onExportCSV}
       className="flex items-center h-10 px-4 text-sm font-medium text-red-800 border border-red-800/30 rounded-xl hover:bg-red-800/10 transition-colors bg-white/50 shadow-sm"
     >
-      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
       Export CSV
     </button>
   );
@@ -469,7 +440,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+          <span className="px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Email Address
           </span>
         </div>
@@ -483,10 +454,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Program
-          </span>
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={programOptions}
+            value={selectedProgramId}
+            onChange={(val) => setSelectedProgramId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedProgramId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[14%] px-2 py-3",
@@ -498,10 +478,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Year Level
-          </span>
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={yearLevelOptions}
+            value={selectedYearLevelId}
+            onChange={(val) => setSelectedYearLevelId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedYearLevelId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -517,10 +506,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Status
-          </span>
+        <div className="w-full pr-4">
+          <Dropdown
+            label=""
+            options={statusOptions}
+            value={selectedStatusId}
+            onChange={(val) => setSelectedStatusId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedStatusId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -617,16 +615,13 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-
-        {viewMode === "list" ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-4 shadow-md backdrop-blur-glass">
-          {/* Search Bar - Widened slightly and vertically centered without the label */}
-          <div className="w-full sm:w-[320px] xl:w-[400px]">
+      
+      {viewMode === "list" ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
+          <div className="w-full sm:max-w-md">
             {searchInput}
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex w-full items-center justify-end gap-3 sm:w-auto shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {exportButton}
             {viewToggle}
           </div>
@@ -641,9 +636,57 @@ export default function StudentGrid({
                 </label>
                 {searchInput}
               </div>
-              {filterControls}
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Program"
+                  options={programOptions}
+                  value={selectedProgramId}
+                  onChange={(val) => setSelectedProgramId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Year Level"
+                  options={yearLevelOptions}
+                  value={selectedYearLevelId}
+                  onChange={(val) => setSelectedYearLevelId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Status"
+                  options={statusOptions}
+                  value={selectedStatusId}
+                  onChange={(val) => setSelectedStatusId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Sort By"
+                  options={sortOptions}
+                  value={selectedSort}
+                  onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Order"
+                  options={orderOptions}
+                  value={selectedOrder}
+                  onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
             </div>
-
             <div className="flex w-full items-center justify-end gap-3 2xl:w-auto shrink-0 pb-[1px]">
               {exportButton}
               {viewToggle}

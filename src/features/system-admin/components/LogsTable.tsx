@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pagination, Table, Column } from "@/components/shared";
 import { usePageMetadata } from "@/context";
-import { Dropdown, DatePicker } from "@/components/form";
+import { Dropdown, DatePicker, SearchInput } from "@/components/form";
+import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import { capitalizeWords, truncateText } from "@/utils";
 import { useNavigate } from "react-router-dom";
@@ -131,6 +132,8 @@ export default function LogsTable({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   
   const [selectedAction, setSelectedAction] = useState<string>("all");
   const [selectedSort, setSelectedSort] = useState<string>("timestamp");
@@ -161,6 +164,10 @@ export default function LogsTable({
       p.end_date = endDate;
     }
 
+    if (debouncedSearch) {
+      p.search = debouncedSearch;
+    }
+
     return p;
   }, [
     currentPage,
@@ -169,27 +176,27 @@ export default function LogsTable({
     endDate,
     selectedSort,
     selectedOrder,
+    debouncedSearch,
   ]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
 
-  const processedLogs = useMemo(() => {
-    let list = [...(data?.logs ?? [])];
-
-    if (selectedAction !== "all") {
-      list = list.filter((log) => log.action === selectedAction);
-    }
-
-    return list;
-  }, [data?.logs, selectedAction]);
+  const processedLogs = data?.logs ?? [];
   const totalPages = data?.meta?.totalPages ?? 1;
   const total = data?.meta?.total ?? 0;
-  const hasActiveFilters = Boolean(startDate || endDate || selectedAction !== "all");
+  
+  const hasActiveFilters = Boolean(
+    startDate ||
+      endDate ||
+      selectedAction !== "all" ||
+      search
+  );
 
   const handleReset = () => {
     setSelectedAction("all");
     setStartDate("");
     setEndDate("");
+    setSearch("");
     setCurrentPage(1);
   };
 
@@ -363,7 +370,25 @@ export default function LogsTable({
           </div>
         </div>
         
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+        <div
+          className={cn(
+            "flex w-full flex-col gap-3",
+            "sm:w-auto sm:flex-row sm:items-end"
+          )}
+        >
+          <div className="w-full sm:w-[240px]">
+            <SearchInput
+              hasHeader={false}
+              placeholder="Search logs..."
+              className="h-10 rounded-xl"
+              searchTerm={search}
+              onSearchChange={(val) => {
+                setSearch(val);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
           <div className="w-full sm:w-[240px]">
             <Dropdown
               label="Action"
