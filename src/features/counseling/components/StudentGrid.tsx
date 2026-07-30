@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/form";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
-import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 interface StudentGridProps {
   students: IIRProfileView[];
@@ -35,17 +34,17 @@ interface StudentGridProps {
   onViewModeChange: (mode: "tile" | "list") => void;
   yearLevels: { id: number; name: string }[];
   searchTerm: string;
-  setSearchTerm: (val: string) => void;
+  setSearchTerm: (value: string) => void;
   selectedStatusId: string;
-  setSelectedStatusId: (val: string) => void;
+  setSelectedStatusId: (value: string) => void;
   selectedProgramId: string;
-  setSelectedProgramId: (val: string) => void;
+  setSelectedProgramId: (value: string) => void;
   selectedYearLevelId: string;
-  setSelectedYearLevelId: (val: string) => void;
+  setSelectedYearLevelId: (value: string) => void;
   selectedSort: StudentSortKey;
-  setSelectedSort: (val: StudentSortKey) => void;
+  setSelectedSort: (value: StudentSortKey) => void;
   selectedOrder: StudentSortOrder;
-  setSelectedOrder: (val: StudentSortOrder) => void;
+  setSelectedOrder: (value: StudentSortOrder) => void;
   onExportCSV: () => void;
 }
 
@@ -53,23 +52,12 @@ type StudentSortOrder = "asc" | "desc";
 type StudentSortKey = keyof typeof ORDER_BY_OPTIONS;
 
 function getStudentName(student: IIRProfileView) {
-  const parts = [];
-  const lastNameWithSuffix = `${student.lastName || ""}${student.suffixName ? ` ${student.suffixName}` : ""}`.trim();
-
-  if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
-
-  const firstNameWithMI = `${student.firstName || ""}${student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""}`.trim();
-
-  if (firstNameWithMI) parts.push(firstNameWithMI);
-
-  return parts.join(", ");
+  return `${student.firstName || ""} ${student.lastName || ""} ${student.suffixName || ""}`
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getStudentTwoByTwoPhoto(student: IIRProfileView) {
-  if (student.profilePicture) {
-    return getProfilePictureUrl(student.profilePicture);
-  }
-
   return getIIRTwoByTwoPhoto({
     iirId: student.iirId,
     userId: student.userId,
@@ -122,9 +110,6 @@ export default function StudentGrid({
   onExportCSV,
 }: StudentGridProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // students is already filtered/sorted server-side via useIIRPagination,
-  // so no client-side re-filtering is needed here anymore.
   const sortedVisibleStudents = students;
 
   const statusOptions = useMemo(() => {
@@ -209,9 +194,6 @@ export default function StudentGrid({
     );
   }
 
-  if (students.length === 0) {
-    return <NothingFound message="No students found." />;
-  }
 
   const genderColors: Record<number, string> = {
     1: "bg-blue-500",
@@ -347,70 +329,14 @@ export default function StudentGrid({
   );
 
   const exportButton = (
-    <button
+    <Button
+      type="button"
+      variant="outline"
       onClick={onExportCSV}
-      className="flex items-center h-10 px-4 text-sm font-medium text-red-800 border border-red-800/30 rounded-xl hover:bg-red-800/10 transition-colors bg-white/50 shadow-sm"
+      className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary shadow-md"
     >
-      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
       Export CSV
-    </button>
-  );
-
-  const filterControls = (
-    <>
-      <div className="w-full sm:w-[150px] xl:flex-1">
-        <Dropdown
-          label="Program"
-          options={programOptions}
-          value={selectedProgramId}
-          onChange={(val) => setSelectedProgramId(String(val))}
-          labelKey="displayName"
-          enabled={!isStudentsLoading}
-        />
-      </div>
-      <div className="w-full sm:w-[150px] xl:flex-1">
-        <Dropdown
-          label="Year Level"
-          options={yearLevelOptions}
-          value={selectedYearLevelId}
-          onChange={(val) => setSelectedYearLevelId(String(val))}
-          labelKey="displayName"
-          enabled={!isStudentsLoading}
-        />
-      </div>
-      <div className="w-full sm:w-[150px] xl:flex-1">
-        <Dropdown
-          label="Status"
-          options={statusOptions}
-          value={selectedStatusId}
-          onChange={(val) => setSelectedStatusId(String(val))}
-          labelKey="displayName"
-          enabled={!isStudentsLoading}
-        />
-      </div>
-      <div className="w-full sm:w-[150px] xl:flex-1">
-        <Dropdown
-          label="Sort By"
-          options={sortOptions}
-          value={selectedSort}
-          onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
-          labelKey="displayName"
-          enabled={!isStudentsLoading}
-        />
-      </div>
-      <div className="w-full sm:w-[150px] xl:flex-1">
-        <Dropdown
-          label="Order"
-          options={orderOptions}
-          value={selectedOrder}
-          onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
-          labelKey="displayName"
-          enabled={!isStudentsLoading}
-        />
-      </div>
-    </>
+    </Button>
   );
 
   const columns = [
@@ -460,7 +386,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
+          <span className="px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Email Address
           </span>
         </div>
@@ -474,10 +400,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Program
-          </span>
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={programOptions}
+            value={selectedProgramId}
+            onChange={(val) => setSelectedProgramId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedProgramId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[14%] px-2 py-3",
@@ -489,10 +424,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Year Level
-          </span>
+        <div className="w-full pr-1">
+          <Dropdown
+            label=""
+            options={yearLevelOptions}
+            value={selectedYearLevelId}
+            onChange={(val) => setSelectedYearLevelId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedYearLevelId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -508,10 +452,19 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground px-2">
-            Status
-          </span>
+        <div className="w-full pr-4">
+          <Dropdown
+            label=""
+            options={statusOptions}
+            value={selectedStatusId}
+            onChange={(val) => setSelectedStatusId(String(val))}
+            labelKey="displayName"
+            buttonClassName={cn(
+              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
+              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
+              selectedStatusId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+            )}
+          />
         </div>
       ),
       className: "w-[12%] px-2 py-3",
@@ -608,16 +561,13 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-
-        {viewMode === "list" ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-4 shadow-md backdrop-blur-glass">
-          {/* Search Bar - Widened slightly and vertically centered without the label */}
-          <div className="w-full sm:w-[320px] xl:w-[400px]">
+      
+      {viewMode === "list" ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
+          <div className="w-full sm:max-w-md">
             {searchInput}
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex w-full items-center justify-end gap-3 sm:w-auto shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {exportButton}
             {viewToggle}
           </div>
@@ -632,9 +582,57 @@ export default function StudentGrid({
                 </label>
                 {searchInput}
               </div>
-              {filterControls}
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Program"
+                  options={programOptions}
+                  value={selectedProgramId}
+                  onChange={(val) => setSelectedProgramId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Year Level"
+                  options={yearLevelOptions}
+                  value={selectedYearLevelId}
+                  onChange={(val) => setSelectedYearLevelId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Status"
+                  options={statusOptions}
+                  value={selectedStatusId}
+                  onChange={(val) => setSelectedStatusId(String(val))}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Sort By"
+                  options={sortOptions}
+                  value={selectedSort}
+                  onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
+              <div className="w-full sm:w-[150px] xl:flex-1">
+                <Dropdown
+                  label="Order"
+                  options={orderOptions}
+                  value={selectedOrder}
+                  onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
+                  labelKey="displayName"
+                  enabled={!isStudentsLoading}
+                />
+              </div>
             </div>
-
             <div className="flex w-full items-center justify-end gap-3 2xl:w-auto shrink-0 pb-[1px]">
               {exportButton}
               {viewToggle}
