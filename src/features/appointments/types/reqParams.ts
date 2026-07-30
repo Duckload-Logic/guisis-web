@@ -5,6 +5,8 @@ export type QueryParam = {
   orderBy?: string;
   sortOrder?: "asc" | "desc";
   statusId?: number;
+  categoryId?: number | string;
+  urgency?: string;
   startDate?: string;
   endDate?: string;
 };

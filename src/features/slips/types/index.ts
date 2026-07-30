@@ -6,6 +6,7 @@ export interface QueryParams {
   limit?: number;
   sortBy?: string;
   statusId?: string | number;
+  categoryId?: string | number;
   sortOrder?: "asc" | "desc";
   search?: string;
   startDate?: string;

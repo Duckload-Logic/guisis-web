@@ -4,7 +4,6 @@ import {
   Archive,
   Clock3,
   FileText,
-  XCircle,
   Ticket,
   ShieldCheck,
   User,
@@ -14,14 +13,12 @@ import {
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FormInput } from "@/components/form";
 import { useToast } from "@/context";
 
 import {
   useGetSlipStats,
   useGetSlipStatuses,
+  useGetSlipCategories,
   useSlips,
   useClaimTicket,
 } from "@/features/slips/hooks";
@@ -65,6 +62,13 @@ export default function ReviewSlips() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("dateNeeded");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<SlipStatus>({
+    id: "0",
+    name: "All Statuses",
+    colorKey: "stale",
+  } as any);
+
   const [ticketCode, setTicketCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [pendingSlip, setPendingSlip] = useState<Slip | null>(null);
@@ -75,15 +79,19 @@ export default function ReviewSlips() {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const dateRange = useMemo(() => getDateRange(timeFilter), [timeFilter]);
 
-  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
+  const { data: slipStats } = useGetSlipStats({
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
     },
   });
 
   const { data: slipStatuses, isLoading: isStatusesLoading } =
     useGetSlipStatuses();
+
+  const { data: slipCategories } = useGetSlipCategories();
 
   const statusWithAll = useMemo(() => {
     if (!slipStatuses) return [];
@@ -93,12 +101,6 @@ export default function ReviewSlips() {
     ];
   }, [slipStatuses]);
 
-  const [selectedStatus, setSelectedStatus] = useState<SlipStatus>({
-    id: "0",
-    name: "All Statuses",
-    colorKey: "stale",
-  } as any);
-
   const { data, isLoading } = useSlips({
     isAdmin: true,
     params: {
@@ -106,6 +108,8 @@ export default function ReviewSlips() {
       search: debouncedSearch,
       statusId:
         String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
       sortBy: selectedSort,
@@ -306,6 +310,12 @@ export default function ReviewSlips() {
           setSelectedStatus(status);
           setCurrentPage(1);
         }}
+        selectedCategory={selectedCategory}
+        onCategoryChange={(cat) => {
+          setSelectedCategory(cat);
+          setCurrentPage(1);
+        }}
+        categories={slipCategories || []}
         sortOptions={SLIP_SORT_OPTIONS}
         selectedSort={selectedSort}
         onSortChange={(sortValue: string) => {

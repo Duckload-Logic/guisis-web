@@ -335,6 +335,31 @@ export type QueryParam = {
   statusId?: number;
 };
 
+export interface StudentFilterCount {
+  id: number;
+  name: string;
+  code?: string;
+  count: number;
+}
+
+export interface StudentFilterCounts {
+  statuses: StudentFilterCount[];
+  programs: StudentFilterCount[];
+  yearLevels: StudentFilterCount[];
+}
+
+export interface StudentListResponse {
+  students: IIRProfileView[];
+  total?: number;
+  meta: {
+    total: number;
+    page: number;
+    pagesSize: number;
+    totalPages: number;
+  };
+  filterCounts: StudentFilterCounts;
+}
+
 export interface IIRProfileView {
   iirId: string;
   userId: string;

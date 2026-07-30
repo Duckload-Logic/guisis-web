@@ -6,7 +6,7 @@ import {
 } from "@/features/appointments/hooks";
 import { Calendar, AppointmentList } from "@/features/appointments/components";
 import { Appointment, AppointmentStatus } from "@/features/appointments/types";
-import { useStatuses } from "@/features/appointments/hooks";
+import { useStatuses, useCategories } from "@/features/appointments/hooks";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toISODateString } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -78,6 +78,13 @@ const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
   { id: "desc", name: "Descending" },
 ];
 
+const APPOINTMENT_URGENCIES = [
+  { id: "Low", name: "Low" },
+  { id: "Medium", name: "Medium" },
+  { id: "High", name: "High" },
+  { id: "Critical", name: "Critical" },
+];
+
 function getChartColorKey(statusName: string): keyof typeof chartConfig {
   const name = statusName.toLowerCase().trim();
   if (name === "pending") return "pending";
@@ -93,6 +100,9 @@ function getChartColorKey(statusName: string): keyof typeof chartConfig {
 
 export default function AppointmentsManagement() {
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const { data: categories } = useCategories();
   const { data: appointmentStatuses, isLoading: isStatusesLoading } =
     useStatuses();
 
@@ -143,6 +153,10 @@ export default function AppointmentsManagement() {
       params: {
         startDate: getLocalDateString(selectedDate, startDate),
         endDate: getLocalDateString(selectedDate, endDate),
+        categoryId:
+          selectedCategory === "all" ? undefined : selectedCategory,
+        urgency:
+          selectedUrgency === "all" ? undefined : selectedUrgency,
       },
     });
 
@@ -153,6 +167,10 @@ export default function AppointmentsManagement() {
       pageSize: 10,
       search: debouncedSearch,
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
+      categoryId:
+        selectedCategory === "all" ? undefined : selectedCategory,
+      urgency:
+        selectedUrgency === "all" ? undefined : selectedUrgency,
       startDate: getLocalDateString(selectedDate, startDate),
       endDate: getLocalDateString(selectedDate, endDate),
       orderBy: selectedSort,
@@ -453,6 +471,18 @@ export default function AppointmentsManagement() {
                 setSelectedStatus(status);
                 setCurrentPage(1);
               }}
+              selectedCategory={selectedCategory}
+              onCategoryChange={(cat) => {
+                setSelectedCategory(cat);
+                setCurrentPage(1);
+              }}
+              categories={categories || []}
+              selectedUrgency={selectedUrgency}
+              onUrgencyChange={(urg) => {
+                setSelectedUrgency(urg);
+                setCurrentPage(1);
+              }}
+              urgencies={APPOINTMENT_URGENCIES}
               sortOptions={APPOINTMENT_SORT_OPTIONS}
               selectedSort={selectedSort}
               onSortChange={(sortValue: string) => {
