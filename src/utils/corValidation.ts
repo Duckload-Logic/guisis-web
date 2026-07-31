@@ -90,11 +90,13 @@ const isPngHeader = (header: Uint8Array) => {
 const isJpegHeader = (header: Uint8Array) =>
   header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
 
-const hasMatchingFileSignature = (extension: string, header: Uint8Array) => {
+const hasMatchingFileSignature = (
+  extension: string,
+  header: Uint8Array,
+) => {
   if (extension === "pdf") return isPdfHeader(header);
   if (extension === "png") return isPngHeader(header);
-  if (extension === "jpg" || extension === "jpeg") return isJpegHeader(header);
-  return false;
+  return isJpegHeader(header);
 };
 
 const fileTypeMatchesExtension = (file: File, extension: string) => {
@@ -103,9 +105,7 @@ const fileTypeMatchesExtension = (file: File, extension: string) => {
 
   if (extension === "pdf") return file.type === "application/pdf";
   if (extension === "png") return file.type === "image/png";
-  if (extension === "jpg" || extension === "jpeg") return file.type === "image/jpeg";
-
-  return false;
+  return file.type === "image/jpeg";
 };
 
 const pdfHeaderHasCorKeyword = (header: Uint8Array) => {
@@ -129,12 +129,15 @@ export const validateCorFile = async (
   file: File,
   options: CorValidationOptions = {},
 ): Promise<CorValidationResult> => {
+  if (!file) {
+    return {
+      isValid: false,
+      error: "Please select a COR file to upload.",
+    };
+  }
+
   const maxSizeBytes = options.maxSizeBytes ?? DEFAULT_MAX_SIZE_BYTES;
   const extension = getFileExtension(file.name);
-
-  if (!file) {
-    return { isValid: false, error: "Please select a COR file to upload." };
-  }
 
   if (file.size <= 0) {
     return { isValid: false, error: `File "${file.name}" is empty.` };

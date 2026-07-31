@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
@@ -7,6 +8,10 @@ import autoprefixer from "autoprefixer";
 import unusedCode from "vite-plugin-unused-code";
 
 export default defineConfig({
+  test: {
+    environment: "node",
+    globals: true,
+  },
   plugins: [
     react(),
     svgr(),
