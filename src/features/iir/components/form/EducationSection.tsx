@@ -246,14 +246,16 @@ export const EducationSection = forwardRef<
       "yearCompleted",
     ];
 
-    const hasData = [
-      ...requiredFields,
-      "awards",
-    ].some((field) => !!school[field]?.toString().trim());
+    const isFieldFilled = (field: string) => {
+      const val = school[field];
+      if (val === null || val === undefined) return false;
+      const str = val.toString().trim();
+      return str !== "" && str !== "0";
+    };
 
-    const filledCount = requiredFields.filter(
-      (field) => !!school[field]?.toString().trim(),
-    ).length;
+    const hasData = [...requiredFields, "awards"].some(isFieldFilled);
+
+    const filledCount = requiredFields.filter(isFieldFilled).length;
 
     // Check if any field in this school slot has a validation error
     const hasError = Object.keys(errors).some((path) =>

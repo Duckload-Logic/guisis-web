@@ -759,7 +759,10 @@ export const FamilySection = forwardRef<
         <div className="flex flex-col gap-10">
           <SectionContainer
             title="Guardian's Information"
-            description="Person who assumes responsibility if parents are unavailable. If any information is unknown, just leave it blank."
+            description={
+              "Person who assumes responsibility if " +
+              "parents are unavailable."
+            }
             icon={User}
           >
             <div className="flex flex-col gap-8">

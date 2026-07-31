@@ -28,6 +28,15 @@ function toDateOnly(dateStr: string | null | undefined): string {
 }
 
 /**
+ * Normalizes a year value, mapping zero values (0 or "0") to empty string.
+ */
+function normalizeYear(val: any): string {
+  if (val === null || val === undefined || val === "") return "";
+  const str = String(val).trim();
+  return str === "0" ? "" : str;
+}
+
+/**
  * Updates a nested field in the form data immutably
  * @param formData - Current form data
  * @param path - Array of keys representing the path to the field
@@ -194,16 +203,15 @@ export function initializeFormData(
         ];
         const existing = (baseData.education?.schools || []).find(
           (s: any) => s.educationalLevel?.id === id,
-        ) || {
-          schoolName: "",
-          schoolAddress: "",
-          schoolType: "",
-          yearStarted: "",
-          yearCompleted: "",
-          awards: "",
-        };
+        );
         return {
-          ...existing,
+          id: existing?.id,
+          schoolName: existing?.schoolName || "",
+          schoolAddress: existing?.schoolAddress || "",
+          schoolType: existing?.schoolType || "",
+          yearStarted: normalizeYear(existing?.yearStarted),
+          yearCompleted: normalizeYear(existing?.yearCompleted),
+          awards: existing?.awards || "",
           educationalLevel: { id, name: levelNames[idx] },
         } as any;
       }),
