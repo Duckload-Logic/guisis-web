@@ -108,12 +108,19 @@ export const educationValidationSchema: FieldValidationSchema = {
 const isSchoolFilled = (rootData: any, i: number): boolean => {
   const school = rootData?.education?.schools?.[i];
   if (!school) return false;
+
+  const ys = school.yearStarted?.toString().trim();
+  const yc = school.yearCompleted?.toString().trim();
+
+  const hasYs = ys && ys !== "0" && ys !== "";
+  const hasYc = yc && yc !== "0" && yc !== "";
+
   return !!(
     school.schoolName?.trim() ||
     school.schoolAddress?.trim() ||
     school.schoolType?.trim() ||
-    school.yearStarted?.toString().trim() ||
-    school.yearCompleted?.toString().trim() ||
+    hasYs ||
+    hasYc ||
     school.awards?.trim()
   );
 };
