@@ -1,4 +1,5 @@
-import { SearchInput, Dropdown } from "@/components/form";
+import { SearchInput } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 import { Pagination, Table, Column } from "@/components/shared";
 import {
   AlertDialog,
@@ -356,7 +357,7 @@ export default function UserManagement() {
       {
         header: (
           <div className="w-full px-3 py-3">
-            <Dropdown
+            <SelectField
               label=""
               options={roleOptions}
               value={roleFilter === undefined ? "all" : roleFilter}
@@ -396,7 +397,7 @@ export default function UserManagement() {
       {
         header: (
           <div className="w-full px-3 py-3">
-            <Dropdown
+            <SelectField
               label=""
               options={statusOptions}
               value={statusFilter}
@@ -532,7 +533,7 @@ export default function UserManagement() {
       {
         header: (
           <div className="w-full px-3 py-3">
-            <Dropdown
+            <SelectField
               label=""
               options={roleOptions}
               value={roleFilter === undefined ? "all" : roleFilter}

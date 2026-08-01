@@ -48,7 +48,8 @@ import {
   useRejectM2MClient,
 } from "@/features/system-admin/hooks";
 import type { M2MClient } from "@/features/system-admin/types";
-import { Checkbox, FormInput } from "@/components/form";
+import { Checkbox } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { formatDate } from "@/utils/dateTime";
 import { cn } from "@/lib/utils";
 

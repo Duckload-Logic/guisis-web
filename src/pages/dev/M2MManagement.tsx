@@ -27,7 +27,7 @@ import {
   ResponsiveModalDescription,
 } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 
 interface M2MClient {
   id: number;
@@ -657,7 +657,7 @@ const M2MManagement: React.FC = () => {
               className="space-y-6"
             >
               <div className="space-y-2.5">
-                <FormInput
+                <FormField
                   label="Application Name"
                   value={newClient.name}
                   required
@@ -666,7 +666,7 @@ const M2MManagement: React.FC = () => {
                 />
               </div>
               <div className="space-y-2.5">
-                <FormInput
+                <FormField
                   label="Purpose / Description"
                   isTextarea
                   value={newClient.description}

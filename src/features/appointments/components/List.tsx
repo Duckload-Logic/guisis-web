@@ -16,7 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { format12HourTime } from "@/utils/dateTime";
-import { Dropdown, SearchInput } from "@/components/form";
+import { SearchInput } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 
 import { Appointment, AppointmentStatus, StatusCount } from "../types";
 
@@ -474,7 +475,7 @@ export default function AppointmentList({
       },
       {
         header: (
-          <Dropdown
+          <SelectField
             label=""
             options={categoryOptions}
             value={currentCategory}
@@ -510,7 +511,7 @@ export default function AppointmentList({
       },
       {
         header: (
-          <Dropdown
+          <SelectField
             label=""
             options={dropdownOptions}
             value={selectedStatus?.id}
@@ -561,7 +562,7 @@ export default function AppointmentList({
       },
       {
         header: (
-          <Dropdown
+          <SelectField
             label=""
             options={urgencyOptions}
             value={currentUrgency}

@@ -25,7 +25,7 @@ import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
 import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
 import { Pagination, Table, Column } from "@/components/shared";
-import Dropdown from "@/components/form/Dropdown";
+import { SelectField } from "@/components/ui/select-field";
 import { format12HourTime, formatDate } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -271,7 +271,7 @@ export default function StudentAppointments() {
       {
         header: (
           <div className="px-3 py-3 w-full">
-            <Dropdown
+            <SelectField
               label=""
               options={filterStatuses.map((s) => {
                 const count =
