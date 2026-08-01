@@ -8,8 +8,9 @@ import {
   Briefcase,
   Sparkles,
 } from "lucide-react";
-import { FormInput, Checkbox } from "@/components/form";
-import Dropdown from "@/components/form/Dropdown";
+import { Checkbox } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import { validateObject, validateField } from "@/services/validationSchema";
 import { interestsValidationSchema } from "@/features/iir/config/interestsValidationSchema";
@@ -752,7 +753,7 @@ export const InterestsSection = forwardRef<
                         key={activity.activityOption.id}
                         className="max-w-md"
                       >
-                        <FormInput
+                        <FormField
                           label="Please specify club name"
                           value={activity.otherSpecification || ""}
                           onChange={(val: string) =>
@@ -799,7 +800,7 @@ export const InterestsSection = forwardRef<
               </h4>
               <div className="space-y-4">
                 {[0, 1, 2].map((slot) => (
-                  <FormInput
+                  <FormField
                     key={`fav-subject-${slot}`}
                     label=""
                     value={getSubject(true, slot)}
@@ -833,7 +834,7 @@ export const InterestsSection = forwardRef<
               </h4>
               <div className="space-y-4">
                 {[0, 1, 2].map((slot) => (
-                  <FormInput
+                  <FormField
                     key={`least-subject-${slot}`}
                     label=""
                     value={getSubject(false, slot)}
@@ -913,7 +914,7 @@ export const InterestsSection = forwardRef<
                         {rank}
                       </div>
                       <div className="w-full">
-                        <FormInput
+                        <FormField
                           label=""
                           value={getHobby(rank)}
                           onChange={(val: string) => updateHobby(rank, val)}
@@ -996,7 +997,7 @@ export const InterestsSection = forwardRef<
                       )}
                     >
                       <div className="max-w-md">
-                        <FormInput
+                        <FormField
                           label="Other Organization"
                           value={
                             otherExtraActivityItem.activity
@@ -1037,7 +1038,7 @@ export const InterestsSection = forwardRef<
                           : "sm:grid-cols-1 max-w-xs",
                       )}
                     >
-                      <Dropdown
+                      <SelectField
                         label="Role"
                         options={[
                           { id: "Member", name: "Member" },
@@ -1058,7 +1059,7 @@ export const InterestsSection = forwardRef<
                       />
 
                       {sharedRole === "Other" && (
-                        <FormInput
+                        <FormField
                           label="Specify Role"
                           value={sharedRoleSpec}
                           onChange={updateAllExtracurricularRoleSpecs}

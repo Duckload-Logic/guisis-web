@@ -9,13 +9,9 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import {
-  FormInput,
-  Dropdown,
-  DatePicker,
-  Checkbox,
-  Radio,
-} from "@/components/form";
+import { Checkbox, Radio } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import {
   validateObject,
@@ -34,6 +30,7 @@ import {
 } from "../../hooks";
 import { cn } from "@/lib/utils";
 import { FAMILY_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface FormErrors {
   [key: string]: string;
@@ -141,7 +138,7 @@ const ParentInformationCard = memo(
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:gap-8 md:grid-cols-3">
-            <FormInput
+            <FormField
               name={`family.relatedPersons.${idx}.firstName`}
               label="First Name"
               required={isFieldRequired(
@@ -160,7 +157,7 @@ const ParentInformationCard = memo(
               disabled={isNameDisabled}
               error={getFieldError(`family.relatedPersons.${idx}.firstName`)}
             />
-            <FormInput
+            <FormField
               name={`family.relatedPersons.${idx}.middleName`}
               label="Middle Name"
               value={person.middleName || ""}
@@ -177,7 +174,7 @@ const ParentInformationCard = memo(
               disabled={isNameDisabled}
               error={getFieldError(`family.relatedPersons.${idx}.middleName`)}
             />
-            <FormInput
+            <FormField
               name={`family.relatedPersons.${idx}.lastName`}
               label="Last Name"
               required={isFieldRequired(
@@ -225,7 +222,7 @@ const ParentInformationCard = memo(
                 />
               </div>
             </div>
-            <Dropdown
+            <SelectField
               name={`family.relatedPersons.${idx}.educationalAttainment`}
               label="Educational Attainment"
               required={isFieldRequired(
@@ -252,7 +249,7 @@ const ParentInformationCard = memo(
             />
 
             <div className="relative">
-              <FormInput
+              <FormField
                 name={`family.relatedPersons.${idx}.occupation`}
                 label="Occupation"
                 required={isFieldRequired(
@@ -314,7 +311,7 @@ const ParentInformationCard = memo(
                 className="mt-1"
               />
             </div>
-            <FormInput
+            <FormField
               name={`family.relatedPersons.${idx}.employerName`}
               label="Name of Employer"
               required={isFieldRequired(
@@ -338,7 +335,7 @@ const ParentInformationCard = memo(
             />
 
             <div className="md:col-span-2">
-              <FormInput
+              <FormField
                 name={`family.relatedPersons.${idx}.employerAddress`}
                 label="Address of Employer"
                 value={person.employerAddress || ""}
@@ -576,7 +573,7 @@ export const FamilySection = forwardRef<
               return (
                 isOther && (
                   <div className="animate-fade-in mt-4 px-1">
-                    <FormInput
+                    <FormField
                       name="family.background.parentalStatusOther"
                       label="Please Specify"
                       value={family?.background?.parentalStatusOther || ""}
@@ -682,7 +679,7 @@ export const FamilySection = forwardRef<
                   />
                   {family?.background?.isSharingRoom && (
                     <div className="animate-fade-in mt-4">
-                      <FormInput
+                      <FormField
                         name="family.background.roomSharingDetails"
                         label="Share room with whom?"
                         value={family?.background?.roomSharingDetails || ""}
@@ -767,7 +764,7 @@ export const FamilySection = forwardRef<
           >
             <div className="flex flex-col gap-8">
               <div className="max-w-xs">
-                <Dropdown
+                <SelectField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.relationship`}
                   label="Relationship to Student"
                   options={relationshipOptions || []}
@@ -793,7 +790,7 @@ export const FamilySection = forwardRef<
                 />
               </div>
               <div className="grid grid-cols-1 gap-5 sm:gap-8 md:grid-cols-3">
-                <FormInput
+                <FormField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.firstName`}
                   label="First Name"
                   required={isFieldRequired(
@@ -820,7 +817,7 @@ export const FamilySection = forwardRef<
                     `family.relatedPersons.${GUARDIAN_IDX}.firstName`,
                   )}
                 />
-                <FormInput
+                <FormField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.middleName`}
                   label="Middle Name"
                   value={
@@ -842,7 +839,7 @@ export const FamilySection = forwardRef<
                     `family.relatedPersons.${GUARDIAN_IDX}.middleName`,
                   )}
                 />
-                <FormInput
+                <FormField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.lastName`}
                   label="Last Name"
                   required={isFieldRequired(
@@ -900,7 +897,7 @@ export const FamilySection = forwardRef<
                     />
                   </div>
                 </div>
-                <Dropdown
+                <SelectField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.educationalAttainment`}
                   label="Educational Attainment"
                   required={isFieldRequired(
@@ -929,7 +926,7 @@ export const FamilySection = forwardRef<
                   )}
                 />
                 <div className="relative">
-                  <FormInput
+                  <FormField
                     name={`family.relatedPersons.${GUARDIAN_IDX}.occupation`}
                     label="Occupation"
                     required={isFieldRequired(
@@ -1003,7 +1000,7 @@ export const FamilySection = forwardRef<
                     className="mt-1"
                   />
                 </div>
-                <FormInput
+                <FormField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.employerName`}
                   label="Name of Employer"
                   required={isFieldRequired(
@@ -1032,7 +1029,7 @@ export const FamilySection = forwardRef<
                   )}
                 />
                 <div className="md:col-span-2">
-                  <FormInput
+                  <FormField
                     name={`family.relatedPersons.${GUARDIAN_IDX}.employerAddress`}
                     label="Address of Employer"
                     value={
@@ -1086,7 +1083,7 @@ export const FamilySection = forwardRef<
                     "sm:grid-cols-2 sm:gap-6 lg:grid-cols-4",
                   )}
                 >
-                  <FormInput
+                  <FormField
                     name="family.background.brothers"
                     label="Brothers"
                     type="number"
@@ -1102,7 +1099,7 @@ export const FamilySection = forwardRef<
                     placeholder="0"
                     error={getFieldError("family.background.brothers")}
                   />
-                  <FormInput
+                  <FormField
                     name="family.background.sisters"
                     label="Sisters"
                     type="number"
@@ -1118,7 +1115,7 @@ export const FamilySection = forwardRef<
                     placeholder="0"
                     error={getFieldError("family.background.sisters")}
                   />
-                  <FormInput
+                  <FormField
                     name="family.background.employedSiblings"
                     label="Employed Siblings"
                     type="number"
@@ -1134,7 +1131,7 @@ export const FamilySection = forwardRef<
                     placeholder="0"
                     error={getFieldError("family.background.employedSiblings")}
                   />
-                  <FormInput
+                  <FormField
                     name="family.background.ordinalPosition"
                     label="Your Birth Order"
                     type="number"
@@ -1243,7 +1240,7 @@ export const FamilySection = forwardRef<
               >
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                   <div className="space-y-4">
-                    <Dropdown
+                    <SelectField
                       label="Parents' Combined Monthly Income"
                       name="family.finance.monthlyFamilyIncomeRange"
                       value={
@@ -1282,7 +1279,7 @@ export const FamilySection = forwardRef<
                     {family?.finance?.monthlyFamilyIncomeRange?.id ===
                       "others" && (
                       <div className="animate-in fade-in slide-in-from-top-2 pt-2 duration-300">
-                        <FormInput
+                        <FormField
                           ref={otherInputRef}
                           name="family.finance.monthlyFamilyIncomeRange.otherSpecification"
                           label="Specify Income Range"
@@ -1313,7 +1310,7 @@ export const FamilySection = forwardRef<
                     )}
                   </div>
 
-                  <FormInput
+                  <FormField
                     name="family.finance.weeklyAllowance"
                     label="Weekly Allowance (PHP)"
                     type="text"

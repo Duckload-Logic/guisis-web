@@ -1,5 +1,7 @@
 import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
-import { Dropdown, FormInput, Checkbox, DatePicker } from "@/components/form";
+import { Checkbox } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import { FormSectionTitle } from "./shared";
 import { 
@@ -57,6 +59,7 @@ import { PERSONAL_SUBSTEP_FIELDS } from "@/features/iir/config/subStepFields";
 import formalImage from "@/assets/images/formal_image.png";
 import notFormalImage from "@/assets/images/notformal_image.png";
 import { useToast } from "@/context";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface FormErrors {
   [key: string]: string;
@@ -713,7 +716,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             </div>
 
             <div className="md:col-span-2">
-              <FormInput
+              <FormField
                 label="First Name"
                 value={studentInfo?.basicInfo?.firstName || ""}
                 onChange={(val: any) =>
@@ -729,7 +732,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-2">
-              <FormInput
+              <FormField
                 label="Middle Name"
                 value={
                   studentInfo?.basicInfo?.middleName == null ||
@@ -745,7 +748,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-2">
-              <FormInput
+              <FormField
                 label="Last Name"
                 value={studentInfo?.basicInfo?.lastName || ""}
                 onChange={(val: any) =>
@@ -762,7 +765,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             </div>
 
             <div className="md:col-span-1">
-              <FormInput
+              <FormField
                 label="Suffix"
                 value={studentInfo?.personalInfo?.suffix || ""}
                 onChange={(val: any) =>
@@ -774,7 +777,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-2">
-              <FormInput
+              <FormField
                 label="Student Number"
                 value={studentInfo?.personalInfo?.studentNumber || ""}
                 onChange={(val: any) =>
@@ -793,7 +796,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-3">
-              <Dropdown
+              <SelectField
                 formStyle
                 label="Program"
                 options={programs}
@@ -814,7 +817,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             </div>
 
             <div className="md:col-span-3">
-              <FormInput
+              <FormField
                 label="Year Level"
                 type="number"
                 inputMode="numeric"
@@ -843,7 +846,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-3">
-              <FormInput
+              <FormField
                 label="Section"
                 type="number"
                 inputMode="numeric"
@@ -884,7 +887,7 @@ const handlePhotoUpload = async (file?: File | null) => {
         >
           <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
             <div className="md:col-span-2">
-              <Dropdown
+              <SelectField
                 formStyle
                 label="Gender"
                 options={genders}
@@ -901,7 +904,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-2">
-              <Dropdown
+              <SelectField
                 formStyle
                 label="Civil Status"
                 options={civilStatuses}
@@ -919,7 +922,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               />
             </div>
             <div className="md:col-span-2">
-              <Dropdown
+              <SelectField
                 formStyle
                 label="Religion"
                 options={religions}
@@ -953,7 +956,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             </div>
             {studentInfo?.personalInfo?.religion?.name === "Others" && (
               <div className="md:col-span-2">
-                <FormInput
+                <FormField
                   label="Specify Religion"
                   value={
                     studentInfo?.personalInfo?.otherReligionText || ""
@@ -996,7 +999,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             {!isEditMode && (
               <>
                 <div className="md:col-span-3">
-                  <FormInput
+                  <FormField
                     label="Place of Birth"
                     value={studentInfo?.personalInfo?.placeOfBirth || ""}
                     onChange={(val: any) =>
@@ -1016,7 +1019,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                 </div>
 
                 <div className="md:col-span-2">
-                  <FormInput
+                  <FormField
                     label="High School GWA"
                     type="text"
                     inputMode="decimal"
@@ -1044,7 +1047,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <FormInput
+                  <FormField
                     label="Height (m)"
                     type="text"
                     inputMode="decimal"
@@ -1072,7 +1075,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <FormInput
+                  <FormField
                     label="Weight (kg.)"
                     type="text"
                     inputMode="decimal"
@@ -1101,7 +1104,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                 </div>
 
                 <div className="md:col-span-6">
-                  <Dropdown
+                  <SelectField
                     formStyle
                     label="Complexion"
                     options={COMPLEXIONS.map((c) => ({ id: c, name: c }))}
@@ -1173,7 +1176,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                 )}
               >
                 <div className="md:col-span-3">
-                  <FormInput
+                  <FormField
                     label="Employer Name"
                     value={studentInfo?.personalInfo?.employerName || ""}
                     onChange={(val: any) =>
@@ -1191,7 +1194,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <FormInput
+                  <FormField
                     label="Employer Address"
                     value={studentInfo?.personalInfo?.employerAddress || ""}
                     onChange={(val: any) =>
@@ -1209,7 +1212,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   />
                 </div>
                 <div>
-                  <FormInput
+                  <FormField
                     label="Employer Contact Number"
                     value={
                       studentInfo?.personalInfo?.employerContactNumber || ""
@@ -1243,7 +1246,7 @@ const handlePhotoUpload = async (file?: File | null) => {
               <div>
                 <FormSectionTitle className="mb-6">Permanent Address</FormSectionTitle>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Region"
@@ -1259,7 +1262,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     required
                   />
                   {!isResidentialNCR && (
-                    <Dropdown
+                    <SelectField
                       formStyle
                       labelKey="name"
                       label="Province"
@@ -1276,7 +1279,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       required
                     />
                   )}
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="City/Municipality"
@@ -1302,7 +1305,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     error={errors["student.addresses.1.address.city"]}
                     required
                   />
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Barangay"
@@ -1327,7 +1330,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     required
                   />
                   <div className="md:col-span-2">
-                    <FormInput
+                    <FormField
                       label="Street / Landmark"
                       value={residentialAddr?.streetDetail || ""}
                       placeholder="e.g. Apt 4B, Bldg 2, 123 Street Name"
@@ -1365,7 +1368,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       "pointer-events-none opacity-60",
                   )}
                 >
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Region"
@@ -1409,7 +1412,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     enabled={!provincialSync.isReadOnly}
                   />
                   {!isProvincialNCR && (
-                    <Dropdown
+                    <SelectField
                       formStyle
                       labelKey="name"
                       label="Province"
@@ -1453,7 +1456,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       required
                     />
                   )}
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="City/Municipality"
@@ -1500,7 +1503,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     }
                     required
                   />
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Barangay"
@@ -1544,7 +1547,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     required
                   />
                   <div className="md:col-span-2">
-                    <FormInput
+                    <FormField
                       label="Street / Landmark"
                       value={provincialAddr?.streetDetail || ""}
                       placeholder="Street name, Lot, Blk, or House No."
@@ -1569,7 +1572,7 @@ const handlePhotoUpload = async (file?: File | null) => {
             icon={Phone}
           >
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormInput
+              <FormField
                 label="Mobile Number"
                 inputMode="tel"
                 value={studentInfo?.personalInfo?.mobileNumber || ""}
@@ -1586,7 +1589,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   "student.personalInfo.mobileNumber",
                 )}
               />
-              <FormInput
+              <FormField
                 label="Telephone Number"
                 inputMode="tel"
                 value={studentInfo?.personalInfo?.telephoneNumber || ""}
@@ -1600,7 +1603,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                 placeholder="e.g. 8-XXX-XXXX"
               />
               <div className="md:col-span-2">
-                <FormInput
+                <FormField
                   label="Email Address"
                   value={studentInfo?.basicInfo?.email || ""}
                   onChange={() => {}}
@@ -1618,7 +1621,7 @@ const handlePhotoUpload = async (file?: File | null) => {
           >
             <div className="flex flex-col gap-8">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <FormInput
+                <FormField
                   label="Last Name"
                   value={
                     studentInfo?.personalInfo?.emergencyContact?.lastName || ""
@@ -1636,7 +1639,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   noSpecialCharacters={true}
                   required
                 />
-                <FormInput
+                <FormField
                   label="First Name"
                   value={
                     studentInfo?.personalInfo?.emergencyContact?.firstName || ""
@@ -1654,7 +1657,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   noSpecialCharacters={true}
                   required
                 />
-                <FormInput
+                <FormField
                   label="Middle Name"
                   value={
                     studentInfo?.personalInfo?.emergencyContact?.middleName ||
@@ -1672,7 +1675,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   placeholder="Middle name"
                   noSpecialCharacters={true}
                 />
-                <FormInput
+                <FormField
                   label="Contact Number"
                   inputMode="numeric"
                   value={
@@ -1694,7 +1697,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   required
                 />
                 <div className="md:col-span-2">
-                  <Dropdown
+                  <SelectField
                     formStyle
                     label="Relationship"
                     options={studentRelationshipTypes}
@@ -1741,7 +1744,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       "pointer-events-none opacity-60",
                   )}
                 >
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Region"
@@ -1785,7 +1788,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     enabled={!emergencySync.isReadOnly}
                   />
                   {!isEmergencyNCR && (
-                    <Dropdown
+                    <SelectField
                       formStyle
                       labelKey="name"
                       label="Province"
@@ -1829,7 +1832,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       required
                     />
                   )}
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="City/Municipality"
@@ -1878,7 +1881,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     }
                     required
                   />
-                  <Dropdown
+                  <SelectField
                     formStyle
                     labelKey="name"
                     label="Barangay"
@@ -1922,7 +1925,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     required
                   />
                   <div className="md:col-span-2">
-                    <FormInput
+                    <FormField
                       label="Street / Landmark"
                       value={emergencyAddr?.streetDetail || ""}
                       placeholder="Street name, Lot, Blk, or House No."
