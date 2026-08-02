@@ -9,6 +9,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import {
+  BASE_FIELD_CLASSES,
+  getFieldStateClasses,
+} from "./form-styles";
 
 export interface SelectFieldProps {
   id?: string;
@@ -56,12 +60,9 @@ export function SelectField({
     if (labelKey) return option[labelKey] ?? "";
     return (
       option.label ??
-      option.statusName ??
-      option.programName ??
-      option.courseName ??
-      option.code ??
       option.name ??
       option.text ??
+      option.code ??
       String(option)
     );
   };
@@ -79,6 +80,17 @@ export function SelectField({
 
   const disabled = !enabled || loading;
   const filled = selectedOption !== undefined && value !== "";
+
+  const fieldStateClasses = cn(
+    BASE_FIELD_CLASSES,
+    getFieldStateClasses({
+      disabled,
+      error: !!error,
+      filled,
+      required: formStyle,
+    }),
+    buttonClassName,
+  );
 
   return (
     <div className="relative min-w-0 space-y-2">
@@ -106,27 +118,26 @@ export function SelectField({
             type="button"
             disabled={disabled}
             title={!enabled ? lockedReason : undefined}
-            className={cn(
-              "flex h-11 w-full items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium tracking-tight text-foreground outline-none transition-all duration-200",
-              "focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/5",
-              disabled
-                ? "cursor-not-allowed border-0 bg-border/50 text-muted-foreground opacity-90"
-                : error
-                  ? "border-destructive/50"
-                  : formStyle && !filled
-                    ? "border-destructive/20 bg-muted/20 hover:border-destructive/40 focus-visible:border-destructive/50 focus-visible:ring-destructive/5"
-                    : filled
-                      ? "border-primary/30 bg-muted/20 shadow-md"
-                      : "border-foreground/30 bg-card shadow-sm hover:border-glass-border/60",
-              buttonClassName,
-            )}
+            className={fieldStateClasses}
           >
-            <span className={cn("min-w-0 flex-1 truncate", !filled && "font-normal italic text-muted-foreground/60")}>
-              {filled ? getLabel(selectedOption) : `Select ${label ?? "option"}`}
+            <span
+              className={cn(
+                "min-w-0 flex-1 truncate",
+                !filled && "font-normal italic text-muted-foreground/60",
+              )}
+            >
+              {filled
+                ? getLabel(selectedOption)
+                : `Select ${label ?? "option"}`}
             </span>
             <span className="ml-2 flex shrink-0 items-center gap-2">
               {!enabled && <Lock className="size-4 text-muted-foreground" />}
-              <ChevronDown className={cn("size-4 opacity-50 transition-transform", open && "rotate-180")} />
+              <ChevronDown
+                className={cn(
+                  "size-4 opacity-50 transition-transform",
+                  open && "rotate-180",
+                )}
+              />
             </span>
           </button>
         </DropdownMenuTrigger>
@@ -134,12 +145,25 @@ export function SelectField({
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="speech-control-ignore w-[var(--radix-dropdown-menu-trigger-width)] min-w-[var(--radix-dropdown-menu-trigger-width)] max-w-[calc(100vw-1rem)] p-1"
+          className={cn(
+            "speech-control-ignore",
+            "w-[var(--radix-dropdown-menu-trigger-width)]",
+            "min-w-[var(--radix-dropdown-menu-trigger-width)]",
+            "max-w-[calc(100vw-1rem)] p-1",
+          )}
           onCloseAutoFocus={(event) => event.preventDefault()}
         >
           {label && (
-            <div className="relative p-1 pb-2" onKeyDown={(event) => event.stopPropagation()}>
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <div
+              className="relative p-1 pb-2"
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <Search
+                className={cn(
+                  "pointer-events-none absolute left-4 top-1/2 size-4",
+                  "-translate-y-1/2 text-muted-foreground",
+                )}
+              />
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -152,7 +176,12 @@ export function SelectField({
 
           <div className="max-h-64 overflow-y-auto overscroll-contain">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+              <div
+                className={cn(
+                  "px-3 py-6 text-center text-sm",
+                  "text-muted-foreground",
+                )}
+              >
                 No {label?.toLowerCase() ?? "options"} found.
               </div>
             ) : (
@@ -168,7 +197,11 @@ export function SelectField({
                     onSelect={(event) => {
                       event.preventDefault();
                       if (optionDisabled) return;
-                      onChange(String(value) === String(optionValue) ? "" : optionValue);
+                      onChange(
+                        String(value) === String(optionValue)
+                          ? ""
+                          : optionValue,
+                      );
                       setOpen(false);
                     }}
                     className={cn(

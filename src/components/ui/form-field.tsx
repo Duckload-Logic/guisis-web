@@ -1,5 +1,11 @@
 import { Info, Mic, MicOff } from "lucide-react";
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +13,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { cn } from "@/lib/utils";
 import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
+import {
+  BASE_FIELD_CLASSES,
+  getFieldStateClasses,
+} from "./form-styles";
+
+const DEFAULT_TEXTAREA_ROWS = 5;
+const DICTATION_ICON_SIZE = 15;
 
 export interface FormFieldProps {
   id?: string;
@@ -74,29 +87,44 @@ export const FormField = forwardRef<
   const stringValue = value ?? "";
   const charCount = typeof stringValue === "string" ? stringValue.length : 0;
 
-  const emitChange = (nextValue: string, sourceEvent?: any) => {
-    try {
-      onChange(nextValue);
-    } catch {
-      if (sourceEvent) {
-        sourceEvent.target.value = nextValue;
-        onChange(sourceEvent);
-      } else {
-        onChange({
-          target: { value: nextValue, name },
-          currentTarget: { value: nextValue, name },
-        });
+  const emitChange = useCallback(
+    (nextValue: string, sourceEvent?: any) => {
+      try {
+        onChange(nextValue);
+      } catch (err: any) {
+        const isTypeError = err instanceof TypeError;
+        const isTargetError =
+          err.message &&
+          (err.message.includes("target") ||
+            err.message.includes("undefined"));
+        if (isTypeError && isTargetError) {
+          if (sourceEvent) {
+            sourceEvent.target.value = nextValue;
+            onChange(sourceEvent);
+          } else {
+            onChange({
+              target: { value: nextValue, name },
+              currentTarget: { value: nextValue, name },
+            } as any);
+          }
+        } else {
+          throw err;
+        }
       }
-    }
-  };
+    },
+    [onChange, name],
+  );
 
   useEffect(() => {
     if (!transcript || transcript === previousTranscriptRef.current) return;
     const appended = transcript.slice(previousTranscriptRef.current.length);
-    const nextValue = `${stringValue}${appended}`.slice(0, maxChars ?? Infinity);
-    emitChange(nextValue);
+    const nextVal = `${stringValue}${appended}`.slice(
+      0,
+      maxChars ?? Infinity,
+    );
+    emitChange(nextVal);
     previousTranscriptRef.current = transcript;
-  }, [transcript]);
+  }, [transcript, stringValue, maxChars, emitChange]);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -123,15 +151,12 @@ export const FormField = forwardRef<
 
   const hasValue = stringValue !== "" && stringValue !== null;
   const fieldStateClasses = cn(
-    disabled
-      ? "border-0 bg-border/50 text-muted-foreground opacity-90"
-      : error || internalError
-        ? "border-destructive/50 focus-visible:border-destructive/60 focus-visible:ring-destructive/10"
-        : hasValue
-          ? "border-primary/30 bg-muted/20 shadow-md focus-visible:border-primary/50"
-          : required
-            ? "border-destructive/20 hover:border-destructive/40 focus-visible:border-destructive/50 focus-visible:ring-destructive/5"
-            : "",
+    getFieldStateClasses({
+      disabled,
+      error: error || internalError,
+      filled: hasValue,
+      required,
+    }),
     isListening && "border-primary ring-2 ring-primary/10",
     prefix && "rounded-l-none",
   );
@@ -139,14 +164,24 @@ export const FormField = forwardRef<
   return (
     <div className={cn("min-w-0 space-y-2", className)}>
       {(label || (isTextbox && maxChars)) && (
-        <div className="flex items-start justify-between gap-2 text-sm font-medium text-card-foreground">
+        <div
+          className={cn(
+            "flex items-start justify-between gap-2 text-sm",
+            "font-medium text-card-foreground",
+          )}
+        >
           <div className="flex min-w-0 items-center gap-1">
             {info && <CustomTooltip content={info} />}
             {label && <span className="truncate">{label}</span>}
             {required && label && <span className="text-red-500">*</span>}
           </div>
           {isTextbox && maxChars && (
-            <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+            <span
+              className={cn(
+                "shrink-0 text-xs font-semibold",
+                "text-muted-foreground",
+              )}
+            >
               {charCount}/{maxChars}
             </span>
           )}
@@ -155,7 +190,13 @@ export const FormField = forwardRef<
 
       <div className={cn("flex items-start", prefix ? "gap-0" : "gap-2")}>
         {prefix && (
-          <div className="flex h-11 shrink-0 items-center rounded-l-xl border border-r-0 border-glass-border/30 bg-muted-foreground/20 px-4 text-sm font-medium text-card-foreground">
+          <div
+            className={cn(
+              "flex h-11 shrink-0 items-center rounded-l-xl border",
+              "border-r-0 border-glass-border/30 bg-muted-foreground/20",
+              "px-4 text-sm font-medium text-card-foreground",
+            )}
+          >
             {prefix}
           </div>
         )}
@@ -171,10 +212,11 @@ export const FormField = forwardRef<
               onBlur={handleBlur}
               placeholder={placeholder}
               disabled={disabled}
-              rows={5}
+              rows={DEFAULT_TEXTAREA_ROWS}
               maxLength={maxChars}
               className={cn(
                 browserSupportsSpeechRecognition && !disabled && "pb-12",
+                BASE_FIELD_CLASSES,
                 fieldStateClasses,
               )}
             />
@@ -193,7 +235,7 @@ export const FormField = forwardRef<
               min={min}
               max={max}
               list={list}
-              className={fieldStateClasses}
+              className={cn(BASE_FIELD_CLASSES, fieldStateClasses)}
             />
           )}
 
@@ -208,22 +250,38 @@ export const FormField = forwardRef<
                 isListening ? stopListening() : startListening();
               }}
               title={isListening ? "Stop Dictation" : "Start Dictation"}
-              aria-label={isListening ? "Stop voice input" : "Start voice input"}
+              aria-label={
+                isListening ? "Stop voice input" : "Start voice input"
+              }
               aria-pressed={isListening}
               className={cn(
                 "absolute bottom-3 right-2 h-9 w-9 rounded-xl",
                 isListening
-                  ? "animate-pulse bg-primary text-white ring-4 ring-primary/20"
-                  : "bg-glass-bg text-muted-foreground hover:bg-primary/10 hover:text-primary",
+                  ? "bg-primary text-white ring-4 ring-primary/20 animate-pulse"
+                  : cn(
+                      "bg-glass-bg text-muted-foreground hover:bg-primary/10",
+                      "hover:text-primary",
+                    ),
               )}
             >
-              {isListening ? <Mic size={15} /> : <MicOff size={15} />}
+              {isListening ? (
+                <Mic size={DICTATION_ICON_SIZE} />
+              ) : (
+                <MicOff size={DICTATION_ICON_SIZE} />
+              )}
             </Button>
           )}
         </div>
 
         {required && !label && (
-          <span className={cn("px-1 font-bold text-red-500", isTextbox ? "pt-3" : "flex h-11 items-center")}>*</span>
+          <span
+            className={cn(
+              "px-1 font-bold text-red-500",
+              isTextbox ? "pt-3" : "flex h-11 items-center",
+            )}
+          >
+            *
+          </span>
         )}
       </div>
 
@@ -257,7 +315,13 @@ export function CustomTooltip({
         {children ?? <Info className="h-4 w-4 text-muted-foreground" />}
       </span>
       {visible && (
-        <span className="absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-xs -translate-x-1/2 rounded-xl border border-primary bg-card px-3 py-2 text-sm text-card-foreground shadow-lg">
+        <span
+          className={cn(
+            "absolute bottom-full left-1/2 z-50 mb-2 w-max max-w-xs",
+            "-translate-x-1/2 rounded-xl border border-primary bg-card",
+            "px-3 py-2 text-sm text-card-foreground shadow-lg",
+          )}
+        >
           {content}
         </span>
       )}

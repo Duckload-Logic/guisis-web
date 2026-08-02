@@ -10,6 +10,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  BASE_FIELD_CLASSES,
+  getFieldStateClasses,
+} from "./form-styles";
+
+const MOBILE_BREAKPOINT = 640;
+const DEFAULT_FROM_YEAR = 1900;
+const DEFAULT_TO_YEAR = new Date().getFullYear();
 
 export interface DatePickerProps {
   id?: string;
@@ -47,8 +55,8 @@ export function DatePicker({
   required = false,
   disabled = false,
   placeholder = "Select a date",
-  fromYear = 1900,
-  toYear = new Date().getFullYear(),
+  fromYear = DEFAULT_FROM_YEAR,
+  toYear = DEFAULT_TO_YEAR,
 }: DatePickerProps) {
   const generatedId = React.useId();
   const safeId = (id ?? generatedId).replace(/:/g, "-");
@@ -62,7 +70,7 @@ export function DatePicker({
 
   React.useEffect(() => {
     const closeOnMobileResize = () => {
-      if (window.innerWidth < 640) setOpen(false);
+      if (window.innerWidth < MOBILE_BREAKPOINT) setOpen(false);
     };
 
     window.addEventListener("resize", closeOnMobileResize);
@@ -82,19 +90,13 @@ export function DatePicker({
 
   const hasValue = Boolean(selectedDate);
   const triggerClasses = cn(
-    "flex h-11 w-full items-center justify-start gap-2 rounded-xl border px-4 py-2.5",
-    "text-left text-sm font-medium tracking-tight text-foreground outline-none",
-    "transition-all duration-200",
-    "focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/5",
-    disabled
-      ? "cursor-not-allowed border-0 bg-border/50 text-muted-foreground opacity-90"
-      : error
-        ? "border-destructive/50 focus-visible:border-destructive/60 focus-visible:ring-destructive/10"
-        : hasValue
-          ? "border-primary/30 bg-muted/20 shadow-md"
-          : required
-            ? "border-destructive/20 bg-muted/20 hover:border-destructive/40 focus-visible:border-destructive/50 focus-visible:ring-destructive/5"
-            : "border-foreground/30 bg-card shadow-sm hover:border-glass-border/60",
+    BASE_FIELD_CLASSES,
+    getFieldStateClasses({
+      disabled,
+      error: !!error,
+      filled: hasValue,
+      required,
+    }),
   );
 
   const displayText = selectedDate ? format(selectedDate, "PPP") : placeholder;
@@ -102,7 +104,12 @@ export function DatePicker({
   return (
     <div className={cn("min-w-0 space-y-2", className)}>
       {label && (
-        <div className="flex items-start gap-1 text-sm font-medium text-card-foreground">
+        <div
+          className={cn(
+            "flex items-start gap-1 text-sm font-medium",
+            "text-card-foreground",
+          )}
+        >
           <span>{label}</span>
           {required && <span className="text-red-500">*</span>}
         </div>
@@ -130,7 +137,10 @@ export function DatePicker({
           disabled={disabled}
           aria-label={label ?? placeholder}
           aria-invalid={Boolean(error)}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          className={cn(
+            "absolute inset-0 h-full w-full cursor-pointer",
+            "opacity-0 disabled:cursor-not-allowed",
+          )}
         />
       </div>
 
@@ -156,7 +166,10 @@ export function DatePicker({
           <PopoverContent
             align="start"
             collisionPadding={8}
-            className="w-[300px] max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl bg-background p-0"
+            className={cn(
+              "w-[300px] max-w-[calc(100vw-1rem)] overflow-hidden",
+              "rounded-xl bg-background p-0",
+            )}
           >
             <Calendar
               mode="single"
