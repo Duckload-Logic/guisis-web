@@ -31,7 +31,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { Dropdown } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 import {
   ChartContainer,
   ChartTooltip,
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
         )}
       >
         <div className="w-full min-w-[8.5rem] sm:w-36">
-          <Dropdown
+          <SelectField
             name="year"
             get="value"
             identifier="value"
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="w-full min-w-[11rem] sm:w-44 md:w-52">
-          <Dropdown
+          <SelectField
             name="program"
             get="value"
             identifier="value"

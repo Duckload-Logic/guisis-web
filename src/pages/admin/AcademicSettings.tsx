@@ -6,7 +6,7 @@ import {
   PutAcademicSettings,
 } from "@/features/student-core/services/academicSettingsService";
 import { useToast, usePageMetadata } from "@/context/hooks";
-import Dropdown from "@/components/form/Dropdown";
+import { SelectField } from "@/components/ui/select-field";
 import { cn } from "@/lib/utils";
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export default function AcademicSettings() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* School year start */}
-          <Dropdown
+          <SelectField
             id="yearStart"
             label="School Year Start"
             options={yearOptions}
@@ -194,7 +194,7 @@ export default function AcademicSettings() {
         </div>
 
         {/* Term */}
-        <Dropdown
+        <SelectField
           id="term"
           label="Current Term"
           options={termOptions}

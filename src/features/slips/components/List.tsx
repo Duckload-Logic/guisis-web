@@ -16,7 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/utils/dateTime";
-import { Dropdown, SearchInput } from "@/components/form";
+import { SearchInput } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 
 import type { Slip } from "../types";
 import { SlipStatus, SlipStats } from "../types";
@@ -384,7 +385,7 @@ export function SlipList({
       },
       {
         header: (
-          <Dropdown
+          <SelectField
             label=""
             options={categoryOptions}
             value={currentCategory}
@@ -413,7 +414,7 @@ export function SlipList({
       },
       {
         header: (
-          <Dropdown
+          <SelectField
             label=""
             options={dropdownOptions}
             value={selectedStatus?.id}

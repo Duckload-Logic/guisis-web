@@ -18,7 +18,7 @@ import {
   significantNoteSchema,
   SignificantNoteFormData,
 } from "../validation/noteSchema";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 
 interface AddNoteModalProps {
   open: boolean;
@@ -96,7 +96,7 @@ export default function AddNoteModal({
             name="note"
             control={control}
             render={({ field }) => (
-              <FormInput
+              <FormField
                 label="Note / Incident Description"
                 placeholder="Describe the incident or observation..."
                 isTextarea
@@ -111,7 +111,7 @@ export default function AddNoteModal({
             name="remarks"
             control={control}
             render={({ field }) => (
-              <FormInput
+              <FormField
                 label="Action Taken / Remarks"
                 placeholder="Describe the action taken or additional remarks..."
                 isTextarea

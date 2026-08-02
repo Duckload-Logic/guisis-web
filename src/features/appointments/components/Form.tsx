@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Appointment } from "../types";
-import { Dropdown } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 import { useCategories } from "../hooks";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { cn } from "@/lib/utils";
 
 interface AppointmentFormProps {
@@ -51,7 +51,7 @@ export default function AppointmentForm({
 
       <CardContent className="p-4 sm:p-5">
         <div className="space-y-5">
-          <Dropdown
+          <SelectField
             label="Concern Category"
             value={data?.appointmentCategory?.id}
             onChange={(id) => {
@@ -65,7 +65,7 @@ export default function AppointmentForm({
             required
           />
 
-          <FormInput
+          <FormField
             value={data.reason}
             onChange={(val) => {
               onChange("reason", val);

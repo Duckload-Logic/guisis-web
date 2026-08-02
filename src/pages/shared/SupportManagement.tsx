@@ -10,7 +10,7 @@ import {
   PatchSupportTicketRead,
 } from "../../features/support/services/supportService";
 import { getProfilePictureUrl } from "../../lib/profilePicture";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -520,7 +520,7 @@ export function SupportManagement() {
                 className="border-t border-glass-border p-4 space-y-2"
               >
                 <div className="flex items-start gap-2">
-                  <FormInput
+                  <FormField
                     label=""
                     value={replyText}
                     onChange={setReplyText}

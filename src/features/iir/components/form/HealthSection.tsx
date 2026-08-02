@@ -17,8 +17,10 @@ import {
   validateField,
 } from "@/services/validationSchema";
 import { healthValidationSchema } from "@/features/iir/config/healthValidationSchema";
-import { FormInput, Radio, DatePicker } from "@/components/form";
+import { Radio } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { SectionContainer } from "./SectionContainer";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface FormErrors {
   [key: string]: string;
@@ -358,7 +360,7 @@ export const HealthSection = forwardRef<
                       "animate-in fade-in slide-in-from-top-2",
                     )}
                   >
-                    <FormInput
+                    <FormField
                       label="Please specify details"
                       type="textbox"
                       maxChars={100}
@@ -478,7 +480,7 @@ export const HealthSection = forwardRef<
                         `_consultations.${type.type}.whenDate`,
                       )}
                     />
-                    <FormInput
+                    <FormField
                       label="For What"
                       placeholder="Specify reason..."
                       value={type.forWhat}

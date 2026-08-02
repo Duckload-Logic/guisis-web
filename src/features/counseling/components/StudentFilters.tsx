@@ -1,4 +1,5 @@
-import { Dropdown, SearchInput } from "@/components/form";
+import { SearchInput } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 
 import { cn } from "@/lib/utils";
 
@@ -60,7 +61,7 @@ export default function StudentFilters({
             "md:col-span-2 md:grid-cols-3",
           )}
         >
-          <Dropdown
+          <SelectField
             label="Program"
             value={selectedProgramId}
             onChange={onProgramChange}
@@ -69,13 +70,13 @@ export default function StudentFilters({
               ...(programs || []),
             ]}
           />
-          <Dropdown
+          <SelectField
             label="Gender"
             value={selectedGenderId}
             onChange={onGenderChange}
             options={[{ id: 0, name: "All Genders" }, ...(genders || [])]}
           />
-          <Dropdown
+          <SelectField
             label="Year Level"
             value={selectedYearLevelId}
             onChange={onYearLevelChange}
@@ -84,7 +85,7 @@ export default function StudentFilters({
               ...(yearLevels || []),
             ]}
           />
-          {/* <Dropdown
+          {/* <SelectField
             label="Status"
             value={selectedStatusId}
             onChange={onStatusChange}

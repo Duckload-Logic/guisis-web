@@ -43,8 +43,8 @@ import { StepProgress } from "@/features/slips/components";
 import { AnimationStyles } from "@/components/ui/animations";
 import { CreateSlipRequest } from "@/features/slips/types";
 import { usePageMetadata } from "@/context";
-import { DatePicker, Dropdown } from "@/components/form";
-import FormInput, { CustomTooltip } from "@/components/form/FormInput";
+import { SelectField } from "@/components/ui/select-field";
+import { CustomTooltip, FormField } from "@/components/ui/form-field";
 import { ExistingFileCard } from "./components/ExistingFileCard";
 import { LocalFileCard } from "./components/LocalFileCard";
 import { useToast } from "@/context";
@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import goodCertImage from "@/assets/images/good-certificate-example.png";
 import badCertImage from "@/assets/images/bad-certificate-example.png";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface SubmitSlipFormState {
   dateOfAbsence: string;
@@ -525,7 +526,7 @@ export default function SubmitSlip() {
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-4 pt-5">
-                    <Dropdown
+                    <SelectField
                       label="Category"
                       value={formData.categoryId}
                       onChange={(val) => handleCategoryChange(Number(val))}
@@ -534,7 +535,7 @@ export default function SubmitSlip() {
                       required
                     />
 
-                    <FormInput
+                    <FormField
                       label="Reason for Absence"
                       value={formData.reason}
                       onChange={(val) =>
