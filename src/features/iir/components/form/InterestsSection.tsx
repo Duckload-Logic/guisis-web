@@ -701,7 +701,7 @@ export const InterestsSection = forwardRef<
               School Clubs & Organizations
             </h4>
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {ACADEMIC_CLUBS.map((club, idx) => (
                 <div
                   key={club}
@@ -778,12 +778,12 @@ export const InterestsSection = forwardRef<
             )}
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div
               className={cn(
                 "bg-glass-bg/60 border-glass-border/40 rounded-xl border",
-                "p-5 shadow-sm backdrop-blur-glass transition-all duration-300",
-                "hover:border-primary/20 sm:p-6",
+                "p-6 shadow-sm backdrop-blur-glass transition-all duration-300",
+                "hover:border-primary/20 sm:p-8",
               )}
             >
               <h4
@@ -816,8 +816,8 @@ export const InterestsSection = forwardRef<
             <div
               className={cn(
                 "bg-glass-bg/60 border-glass-border/40 rounded-xl border",
-                "p-5 shadow-sm backdrop-blur-glass transition-all duration-300",
-                "hover:border-primary/20 sm:p-6",
+                "p-6 shadow-sm backdrop-blur-glass transition-all duration-300",
+                "hover:border-primary/20 sm:p-8",
               )}
             >
               <h4
@@ -859,7 +859,7 @@ export const InterestsSection = forwardRef<
             </h3>
           </div>
 
-          <div className="mb-12 grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
+          <div className="mb-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Hobbies Card */}
             <div
               className={cn(

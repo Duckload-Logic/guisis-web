@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
-import { FormSectionTitle } from "./shared";
+import { FormDividerGroup } from "./shared";
 import { 
   User, 
   MapPin, 
@@ -1241,10 +1241,12 @@ const handlePhotoUpload = async (file?: File | null) => {
             description="Permanent and current permanent address"
             icon={MapPin}
           >
-            <div className="flex flex-col gap-10">
+            <div className="space-y-8">
               {/* Permanent Address */}
-              <div>
-                <FormSectionTitle className="mb-6">Permanent Address</FormSectionTitle>
+              <FormDividerGroup
+                title="Permanent Address"
+                className="border-t-0 pt-0"
+              >
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <SelectField
                     formStyle
@@ -1343,12 +1345,12 @@ const handlePhotoUpload = async (file?: File | null) => {
                     />
                   </div>
                 </div>
-              </div>
+              </FormDividerGroup>
 
               {/* Provincial Address */}
-              <div className="border-t border-glass-border pt-8">
-                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <FormSectionTitle>Provincial Address</FormSectionTitle>
+              <FormDividerGroup
+                title="Provincial Address"
+                action={
                   <Checkbox
                     id="provincialSameAsResidential"
                     label="Same as permanent address"
@@ -1359,8 +1361,8 @@ const handlePhotoUpload = async (file?: File | null) => {
                     }
                     className="text-xs"
                   />
-                </div>
-
+                }
+              >
                 <div
                   className={cn(
                     "grid grid-cols-1 gap-6 transition-opacity duration-300 md:grid-cols-2",
@@ -1562,7 +1564,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     />
                   </div>
                 </div>
-              </div>
+              </FormDividerGroup>
             </div>
           </SectionContainer>
 
@@ -1721,9 +1723,9 @@ const handlePhotoUpload = async (file?: File | null) => {
                 </div>
               </div>
 
-              <div className="border-t border-glass-border pt-8">
-                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <FormSectionTitle>Contact Address</FormSectionTitle>
+              <FormDividerGroup
+                title="Contact Address"
+                action={
                   <Checkbox
                     id="emergencySameAsResidential"
                     label="Same as permanent address"
@@ -1734,7 +1736,8 @@ const handlePhotoUpload = async (file?: File | null) => {
                     }
                     className="text-xs"
                   />
-                </div>
+                }
+              >
 
                 <div
                   className={cn(
@@ -1940,7 +1943,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                     />
                   </div>
                 </div>
-              </div>
+              </FormDividerGroup>
             </div>
           </SectionContainer>
         </>

@@ -435,14 +435,19 @@ export const EducationSection = forwardRef<
         </div>
       </SectionContainer>
       {/* School Levels */}
-      <div className="my-4 space-y-4">
-        {[
-          { name: "Elementary" },
-          { name: "Junior High School" },
-          { name: "Senior High School" },
-          { name: "Vocational" },
-          { name: "College" },
-        ].map((level: any, idx: number) => {
+      <SectionContainer
+        title="School History"
+        description="Record each level of your educational background"
+        icon={School}
+      >
+        <div className="space-y-6">
+          {[
+            { name: "Elementary" },
+            { name: "Junior High School" },
+            { name: "Senior High School" },
+            { name: "Vocational" },
+            { name: "College" },
+          ].map((level: any, idx: number) => {
           const school = education?.schools?.[idx] || {};
           const status = getCompletionStatus(idx);
           const StatusIcon = status.icon;
@@ -548,8 +553,8 @@ export const EducationSection = forwardRef<
               </div>
 
               {isExpanded && (
-                <div className="p-5 sm:p-8">
-                  <div className="grid grid-cols-1 gap-5 sm:gap-8 md:grid-cols-2">
+                <div className="p-6 sm:p-8">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <FormField
                         name={`education.schools.${idx}.schoolName`}
@@ -616,7 +621,7 @@ export const EducationSection = forwardRef<
                       )}
                     />
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <FormField
                         name={`education.schools.${idx}.yearStarted`}
                         label="Year Started"
@@ -679,8 +684,9 @@ export const EducationSection = forwardRef<
               )}
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      </SectionContainer>
     </>
   );
 });
