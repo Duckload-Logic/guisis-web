@@ -4,18 +4,18 @@ import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import { FormSectionTitle } from "./shared";
-import { 
-  User, 
-  MapPin, 
-  Phone, 
-  Briefcase, 
-  Activity, 
-  Camera, 
-  Upload, 
-  Pencil, 
+import {
+  User,
+  MapPin,
+  Phone,
+  Briefcase,
+  Activity,
+  Camera,
+  Upload,
+  Pencil,
   X,
   Info,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import {
   usePrograms,
@@ -524,26 +524,26 @@ export const PersonalSection = forwardRef<
     }
   };
 
-const handlePhotoUpload = async (file?: File | null) => {
+  const handlePhotoUpload = async (file?: File | null) => {
     if (!file) return;
 
     const fieldPath = "student.personalInfo.twoByTwoPhotoDataUrl";
 
-    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; 
-    
+    const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+
     if (file.size > MAX_FILE_SIZE_BYTES) {
       const errorMsg = "File is too large. Maximum size allowed is 5MB.";
-      
+
       if (triggerToast) {
-        triggerToast(errorMsg); 
+        triggerToast(errorMsg);
       }
-      
+
       setErrors((prev: FormErrors) => ({
         ...prev,
         [fieldPath]: errorMsg,
       }));
-      
-      return; 
+
+      return;
     }
 
     try {
@@ -608,11 +608,17 @@ const handlePhotoUpload = async (file?: File | null) => {
                         2x2 Student Picture
                       </p>
                       <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-                        Upload a clear JPG, PNG, or WebP photo up to 5MB only. The image is automatically cropped to a strict square 2x2 layout.
+                        Upload a clear JPG, PNG, or WebP photo up to 5MB only.
+                        The image is automatically cropped to a strict square
+                        2x2 layout.
                       </p>
-                      {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl") && (
+                      {getFieldError(
+                        "student.personalInfo.twoByTwoPhotoDataUrl",
+                      ) && (
                         <p className="mt-2 text-xs font-medium text-destructive">
-                          {getFieldError("student.personalInfo.twoByTwoPhotoDataUrl")}
+                          {getFieldError(
+                            "student.personalInfo.twoByTwoPhotoDataUrl",
+                          )}
                         </p>
                       )}
                     </div>
@@ -671,7 +677,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                   </div>
                 </div>
               </div>
-              
+
               {/* PROFILE PICTURE GUIDELINES */}
               <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
                 <div className="mb-3 flex items-center gap-2">
@@ -681,7 +687,10 @@ const handlePhotoUpload = async (file?: File | null) => {
                   </h4>
                 </div>
                 <p className="mb-4 text-sm text-blue-800 dark:text-blue-300">
-                  Please upload a <strong>formal 2x2 picture</strong>. Ensure you are wearing appropriate professional or school attire against a plain background. Avoid selfies, heavy filters, or cluttered environments.
+                  Please upload a <strong>formal 2x2 picture</strong>. Ensure
+                  you are wearing appropriate professional or school attire
+                  against a plain background. Avoid selfies, heavy filters, or
+                  cluttered environments.
                 </p>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -802,10 +811,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                 options={programs}
                 value={studentInfo?.personalInfo?.program?.id || ""}
                 onChange={(val: any) =>
-                  handleInputChange(
-                    "student.personalInfo.program",
-                    { id: val },
-                  )
+                  handleInputChange("student.personalInfo.program", { id: val })
                 }
                 error={errors["student.personalInfo.program"]}
                 required={isFieldRequired(
@@ -958,18 +964,14 @@ const handlePhotoUpload = async (file?: File | null) => {
               <div className="md:col-span-2">
                 <FormField
                   label="Specify Religion"
-                  value={
-                    studentInfo?.personalInfo?.otherReligionText || ""
-                  }
+                  value={studentInfo?.personalInfo?.otherReligionText || ""}
                   onChange={(val: any) =>
                     handleInputChange(
                       "student.personalInfo.otherReligionText",
                       val,
                     )
                   }
-                  error={
-                    errors["student.personalInfo.otherReligionText"]
-                  }
+                  error={errors["student.personalInfo.otherReligionText"]}
                   placeholder="Specify religion"
                   noSpecialCharacters={true}
                   required={isFieldRequired(
@@ -1067,7 +1069,7 @@ const handlePhotoUpload = async (file?: File | null) => {
                       handleFieldBlur("student.personalInfo.heightM");
                     }}
                     error={errors["student.personalInfo.heightM"]}
-                    placeholder="5.7"
+                    placeholder="1.5"
                     required={isFieldRequired(
                       runtimeSchema,
                       "student.personalInfo.heightM",
@@ -1140,17 +1142,11 @@ const handlePhotoUpload = async (file?: File | null) => {
               checked={studentInfo?.personalInfo?.isEmployed || false}
               onCheckedChange={(checked: boolean | "indeterminate") => {
                 const isChecked = checked === true;
-                handleInputChange(
-                  "student.personalInfo.isEmployed",
-                  isChecked,
-                );
+                handleInputChange("student.personalInfo.isEmployed", isChecked);
                 if (!isChecked) {
                   onChange("student.personalInfo.employerName", null);
                   onChange("student.personalInfo.employerAddress", null);
-                  onChange(
-                    "student.personalInfo.employerContactNumber",
-                    null,
-                  );
+                  onChange("student.personalInfo.employerContactNumber", null);
                   setErrors((prev: FormErrors) => {
                     const updated = { ...prev };
                     delete updated["student.personalInfo.employerName"];
@@ -1244,7 +1240,9 @@ const handlePhotoUpload = async (file?: File | null) => {
             <div className="flex flex-col gap-10">
               {/* Permanent Address */}
               <div>
-                <FormSectionTitle className="mb-6">Permanent Address</FormSectionTitle>
+                <FormSectionTitle className="mb-6">
+                  Permanent Address
+                </FormSectionTitle>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <SelectField
                     formStyle
