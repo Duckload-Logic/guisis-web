@@ -1,7 +1,5 @@
-import { Check, ChevronDown, Lock, Search } from "lucide-react";
-import { useMemo, useState } from "react";
-
-import { Input } from "@/components/ui/input";
+import { Check, ChevronDown, Lock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +51,9 @@ export function SelectField({
   buttonClassName,
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const typeaheadBuffer = useRef("");
+  const typeaheadTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const optionRefs = useRef(new Map<string, HTMLDivElement>());
 
   const getLabel = (option: any) => {
     if (!option) return "";
@@ -70,13 +70,16 @@ export function SelectField({
   const selectedOption = options.find(
     (option) => String(option?.[identifier]) === String(value),
   );
-  const filteredOptions = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return options;
-    return options.filter((option) =>
-      getLabel(option).toLowerCase().includes(normalized),
-    );
-  }, [options, query, labelKey]);
+
+  const clearTypeahead = useCallback(() => {
+    typeaheadBuffer.current = "";
+    if (typeaheadTimeout.current) {
+      clearTimeout(typeaheadTimeout.current);
+      typeaheadTimeout.current = undefined;
+    }
+  }, []);
+
+  useEffect(() => clearTypeahead, [clearTypeahead]);
 
   const disabled = !enabled || loading;
   const filled = selectedOption !== undefined && value !== "";
@@ -107,7 +110,7 @@ export function SelectField({
           if (disabled) return;
           setOpen(nextOpen);
           if (!nextOpen) {
-            setQuery("");
+            clearTypeahead();
             onBlur?.();
           }
         }}
@@ -152,69 +155,73 @@ export function SelectField({
             "max-w-[calc(100vw-1rem)] p-1",
           )}
           onCloseAutoFocus={(event) => event.preventDefault()}
-        >
-          {label && (
-            <div
-              className="relative p-1 pb-2"
-              onKeyDown={(event) => event.stopPropagation()}
-            >
-              <Search
-                className={cn(
-                  "pointer-events-none absolute left-4 top-1/2 size-4",
-                  "-translate-y-1/2 text-muted-foreground",
-                )}
-              />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={`Search ${label.toLowerCase()}...`}
-                className="h-10 pl-9 shadow-none"
-                autoFocus
-              />
-            </div>
-          )}
+          onKeyDown={(event) => {
+            if (
+              event.defaultPrevented ||
+              event.ctrlKey ||
+              event.metaKey ||
+              event.altKey ||
+              event.nativeEvent.isComposing ||
+              event.key.length !== 1
+            ) {
+              return;
+            }
 
+            const nextBuffer = `${typeaheadBuffer.current}${event.key}`.toLowerCase();
+            const matchingOption = options.find(
+              (option) =>
+                !option?.disabled &&
+                getLabel(option).toLowerCase().startsWith(nextBuffer),
+            );
+
+            if (!matchingOption) return;
+
+            event.preventDefault();
+            typeaheadBuffer.current = nextBuffer;
+            if (typeaheadTimeout.current) clearTimeout(typeaheadTimeout.current);
+            typeaheadTimeout.current = setTimeout(clearTypeahead, 750);
+
+            const optionKey = String(matchingOption?.[identifier]);
+            const optionElement = optionRefs.current.get(optionKey);
+            optionElement?.focus({ preventScroll: true });
+            optionElement?.scrollIntoView({ block: "nearest" });
+          }}
+        >
           <div className="max-h-64 overflow-y-auto overscroll-contain">
-            {filteredOptions.length === 0 ? (
-              <div
-                className={cn(
-                  "px-3 py-6 text-center text-sm",
-                  "text-muted-foreground",
-                )}
-              >
-                No {label?.toLowerCase() ?? "options"} found.
-              </div>
-            ) : (
-              filteredOptions.map((option, index) => {
-                const optionId = option?.[identifier];
-                const optionValue = option?.[get];
-                const selected = String(optionId) === String(value);
-                const optionDisabled = Boolean(option?.disabled);
-                return (
-                  <DropdownMenuItem
-                    key={optionId ?? index}
-                    disabled={optionDisabled}
-                    onSelect={(event) => {
-                      event.preventDefault();
-                      if (optionDisabled) return;
-                      onChange(
-                        String(value) === String(optionValue)
-                          ? ""
-                          : optionValue,
-                      );
-                      setOpen(false);
-                    }}
-                    className={cn(
-                      "mb-0.5 flex cursor-pointer items-center justify-between",
-                      selected && "bg-primary/10 font-bold text-primary",
-                    )}
-                  >
-                    <span className="truncate">{getLabel(option)}</span>
-                    {selected && <Check className="size-4 shrink-0" />}
-                  </DropdownMenuItem>
-                );
-              })
-            )}
+            {options.map((option, index) => {
+              const optionId = option?.[identifier];
+              const optionValue = option?.[get];
+              const selected = String(optionId) === String(value);
+              const optionDisabled = Boolean(option?.disabled);
+              return (
+                <DropdownMenuItem
+                  key={optionId ?? index}
+                  ref={(element) => {
+                    const optionKey = String(optionId ?? index);
+                    if (element) optionRefs.current.set(optionKey, element);
+                    else optionRefs.current.delete(optionKey);
+                  }}
+                  disabled={optionDisabled}
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    if (optionDisabled) return;
+                    onChange(
+                      String(value) === String(optionValue)
+                        ? ""
+                        : optionValue,
+                    );
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "mb-0.5 flex cursor-pointer items-center justify-between",
+                    selected && "bg-primary/10 font-bold text-primary",
+                  )}
+                >
+                  <span className="truncate">{getLabel(option)}</span>
+                  {selected && <Check className="size-4 shrink-0" />}
+                </DropdownMenuItem>
+              );
+            })}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
