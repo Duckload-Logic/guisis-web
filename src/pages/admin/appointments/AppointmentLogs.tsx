@@ -13,7 +13,7 @@ import type { Appointment } from "@/features/appointments/types";
 import { AppointmentList } from "@/features/appointments/components";
 import { getStatusColorKey } from "@/config/constants";
 import { getMonthsList, getYearsList, getMonthRange } from "@/utils";
-import { Dropdown } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 import { usePageMetadata } from "@/context";
 import { Button } from "@/components/ui/button";
 import { ReportModal } from "@/components/shared/ReportModal";
@@ -203,13 +203,13 @@ return (
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Dropdown
+                <SelectField
                   label="Year"
                   options={yearsList}
                   value={selectedYear.id}
                   onChange={handleYearChange}
                 />
-                <Dropdown
+                <SelectField
                   label="Month"
                   options={monthsList}
                   value={selectedMonth.id}

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useSupportChat } from "../hooks/useSupportChat";
 import { useAuth } from "@/context";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
@@ -258,7 +258,7 @@ export function SupportChatWidget() {
 
                 {!isAuthenticated && (
                   <>
-                    <FormInput
+                    <FormField
                       label="Name"
                       value={name}
                       onChange={setName}
@@ -267,7 +267,7 @@ export function SupportChatWidget() {
                       noSpecialCharacters={false}
                     />
 
-                    <FormInput
+                    <FormField
                       label="Email Address"
                       type="email"
                       value={email}
@@ -278,7 +278,7 @@ export function SupportChatWidget() {
                   </>
                 )}
 
-                <FormInput
+                <FormField
                   label="Message"
                   value={message}
                   onChange={setMessage}
@@ -360,7 +360,7 @@ export function SupportChatWidget() {
             className="shrink-0 space-y-2 border-t border-glass-border p-3"
           >
             <div className="flex items-start gap-2">
-              <FormInput
+              <FormField
                 label=""
                 value={message}
                 onChange={setMessage}

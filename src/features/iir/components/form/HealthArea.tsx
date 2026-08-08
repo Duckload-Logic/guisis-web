@@ -1,4 +1,5 @@
-﻿import { FormInput, Checkbox } from "@/components/form";
+﻿import { Checkbox } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 import { cn } from "@/lib/utils";
 
 export function HealthArea({
@@ -29,7 +30,7 @@ export function HealthArea({
       </div>
 
       {hasData && (
-        <FormInput
+        <FormField
           label="Details"
           isTextarea
           value={details}

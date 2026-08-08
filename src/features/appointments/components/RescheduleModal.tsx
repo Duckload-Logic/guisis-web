@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useAvailableSlots } from "@/features/appointments/hooks";
-import { Dropdown, FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { AvailableTimeSlotView } from "../types";
 import { format12HourTime, toISODateString } from "@/utils/dateTime";
 
@@ -105,7 +106,7 @@ export default function RescheduleModal({
         </DialogHeader>
 
         <div className="space-y-5 py-4">
-          <FormInput
+          <FormField
             type="date"
             label="New Date"
             min={dateOptions[0].value}
@@ -120,7 +121,7 @@ export default function RescheduleModal({
             </p>
           )}
 
-          <Dropdown
+          <SelectField
             label={"New time"}
             options={
               availableSlots?.map((slot: AvailableTimeSlotView) => ({

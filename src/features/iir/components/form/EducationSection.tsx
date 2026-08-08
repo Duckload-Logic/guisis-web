@@ -6,7 +6,8 @@ import {
   AlertCircle,
   ChevronDown,
 } from "lucide-react";
-import { FormInput, Dropdown } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import {
   validateObject,
@@ -404,7 +405,7 @@ export const EducationSection = forwardRef<
 
             {education?.natureOfSchooling === "Interrupted" && (
               <div className="animate-fade-in mt-6">
-                <FormInput
+                <FormField
                   name="education.interruptedDetails"
                   label="Reason for Interruption"
                   isTextarea
@@ -550,7 +551,7 @@ export const EducationSection = forwardRef<
                 <div className="p-5 sm:p-8">
                   <div className="grid grid-cols-1 gap-5 sm:gap-8 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <FormInput
+                      <FormField
                         name={`education.schools.${idx}.schoolName`}
                         label="School Name"
                         required={isFieldRequired(
@@ -573,7 +574,7 @@ export const EducationSection = forwardRef<
                     </div>
 
                     <div className="md:col-span-2">
-                      <FormInput
+                      <FormField
                         name={`education.schools.${idx}.schoolAddress`}
                         label="School Address"
                         required={isFieldRequired(
@@ -595,7 +596,7 @@ export const EducationSection = forwardRef<
                       />
                     </div>
 
-                    <Dropdown
+                    <SelectField
                       formStyle
                       label="School Type"
                       options={schoolTypes}
@@ -616,7 +617,7 @@ export const EducationSection = forwardRef<
                     />
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormInput
+                      <FormField
                         name={`education.schools.${idx}.yearStarted`}
                         label="Year Started"
                         inputMode="numeric"
@@ -636,7 +637,7 @@ export const EducationSection = forwardRef<
                           `education.schools.${idx}.yearStarted`,
                         )}
                       />
-                      <FormInput
+                      <FormField
                         name={`education.schools.${idx}.yearCompleted`}
                         label="Year Graduated"
                         inputMode="numeric"
@@ -659,7 +660,7 @@ export const EducationSection = forwardRef<
                     </div>
 
                     <div className="md:col-span-2">
-                      <FormInput
+                      <FormField
                         name={`education.schools.${idx}.awards`}
                         label="Awards/Honors"
                         value={school.awards || ""}

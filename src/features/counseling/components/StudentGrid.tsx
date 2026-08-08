@@ -20,7 +20,7 @@ import { NothingFound } from "@/components/shared/NothingFound";
 import { Table } from "@/components/shared/Table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Dropdown } from "@/components/form";
+import { SelectField } from "@/components/ui/select-field";
 import { Input } from "@/components/ui/input";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
@@ -419,7 +419,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full pr-1">
-          <Dropdown
+          <SelectField
             label=""
             options={programOptions}
             value={selectedProgramId}
@@ -443,7 +443,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full pr-1">
-          <Dropdown
+          <SelectField
             label=""
             options={yearLevelOptions}
             value={selectedYearLevelId}
@@ -471,7 +471,7 @@ export default function StudentGrid({
     {
       header: (
         <div className="w-full pr-4">
-          <Dropdown
+          <SelectField
             label=""
             options={statusOptions}
             value={selectedStatusId}
@@ -601,7 +601,7 @@ export default function StudentGrid({
                 {searchInput}
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
+                <SelectField
                   label="Program"
                   options={programOptions}
                   value={selectedProgramId}
@@ -611,7 +611,7 @@ export default function StudentGrid({
                 />
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
+                <SelectField
                   label="Year Level"
                   options={yearLevelOptions}
                   value={selectedYearLevelId}
@@ -621,7 +621,7 @@ export default function StudentGrid({
                 />
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
+                <SelectField
                   label="Status"
                   options={statusOptions}
                   value={selectedStatusId}
@@ -631,7 +631,7 @@ export default function StudentGrid({
                 />
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
+                <SelectField
                   label="Sort By"
                   options={sortOptions}
                   value={selectedSort}
@@ -641,7 +641,7 @@ export default function StudentGrid({
                 />
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
-                <Dropdown
+                <SelectField
                   label="Order"
                   options={orderOptions}
                   value={selectedOrder}

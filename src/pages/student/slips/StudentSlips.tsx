@@ -29,7 +29,7 @@ import {
 } from "@/features/slips/hooks";
 import { Slip, SlipStatus } from "@/features/slips/types";
 import { Pagination, Table, Column } from "@/components/shared";
-import Dropdown from "@/components/form/Dropdown";
+import { SelectField } from "@/components/ui/select-field";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
@@ -276,7 +276,7 @@ export default function StudentSlips() {
       {
         header: (
           <div className="px-3 py-3 w-full">
-            <Dropdown
+            <SelectField
               label=""
               options={statsWithAll.map((s) => ({
                 id: s.id,
@@ -445,7 +445,7 @@ export default function StudentSlips() {
               {isLoading ? (
                 <Skeleton className="h-10 w-full rounded-xl" />
               ) : (
-                <Dropdown
+                <SelectField
                   label="Admission Slip Status"
                   options={statsWithAll.map((s) => ({
                     id: s.id,

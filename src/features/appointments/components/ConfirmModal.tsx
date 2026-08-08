@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FormInput } from "@/components/form";
+import { FormField } from "@/components/ui/form-field";
 
 interface ActionConfirmModalProps {
   isOpen: boolean;
@@ -63,7 +63,7 @@ export default function ActionConfirmModal({
 
         {requiresMessage && (
           <div className="py-4">
-            <FormInput
+            <FormField
               placeholder="Enter reason or message..."
               value={message}
               onChange={(val) => {
