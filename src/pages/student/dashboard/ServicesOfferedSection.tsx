@@ -14,15 +14,15 @@ export function ServicesOfferedSection({
   return (
     <section
       className={cn(
-        "mt-5 overflow-hidden rounded-[26px] border border-white/25",
-        "bg-white/45 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
-        "backdrop-blur-2xl dark:border-white/10 dark:bg-white/[0.04]",
+        "mt-5 overflow-hidden rounded-[26px]",
+        "bg-background p-4 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
+        "backdrop-blur-2xl",
         "sm:p-6",
       )}
     >
       <div
         className={cn(
-          "flex flex-col gap-4 animate-fade-in-up",
+          "animate-fade-in-up flex flex-col gap-4",
           "md:flex-row md:items-end md:justify-between",
         )}
         style={{ animationDelay: "0.13s", animationFillMode: "both" }}
@@ -30,7 +30,7 @@ export function ServicesOfferedSection({
         <div className="min-w-0 space-y-2">
           <p
             className={cn(
-              "inline-flex max-w-full items-center gap-2 rounded-full border",
+              "inline-flex max-w-full items-center gap-2 rounded-md border",
               "border-primary/15 bg-primary/10 px-3 py-1 text-[11px]",
               "font-semibold uppercase tracking-[0.16em] text-primary",
             )}
@@ -52,7 +52,7 @@ export function ServicesOfferedSection({
 
         <div
           className={cn(
-            "w-fit shrink-0 rounded-full border border-white/25 bg-white/55 px-3.5 py-2",
+            "w-fit shrink-0 rounded-xl border border-white/25 bg-white/55 px-3.5 py-2",
             "text-xs text-muted-foreground shadow-sm backdrop-blur-xl",
             "dark:border-white/10 dark:bg-white/[0.04]",
           )}
@@ -69,11 +69,10 @@ export function ServicesOfferedSection({
           <article
             key={service.title}
             className={cn(
-              "group min-h-[132px] rounded-[22px] border border-white/25 bg-white/40 p-4",
+              "bg-glass group min-h-[132px] rounded-xl border border-glass-border p-4",
               "shadow-[0_8px_20px_rgba(15,23,42,0.045)] backdrop-blur-xl",
-              "transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/55",
+              "transition-all duration-300 hover:-translate-y-0.5",
               "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
-              "dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]",
               "animate-fade-in-up",
             )}
             style={{

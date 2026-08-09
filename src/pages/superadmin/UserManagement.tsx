@@ -468,11 +468,11 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 rounded-full text-muted-foreground",
+                    "!h-8 !w-8 rounded-full text-muted-foreground !p-0",
                     "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreHorizontal size={18} />
+                  <MoreHorizontal size={18} className="shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -607,11 +607,11 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 rounded-full text-muted-foreground",
+                    "h-8 w-8 rounded-full text-muted-foreground !p-0",
                     "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreHorizontal size={18} />
+                  <MoreHorizontal size={18} className="shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent

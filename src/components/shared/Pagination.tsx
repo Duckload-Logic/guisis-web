@@ -87,6 +87,14 @@ export const Pagination: React.FC<PaginationProps> = ({
       page <= totalPages
     ) {
       onPageChange(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      requestAnimationFrame(() => {
+        const mainEl = document.querySelector("main");
+        mainEl?.parentElement?.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
     }
   };
 

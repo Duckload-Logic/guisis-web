@@ -1,23 +1,53 @@
 import * as React from "react";
-
 import { cn } from "@/lib/utils";
+import {
+  BASE_FIELD_CLASSES,
+  getFieldStateClasses,
+} from "./form-styles";
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  error?: string | boolean;
+  filled?: boolean;
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      className,
+      type,
+      disabled,
+      required,
+      error,
+      filled,
+      ...props
+    },
+    ref,
+  ) => {
+    const isFilled =
+      filled !== undefined
+        ? filled
+        : props.value !== undefined && props.value !== "";
+
+    const stateClasses = getFieldStateClasses({
+      disabled,
+      error: !!error,
+      filled: isFilled,
+      required,
+    });
+
     return (
       <input
         type={type}
+        disabled={disabled}
+        required={required}
         className={cn(
-          "flex h-11 w-full rounded-xl border border-foreground/30 bg-card",
-          "px-4 py-2.5 text-sm font-medium tracking-tight text-foreground",
-          "shadow-sm outline-none transition-all duration-200",
+          BASE_FIELD_CLASSES,
+          stateClasses,
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",
           "file:text-foreground placeholder:text-muted-foreground/70",
-          "hover:border-glass-border/60 focus-visible:border-primary/50",
-          "focus-visible:bg-glass-bg focus-visible:ring-2 focus-visible:ring-primary/5",
-          "dark:focus-visible:bg-glass-bg/40 disabled:cursor-not-allowed",
-          "disabled:border-0 disabled:bg-border/50 disabled:text-muted-foreground",
-          "disabled:opacity-90 md:text-sm",
+          "focus-visible:bg-glass-bg dark:focus-visible:bg-glass-bg/40",
+          "md:text-sm",
           className,
         )}
         ref={ref}

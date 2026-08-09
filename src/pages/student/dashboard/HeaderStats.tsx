@@ -5,12 +5,15 @@ interface HeaderStatsProps {
   totalSlips: number;
 }
 
-export function HeaderStats({ totalAppointments, totalSlips }: HeaderStatsProps) {
+export function HeaderStats({
+  totalAppointments,
+  totalSlips,
+}: HeaderStatsProps) {
   return (
     <div className="hidden grid-cols-2 gap-3 min-[520px]:grid">
       <div
         className={cn(
-          "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
+          "bg-glass rounded-xl border border-glass-border px-4 py-3",
           "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
           "animate-fade-in-up",
         )}
@@ -36,7 +39,7 @@ export function HeaderStats({ totalAppointments, totalSlips }: HeaderStatsProps)
 
       <div
         className={cn(
-          "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
+          "bg-glass rounded-xl border border-glass-border px-4 py-3",
           "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
           "animate-fade-in-up",
         )}

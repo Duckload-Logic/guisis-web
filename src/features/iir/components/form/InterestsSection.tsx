@@ -85,6 +85,33 @@ const checkSubjectDuplicates = (preferences: any[]): FormErrors => {
   return localErrors;
 };
 
+const checkHobbySequence = (hobbies: any[]): FormErrors => {
+  const localErrors: FormErrors = {};
+  const rankMap: { [key: number]: string } = {};
+  (hobbies || []).forEach((h) => {
+    if (h && typeof h.priorityRank === "number") {
+      rankMap[h.priorityRank] = (h.hobbyName || "").trim();
+    }
+  });
+
+  for (let rank = 2; rank <= 4; rank++) {
+    const currentVal = rankMap[rank];
+    if (currentVal) {
+      for (let prevRank = 1; prevRank < rank; prevRank++) {
+        if (!rankMap[prevRank]) {
+          localErrors[`interests.hobbies.${rank - 1}.hobbyName`] =
+            `Cannot define preference #${rank} ` +
+            "if previous preferences are empty.";
+          break;
+        }
+      }
+    }
+  }
+
+  return localErrors;
+};
+
+
 const isAcademicActivity = (a: any): boolean => {
   if (!a || !a.activityOption) return false;
   if (!a.activityOption.name || a.activityOption.id === 0) {
@@ -101,7 +128,7 @@ const isAcademicActivity = (a: any): boolean => {
   if (cat === "extra_curricular" || EXTRA_CURRICULAR_ORGS.includes(name)) {
     return false;
   }
-  if (cat === "both" || isOtherName(name)) {
+  if (cat === "both") {
     if (a.roleSpecification || (a.role && a.role !== "Member")) {
       return false;
     }
@@ -185,7 +212,7 @@ export const InterestsSection = forwardRef<
             EXTRA_CURRICULAR_ORGS.includes(name)
           ) {
             isAcademic = false;
-          } else if (cat === "both" || isOtherName(name)) {
+          } else if (cat === "both") {
             const allOthers = currentActivities.filter((act: any) =>
               isOtherName(act.activityOption.name),
             );
@@ -247,6 +274,9 @@ export const InterestsSection = forwardRef<
       interests?.subjectPreferences || [],
     );
     Object.assign(sectionErrors, duplicates);
+
+    const hobbySequence = checkHobbySequence(interests?.hobbies || []);
+    Object.assign(sectionErrors, hobbySequence);
 
     const actErrors = checkActivitiesAndRoles(interests);
     Object.assign(sectionErrors, actErrors);
@@ -563,6 +593,33 @@ export const InterestsSection = forwardRef<
     }
 
     handleInputChange("interests.hobbies", currentHobbies);
+
+    const sequenceErrors = checkHobbySequence(currentHobbies);
+    setErrors((prev: FormErrors) => {
+      const updated = { ...prev };
+
+      for (let i = 0; i < 4; i++) {
+        const path = `interests.hobbies.${i}.hobbyName`;
+        delete updated[path];
+
+        const fieldRules = interestsValidationSchema[path];
+        const val =
+          currentHobbies.find((h: Hobby) => h.priorityRank === i + 1)
+            ?.hobbyName || "";
+        if (fieldRules && val) {
+          const error = validateField(val, fieldRules, {
+            interests: {
+              ...interests,
+              hobbies: currentHobbies,
+            },
+          });
+          if (error) updated[path] = error;
+        }
+      }
+
+      Object.assign(updated, sequenceErrors);
+      return updated;
+    });
   };
 
   const getSubject = (isFavorite: boolean, slotIndex: number) => {
@@ -863,81 +920,44 @@ export const InterestsSection = forwardRef<
             {/* Hobbies Card */}
             <div
               className={cn(
-                "bg-glass-bg/60 border-glass-border/40 group relative h-fit",
+                "bg-glass-bg/60 border-glass-border/40 relative",
                 "overflow-hidden rounded-xl border p-6 shadow-sm",
                 "backdrop-blur-glass transition-all duration-300 sm:p-8",
-                "lg:col-span-1",
               )}
             >
-              <div
-                className={cn(
-                  "absolute -bottom-10 -right-10 h-32 w-32 rounded-full",
-                  "bg-primary/10 blur-3xl transition-transform duration-700",
-                  "group-hover:scale-150",
-                )}
-              />
-
               <h4
                 className={cn(
-                  "mb-2 flex items-center gap-2 text-sm font-bold uppercase",
+                  "mb-6 flex items-center gap-2 text-sm font-bold uppercase",
                   "tracking-widest text-primary",
                 )}
               >
                 <Palette size={16} />
                 My Hobbies
               </h4>
-              <p
-                className={cn(
-                  "mb-8 text-[10px] font-bold uppercase",
-                  "text-neutral-400 dark:text-neutral-500",
-                )}
-              >
-                Rank by preference
-              </p>
 
-              <div className="space-y-5 sm:space-y-6">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 {[1, 2, 3, 4].map((rank) => (
-                  <div
+                  <FormField
                     key={rank}
-                    className="group relative"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center",
-                          "rounded-xl text-xs",
-                          rank <= 2
-                            ? "bg-primary text-white shadow-sm"
-                            : "bg-primary/10 text-primary",
-                        )}
-                      >
-                        {rank}
-                      </div>
-                      <div className="w-full">
-                        <FormField
-                          label=""
-                          value={getHobby(rank)}
-                          onChange={(val: string) => updateHobby(rank, val)}
-                          noSpecialCharacters={true}
-                          placeholder={`Preference #${rank}`}
-                          error={getFieldError(
-                            `interests.hobbies.${rank - 1}.hobbyName`,
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    label={`Hobby Preference #${rank}`}
+                    value={getHobby(rank)}
+                    onChange={(val: string) => updateHobby(rank, val)}
+                    noSpecialCharacters={true}
+                    placeholder="e.g. Reading, Sports, Painting"
+                    error={getFieldError(
+                      `interests.hobbies.${rank - 1}.hobbyName`,
+                    )}
+                  />
                 ))}
               </div>
             </div>
 
-            {/* Organizations Card */}
+            {/* Organizations Card (Full Width) */}
             <div
               className={cn(
-                "bg-glass-bg/60 border-glass-border/40 relative h-fit",
+                "bg-glass-bg/60 border-glass-border/40 relative",
                 "overflow-hidden rounded-xl border p-6 shadow-sm",
                 "backdrop-blur-glass transition-all duration-300 sm:p-8",
-                "lg:col-span-2",
               )}
             >
               <h4
@@ -950,7 +970,12 @@ export const InterestsSection = forwardRef<
                 Organizations Participated In
               </h4>
 
-              <div className="mb-8 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+              <div
+                className={cn(
+                  "mb-8 grid grid-cols-1 gap-x-8 gap-y-6",
+                  "sm:grid-cols-2 md:grid-cols-3",
+                )}
+              >
                 {EXTRA_CURRICULAR_ORGS.map((org, idx) => (
                   <Checkbox
                     key={org}
@@ -988,17 +1013,17 @@ export const InterestsSection = forwardRef<
                     Organization Details & Role:
                   </h5>
 
-                  {/* Other Organization Input */}
-                  {otherExtraActivityItem && (
-                    <div
-                      className={cn(
-                        "rounded-xl border border-glass-border/40",
-                        "bg-glass-bg/25 p-5",
-                      )}
-                    >
-                      <div className="max-w-md">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* Other Organization Input */}
+                    {otherExtraActivityItem && (
+                      <div
+                        className={cn(
+                          "rounded-xl border border-glass-border/40",
+                          "bg-glass-bg/25 p-5",
+                        )}
+                      >
                         <FormField
-                          label="Other Organization"
+                          label="Specify Other Organization"
                           value={
                             otherExtraActivityItem.activity
                               .otherSpecification || ""
@@ -1013,68 +1038,70 @@ export const InterestsSection = forwardRef<
                           }
                           placeholder="e.g. Red Cross Youth"
                           error={getFieldError(
-                            `interests.activities.` +
+                            "interests.activities." +
                               `${otherExtraActivityItem.origIdx}` +
                               ".otherSpecification",
                           )}
                           required={true}
                         />
                       </div>
-                    </div>
-                  )}
-
-                  {/* Single Shared Role Selection */}
-                  <div
-                    className={cn(
-                      "rounded-xl border border-glass-border/40",
-                      "bg-glass-bg/25 p-5 space-y-4",
                     )}
-                  >
+
+                    {/* Single Shared Role Selection */}
                     <div
                       className={cn(
-                        "grid grid-cols-1 gap-4",
-                        sharedRole === "Other"
-                          ? "sm:grid-cols-2"
-                          : "sm:grid-cols-1 max-w-xs",
+                        "rounded-xl border border-glass-border/40",
+                        "bg-glass-bg/25 p-5 space-y-4",
+                        !otherExtraActivityItem && "md:col-span-2",
                       )}
                     >
-                      <SelectField
-                        label="Role"
-                        options={[
-                          { id: "Member", name: "Member" },
-                          { id: "Officer", name: "Officer" },
-                          { id: "Other", name: "Other (Specify)" },
-                        ]}
-                        value={sharedRole}
-                        onChange={updateAllExtracurricularRoles}
-                        error={
-                          firstExtraOrigIdx !== -1
-                            ? getFieldError(
-                                "interests.activities." +
-                                  `${firstExtraOrigIdx}.role`,
-                              )
-                            : undefined
-                        }
-                        required={true}
-                      />
-
-                      {sharedRole === "Other" && (
-                        <FormField
-                          label="Specify Role"
-                          value={sharedRoleSpec}
-                          onChange={updateAllExtracurricularRoleSpecs}
-                          placeholder="e.g. President"
+                      <div
+                        className={cn(
+                          "grid grid-cols-1 gap-4",
+                          sharedRole === "Other"
+                            ? "sm:grid-cols-2"
+                            : "sm:grid-cols-1",
+                        )}
+                      >
+                        <SelectField
+                          label="Role"
+                          options={[
+                            { id: "Member", name: "Member" },
+                            { id: "Officer", name: "Officer" },
+                            { id: "Other", name: "Other (Specify)" },
+                          ]}
+                          value={sharedRole}
+                          onChange={updateAllExtracurricularRoles}
                           error={
                             firstExtraOrigIdx !== -1
                               ? getFieldError(
-                                  `interests.activities.${firstExtraOrigIdx}` +
-                                    ".roleSpecification",
+                                  "interests.activities." +
+                                    `${firstExtraOrigIdx}.role`,
                                 )
                               : undefined
                           }
                           required={true}
                         />
-                      )}
+
+                        {sharedRole === "Other" && (
+                          <FormField
+                            label="Specify Role"
+                            value={sharedRoleSpec}
+                            onChange={updateAllExtracurricularRoleSpecs}
+                            placeholder="e.g. President"
+                            error={
+                              firstExtraOrigIdx !== -1
+                                ? getFieldError(
+                                    "interests.activities." +
+                                      `${firstExtraOrigIdx}` +
+                                      ".roleSpecification",
+                                  )
+                                : undefined
+                            }
+                            required={true}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

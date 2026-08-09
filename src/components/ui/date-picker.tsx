@@ -61,6 +61,7 @@ export function DatePicker({
   const generatedId = React.useId();
   const safeId = (id ?? generatedId).replace(/:/g, "-");
   const [open, setOpen] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   const selectedDate = React.useMemo(() => parseDateValue(value), [value]);
   const nativeValue = React.useMemo(
@@ -115,7 +116,19 @@ export function DatePicker({
         </div>
       )}
 
-      <div className="relative h-11 w-full sm:hidden">
+      <div
+        className="relative h-11 w-full sm:hidden cursor-pointer"
+        onClick={() => {
+          if (!disabled) {
+            try {
+              inputRef.current?.showPicker();
+            } catch (err) {
+              inputRef.current?.focus();
+              inputRef.current?.click();
+            }
+          }
+        }}
+      >
         <div
           className={cn(
             triggerClasses,
@@ -129,6 +142,7 @@ export function DatePicker({
         </div>
 
         <input
+          ref={inputRef}
           id={`${safeId}-mobile`}
           type="date"
           value={nativeValue}
@@ -138,8 +152,8 @@ export function DatePicker({
           aria-label={label ?? placeholder}
           aria-invalid={Boolean(error)}
           className={cn(
-            "absolute inset-0 h-full w-full cursor-pointer",
-            "opacity-0 disabled:cursor-not-allowed",
+            "absolute inset-0 w-full h-full opacity-0",
+            "pointer-events-none",
           )}
         />
       </div>

@@ -5,7 +5,7 @@ import { AlertCircle, User } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata, useToast } from "@/context";
-import { useIIRProfile } from "@/features/iir/hooks";
+import { useIIRProfile, useIIRStatus } from "@/features/iir/hooks";
 import {
   useGetIIRDraft,
   useIIRFormSave,
@@ -13,7 +13,10 @@ import {
   useTouchedState,
 } from "@/features/iir/hooks";
 import { EMPTY_IIR_FORM } from "@/features/iir/constants";
-import { PatchIIRSubmit, UploadIIRTwoByTwoPhoto } from "@/features/iir/services/service";
+import {
+  PatchIIRSubmit,
+  UploadIIRTwoByTwoPhoto,
+} from "@/features/iir/services/service";
 import type { IIRForm as IIRFormType } from "@/features/iir/types";
 import {
   calculateSectionCompletion,
@@ -112,6 +115,15 @@ export default function IIRForm() {
     useState(false);
   const { triggerToast } = useToast();
 
+  const { data: isSubmitted, isLoading: isLoadingStatus } = useIIRStatus();
+
+  useEffect(() => {
+    if (!isLoadingStatus && isSubmitted && !isEditMode) {
+      triggerToast("You have already submitted your IIR.");
+      navigate("/student/iir", { replace: true });
+    }
+  }, [isSubmitted, isLoadingStatus, isEditMode, navigate, triggerToast]);
+
   // Modal error state
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [groupedErrors, setGroupedErrors] = useState({});
@@ -126,12 +138,23 @@ export default function IIRForm() {
   const isPhotoStepBlocked = isOnPhotoRequiredStep && !hasRequiredPhoto;
 
   const scrollToTop = () => {
-    const container = document.querySelector("main")?.parentElement;
-    if (container) {
-      container.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    const performScroll = () => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement.scrollTo({ top: 0, behavior: "auto" });
+      document.body.scrollTo({ top: 0, behavior: "auto" });
+      let el = document.querySelector("main") as HTMLElement | null;
+      while (el) {
+        if (typeof el.scrollTo === "function") {
+          el.scrollTo({ top: 0, behavior: "auto" });
+        }
+        el = el.parentElement;
+      }
+    };
+    performScroll();
+    requestAnimationFrame(performScroll);
+    setTimeout(performScroll, 50);
+    setTimeout(performScroll, 150);
+    setTimeout(performScroll, 300);
   };
 
   const handleInputChange = useCallback((fieldPath: string, value: any) => {
@@ -147,7 +170,8 @@ export default function IIRForm() {
 
   const persistTwoByTwoPhoto = useCallback(
     (formData?: IIRFormType | null) => {
-      const photoDataUrl = formData?.student?.personalInfo?.twoByTwoPhotoDataUrl;
+      const photoDataUrl =
+        formData?.student?.personalInfo?.twoByTwoPhotoDataUrl;
       if (!photoDataUrl) return;
 
       saveIIRTwoByTwoPhoto(
@@ -259,7 +283,9 @@ export default function IIRForm() {
           personalInfo: {
             ...draftData.student.personalInfo,
             twoByTwoPhotoDataUrl:
-              savedPhoto || draftData.student.personalInfo.twoByTwoPhotoDataUrl || null,
+              savedPhoto ||
+              draftData.student.personalInfo.twoByTwoPhotoDataUrl ||
+              null,
           },
         },
       };
@@ -284,7 +310,12 @@ export default function IIRForm() {
     }
   };
 
-  const isLoading = isLoadingDraft || isLoadingEditProfile || isSubmitting;
+  const isLoading =
+    isLoadingDraft ||
+    isLoadingEditProfile ||
+    isLoadingStatus ||
+    isSubmitting ||
+    (isSubmitted && !isEditMode);
 
   if (draftError) {
     return (
@@ -471,10 +502,14 @@ export default function IIRForm() {
     persistTwoByTwoPhoto(localFormData);
 
     try {
-      const photoDataUrl = localFormData.student?.personalInfo?.twoByTwoPhotoDataUrl;
+      const photoDataUrl =
+        localFormData.student?.personalInfo?.twoByTwoPhotoDataUrl;
       if (photoDataUrl && photoDataUrl.startsWith("data:image/")) {
         try {
-          const fileToUpload = dataUrlToFile(photoDataUrl, "iir-profile-photo.jpg");
+          const fileToUpload = dataUrlToFile(
+            photoDataUrl,
+            "iir-profile-photo.jpg",
+          );
           await UploadIIRTwoByTwoPhoto(fileToUpload);
         } catch (uploadErr) {
           console.error("Failed to upload 2x2 photo to server:", uploadErr);
