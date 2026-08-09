@@ -139,7 +139,7 @@ export default function FAQ() {
         <div className="hidden grid-cols-2 gap-3 sm:grid">
           <div
             className={cn(
-              "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
+              "border-glass rounded-xl border border-glass-border px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
               "animate-fade-in-up",
             )}
@@ -160,7 +160,7 @@ export default function FAQ() {
 
           <div
             className={cn(
-              "rounded-xl border border-white/30 bg-white/60 px-4 py-3",
+              "border-glass rounded-xl border border-glass-border px-4 py-3",
               "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
               "animate-fade-in-up",
             )}
@@ -277,7 +277,9 @@ export default function FAQ() {
                       >
                         <button
                           type="button"
-                          onClick={() => toggleItem(category.title, questionIndex)}
+                          onClick={() =>
+                            toggleItem(category.title, questionIndex)
+                          }
                           className={cn(
                             "grid min-h-[50px] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4",
                             "px-4 py-3 text-left transition-colors",
@@ -307,13 +309,15 @@ export default function FAQ() {
                         <div
                           className={cn(
                             "grid transition-all duration-300 ease-in-out",
-                            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                            isOpen
+                              ? "grid-rows-[1fr] opacity-100"
+                              : "grid-rows-[0fr] opacity-0",
                           )}
                         >
                           <div className="overflow-hidden">
                             <div
                               className={cn(
-                                "px-4 pb-4 pt-0 text-sm leading-7 text-muted-foreground break-words",
+                                "break-words px-4 pb-4 pt-0 text-sm leading-7 text-muted-foreground",
                               )}
                             >
                               {item.answer}

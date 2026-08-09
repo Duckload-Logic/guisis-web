@@ -732,7 +732,7 @@ export const PersonalSection = forwardRef<
                   handleInputChange("student.basicInfo.firstName", val)
                 }
                 error={errors["student.basicInfo.firstName"]}
-                placeholder="First name"
+                placeholder={studentInfo?.basicInfo?.firstName || ""}
                 required={isFieldRequired(
                   runtimeSchema,
                   "student.basicInfo.firstName",
@@ -752,7 +752,7 @@ export const PersonalSection = forwardRef<
                 onChange={(val: any) =>
                   handleInputChange("student.basicInfo.middleName", val)
                 }
-                placeholder="Middle name"
+                placeholder={studentInfo?.basicInfo?.middleName || ""}
                 disabled
               />
             </div>
@@ -764,7 +764,7 @@ export const PersonalSection = forwardRef<
                   handleInputChange("student.basicInfo.lastName", val)
                 }
                 error={errors["student.basicInfo.lastName"]}
-                placeholder="Last name"
+                placeholder={studentInfo?.basicInfo?.lastName || ""}
                 required={isFieldRequired(
                   runtimeSchema,
                   "student.basicInfo.lastName",

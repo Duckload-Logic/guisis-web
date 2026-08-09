@@ -212,10 +212,15 @@ export const FormField = forwardRef<
               onBlur={handleBlur}
               placeholder={placeholder}
               disabled={disabled}
+              required={required}
+              error={error || internalError}
+              filled={hasValue}
               rows={DEFAULT_TEXTAREA_ROWS}
               maxLength={maxChars}
               className={cn(
-                browserSupportsSpeechRecognition && !disabled && "pb-12",
+                browserSupportsSpeechRecognition &&
+                  !disabled &&
+                  "pb-12",
                 BASE_FIELD_CLASSES,
                 fieldStateClasses,
               )}
@@ -232,6 +237,9 @@ export const FormField = forwardRef<
               placeholder={placeholder}
               inputMode={inputMode}
               disabled={disabled}
+              required={required}
+              error={error || internalError}
+              filled={hasValue}
               min={min}
               max={max}
               list={list}

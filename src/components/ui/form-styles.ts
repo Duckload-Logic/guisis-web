@@ -22,7 +22,7 @@ export function getFieldStateClasses(state: {
   }
   if (state.error) {
     return cn(
-      "border-destructive/50 focus-visible:border-destructive/60",
+      "border-destructive/50 bg-card focus-visible:border-destructive/60",
       "focus-visible:ring-destructive/10"
     );
   }
