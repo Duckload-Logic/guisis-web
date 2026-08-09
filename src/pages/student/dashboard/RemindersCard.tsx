@@ -13,9 +13,8 @@ export function RemindersCard({ reminders }: RemindersCardProps) {
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-[24px] border border-white/25 bg-white/45",
-        "shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "border-glass overflow-hidden rounded-xl border border-glass-border bg-background",
+        "backdrop-blur-xl",
         "animate-fade-in-up",
       )}
       style={{ animationDelay: "0s", animationFillMode: "both" }}
@@ -52,8 +51,8 @@ export function RemindersCard({ reminders }: RemindersCardProps) {
             <div
               key={reminder.title}
               className={cn(
-                "flex gap-3 rounded-2xl border border-white/25 bg-white/45 p-4",
-                "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.035]",
+                "border-glass flex gap-3 rounded-xl border-glass-border bg-background p-4",
+                "backdrop-blur-xl",
               )}
             >
               <span

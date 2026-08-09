@@ -34,11 +34,15 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
 
       <div className={cn("grid grid-cols-1 gap-3", "sm:grid-cols-2 sm:gap-4")}>
         {actions.map((action) => (
-          <Link key={action.title} to={action.href} className="group">
+          <Link
+            key={action.title}
+            to={action.href}
+            className="group"
+          >
             <div
               className={cn(
-                "relative hidden overflow-hidden rounded-[18px] sm:flex",
-                "border border-white/20 bg-white/45 p-4",
+                "border-glass relative hidden overflow-hidden rounded-xl sm:flex",
+                "bg-glass border border-glass-border p-4",
                 "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
                 "transition-all duration-200 hover:-translate-y-0.5",
                 "hover:border-primary/25 hover:bg-white/55",
@@ -53,7 +57,12 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
                 )}
               />
 
-              <div className={cn("relative flex min-h-[120px] flex-col", "justify-between")}>
+              <div
+                className={cn(
+                  "relative flex min-h-[120px] flex-col",
+                  "justify-between",
+                )}
+              >
                 <div className="flex items-start justify-between">
                   <div
                     className={cn(
@@ -111,7 +120,12 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
                     {action.title}
                   </h3>
 
-                  <p className={cn("text-[11px] text-muted-foreground", "line-clamp-1")}>
+                  <p
+                    className={cn(
+                      "text-[11px] text-muted-foreground",
+                      "line-clamp-1",
+                    )}
+                  >
                     {action.description}
                   </p>
                 </div>

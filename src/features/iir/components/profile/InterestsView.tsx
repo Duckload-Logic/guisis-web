@@ -7,6 +7,16 @@ import TagList from "./TagList";
 import { asText } from "../../utils";
 import { ActivityOption, Hobby, InterestsSection } from "../../types";
 
+const isOtherName = (name: string = "") => {
+  const n = (name || "").toLowerCase().trim();
+  return (
+    n === "others" ||
+    n === "other" ||
+    n.includes("others") ||
+    n.includes("other")
+  );
+};
+
 function getActivityOption(activity: any): ActivityOption | undefined {
   if (activity?.activityOption) return activity.activityOption;
   if (Array.isArray(activity?.activityOptions))
@@ -110,22 +120,30 @@ function ActivityCard({ title, list }: { title: string; list: any[] }) {
         <div className="space-y-3">
           {list.map((activity: any, index: number) => {
             const activityOption = getActivityOption(activity);
+            const name = activityOption?.name || "";
+            const displayName =
+              isOtherName(name) && activity.otherSpecification
+                ? activity.otherSpecification
+                : (name || "Activity");
+            const displayRole =
+              activity.role === "Other" && activity.roleSpecification
+                ? activity.roleSpecification
+                : activity.role;
 
             return (
               <div
                 key={activity.id || `${title}-${index}`}
-                className="rounded-lg border border-glass-border bg-glass-bg p-3"
+                className={cn(
+                  "rounded-lg border border-glass-border",
+                  "bg-glass-bg p-3",
+                )}
               >
                 <p className="text-xs font-semibold text-card-foreground">
-                  {asText(
-                    activityOption?.name ||
-                      activity.otherSpecification ||
-                      "Activity",
-                  )}
+                  {asText(displayName)}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   {!title.includes("Academic") &&
-                    `Role: ${asText(activity.role)}`}
+                    `Role: ${asText(displayRole)}`}
                 </p>
               </div>
             );
