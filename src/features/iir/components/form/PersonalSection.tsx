@@ -1,4 +1,10 @@
-import { forwardRef, useImperativeHandle, useState, useCallback } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { Checkbox } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
@@ -25,6 +31,9 @@ import {
   useStudentRelationshipTypes,
   useAddressSync,
 } from "@/features/iir/hooks";
+import {
+  CheckStudentNumberUniqueness,
+} from "@/features/iir/services/service";
 import { COMPLEXIONS } from "@/features/iir/constants";
 import {
   useGetRegions,
@@ -104,6 +113,84 @@ export const PersonalSection = forwardRef<
   const { data: studentRelationshipTypes = [] } = useStudentRelationshipTypes();
   const { data: regions = [] } = useGetRegions();
   const [errors, setErrors] = useState<FormErrors>({});
+  const [studentNumberStatus, setStudentNumberStatus] = useState<
+    "idle" | "checking" | "taken" | "available"
+  >("idle");
+  const [checkedStudentNumber, setCheckedStudentNumber] =
+    useState<string>("");
+
+  const performUniquenessCheck = useCallback(
+    async (num: string) => {
+      if (num === checkedStudentNumber) return;
+      setStudentNumberStatus("checking");
+      try {
+        const exists = await CheckStudentNumberUniqueness(num);
+        if (exists) {
+          setStudentNumberStatus("taken");
+          setErrors((prev: FormErrors) => ({
+            ...prev,
+            "student.personalInfo.studentNumber":
+              "Student number is already registered",
+          }));
+        } else {
+          setStudentNumberStatus("available");
+          setCheckedStudentNumber(num);
+          setErrors((prev: FormErrors) => {
+            const updated = { ...prev };
+            const currentErr =
+              updated["student.personalInfo.studentNumber"];
+            if (
+              currentErr === "Student number is already registered" ||
+              currentErr === "Checking student number availability..."
+            ) {
+              delete updated["student.personalInfo.studentNumber"];
+            }
+            return updated;
+          });
+        }
+      } catch (err) {
+        console.error("Uniqueness check failed:", err);
+        setStudentNumberStatus("available");
+        setErrors((prev: FormErrors) => {
+          const updated = { ...prev };
+          if (
+            updated["student.personalInfo.studentNumber"] ===
+            "Checking student number availability..."
+          ) {
+            delete updated["student.personalInfo.studentNumber"];
+          }
+          return updated;
+        });
+      }
+    },
+    [checkedStudentNumber],
+  );
+
+  useEffect(() => {
+    if (isEditMode) return;
+    const num = studentInfo?.personalInfo?.studentNumber || "";
+    const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+    if (!isValidFormat) {
+      setStudentNumberStatus("idle");
+      return;
+    }
+
+    if (num === checkedStudentNumber) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      performUniquenessCheck(num);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    studentInfo?.personalInfo?.studentNumber,
+    checkedStudentNumber,
+    performUniquenessCheck,
+    isEditMode,
+  ]);
+
   const { triggerToast } = useToast();
 
   // Stable indices for address array
@@ -464,7 +551,31 @@ export const PersonalSection = forwardRef<
       filteredSchema,
     );
 
-    setErrors((prev) => ({ ...prev, ...sectionErrors }));
+    if (activeStep === 1 && !isEditMode) {
+      const num = studentInfo?.personalInfo?.studentNumber || "";
+      const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+      if (isValidFormat) {
+        if (studentNumberStatus === "taken") {
+          sectionErrors["student.personalInfo.studentNumber"] =
+            "Student number is already registered";
+        } else if (studentNumberStatus === "checking") {
+          sectionErrors["student.personalInfo.studentNumber"] =
+            "Checking student number availability...";
+        }
+      }
+    }
+
+    setErrors((prev) => {
+      const merged = { ...prev, ...sectionErrors };
+      const numErr = sectionErrors["student.personalInfo.studentNumber"];
+      if (numErr) {
+        merged["student.personalInfo.studentNumber"] = numErr;
+      } else {
+        delete merged["student.personalInfo.studentNumber"];
+      }
+      return merged;
+    });
+
     return {
       isValid: Object.keys(sectionErrors).length === 0,
       errors: sectionErrors,
@@ -521,6 +632,17 @@ export const PersonalSection = forwardRef<
   const handleFieldBlur = (fieldPath: string) => {
     if (onFieldBlur) {
       onFieldBlur(fieldPath);
+    }
+
+    if (
+      !isEditMode &&
+      fieldPath === "student.personalInfo.studentNumber"
+    ) {
+      const num = studentInfo?.personalInfo?.studentNumber || "";
+      const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+      if (isValidFormat && num !== checkedStudentNumber) {
+        performUniquenessCheck(num);
+      }
     }
   };
 

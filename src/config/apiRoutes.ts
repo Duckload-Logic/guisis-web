@@ -184,6 +184,7 @@ export const API_ROUTES = Object.freeze({
       save: "/students/inventory/records/iir/draft",
       submit: "/students/inventory/records/iir/draft",
     }),
+    checkStudentNumber: "/students/inventory/records/iir/check-number",
     submit: "/students/inventory/records/iir",
     update: (iirId: string) => `/students/inventory/records/iir/${iirId}`,
     checkOnboarding: (userId: string) =>
