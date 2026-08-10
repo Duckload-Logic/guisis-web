@@ -829,15 +829,15 @@ export default function IIRForm() {
         case 10:
           updated.health = {
             healthRecord: {
-              visionHasProblem: false,
+              visionHasProblem: null,
               visionDetails: null,
-              hearingHasProblem: false,
+              hearingHasProblem: null,
               hearingDetails: null,
-              speechHasProblem: false,
+              speechHasProblem: null,
               speechDetails: null,
-              generalHealthHasProblem: false,
+              generalHealthHasProblem: null,
               generalHealthDetails: null,
-              mentalEmotionalHasProblem: false,
+              mentalEmotionalHasProblem: null,
               mentalEmotionalDetails: null,
             } as any,
             consultations: [],
