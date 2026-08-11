@@ -61,6 +61,10 @@ export const HealthSection = forwardRef<
       { health, _consultations },
       healthValidationSchema,
     );
+    if (!isEditMode) {
+      delete sectionErrors["health.healthRecord.mentalEmotionalHasProblem"];
+      delete sectionErrors["health.healthRecord.mentalEmotionalDetails"];
+    }
     setErrors(sectionErrors);
     return {
       isValid: Object.keys(sectionErrors).length === 0,
