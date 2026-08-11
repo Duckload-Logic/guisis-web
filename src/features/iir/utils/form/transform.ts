@@ -73,6 +73,7 @@ export function validateNumericFields(formData: IIRForm): string[] {
 export function transformFormToPayload(formData: IIRForm): any {
   return {
     iirId: formData.id ?? "",
+    isCompleted: formData.isCompleted ?? true,
     student: {
       basicInfo: {
         email: formData.student.basicInfo.email,

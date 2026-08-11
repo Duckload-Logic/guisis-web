@@ -311,6 +311,7 @@ export interface IIRForm {
   family: FamilySection;
   health: HealthSection;
   interests: InterestsSection;
+  isCompleted?: boolean;
 }
 
 export const ORDER_BY_OPTIONS: { [key: string]: string } = {

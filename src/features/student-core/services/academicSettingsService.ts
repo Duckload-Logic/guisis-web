@@ -10,6 +10,7 @@ export const GetAcademicSettings = async (
   currentYearStart: number;
   currentYearEnd: number;
   currentTerm: number;
+  allowExpeditedIIR: boolean;
   updatedAt: string;
 }> => {
   try {
@@ -31,6 +32,7 @@ export const PutAcademicSettings = async (
     currentYearStart: number;
     currentYearEnd: number;
     currentTerm: number;
+    allowExpeditedIIR: boolean;
   },
   config?: AxiosConfigWithMeta,
 ): Promise<void> => {
