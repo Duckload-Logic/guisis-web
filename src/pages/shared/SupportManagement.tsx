@@ -127,9 +127,7 @@ export function SupportManagement() {
 
   const filteredGroups = useMemo(() => {
     return groupedUsers.filter((g) => {
-      const hasOpen = g.tickets.some(
-        (t) => t.status.toLowerCase() === "open",
-      );
+      const hasOpen = g.tickets.some((t) => t.status.toLowerCase() === "open");
       if (statusFilter === "open") return hasOpen;
       if (statusFilter === "resolved") return !hasOpen;
       return true;
@@ -328,7 +326,7 @@ export function SupportManagement() {
         <div
           className={
             "flex max-h-[42%] w-full shrink-0 flex-col border-b " +
-            "border-glass-border md:max-h-none md:w-96 md:border-b-0 md:border-r"
+            "md:w-104 border-glass-border md:max-h-none md:border-b-0 md:border-r"
           }
         >
           <div className="border-b border-glass-border p-4">
@@ -342,12 +340,14 @@ export function SupportManagement() {
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
-                  className={`flex-1 rounded-md py-1 text-center text-[10px] ` +
+                  className={
+                    `flex-1 rounded-md py-1 text-center text-[8px] ` +
                     `font-bold uppercase transition-colors ${
                       statusFilter === filter
                         ? "bg-primary text-primary-foreground shadow-sm"
                         : "text-muted-foreground hover:bg-muted/50"
-                    }`}
+                    }`
+                  }
                 >
                   {filter}
                 </button>
