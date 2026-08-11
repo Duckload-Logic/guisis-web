@@ -65,10 +65,12 @@ export interface PaginatedTicketsResponse {
  */
 export async function GetSupportTickets(
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
+  status: string = ""
 ): Promise<PaginatedTicketsResponse> {
+  const statusParam = status ? `&status=${status}` : "";
   const { data } = await apiClient.get<PaginatedTicketsResponse>(
-    `/support/tickets?page=${page}&page_size=${pageSize}`
+    `/support/tickets?page=${page}&page_size=${pageSize}${statusParam}`
   );
   return data;
 }

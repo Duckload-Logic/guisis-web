@@ -106,11 +106,11 @@ export function getNotificationTargetUrl(
     targetType === "supportticket" ||
     title.includes("support")
   ) {
+    const tid = notification.targetId || "";
     if (rolePath === "student") {
-      const tid = notification.targetId || "";
       return `/student?openSupport=true&ticketId=${tid}`;
     }
-    return `/${rolePath}/support`;
+    return `/${rolePath}/support?ticketId=${tid}`;
   }
 
   if (notificationType.includes("appointment")) {
