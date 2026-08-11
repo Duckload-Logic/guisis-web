@@ -20,8 +20,8 @@ export function SectionContainer({
   return (
     <div
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-4 group mb-6 w-full",
-        "duration-700 sm:mb-8",
+        "animate-in fade-in slide-in-from-bottom-4 group w-full",
+        "duration-700",
       )}
     >
       <FormSectionShell>
