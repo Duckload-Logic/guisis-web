@@ -67,7 +67,7 @@ export function SupportManagement() {
   } | null>(null);
   const pageSize = 10;
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "resolved">(
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
     "all",
   );
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
@@ -131,7 +131,7 @@ export function SupportManagement() {
         (t) => t.status.toLowerCase() === "open",
       );
       if (statusFilter === "open") return hasOpen;
-      if (statusFilter === "resolved") return !hasOpen;
+      if (statusFilter === "closed") return !hasOpen;
       return true;
     });
   }, [groupedUsers, statusFilter]);
@@ -337,7 +337,7 @@ export function SupportManagement() {
               Active Conversations
             </h2>
             <div className="mt-3 flex gap-1 rounded-lg bg-muted/30 p-0.5">
-              {(["all", "open", "resolved"] as const).map((filter) => (
+              {(["all", "open", "closed"] as const).map((filter) => (
                 <button
                   key={filter}
                   type="button"
