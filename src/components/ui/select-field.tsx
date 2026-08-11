@@ -67,7 +67,9 @@ export function SelectField({
     );
   };
 
-  const selectedOption = options.find(
+  const safeOptions = Array.isArray(options) ? options : [];
+
+  const selectedOption = safeOptions.find(
     (option) => String(option?.[identifier]) === String(value),
   );
 
@@ -168,7 +170,7 @@ export function SelectField({
             }
 
             const nextBuffer = `${typeaheadBuffer.current}${event.key}`.toLowerCase();
-            const matchingOption = options.find(
+            const matchingOption = safeOptions.find(
               (option) =>
                 !option?.disabled &&
                 getLabel(option).toLowerCase().startsWith(nextBuffer),
@@ -188,7 +190,7 @@ export function SelectField({
           }}
         >
           <div className="max-h-64 overflow-y-auto overscroll-contain">
-            {options.map((option, index) => {
+            {safeOptions.map((option, index) => {
               const optionId = option?.[identifier];
               const optionValue = option?.[get];
               const selected = String(optionId) === String(value);

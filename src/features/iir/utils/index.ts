@@ -12,9 +12,9 @@ export function renderAddress(address: Address | undefined) {
   if (!address) return NOT_SPECIFIED;
   const parts = [
     address.streetDetail,
-    address.barangay.name,
-    address.city.name,
-    address.region.name,
+    address.barangay?.name,
+    address.city?.name,
+    address.region?.name,
   ].filter(Boolean);
   return parts.length ? parts.join(", ") : NOT_SPECIFIED;
 }
