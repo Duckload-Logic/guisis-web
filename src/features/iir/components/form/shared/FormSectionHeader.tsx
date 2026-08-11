@@ -18,7 +18,8 @@ export function FormSectionHeader({
   return (
     <div
       className={cn(
-        "relative mb-8 flex items-center gap-4",
+        "relative mb-6 flex items-center gap-3",
+        "sm:mb-8 sm:gap-4",
       )}
     >
       {Icon && (
@@ -37,7 +38,7 @@ export function FormSectionHeader({
       <div className="flex min-w-0 flex-col">
         <h3
           className={cn(
-            "text-xl font-bold leading-tight tracking-tight",
+            "text-lg font-bold leading-tight tracking-tight",
             "text-neutral-900 dark:text-white sm:text-2xl",
           )}
         >
@@ -47,8 +48,8 @@ export function FormSectionHeader({
         {description && (
           <p
             className={cn(
-              "mt-1 text-sm font-medium leading-snug",
-              "text-neutral-500/80 dark:text-neutral-400/80",
+              "mt-0.5 text-[10px] font-semibold uppercase tracking-tight",
+              "text-neutral-500/80 dark:text-neutral-400/80 sm:text-sm",
             )}
           >
             {description}
