@@ -61,10 +61,8 @@ export const HealthSection = forwardRef<
       { health, _consultations },
       healthValidationSchema,
     );
-    if (!isEditMode) {
-      delete sectionErrors["health.healthRecord.mentalEmotionalHasProblem"];
-      delete sectionErrors["health.healthRecord.mentalEmotionalDetails"];
-    }
+    delete sectionErrors["health.healthRecord.mentalEmotionalHasProblem"];
+    delete sectionErrors["health.healthRecord.mentalEmotionalDetails"];
     setErrors(sectionErrors);
     return {
       isValid: Object.keys(sectionErrors).length === 0,
@@ -238,18 +236,6 @@ export const HealthSection = forwardRef<
       yesValue: health?.healthRecord?.generalHealthHasProblem,
       detailsValue: health?.healthRecord?.generalHealthDetails || "",
     },
-    ...(isEditMode
-      ? [
-          {
-            label: "Mental / Emotional Health",
-            icon: Brain,
-            yesKey: "health.healthRecord.mentalEmotionalHasProblem",
-            detailsKey: "health.healthRecord.mentalEmotionalDetails",
-            yesValue: health?.healthRecord?.mentalEmotionalHasProblem,
-            detailsValue: health?.healthRecord?.mentalEmotionalDetails || "",
-          },
-        ]
-      : []),
   ];
 
   // Array of psychological consultation types
