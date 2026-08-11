@@ -33,11 +33,15 @@ export function formatNotificationTime(dateString: string) {
   return date.toLocaleDateString();
 }
 
-export function getIconForNotificationType(type: string): {
+export function getIconForNotificationType(
+  type: string,
+  targetType?: string,
+): {
   icon: LucideIcon;
   color: NotificationIconTone;
 } {
   const normalizedType = type.toLowerCase();
+  const normalizedTarget = (targetType || "").toLowerCase();
 
   if (normalizedType.includes("appointment")) {
     return { icon: Calendar, color: "blue" };
@@ -58,7 +62,10 @@ export function getIconForNotificationType(type: string): {
     return { icon: CheckCircle, color: "green" };
   }
 
-  if (normalizedType.includes("support")) {
+  if (
+    normalizedType.includes("support") ||
+    normalizedTarget === "supportticket"
+  ) {
     return { icon: MessageSquare, color: "blue" };
   }
 
