@@ -215,6 +215,7 @@ const ParentInformationCard = memo(
                     `family.relatedPersons.${idx}.dateOfBirth`,
                   )}
                   disabled={isEditMode}
+                  maxDate={new Date()}
                 />
               </div>
             </div>
@@ -890,6 +891,7 @@ export const FamilySection = forwardRef<
                       error={getFieldError(
                         `family.relatedPersons.${GUARDIAN_IDX}.dateOfBirth`,
                       )}
+                      maxDate={new Date()}
                     />
                   </div>
                 </div>

@@ -1118,6 +1118,7 @@ export const PersonalSection = forwardRef<
                   "student.personalInfo.dateOfBirth",
                 )}
                 disabled={isEditMode}
+                maxDate={new Date()}
               />
             </div>
             {!isEditMode && (

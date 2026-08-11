@@ -32,6 +32,7 @@ export interface DatePickerProps {
   placeholder?: string;
   fromYear?: number;
   toYear?: number;
+  maxDate?: Date;
 }
 
 function parseDateValue(value?: string) {
@@ -57,6 +58,7 @@ export function DatePicker({
   placeholder = "Select a date",
   fromYear = DEFAULT_FROM_YEAR,
   toYear = DEFAULT_TO_YEAR,
+  maxDate,
 }: DatePickerProps) {
   const generatedId = React.useId();
   const safeId = (id ?? generatedId).replace(/:/g, "-");
@@ -149,6 +151,7 @@ export function DatePicker({
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           disabled={disabled}
+          max={maxDate ? format(maxDate, "yyyy-MM-dd") : undefined}
           aria-label={label ?? placeholder}
           aria-invalid={Boolean(error)}
           className={cn(
@@ -194,6 +197,7 @@ export function DatePicker({
               captionLayout="dropdown"
               fromYear={fromYear}
               toYear={toYear}
+              disabled={maxDate ? { after: maxDate } : undefined}
             />
           </PopoverContent>
         </Popover>
