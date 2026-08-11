@@ -4,6 +4,7 @@ import {
   CheckCircle,
   FileText,
   Info,
+  MessageSquare,
   Shield,
   User,
   type LucideIcon,
@@ -32,11 +33,15 @@ export function formatNotificationTime(dateString: string) {
   return date.toLocaleDateString();
 }
 
-export function getIconForNotificationType(type: string): {
+export function getIconForNotificationType(
+  type: string,
+  targetType?: string,
+): {
   icon: LucideIcon;
   color: NotificationIconTone;
 } {
   const normalizedType = type.toLowerCase();
+  const normalizedTarget = (targetType || "").toLowerCase();
 
   if (normalizedType.includes("appointment")) {
     return { icon: Calendar, color: "blue" };
@@ -55,6 +60,13 @@ export function getIconForNotificationType(type: string): {
   }
   if (normalizedType.includes("success")) {
     return { icon: CheckCircle, color: "green" };
+  }
+
+  if (
+    normalizedType.includes("support") ||
+    normalizedTarget === "supportticket"
+  ) {
+    return { icon: MessageSquare, color: "blue" };
   }
 
   return { icon: Info, color: "blue" };
@@ -85,8 +97,21 @@ export function getNotificationTargetUrl(
 ) {
   const rolePath = getRolePath(roleName);
   const notificationType = (notification.type || "").toLowerCase();
+  const targetType = (notification.targetType || "").toLowerCase();
   const title = (notification.title || "").toLowerCase();
   const adminLikeRole = rolePath === "admin";
+
+  if (
+    notificationType.includes("support") ||
+    targetType === "supportticket" ||
+    title.includes("support")
+  ) {
+    if (rolePath === "student") {
+      const tid = notification.targetId || "";
+      return `/student?openSupport=true&ticketId=${tid}`;
+    }
+    return `/${rolePath}/support`;
+  }
 
   if (notificationType.includes("appointment")) {
     return adminLikeRole && notification.targetId

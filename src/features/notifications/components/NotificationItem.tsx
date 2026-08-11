@@ -21,6 +21,7 @@ export function NotificationItem({
 }: NotificationItemProps) {
   const { icon: Icon, color } = getIconForNotificationType(
     notification.type || "",
+    notification.targetType || "",
   );
 
   const unread = !notification.isRead && !isSelectedRead;
