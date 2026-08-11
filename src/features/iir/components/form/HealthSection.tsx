@@ -346,7 +346,7 @@ export const HealthSection = forwardRef<
                 {item.yesValue === true && (
                   <div
                     className={cn(
-                      "pl-0 duration-300 sm:pl-8",
+                      "pl-8 duration-300",
                       "animate-in fade-in slide-in-from-top-2",
                     )}
                   >
@@ -371,7 +371,7 @@ export const HealthSection = forwardRef<
                 {getFieldError(item.yesKey) && (
                   <p
                     className={cn(
-                      "mt-2 flex items-center gap-1 pl-0 sm:pl-8",
+                      "mt-2 flex items-center gap-1 pl-8",
                       "text-[11px] font-bold text-primary",
                     )}
                   >
@@ -451,7 +451,7 @@ export const HealthSection = forwardRef<
                 {type.consulted === true && (
                   <div
                     className={cn(
-                      "pl-0 duration-300 sm:pl-8",
+                      "pl-8 duration-300",
                       "animate-in fade-in slide-in-from-top-2",
                       "grid grid-cols-1 gap-4 sm:grid-cols-2",
                     )}
@@ -491,7 +491,7 @@ export const HealthSection = forwardRef<
                 {getFieldError(`_consultations.${type.type}.hasConsulted`) && (
                   <p
                     className={cn(
-                      "mt-2 flex items-center gap-1 pl-0 sm:pl-8",
+                      "mt-2 flex items-center gap-1 pl-8",
                       "text-[11px] font-bold text-primary",
                     )}
                   >
