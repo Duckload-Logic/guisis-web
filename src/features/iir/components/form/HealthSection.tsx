@@ -234,14 +234,18 @@ export const HealthSection = forwardRef<
       yesValue: health?.healthRecord?.generalHealthHasProblem,
       detailsValue: health?.healthRecord?.generalHealthDetails || "",
     },
-    {
-      label: "Mental / Emotional Health",
-      icon: Brain,
-      yesKey: "health.healthRecord.mentalEmotionalHasProblem",
-      detailsKey: "health.healthRecord.mentalEmotionalDetails",
-      yesValue: health?.healthRecord?.mentalEmotionalHasProblem,
-      detailsValue: health?.healthRecord?.mentalEmotionalDetails || "",
-    },
+    ...(isEditMode
+      ? [
+          {
+            label: "Mental / Emotional Health",
+            icon: Brain,
+            yesKey: "health.healthRecord.mentalEmotionalHasProblem",
+            detailsKey: "health.healthRecord.mentalEmotionalDetails",
+            yesValue: health?.healthRecord?.mentalEmotionalHasProblem,
+            detailsValue: health?.healthRecord?.mentalEmotionalDetails || "",
+          },
+        ]
+      : []),
   ];
 
   // Array of psychological consultation types
