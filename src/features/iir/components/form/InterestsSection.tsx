@@ -916,8 +916,8 @@ export const InterestsSection = forwardRef<
             </h3>
           </div>
 
-          <div className="mb-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Hobbies Card */}
+          <div className="space-y-6 sm:space-y-8">
+            {/* Hobbies Card (Full Width) */}
             <div
               className={cn(
                 "bg-glass-bg/60 border-glass-border/40 relative",
@@ -952,13 +952,12 @@ export const InterestsSection = forwardRef<
               </div>
             </div>
 
-            {/* Organizations Card */}
+            {/* Organizations Card (Full Width) */}
             <div
               className={cn(
                 "bg-glass-bg/60 border-glass-border/40 relative",
                 "overflow-hidden rounded-xl border p-6 shadow-sm",
                 "backdrop-blur-glass transition-all duration-300 sm:p-8",
-                "lg:col-span-2",
               )}
             >
               <h4
