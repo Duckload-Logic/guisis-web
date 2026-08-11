@@ -1,5 +1,11 @@
 import { Check, ChevronDown, Lock } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +60,55 @@ export function SelectField({
   const typeaheadBuffer = useRef("");
   const typeaheadTimeout = useRef<ReturnType<typeof setTimeout>>();
   const optionRefs = useRef(new Map<string, HTMLDivElement>());
+  const touchGesture = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    moved: boolean;
+    wasOpen: boolean;
+  }>();
+
+  // A few pixels of movement distinguishes a deliberate tap from a page swipe.
+  // Radix opens menus on pointer-down, so touch opens are deferred until pointer-up.
+  const touchMoveThreshold = 10;
+
+  const handlePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== "touch") return;
+
+    touchGesture.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      moved: false,
+      wasOpen: open,
+    };
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLButtonElement>) => {
+    const gesture = touchGesture.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    if (
+      Math.abs(event.clientX - gesture.x) > touchMoveThreshold ||
+      Math.abs(event.clientY - gesture.y) > touchMoveThreshold
+    ) {
+      gesture.moved = true;
+    }
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    const gesture = touchGesture.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    touchGesture.current = undefined;
+    if (!gesture.moved && !gesture.wasOpen && !disabled) {
+      setOpen(true);
+    }
+  };
+
+  const handlePointerCancel = () => {
+    touchGesture.current = undefined;
+  };
 
   const getLabel = (option: any) => {
     if (!option) return "";
@@ -110,6 +165,17 @@ export function SelectField({
         open={open}
         onOpenChange={(nextOpen) => {
           if (disabled) return;
+
+          // Do not let Radix open a touch-triggered menu on pointer-down. A
+          // stationary touch is opened explicitly in handlePointerUp instead.
+          if (
+            nextOpen &&
+            touchGesture.current &&
+            !touchGesture.current.wasOpen
+          ) {
+            return;
+          }
+
           setOpen(nextOpen);
           if (!nextOpen) {
             clearTypeahead();
@@ -124,6 +190,10 @@ export function SelectField({
             disabled={disabled}
             title={!enabled ? lockedReason : undefined}
             className={fieldStateClasses}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerCancel}
           >
             <span
               className={cn(
