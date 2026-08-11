@@ -4,6 +4,7 @@ import {
   CheckCircle,
   FileText,
   Info,
+  MessageSquare,
   Shield,
   User,
   type LucideIcon,
@@ -57,6 +58,10 @@ export function getIconForNotificationType(type: string): {
     return { icon: CheckCircle, color: "green" };
   }
 
+  if (normalizedType.includes("support")) {
+    return { icon: MessageSquare, color: "blue" };
+  }
+
   return { icon: Info, color: "blue" };
 }
 
@@ -87,6 +92,16 @@ export function getNotificationTargetUrl(
   const notificationType = (notification.type || "").toLowerCase();
   const title = (notification.title || "").toLowerCase();
   const adminLikeRole = rolePath === "admin";
+
+  if (
+    notificationType.includes("support") ||
+    title.includes("support")
+  ) {
+    if (rolePath === "student") {
+      return "/student?openSupport=true";
+    }
+    return `/${rolePath}/support`;
+  }
 
   if (notificationType.includes("appointment")) {
     return adminLikeRole && notification.targetId

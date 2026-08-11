@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context";
 import { Message, Ticket } from "../types";
 import {
@@ -11,7 +12,19 @@ import {
 
 export function useSupportChat() {
   const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Open widget if redirected with openSupport query param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("openSupport") === "true") {
+      setIsOpen(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("openSupport");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [location]);
   const [ticketId, setTicketId] = useState<string | null>(() => {
     return localStorage.getItem("guisis_support_ticket_id");
   });

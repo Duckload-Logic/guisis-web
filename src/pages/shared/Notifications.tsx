@@ -315,6 +315,7 @@ function NotificationItem({
 }) {
   const { icon: Icon, color } = getIconForNotificationType(
     notification.type || "",
+    notification.targetType || "",
   );
   const unread = !notification.isRead && !isSelectedRead;
   const highlightedRead = isSelectedRead || notification.isRead;
