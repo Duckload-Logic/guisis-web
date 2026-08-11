@@ -11,7 +11,7 @@ export function FormSectionShell({ children, className }: FormSectionShellProps)
   return (
     <div
       className={cn(
-        "border-glass-border bg-glass-bg p-6 hover:bg-glass-bg",
+        "border-glass-border bg-glass-bg p-5 hover:bg-glass-bg",
         "dark:hover:bg-glass-bg/50 relative overflow-hidden",
         "rounded-xl shadow-md backdrop-blur-glass",
         "transition-all duration-500 sm:p-8",

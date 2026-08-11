@@ -9,16 +9,16 @@ import { Checkbox } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
-import { FormDividerGroup } from "./shared";
-import { 
-  User, 
-  MapPin, 
-  Phone, 
-  Briefcase, 
-  Activity, 
-  Camera, 
-  Upload, 
-  Pencil, 
+import { FormSectionTitle } from "./shared";
+import {
+  User,
+  MapPin,
+  Phone,
+  Briefcase,
+  Activity,
+  Camera,
+  Upload,
+  Pencil,
   X,
   Info,
   CheckCircle2,
@@ -1359,12 +1359,12 @@ export const PersonalSection = forwardRef<
             description="Permanent and current permanent address"
             icon={MapPin}
           >
-            <div className="space-y-8">
+            <div className="flex flex-col gap-10">
               {/* Permanent Address */}
-              <FormDividerGroup
-                title="Permanent Address"
-                className="border-t-0 pt-0"
-              >
+              <div>
+                <FormSectionTitle className="mb-6">
+                  Permanent Address
+                </FormSectionTitle>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <SelectField
                     formStyle
@@ -1463,12 +1463,12 @@ export const PersonalSection = forwardRef<
                     />
                   </div>
                 </div>
-              </FormDividerGroup>
+              </div>
 
               {/* Provincial Address */}
-              <FormDividerGroup
-                title="Provincial Address"
-                action={
+              <div className="border-t border-glass-border pt-8">
+                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                  <FormSectionTitle>Provincial Address</FormSectionTitle>
                   <Checkbox
                     id="provincialSameAsResidential"
                     label="Same as permanent address"
@@ -1479,8 +1479,8 @@ export const PersonalSection = forwardRef<
                     }
                     className="text-xs"
                   />
-                }
-              >
+                </div>
+
                 <div
                   className={cn(
                     "grid grid-cols-1 gap-6 transition-opacity duration-300 md:grid-cols-2",
@@ -1682,7 +1682,7 @@ export const PersonalSection = forwardRef<
                     />
                   </div>
                 </div>
-              </FormDividerGroup>
+              </div>
             </div>
           </SectionContainer>
 
@@ -1841,9 +1841,9 @@ export const PersonalSection = forwardRef<
                 </div>
               </div>
 
-              <FormDividerGroup
-                title="Contact Address"
-                action={
+              <div className="border-t border-glass-border pt-8">
+                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                  <FormSectionTitle>Contact Address</FormSectionTitle>
                   <Checkbox
                     id="emergencySameAsResidential"
                     label="Same as permanent address"
@@ -1854,8 +1854,7 @@ export const PersonalSection = forwardRef<
                     }
                     className="text-xs"
                   />
-                }
-              >
+                </div>
 
                 <div
                   className={cn(
@@ -2061,7 +2060,7 @@ export const PersonalSection = forwardRef<
                     />
                   </div>
                 </div>
-              </FormDividerGroup>
+              </div>
             </div>
           </SectionContainer>
         </>

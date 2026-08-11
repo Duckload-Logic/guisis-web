@@ -521,7 +521,7 @@ export const FamilySection = forwardRef<
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-2">
       {/* 1. Parental Status & Living Situation (subStep 1) */}
       {subStep === 1 && (
         <>
@@ -604,8 +604,8 @@ export const FamilySection = forwardRef<
               <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                 <div
                   className={cn(
-                    "bg-glass-bg/40 border-glass-border/20 rounded-xl border",
-                    "p-6 backdrop-blur-sm transition-all duration-300 sm:p-8",
+                    "bg-glass-bg/40 border-glass-border/20 rounded-[20px] border",
+                    "p-5 backdrop-blur-sm transition-all duration-300 sm:p-6",
                     "hover:bg-glass-bg/60 h-fit",
                   )}
                 >
@@ -635,8 +635,8 @@ export const FamilySection = forwardRef<
 
                 <div
                   className={cn(
-                    "bg-glass-bg/40 border-glass-border/20 rounded-xl border",
-                    "p-6 backdrop-blur-sm transition-all duration-300 sm:p-8",
+                    "bg-glass-bg/40 border-glass-border/20 rounded-[20px] border",
+                    "p-5 backdrop-blur-sm transition-all duration-300 sm:p-6",
                     "hover:bg-glass-bg/60",
                   )}
                 >
@@ -699,7 +699,7 @@ export const FamilySection = forwardRef<
               <div
                 className={cn(
                   "bg-glass-bg/40 border-glass-border/20 rounded-xl border",
-                  "p-6 backdrop-blur-sm transition-all duration-300 sm:p-8",
+                  "p-5 backdrop-blur-sm transition-all duration-300 sm:p-6",
                   "hover:bg-glass-bg/60",
                 )}
               >
@@ -749,7 +749,7 @@ export const FamilySection = forwardRef<
       )}
 
       {subStep === 4 && (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-10">
           <SectionContainer
             title="Guardian's Information"
             description={
@@ -785,7 +785,7 @@ export const FamilySection = forwardRef<
                   )}
                 />
               </div>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-5 sm:gap-8 md:grid-cols-3">
                 <FormField
                   name={`family.relatedPersons.${GUARDIAN_IDX}.firstName`}
                   label="First Name"
