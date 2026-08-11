@@ -59,9 +59,14 @@ export function SectionProgress({
 
   const isNavigable = (id: number) => {
     if (id === currentSection) return true;
-    if (id < currentSection && visitedSections.includes(id)) return true;
-    for (let i = 1; i < id; i++) {
-      if (!isSectionFinished(i)) return false;
+    const sectionIndex = sections.findIndex((section) => section.id === id);
+    const currentIndex = sections.findIndex(
+      (section) => section.id === currentSection,
+    );
+    if (sectionIndex < currentIndex && visitedSections.includes(id)) return true;
+
+    for (const previousSection of sections.slice(0, sectionIndex)) {
+      if (!isSectionFinished(previousSection.id)) return false;
     }
     return true;
   };
@@ -162,8 +167,8 @@ export function SectionProgress({
         <div className="hidden lg:block">
           <div
             className={cn(
-              "sticky top-24 flex flex-col gap-6 rounded-[32px] border",
-              "border-white/20 bg-white/40 p-6 shadow-2xl backdrop-blur-2xl",
+              "sticky top-24 flex flex-col gap-6 rounded-2xl border",
+              "border-white/20 bg-white/40 p-6 shadow-xl backdrop-blur-2xl",
               "dark:border-white/10 dark:bg-white/[0.04]",
             )}
           >
@@ -202,7 +207,7 @@ export function SectionProgress({
                     key={section.id}
                     onClick={() => handleSectionClick(section.id)}
                     className={cn(
-                      "group relative flex items-start gap-4 rounded-2xl p-3",
+                      "group relative flex min-h-[52px] items-start gap-4 rounded-xl p-3",
                       "text-left transition-all duration-300",
                       active
                         ? "bg-white shadow-xl shadow-primary/5 dark:bg-white/10"
@@ -218,7 +223,7 @@ export function SectionProgress({
                     {index !== sections.length - 1 && (
                       <div
                         className={cn(
-                          "absolute left-[23px] top-[44px] h-[calc(100%-12px)] w-[2px]",
+                          "absolute left-[25px] top-[40px] h-[calc(100%-4px)] w-[2px]",
                           finished
                             ? "bg-green-500/30"
                             : "bg-neutral-200 dark:bg-neutral-800",
