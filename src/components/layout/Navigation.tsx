@@ -192,7 +192,7 @@ export default function Navigation({
       <>
         <nav
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[10000] w-full shrink-0 border-t",
+            "fixed inset-x-0 bottom-0 z-40 w-full shrink-0 border-t",
             "bg-background xl:hidden",
           )}
         >
@@ -288,7 +288,7 @@ export default function Navigation({
   return (
     <div
       className={cn(
-        "relative z-[10000] hidden h-full shrink-0 items-center",
+        "relative z-40 hidden h-full shrink-0 items-center",
         "transition-all duration-300 xl:flex",
         sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]",
       )}
