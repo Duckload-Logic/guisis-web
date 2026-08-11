@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePageMetadata } from "@/context";
 import {
   MessageSquare,
@@ -18,6 +19,7 @@ import {
 } from "../../features/support/services/supportService";
 import { getProfilePictureUrl } from "../../lib/profilePicture";
 import { FormField } from "@/components/ui/form-field";
+import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -52,6 +54,9 @@ export function SupportManagement() {
 
   usePageMetadata(pageMetadata);
 
+  const [searchParams] = useSearchParams();
+  const queryTicketId = searchParams.get("ticketId");
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<{
@@ -62,6 +67,10 @@ export function SupportManagement() {
   } | null>(null);
   const pageSize = 10;
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "resolved">(
+    "all",
+  );
+  const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
   const [groupMessages, setGroupMessages] = useState<{
     [ticketId: string]: Message[];
   }>({});
@@ -112,9 +121,20 @@ export function SupportManagement() {
       const latestB = Math.max(
         ...b.tickets.map((t) => new Date(t.updatedAt).getTime()),
       );
-      return latestB - latestA;
+      return sortBy === "recent" ? latestB - latestA : latestA - latestB;
     });
-  }, [tickets]);
+  }, [tickets, sortBy]);
+
+  const filteredGroups = useMemo(() => {
+    return groupedUsers.filter((g) => {
+      const hasOpen = g.tickets.some(
+        (t) => t.status.toLowerCase() === "open",
+      );
+      if (statusFilter === "open") return hasOpen;
+      if (statusFilter === "resolved") return !hasOpen;
+      return true;
+    });
+  }, [groupedUsers, statusFilter]);
 
   const selectedGroup = useMemo(() => {
     if (!selectedGroupKey) return null;
@@ -131,7 +151,7 @@ export function SupportManagement() {
   const fetchTickets = async (showLoading = false) => {
     if (showLoading) setIsLoadingTickets(true);
     try {
-      const data = await GetSupportTickets(page, pageSize);
+      const data = await GetSupportTickets(page, pageSize, statusFilter);
       if (data && Array.isArray(data.tickets)) {
         setTickets(data.tickets);
         setMeta(data.meta);
@@ -144,10 +164,30 @@ export function SupportManagement() {
   };
 
   useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
+
+  useEffect(() => {
     fetchTickets(true);
     const interval = setInterval(() => fetchTickets(false), 10000);
     return () => clearInterval(interval);
-  }, [page]);
+  }, [page, statusFilter]);
+
+  useEffect(() => {
+    if (queryTicketId && tickets.length > 0) {
+      const ticket = tickets.find((t) => t.id === queryTicketId);
+      if (ticket) {
+        let key = "";
+        if (ticket.userId) {
+          key = `user:${ticket.userId}`;
+        } else {
+          key = `guest:${ticket.guestEmail || ticket.guestName || ticket.id}`;
+        }
+        setSelectedGroupKey(key);
+        setStatusFilter("all");
+      }
+    }
+  }, [queryTicketId, tickets]);
 
   // Poll messages for selected group
   useEffect(() => {
@@ -296,19 +336,58 @@ export function SupportManagement() {
               <MessageSquare className="h-4 w-4 text-primary" />
               Active Conversations
             </h2>
+            <div className="mt-3 flex gap-1 rounded-lg bg-muted/30 p-0.5">
+              {(["all", "open", "resolved"] as const).map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setStatusFilter(filter)}
+                  className={`flex-1 rounded-md py-1 text-center text-[10px] ` +
+                    `font-bold uppercase transition-colors ${
+                      statusFilter === filter
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted/50"
+                    }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+            <div
+              className={
+                "mt-2.5 flex items-center justify-between " +
+                "text-[11px] text-muted-foreground"
+              }
+            >
+              <span>Sort by activity:</span>
+              <SelectField
+                options={[
+                  { id: "recent", label: "Recent" },
+                  { id: "oldest", label: "Oldest" },
+                ]}
+                value={sortBy}
+                onChange={(val) => {
+                  if (val) setSortBy(val as any);
+                }}
+                buttonClassName={
+                  "h-7 w-28 px-2.5 py-1 text-xs border " +
+                  "border-glass-border bg-muted/20 shadow-sm"
+                }
+              />
+            </div>
           </div>
 
           <div className="flex-1 divide-y divide-glass-border overflow-y-auto">
-            {isLoadingTickets && groupedUsers.length === 0 ? (
+            {isLoadingTickets && filteredGroups.length === 0 ? (
               <div className="p-4 text-center text-xs text-muted-foreground">
                 Loading tickets...
               </div>
-            ) : groupedUsers.length === 0 ? (
+            ) : filteredGroups.length === 0 ? (
               <div className="p-4 text-center text-xs text-muted-foreground">
                 No tickets found
               </div>
             ) : (
-              groupedUsers.map((g) => {
+              filteredGroups.map((g) => {
                 const latestTicket = g.tickets[g.tickets.length - 1];
                 const name = latestTicket.studentName
                   ? latestTicket.studentName
