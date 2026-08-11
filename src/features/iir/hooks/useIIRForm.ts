@@ -45,15 +45,8 @@ export function useIIRFormSave() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["iirForm"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.iir.draft,
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["iir", "inventory", "profile", "me"],
-      });
+      queryClient.removeQueries({ queryKey: ["iir"] });
+      queryClient.invalidateQueries({ queryKey: ["iir"] });
     },
   });
 
