@@ -952,12 +952,13 @@ export const InterestsSection = forwardRef<
               </div>
             </div>
 
-            {/* Organizations Card (Full Width) */}
+            {/* Organizations Card */}
             <div
               className={cn(
                 "bg-glass-bg/60 border-glass-border/40 relative",
                 "overflow-hidden rounded-xl border p-6 shadow-sm",
                 "backdrop-blur-glass transition-all duration-300 sm:p-8",
+                "lg:col-span-2",
               )}
             >
               <h4
