@@ -49,6 +49,7 @@ export default function AcademicSettings() {
 
   const [yearStart, setYearStart] = useState<number>(new Date().getFullYear());
   const [term, setTerm] = useState<number>(1);
+  const [allowExpeditedIIR, setAllowExpeditedIIR] = useState<boolean>(false);
 
   // Derive yearEnd automatically — always start + 1.
   const yearEnd = yearStart + 1;
@@ -57,6 +58,7 @@ export default function AcademicSettings() {
     if (current) {
       setYearStart(current.currentYearStart);
       setTerm(current.currentTerm);
+      setAllowExpeditedIIR(current.allowExpeditedIIR);
     }
   }, [current]);
 
@@ -88,6 +90,7 @@ export default function AcademicSettings() {
         currentYearStart: yearStart,
         currentYearEnd: yearEnd,
         currentTerm: term,
+        allowExpeditedIIR,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
@@ -108,7 +111,9 @@ export default function AcademicSettings() {
 
   const isDirty =
     current &&
-    (yearStart !== current.currentYearStart || term !== current.currentTerm);
+    (yearStart !== current.currentYearStart ||
+      term !== current.currentTerm ||
+      allowExpeditedIIR !== current.allowExpeditedIIR);
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -201,6 +206,43 @@ export default function AcademicSettings() {
           value={term}
           onChange={(val) => setTerm(Number(val))}
         />
+
+        {/* Expedited IIR Submission Toggle */}
+        <div className={cn(
+          "flex items-center justify-between rounded-xl",
+          "border border-border/50 bg-muted/10 p-4"
+        )}>
+          <div className="space-y-1">
+            <label className="block text-sm font-bold text-foreground/80">
+              Allow Expedited IIR Submission
+            </label>
+            <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
+              When enabled, shifters, transferees, and returning students can
+              perform an "Express Submit" validating only basic profile info.
+            </p>
+          </div>
+          <button
+            type="button"
+            id="toggle-expedited-iir"
+            onClick={() => setAllowExpeditedIIR(!allowExpeditedIIR)}
+            className={cn(
+              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer",
+              "rounded-full border-2 border-transparent transition-colors",
+              "duration-200 ease-in-out focus:outline-none focus:ring-2",
+              "focus:ring-primary focus:ring-offset-2",
+              allowExpeditedIIR ? "bg-primary" : "bg-muted"
+            )}
+          >
+            <span
+              className={cn(
+                "pointer-events-none inline-block h-5 w-5 transform",
+                "rounded-full bg-background shadow ring-0 transition",
+                "duration-200 ease-in-out",
+                allowExpeditedIIR ? "translate-x-5" : "translate-x-0"
+              )}
+            />
+          </button>
+        </div>
 
         {/* Warning notice */}
         <div

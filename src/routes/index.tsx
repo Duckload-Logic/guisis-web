@@ -164,11 +164,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "cor-management",
-        element: (
-          <IIRGate>
-            <CORManagement />
-          </IIRGate>
-        ),
+        element: <CORManagement />,
       },
       {
         path: "faqs",

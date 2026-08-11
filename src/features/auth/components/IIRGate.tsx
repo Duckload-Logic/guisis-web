@@ -22,9 +22,8 @@ export const IIRGate = ({
 }: IIRGateProps) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const {
-    data: isSubmitted,
+    data: statusData,
     isPending: isIIRPending,
-    isFetching: isIIRFetching,
   } = useIIRStatus();
 
   // Multi-role users with 'student' role must still pass the gate
@@ -47,8 +46,14 @@ export const IIRGate = ({
     return <>{children}</>;
   }
 
+  const isSubmitted = statusData?.isSubmitted ?? false;
+  const isCompleted = statusData?.isCompleted ?? false;
+  const allowExpeditedIIR = user?.allowExpeditedIIR ?? false;
+
+  const isBlocked = !isSubmitted || (!isCompleted && !allowExpeditedIIR);
+
   // If PDS is not completed and this is not the form page
-  if (!isSubmitted && !allowOnGuidancePage) {
+  if (isBlocked && !allowOnGuidancePage) {
     return (
       <div
         className={cn(

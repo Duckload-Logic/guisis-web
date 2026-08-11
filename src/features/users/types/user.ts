@@ -16,6 +16,9 @@ export interface User {
   profilePicture?: string;
   studentCorUrl?: string;
   isStudentCorValid?: boolean;
+  isIIRSubmitted?: boolean;
+  isIIRCompleted?: boolean;
+  allowExpeditedIIR?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

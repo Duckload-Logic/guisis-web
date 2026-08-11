@@ -21,11 +21,14 @@ export function useIIRStatus() {
     queryFn: async () => {
       try {
         const iirRecord = await GetIIRByUserId(userId || "");
-        return iirRecord?.isSubmitted ?? false;
+        return {
+          isSubmitted: iirRecord?.isSubmitted ?? false,
+          isCompleted: iirRecord?.isCompleted ?? false,
+        };
       } catch (error: any) {
         const status = error?.response?.status;
         if (status === 404 || status === 500) {
-          return false;
+          return { isSubmitted: false, isCompleted: false };
         }
         throw error;
       }

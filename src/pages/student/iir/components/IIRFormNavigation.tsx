@@ -12,6 +12,8 @@ interface IIRFormNavigationProps {
   isEditMode: boolean;
   isNextBlocked?: boolean;
   nextBlockedMessage?: string;
+  showExpressSubmit?: boolean;
+  onExpressSubmit?: () => void;
   onReset: () => void;
   onPrevious: () => void;
   onNext: () => void;
@@ -27,6 +29,8 @@ export function IIRFormNavigation({
   isEditMode,
   isNextBlocked = false,
   nextBlockedMessage,
+  showExpressSubmit = false,
+  onExpressSubmit,
   onReset,
   onPrevious,
   onNext,
@@ -88,6 +92,24 @@ export function IIRFormNavigation({
           <ChevronLeft className="h-5 w-5" />
           <span className="hidden sm:inline">Back</span>
         </Button>
+
+        {showExpressSubmit && (
+          <Button
+            type="button"
+            id="btn-express-submit"
+            onClick={onExpressSubmit}
+            disabled={isSaving || isSubmitting}
+            className={cn(
+              "flex h-12 min-w-0 flex-1 items-center justify-center",
+              "gap-2 rounded-2xl bg-green-600 px-6 sm:flex-none font-black",
+              "tracking-tight text-white shadow-xl shadow-green-600/20",
+              "transition-all duration-300 hover:bg-green-700",
+              "active:scale-95 sm:px-10",
+            )}
+          >
+            Express Submit
+          </Button>
+        )}
 
         {hasNextSection ? (
           <Button

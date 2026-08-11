@@ -1,12 +1,15 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, User } from "lucide-react";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata, useToast } from "@/context";
-import { useIIRProfile, useIIRStatus } from "@/features/iir/hooks";
+import { useIIRProfile, useIIRStatus, useUserIIR } from "@/features/iir/hooks";
 import {
   useGetIIRDraft,
   useIIRFormSave,
@@ -117,14 +120,89 @@ export default function IIRForm() {
     useState(false);
   const { triggerToast } = useToast();
 
-  const { data: isSubmitted, isLoading: isLoadingStatus } = useIIRStatus();
+  const { data: statusData, isLoading: isLoadingStatus } = useIIRStatus();
+  const isSubmitted = statusData?.isSubmitted ?? false;
+  const isCompleted = statusData?.isCompleted ?? false;
+
+  const { data: studentIIRProfile, isLoading: isLoadingStudentIIR } =
+    useUserIIR(isSubmitted ? me?.id : undefined);
 
   useEffect(() => {
-    if (!isLoadingStatus && isSubmitted && !isEditMode) {
+    if (!isLoadingStatus && isSubmitted && isCompleted && !isEditMode) {
       triggerToast("You have already submitted your IIR.");
       navigate("/student/iir", { replace: true });
     }
-  }, [isSubmitted, isLoadingStatus, isEditMode, navigate, triggerToast]);
+  }, [
+    isSubmitted,
+    isCompleted,
+    isLoadingStatus,
+    isEditMode,
+    navigate,
+    triggerToast,
+  ]);
+
+  const [isExpressSubmitting, setIsExpressSubmitting] = useState(false);
+
+  const { data: academicSettings } = useQuery({
+    queryKey: ["counselor", "academicSettings"],
+    queryFn: GetAcademicSettings,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const isNonFreshman = useMemo(() => {
+    const studentNumber = localFormData?.student?.personalInfo?.studentNumber;
+    if (!studentNumber || !academicSettings?.currentYearStart) {
+      return false;
+    }
+    const match = studentNumber.match(/^(\d{4})/);
+    if (!match) return false;
+    const enrollmentYear = parseInt(match[1], 10);
+    return enrollmentYear < academicSettings.currentYearStart;
+  }, [
+    localFormData?.student?.personalInfo?.studentNumber,
+    academicSettings?.currentYearStart,
+  ]);
+
+  const showExpressSubmit =
+    currentSection === 3 &&
+    academicSettings?.allowExpeditedIIR &&
+    isNonFreshman &&
+    !isEditMode;
+
+  const handleExpressSubmit = async () => {
+    if (!localFormData) return;
+
+    const sectionRefs: Record<number, any> = {
+      1: personalSectionRef,
+      2: personalSectionRef,
+      3: personalSectionRef,
+    };
+
+    let hasErrors = false;
+    const allErrors: Record<string, string> = {};
+
+    for (let sec = 1; sec <= 3; sec++) {
+      const validation = validateSection(sectionRefs[sec], sec);
+      if (!validation.isValid) {
+        hasErrors = true;
+        Object.assign(allErrors, validation.errors || {});
+      }
+    }
+
+    if (hasErrors) {
+      markAllTouched();
+      const total = Object.keys(allErrors).length;
+      if (total > 0) {
+        setGroupedErrors(groupErrorsBySection(allErrors));
+        setTotalErrors(total);
+        setIsErrorModalOpen(true);
+      }
+      return;
+    }
+
+    setIsExpressSubmitting(true);
+    setShowConsentDialog(true);
+  };
 
   // Modal error state
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
@@ -189,14 +267,20 @@ export default function IIRForm() {
       if (
         isLoadingDraft ||
         isLoadingEditProfile ||
+        (isSubmitted && isLoadingStudentIIR) ||
         !me ||
         hasInitialized.current
       )
         return;
 
       if (isEditMode && !editProfileData) return;
+      if (isSubmitted && !studentIIRProfile) return;
 
-      const sourceData = isEditMode ? editProfileData || draft : draft;
+      const sourceData = isEditMode
+        ? editProfileData || draft
+        : isSubmitted
+          ? studentIIRProfile || draft
+          : draft;
       const initializedData = initializeFormData(
         sourceData ?? null,
         EMPTY_IIR_FORM,
@@ -223,8 +307,11 @@ export default function IIRForm() {
   }, [
     isLoadingDraft,
     isLoadingEditProfile,
+    isLoadingStudentIIR,
     isEditMode,
+    isSubmitted,
     editProfileData,
+    studentIIRProfile,
     draft,
     me,
   ]);
@@ -316,8 +403,9 @@ export default function IIRForm() {
     isLoadingDraft ||
     isLoadingEditProfile ||
     isLoadingStatus ||
+    (isSubmitted && isLoadingStudentIIR) ||
     isSubmitting ||
-    (isSubmitted && !isEditMode);
+    (isSubmitted && isCompleted && !isEditMode);
 
   if (draftError) {
     return (
@@ -414,6 +502,7 @@ export default function IIRForm() {
   };
 
   const handleSubmit = async () => {
+    setIsExpressSubmitting(false);
     // Mark all fields as touched so validation errors show
     markAllTouched();
 
@@ -518,11 +607,16 @@ export default function IIRForm() {
         }
       }
 
-      // Submit or update backend record (service handles transformation via normalizeIIRPayload)
+      const payloadData = {
+        ...localFormData,
+        isCompleted: isExpressSubmitting ? false : true,
+      };
+
+      // Submit or update backend record
       if (isEditMode && editIirId) {
-        await PatchIIRSubmit(editIirId, localFormData);
+        await PatchIIRSubmit(editIirId, payloadData);
       } else {
-        await submitFormAsync(localFormData);
+        await submitFormAsync(payloadData);
       }
 
       // Invalidate all IIR-related queries so everything updates automatically
@@ -1014,6 +1108,8 @@ export default function IIRForm() {
                         ? PHOTO_REQUIRED_MESSAGE
                         : undefined
                     }
+                    showExpressSubmit={showExpressSubmit}
+                    onExpressSubmit={handleExpressSubmit}
                     onPrevious={handlePreviousSection}
                     onNext={handleNextSection}
                     onSubmit={handleSubmit}
