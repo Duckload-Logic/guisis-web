@@ -1,5 +1,6 @@
 import {
   Activity,
+  Brain,
   CheckCircle2,
   Ear,
   Eye,
@@ -44,6 +45,12 @@ export default function HealthView({
       value: data?.healthRecord?.generalHealthHasProblem,
       details: data?.healthRecord?.generalHealthDetails,
       icon: Activity,
+    },
+    {
+      label: "Mental / Emotional Health",
+      value: data?.healthRecord?.mentalEmotionalHasProblem,
+      details: data?.healthRecord?.mentalEmotionalDetails,
+      icon: Brain,
     },
   ];
 
