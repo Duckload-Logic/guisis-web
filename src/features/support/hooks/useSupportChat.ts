@@ -159,6 +159,9 @@ export function useSupportChat() {
       setHistoryTickets([]);
       setHistoryMessages([]);
       setSelectedHistoryTicketId(null);
+      setName("");
+      setEmail("");
+      setMessage("");
 
       prevIsAuthRef.current = isAuthenticated;
       prevUserIdRef.current = user?.id;
