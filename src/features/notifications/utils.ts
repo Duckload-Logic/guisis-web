@@ -97,15 +97,18 @@ export function getNotificationTargetUrl(
 ) {
   const rolePath = getRolePath(roleName);
   const notificationType = (notification.type || "").toLowerCase();
+  const targetType = (notification.targetType || "").toLowerCase();
   const title = (notification.title || "").toLowerCase();
   const adminLikeRole = rolePath === "admin";
 
   if (
     notificationType.includes("support") ||
+    targetType === "supportticket" ||
     title.includes("support")
   ) {
     if (rolePath === "student") {
-      return "/student?openSupport=true";
+      const tid = notification.targetId || "";
+      return `/student?openSupport=true&ticketId=${tid}`;
     }
     return `/${rolePath}/support`;
   }

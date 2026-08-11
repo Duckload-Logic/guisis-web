@@ -14,17 +14,6 @@ export function useSupportChat() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-
-  // Open widget if redirected with openSupport query param
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get("openSupport") === "true") {
-      setIsOpen(true);
-      const url = new URL(window.location.href);
-      url.searchParams.delete("openSupport");
-      window.history.replaceState({}, "", url.pathname + url.search);
-    }
-  }, [location]);
   const [ticketId, setTicketId] = useState<string | null>(() => {
     return localStorage.getItem("guisis_support_ticket_id");
   });
@@ -39,6 +28,24 @@ export function useSupportChat() {
   const [viewMode, setViewMode] = useState<
     "chat" | "history" | "history-detail"
   >("chat");
+
+  // Open widget if redirected with openSupport query param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("openSupport") === "true") {
+      setIsOpen(true);
+      const urlTicketId = params.get("ticketId");
+      if (urlTicketId) {
+        setTicketId(urlTicketId);
+        localStorage.setItem("guisis_support_ticket_id", urlTicketId);
+        setViewMode("chat");
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete("openSupport");
+      url.searchParams.delete("ticketId");
+      window.history.replaceState({}, "", url.pathname + url.search);
+    }
+  }, [location]);
   const [historyTickets, setHistoryTickets] = useState<Ticket[]>([]);
   const [selectedHistoryTicketId, setSelectedHistoryTicketId] = useState<
     string | null
