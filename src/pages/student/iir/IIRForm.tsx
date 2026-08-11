@@ -150,14 +150,18 @@ export default function IIRForm() {
   });
 
   const isNonFreshman = useMemo(() => {
-    if (!me?.studentNumber || !academicSettings?.currentYearStart) {
+    const studentNumber = localFormData?.student?.personalInfo?.studentNumber;
+    if (!studentNumber || !academicSettings?.currentYearStart) {
       return false;
     }
-    const match = me.studentNumber.match(/^(\d{4})/);
+    const match = studentNumber.match(/^(\d{4})/);
     if (!match) return false;
     const enrollmentYear = parseInt(match[1], 10);
     return enrollmentYear < academicSettings.currentYearStart;
-  }, [me?.studentNumber, academicSettings?.currentYearStart]);
+  }, [
+    localFormData?.student?.personalInfo?.studentNumber,
+    academicSettings?.currentYearStart,
+  ]);
 
   const showExpressSubmit =
     currentSection === 3 &&
