@@ -95,17 +95,13 @@ const ParentInformationCard = memo(
               type="button"
               onClick={onClear}
               className={cn(
-                "rounded-lg border px-3 py-1.5 text-[10px]",
-                "font-bold uppercase transition-all duration-300",
-                "border-neutral-200/50 bg-neutral-100/30 text-neutral-500",
-                "hover:bg-destructive/15 hover:text-destructive",
-                "hover:border-destructive/50",
-                "dark:border-white/10 dark:bg-white/5 dark:text-neutral-400",
-                "dark:hover:bg-destructive/20",
-                "dark:hover:text-destructive-foreground",
+                "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
+                "bg-destructive/10 text-destructive",
+                "transition-all hover:bg-destructive/20",
+                "duration-200",
               )}
             >
-              Clear Info
+              Clear
             </button>
 
             {["Living", "Deceased"].map((status) => {

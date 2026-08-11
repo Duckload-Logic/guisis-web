@@ -38,12 +38,7 @@ export const EducationSection = forwardRef<
   ref,
 ) {
   const [errors, setErrors] = useState<FormErrors>({});
-  const [expandedSections, setExpandedSections] = useState<
-    Record<number, boolean>
-  >({
-    1: true, // Junior High School (Required)
-    2: true, // Senior High School (Required)
-  });
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   const validate = (
     step?: number,
@@ -54,20 +49,16 @@ export const EducationSection = forwardRef<
     );
     setErrors(sectionErrors);
 
-    const errorIndices: Record<number, boolean> = {};
-    Object.keys(sectionErrors).forEach((key) => {
-      const match = key.match(/^education\.schools\.(\d+)\./);
-      if (match) {
-        const idx = parseInt(match[1], 10);
-        errorIndices[idx] = true;
-      }
-    });
+    const errIndices = Object.keys(sectionErrors)
+      .map((key) => {
+        const match = key.match(/^education\.schools\.(\d+)\./);
+        return match ? parseInt(match[1], 10) : null;
+      })
+      .filter((idx): idx is number => idx !== null);
 
-    if (Object.keys(errorIndices).length > 0) {
-      setExpandedSections((prev) => ({
-        ...prev,
-        ...errorIndices,
-      }));
+    if (errIndices.length > 0) {
+      const firstErrIdx = Math.min(...errIndices);
+      setExpandedIndex(firstErrIdx);
     }
 
     return {
@@ -446,7 +437,7 @@ export const EducationSection = forwardRef<
           const school = education?.schools?.[idx] || {};
           const status = getCompletionStatus(idx);
           const StatusIcon = status.icon;
-          const isExpanded = !!expandedSections[idx];
+          const isExpanded = expandedIndex === idx;
           const hasData = [
             "schoolName",
             "schoolAddress",
@@ -467,10 +458,7 @@ export const EducationSection = forwardRef<
             >
               <div
                 onClick={() =>
-                  setExpandedSections((prev) => ({
-                    ...prev,
-                    [idx]: !prev[idx],
-                  }))
+                  setExpandedIndex((prev) => (prev === idx ? null : idx))
                 }
                 className={cn(
                   "bg-glass-bg/40 border-glass-border/20 flex flex-wrap",

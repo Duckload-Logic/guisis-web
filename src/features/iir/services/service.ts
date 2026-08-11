@@ -27,6 +27,30 @@ export const CheckStudentOnboarding = async (
   }
 };
 
+/**
+ * Check if a student number is already taken
+ * @param studentNumber - Student number to check
+ * @param config - Optional axios config with metadata
+ * @returns Promise resolving to boolean (true if exists, false otherwise)
+ */
+export const CheckStudentNumberUniqueness = async (
+  studentNumber: string,
+  config?: AxiosConfigWithMeta,
+): Promise<boolean> => {
+  try {
+    const { data } = await apiClient.get(
+      API_ROUTES.iir.checkStudentNumber,
+      {
+        ...config,
+        params: { student_number: studentNumber },
+      },
+    );
+    return !!data?.exists;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const LOOKUP_GET_ROUTES = {
   programs: API_ROUTES.iir.lookups.programs,
   genders: API_ROUTES.iir.lookups.genders,

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, User } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -57,6 +58,7 @@ const PHOTO_REQUIRED_MESSAGE =
 
 export default function IIRForm() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const editIirId = searchParams.get("iirId") || undefined;
   const isEditMode = searchParams.get("edit") === "true" && !!editIirId;
@@ -523,6 +525,10 @@ export default function IIRForm() {
         await submitFormAsync(localFormData);
       }
 
+      // Invalidate all IIR-related queries so everything updates automatically
+      queryClient.removeQueries({ queryKey: ["iir"] });
+      queryClient.invalidateQueries({ queryKey: ["iir"] });
+
       // Cleanup local draft on successful final submission
       clearDraft();
 
@@ -829,15 +835,15 @@ export default function IIRForm() {
         case 10:
           updated.health = {
             healthRecord: {
-              visionHasProblem: false,
+              visionHasProblem: null,
               visionDetails: null,
-              hearingHasProblem: false,
+              hearingHasProblem: null,
               hearingDetails: null,
-              speechHasProblem: false,
+              speechHasProblem: null,
               speechDetails: null,
-              generalHealthHasProblem: false,
+              generalHealthHasProblem: null,
               generalHealthDetails: null,
-              mentalEmotionalHasProblem: false,
+              mentalEmotionalHasProblem: null,
               mentalEmotionalDetails: null,
             } as any,
             consultations: [],
