@@ -128,10 +128,26 @@ export function calculateSectionCompletion(
         },
         {},
       );
-      return calculateCompletionFromSchema(healthValidationSchema, {
-        ...formData,
-        _consultations,
-      });
+
+      let allowed = Object.keys(healthValidationSchema);
+      if (!isEditMode) {
+        allowed = allowed.filter(
+          (field) =>
+            ![
+              "health.healthRecord.mentalEmotionalHasProblem",
+              "health.healthRecord.mentalEmotionalDetails",
+            ].includes(field),
+        );
+      }
+
+      return calculateCompletionFromSchema(
+        healthValidationSchema,
+        {
+          ...formData,
+          _consultations,
+        },
+        allowed,
+      );
     }
 
     case 11:
