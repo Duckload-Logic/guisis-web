@@ -152,7 +152,11 @@ export default function IIRProfile() {
         {!isAdmin && (
           <button
             onClick={() =>
-              navigate(`/student/iir/form?edit=true&iirId=${finalIirId}`)
+              navigate(
+                isOwnExpedited
+                  ? "/student/iir/form"
+                  : `/student/iir/form?edit=true&iirId=${finalIirId}`,
+              )
             }
             className={cn(
               "group flex h-10 w-10 items-center justify-center rounded-xl",

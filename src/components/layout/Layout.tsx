@@ -366,12 +366,7 @@ export default function Layout({
                         </div>
                       </div>
                       <button
-                        onClick={() =>
-                          navigate(
-                            `/student/iir/form?edit=true&iirId=` +
-                              `${iirStatus?.id}`,
-                          )
-                        }
+                        onClick={() => navigate("/student/iir/form")}
                         className={cn(
                           "shrink-0 rounded-lg bg-yellow-600",
                           "hover:bg-yellow-700 px-4 py-2 text-xs",
