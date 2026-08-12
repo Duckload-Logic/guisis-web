@@ -41,6 +41,7 @@ export interface SelectFieldProps {
 export function SelectField({
   id,
   label,
+  name,
   options = [],
   identifier = "id",
   value,
