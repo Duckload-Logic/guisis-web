@@ -2,9 +2,7 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, User } from "lucide-react";
-import {
-  GetAcademicSettings,
-} from "@/features/student-core/services/academicSettingsService";
+import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -37,6 +35,7 @@ import { SectionProgress } from "@/features/iir/components/form/SectionProgress"
 import ConsentDialog from "@/features/iir/components/form/ConsentDialog";
 import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/api";
 import {
   getIIRTwoByTwoPhoto,
   getTwoByTwoPhotoIdentityFromForm,
@@ -638,9 +637,7 @@ export default function IIRForm() {
       localStorage.setItem("refresh_student_profile", "true");
     } catch (err: any) {
       console.error("Error submitting form:", err);
-      const errorMessage =
-        err?.response?.data?.error ||
-        "Failed to submit form. Please try again.";
+      const errorMessage = getErrorMessage(err);
       triggerToast(errorMessage);
     } finally {
       setIsSaving(false);

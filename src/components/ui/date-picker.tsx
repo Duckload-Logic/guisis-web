@@ -118,19 +118,7 @@ export function DatePicker({
         </div>
       )}
 
-      <div
-        className="relative h-11 w-full sm:hidden cursor-pointer"
-        onClick={() => {
-          if (!disabled) {
-            try {
-              inputRef.current?.showPicker();
-            } catch (err) {
-              inputRef.current?.focus();
-              inputRef.current?.click();
-            }
-          }
-        }}
-      >
+      <div className="relative h-11 w-full sm:hidden">
         <div
           className={cn(
             triggerClasses,
@@ -155,8 +143,8 @@ export function DatePicker({
           aria-label={label ?? placeholder}
           aria-invalid={Boolean(error)}
           className={cn(
-            "absolute inset-0 w-full h-full opacity-0",
-            "pointer-events-none",
+            "absolute inset-0 h-full w-full opacity-0",
+            disabled ? "pointer-events-none" : "cursor-pointer",
           )}
         />
       </div>
