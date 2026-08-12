@@ -6,7 +6,9 @@ import { NAV_CONFIG } from "@/config/navigation";
 import { Spinner } from "@/components/shared/Spinner";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { useLocation, Outlet } from "react-router-dom";
+import { useLocation, Outlet, useNavigate } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
+import { useIIRStatus } from "@/features/iir/hooks";
 
 import { useAuth, useUI, useToast } from "@/context";
 import { ErrorBoundary } from "../shared/ErrorBoundary";
@@ -99,6 +101,16 @@ export default function Layout({
 
   const { user, logout, activeRole } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { data: iirStatus } = useIIRStatus();
+
+  const currentRole = activeRole?.name?.toLowerCase();
+  const showIIRWarning =
+    currentRole === "student" &&
+    iirStatus?.isSubmitted &&
+    !iirStatus?.isCompleted &&
+    location.pathname !== "/student/iir/form";
+
   const [sessionAccepted, setSessionAccepted] = useState(() => {
     // Check if they accepted during THIS specific browser session
     return sessionStorage.getItem("session_consent_accepted") === "true";
@@ -174,8 +186,6 @@ export default function Layout({
       setSidebarHovered(false);
     }
   }, [location.pathname, sidebarHovered, setSidebarHovered]);
-
-  const currentRole: string | undefined = activeRole?.name?.toLowerCase();
 
   useEffect(() => {
     const node = contentRef.current;
@@ -332,6 +342,46 @@ export default function Layout({
                     isLoading && "flex h-full flex-col",
                   )}
                 >
+                  {showIIRWarning && (
+                    <div
+                      className={cn(
+                        "mb-6 flex flex-col sm:flex-row",
+                        "sm:items-center sm:justify-between gap-4",
+                        "rounded-xl border border-yellow-500/20",
+                        "bg-yellow-500/10 p-4 text-yellow-800",
+                        "dark:text-yellow-200",
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle
+                          className={cn(
+                            "h-5 w-5 shrink-0",
+                            "text-yellow-600 dark:text-yellow-400",
+                          )}
+                        />
+                        <div className="text-sm font-medium">
+                          You are currently using an expedited profile.
+                          Please complete your Individual Inventory Record
+                          (IIR) to gain full access.
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/student/iir/form?edit=true&iirId=` +
+                              `${iirStatus?.id}`,
+                          )
+                        }
+                        className={cn(
+                          "shrink-0 rounded-lg bg-yellow-600",
+                          "hover:bg-yellow-700 px-4 py-2 text-xs",
+                          "font-semibold text-white shadow transition-colors",
+                        )}
+                      >
+                        Complete Form
+                      </button>
+                    </div>
+                  )}
                   {showHeader && showSubHeader && (
                     <SubHeader
                       title={title || ""}

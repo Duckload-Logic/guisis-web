@@ -22,6 +22,7 @@ export function useIIRStatus() {
       try {
         const iirRecord = await GetIIRByUserId(userId || "");
         return {
+          id: iirRecord?.id,
           isSubmitted: iirRecord?.isSubmitted ?? false,
           isCompleted: iirRecord?.isCompleted ?? false,
         };

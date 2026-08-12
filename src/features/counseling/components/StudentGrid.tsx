@@ -366,6 +366,17 @@ export default function StudentGrid({
             <p className="truncate text-sm font-bold text-foreground">
               {getStudentName(student) || "Unnamed Student"}
             </p>
+            {!student.isCompleted && (
+              <span
+                className={cn(
+                  "inline-block mt-0.5 rounded bg-amber-500/10",
+                  "px-1.5 py-0.5 text-[9px] font-bold uppercase",
+                  "text-amber-700 dark:text-amber-300",
+                )}
+              >
+                Expedited
+              </span>
+            )}
           </div>
         </div>
       ),
@@ -518,6 +529,17 @@ export default function StudentGrid({
               <p className="text-[10px] font-semibold uppercase text-muted-foreground">
                 {student.studentNumber}
               </p>
+              {!student.isCompleted && (
+                <span
+                  className={cn(
+                    "inline-block mt-0.5 rounded bg-amber-500/10 px-1.5",
+                    "py-0.5 text-[8px] font-bold uppercase",
+                    "text-amber-700 dark:text-amber-300",
+                  )}
+                >
+                  Expedited
+                </span>
+              )}
             </div>
           </div>
           <span
@@ -766,6 +788,19 @@ export default function StudentGrid({
                     <p className="text-[8px] font-bold uppercase text-primary/60 md:text-[11px]">
                       {student.studentNumber}
                     </p>
+                    {!student.isCompleted && (
+                      <div className="mt-1 flex justify-center">
+                        <span
+                          className={cn(
+                            "rounded bg-amber-500/10 px-1.5 py-0.5",
+                            "text-[8px] font-bold uppercase",
+                            "text-amber-700 dark:text-amber-300",
+                          )}
+                        >
+                          Expedited
+                        </span>
+                      </div>
+                    )}
 
                     <div className="flex justify-center pt-0.5 md:hidden">
                       <span
