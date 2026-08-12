@@ -16,73 +16,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TraceTracksViewer } from "@/features/system-admin/components/LogsTable";
+import {
+  getActionBadgeColor,
+  formatAction,
+} from "@/features/system-admin/utils/logStyles";
 
-const ACTION_BADGE_COLORS: Record<string, string> = {
-  LOGIN_SUCCESS:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  LOGIN_FAIL: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  LOGOUT:
-    "border-slate-500/20 bg-slate-500/10 text-slate-700 dark:text-slate-400",
-  USER_CREATED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  USER_BLOCKED:
-    "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  USER_UNBLOCKED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  ROLE_CHANGED:
-    "border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  SLIP_CREATED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  SLIP_STATUS_UPDATED:
-    "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  APPOINTMENT_CREATED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  APPOINTMENT_UPDATED:
-    "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  STUDENT_RECORD_CREATED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  STUDENT_RECORD_UPDATED:
-    "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  M2M_CLIENT_CREATED:
-    "border-emerald-500/20 bg-emerald-500/10 " +
-    "text-emerald-700 dark:text-emerald-400",
-  M2M_CLIENT_REVOKED:
-    "border-red-500/20 bg-red-500/10 " +
-    "text-red-700 dark:text-red-400",
-  M2M_CLIENT_VERIFIED:
-    "border-emerald-500/20 bg-emerald-500/10 " +
-    "text-emerald-700 dark:text-emerald-400",
-  M2M_CLIENT_SECRET_ROTATED:
-    "border-amber-500/20 bg-amber-500/10 " +
-    "text-amber-700 dark:text-amber-400",
-  M2M_CLIENT_USED:
-    "border-blue-500/20 bg-blue-500/10 " +
-    "text-blue-700 dark:text-blue-400",
-  M2M_CLIENT_INVALID:
-    "border-red-500/20 bg-red-500/10 " +
-    "text-red-700 dark:text-red-400",
-  M2M_AUTH_SUCCESS:
-    "border-emerald-500/20 bg-emerald-500/10 " +
-    "text-emerald-700 dark:text-emerald-400",
-  M2M_AUTH_FAILED:
-    "border-red-500/20 bg-red-500/10 " +
-    "text-red-700 dark:text-red-400",
-  M2M_TOKEN_REFRESHED:
-    "border-blue-500/20 bg-blue-500/10 " +
-    "text-blue-700 dark:text-blue-400",
-  M2M_DATA_ACCESS:
-    "border-blue-500/20 bg-blue-500/10 " +
-    "text-blue-700 dark:text-blue-400",
-  M2M_DATA_ACCESS_DENIED:
-    "border-red-500/20 bg-red-500/10 " +
-    "text-red-700 dark:text-red-400",
-  BACKUP_COMPLETED:
-    "border-emerald-500/20 bg-emerald-500/10 " +
-    "text-emerald-700 dark:text-emerald-400",
-  BACKUP_FAILED:
-    "border-red-500/20 bg-red-500/10 " +
-    "text-red-700 dark:text-red-400",
-};
+
 
 export default function LogDetails() {
   const { id } = useParams<{ id: string }>();
@@ -106,9 +45,7 @@ export default function LogDetails() {
     });
   };
 
-  const formatAction = (action: string) => {
-    return action.replace(/_/g, " ");
-  };
+
 
   if (isLoading) {
     return (
@@ -169,9 +106,9 @@ export default function LogDetails() {
                     <Badge
                       variant="outline"
                       className={cn(
-                        "px-2.5 py-1 text-xs font-semibold",
-                        ACTION_BADGE_COLORS[log.action] ||
-                          "border-white/20 bg-white/5 text-muted-foreground",
+                        "px-2.5 py-1 text-xs font-semibold uppercase",
+                        "tracking-wide",
+                        getActionBadgeColor(log.action),
                       )}
                     >
                       {formatAction(log.action)}
