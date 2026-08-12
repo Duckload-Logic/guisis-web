@@ -37,7 +37,11 @@ export const getActionBadgeColor = (action: string): string => {
     );
   }
 
-  if (upper.endsWith("_DELETED") || upper.endsWith("_BLOCKED")) {
+  if (
+    upper.endsWith("_DELETED") ||
+    upper.endsWith("_BLOCKED") ||
+    upper.endsWith("_EXCEEDED")
+  ) {
     return (
       "border-amber-500/20 bg-amber-500/10 text-amber-700" +
       " dark:text-amber-400"
@@ -48,10 +52,12 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_SAVED") ||
     upper.endsWith("_REFRESHED") ||
     upper.endsWith("_USED") ||
-    upper.endsWith("_VERIFIED")
+    upper.endsWith("_VERIFIED") ||
+    upper.endsWith("_ACCESS")
   ) {
     return (
-      "border-blue-500/20 bg-blue-500/10 text-blue-700" + " dark:text-blue-400"
+      "border-blue-500/20 bg-blue-500/10 text-blue-700" +
+      " dark:text-blue-400"
     );
   }
 
