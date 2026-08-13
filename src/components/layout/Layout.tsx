@@ -21,6 +21,9 @@ import ScrollToTop from "@/utils/componentUtils";
 import ConsentModal from "@/features/consents/components/ConsentModal";
 import { cn } from "@/lib/utils";
 
+const ROLE_STUDENT = "student";
+const STUDENT_IIR_FORM_PATH = "/student/iir/form";
+
 interface LayoutProps {
   showHeader?: boolean;
   children?: React.ReactNode;
@@ -106,10 +109,12 @@ export default function Layout({
 
   const currentRole = activeRole?.name?.toLowerCase();
   const showIIRWarning =
-    currentRole === "student" &&
+    isLoggedIn &&
+    !!user &&
+    currentRole === ROLE_STUDENT &&
     iirStatus?.isSubmitted &&
     !iirStatus?.isCompleted &&
-    location.pathname !== "/student/iir/form";
+    location.pathname !== STUDENT_IIR_FORM_PATH;
 
   const [sessionAccepted, setSessionAccepted] = useState(() => {
     // Check if they accepted during THIS specific browser session
@@ -346,7 +351,7 @@ export default function Layout({
                     <div
                       className={cn(
                         "mb-6 flex flex-col sm:flex-row",
-                        "sm:items-center sm:justify-between gap-4",
+                        "gap-4 sm:items-center sm:justify-between",
                         "rounded-xl border border-yellow-500/20",
                         "bg-yellow-500/10 p-4 text-yellow-800",
                         "dark:text-yellow-200",
@@ -360,16 +365,16 @@ export default function Layout({
                           )}
                         />
                         <div className="text-sm font-medium">
-                          You are currently using an expedited profile.
-                          Please complete your Individual Inventory Record
-                          (IIR) to gain full access.
+                          You are currently using an expedited profile. Please
+                          complete your Individual Inventory Record (IIR) to
+                          gain full access.
                         </div>
                       </div>
                       <button
-                        onClick={() => navigate("/student/iir/form")}
+                        onClick={() => navigate(STUDENT_IIR_FORM_PATH)}
                         className={cn(
                           "shrink-0 rounded-lg bg-yellow-600",
-                          "hover:bg-yellow-700 px-4 py-2 text-xs",
+                          "px-4 py-2 text-xs hover:bg-yellow-700",
                           "font-semibold text-white shadow transition-colors",
                         )}
                       >
@@ -424,7 +429,7 @@ export default function Layout({
 
         <ConsentModal
           open={termsOpen}
-          role={currentRole || "student"}
+          role={currentRole || ROLE_STUDENT}
           loading={false}
           onAccept={handleAcceptTerms}
           onCancel={handleDismissTerms}
