@@ -383,4 +383,5 @@ export interface IIRProfileView {
   yearLevel: number;
   status: StudentStatus;
   studentCorUrl?: string;
+  isCompleted: boolean;
 }

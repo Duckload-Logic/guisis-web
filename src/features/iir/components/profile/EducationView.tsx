@@ -18,7 +18,7 @@ export default function EducationView({
     const values = data?.schools || [];
     return [...values].sort(
       (a: SchoolDetails, b: SchoolDetails) =>
-        (a.educationalLevel.id || 0) - (b.educationalLevel.id || 0),
+        (a.educationalLevel?.id || 0) - (b.educationalLevel?.id || 0),
     );
   }, [data?.schools]);
 
@@ -64,7 +64,7 @@ export default function EducationView({
                 />
                 <CardBlock
                   icon={School2}
-                  title={asText(school.educationalLevel.name)}
+                  title={asText(school.educationalLevel?.name)}
                 >
                   <div
                     className={cn(
@@ -88,7 +88,7 @@ export default function EducationView({
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <InfoItem
                       label="Level"
-                      value={asText(school.educationalLevel.name)}
+                      value={asText(school.educationalLevel?.name)}
                     />
                     <InfoItem
                       label="Address"

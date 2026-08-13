@@ -11,7 +11,9 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -53,6 +55,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@playwright/test": "^1.62.1",
     "@types/crypto-js": "^4.2.2",
     "@types/humps": "^2.0.6",
     "@types/jest": "^30.0.0",

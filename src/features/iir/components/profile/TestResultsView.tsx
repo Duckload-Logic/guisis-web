@@ -18,7 +18,7 @@ export default function TestResultsView({
       <SectionTitle title="Psychological / Guidance Test Results" />
       <div className="grid grid-cols-1 gap-4">
         {(data?.length ?? 0) > 0 ? (
-          data!.map((result: TestResult) => (
+          data?.map((result: TestResult) => (
             <CardBlock
               key={result.id}
               title={asText(result.testName)}

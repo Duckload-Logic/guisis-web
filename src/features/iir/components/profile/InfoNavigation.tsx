@@ -28,10 +28,12 @@ export default function InfoNavigation({
   activeTab,
   setActiveTab,
   showSignificantNotes = true,
+  isExpedited = false,
 }: {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
   showSignificantNotes?: boolean;
+  isExpedited?: boolean;
 }) {
   const filteredTabs = showSignificantNotes
     ? TABS
@@ -48,15 +50,18 @@ export default function InfoNavigation({
       >
         {filteredTabs.map((tab) => {
           const isActive = activeTab === tab.id;
+          const isTabDisabled = isExpedited && tab.id !== "personal";
 
           return (
             <button
               key={tab.id}
+              disabled={isTabDisabled}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "group relative flex-1 whitespace-nowrap border-l-2 border-r-2",
-                "border-t-2 px-4 py-3 text-xs font-medium transition-all",
-                "duration-300 sm:flex-none sm:px-6 sm:text-sm",
+                "group relative flex-1 whitespace-nowrap border-l-2",
+                "border-r-2 border-t-2 px-4 py-3 text-xs font-medium",
+                "transition-all duration-300 sm:flex-none sm:px-6",
+                "sm:text-sm",
                 isActive
                   ? cn(
                       "rounded-t-xl border-glass-border bg-card",
@@ -66,6 +71,9 @@ export default function InfoNavigation({
                       "z-0 rounded-t-lg border-transparent bg-muted",
                       "text-muted-foreground opacity-70",
                     ),
+                isTabDisabled &&
+                  "cursor-not-allowed opacity-30 bg-neutral-200/50" +
+                    " dark:bg-neutral-800/50 pointer-events-none",
               )}
             >
               <div

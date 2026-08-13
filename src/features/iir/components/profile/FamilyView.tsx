@@ -94,8 +94,9 @@ export default function FamilyView({
           {data?.background?.employedSiblings !== 0 && (
             <CardBlock title="Employed Siblings' Supports">
               <TagList
-                values={data!.background!.siblingSupportTypes.map(
-                  (item: SibilingSupportType) => getOptionLabel(item.name),
+                values={(data?.background?.siblingSupportTypes || []).map(
+                  (item: SibilingSupportType) =>
+                    getOptionLabel(item.name),
                 )}
               />
             </CardBlock>
@@ -107,7 +108,7 @@ export default function FamilyView({
         <SectionTitle title="Related Persons" />
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {(data?.relatedPersons?.length ?? 0) > 0 ? (
-            data!.relatedPersons.map((person: RelatedPerson) => (
+            data?.relatedPersons?.map((person: RelatedPerson) => (
               <CardBlock
                 key={person?.id}
                 title={asText(person?.relationship?.name)}
@@ -207,8 +208,9 @@ export default function FamilyView({
               </p>
               {(data?.finance?.financialSupportTypes?.length ?? 0) > 0 && (
                 <TagList
-                  values={data!.finance!.financialSupportTypes.map(
-                    (item: StudentSupportType) => getOptionLabel(item?.name),
+                  values={(data?.finance?.financialSupportTypes || []).map(
+                    (item: StudentSupportType) =>
+                      getOptionLabel(item?.name),
                   )}
                   dark
                 />

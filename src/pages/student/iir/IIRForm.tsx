@@ -73,8 +73,6 @@ export default function IIRForm() {
 
   const { saveDraft, clearDraft, lastSaved } = useSaveIIRDraft();
   const { draft, isLoadingDraft, draftError } = useGetIIRDraft();
-  const { data: editProfileData, isLoading: isLoadingEditProfile } =
-    useIIRProfile(editIirId || "");
 
   const { submitFormAsync, isSubmitting } = useIIRFormSave();
 
@@ -123,8 +121,12 @@ export default function IIRForm() {
   const isSubmitted = statusData?.isSubmitted ?? false;
   const isCompleted = statusData?.isCompleted ?? false;
 
-  const { data: studentIIRProfile, isLoading: isLoadingStudentIIR } =
-    useUserIIR(isSubmitted ? me?.id : undefined);
+  const profileId =
+    editIirId ||
+    (isSubmitted && !isCompleted ? statusData?.id : undefined);
+  const { data: profileData, isLoading: isLoadingProfile } = useIIRProfile(
+    profileId || "",
+  );
 
   useEffect(() => {
     if (!isLoadingStatus && isSubmitted && isCompleted && !isEditMode) {
@@ -255,47 +257,45 @@ export default function IIRForm() {
 
       saveIIRTwoByTwoPhoto(
         photoDataUrl,
-        getTwoByTwoPhotoIdentityFromForm(formData, (me as any)?.id, editIirId),
+        getTwoByTwoPhotoIdentityFromForm(formData, (me as any)?.id, profileId),
       );
     },
-    [editIirId, me],
+    [profileId, me],
   );
 
   useEffect(() => {
     const initializeForm = () => {
       if (
         isLoadingDraft ||
-        isLoadingEditProfile ||
-        (isSubmitted && isLoadingStudentIIR) ||
+        isLoadingProfile ||
+        isLoadingStatus ||
         !me ||
         hasInitialized.current
       )
         return;
 
-      if (isEditMode && !editProfileData) return;
-      if (isSubmitted && !studentIIRProfile) return;
+      if (profileId && !profileData) return;
 
-      const sourceData = isEditMode
-        ? editProfileData || draft
-        : isSubmitted
-          ? studentIIRProfile || draft
-          : draft;
+      const sourceData = profileId
+        ? profileData || draft
+        : draft;
       const initializedData = initializeFormData(
         sourceData ?? null,
         EMPTY_IIR_FORM,
         me,
-        { preserveBasicInfoFromSource: isEditMode },
+        { preserveBasicInfoFromSource: !!profileId },
       );
       const savedPhoto = getIIRTwoByTwoPhoto(
         getTwoByTwoPhotoIdentityFromForm(
           initializedData,
           (me as any)?.id,
-          editIirId,
+          profileId,
         ),
         initializedData,
       );
       if (savedPhoto) {
-        initializedData.student.personalInfo.twoByTwoPhotoDataUrl = savedPhoto;
+        initializedData.student.personalInfo.twoByTwoPhotoDataUrl =
+          savedPhoto;
       }
       setLocalFormData(initializedData);
       setIsInitializing(false);
@@ -305,12 +305,10 @@ export default function IIRForm() {
     initializeForm();
   }, [
     isLoadingDraft,
-    isLoadingEditProfile,
-    isLoadingStudentIIR,
-    isEditMode,
-    isSubmitted,
-    editProfileData,
-    studentIIRProfile,
+    isLoadingProfile,
+    isLoadingStatus,
+    profileId,
+    profileData,
     draft,
     me,
   ]);
@@ -361,7 +359,11 @@ export default function IIRForm() {
   const handleRestoreDraft = () => {
     if (draftData) {
       const savedPhoto = getIIRTwoByTwoPhoto(
-        getTwoByTwoPhotoIdentityFromForm(draftData, (me as any)?.id, editIirId),
+        getTwoByTwoPhotoIdentityFromForm(
+          draftData,
+          (me as any)?.id,
+          profileId,
+        ),
         draftData,
       );
       const restoredDraft = {
@@ -400,9 +402,8 @@ export default function IIRForm() {
 
   const isLoading =
     isLoadingDraft ||
-    isLoadingEditProfile ||
+    isLoadingProfile ||
     isLoadingStatus ||
-    (isSubmitted && isLoadingStudentIIR) ||
     isSubmitting ||
     (isSubmitted && isCompleted && !isEditMode);
 

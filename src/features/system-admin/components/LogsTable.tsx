@@ -34,6 +34,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 
 // --- NEW IMPORT ---
 import { exportBackendCSV } from "@/lib/csvExport";
+import { getActionBadgeColor, formatAction } from "../utils/logStyles";
 
 interface LogsTableProps {
   title: string;
@@ -48,52 +49,12 @@ interface LogsTableProps {
 type SortOrder = "asc" | "desc";
 const PAGE_SIZE = 20;
 
-const ACTION_BADGE_COLORS: Record<string, string> = {
-  LOGIN_SUCCESS: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  LOGIN_FAILED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  ACCESS_DENIED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  RATE_LIMIT_EXCEEDED: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  INVALID_TOKEN: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  API_KEY_INVALID: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  LOGOUT: "border-slate-500/20 bg-slate-500/10 text-slate-700 dark:text-slate-400",
-  TOKEN_REFRESHED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  API_KEY_USED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  API_KEY_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  API_KEY_REVOKED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  SETTING_CHANGED: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  USER_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  USER_UPDATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  USER_DELETED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  ROLE_CHANGED: "border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  SLIP_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  SLIP_STATUS_UPDATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  APPOINTMENT_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  APPOINTMENT_UPDATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  STUDENT_RECORD_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  STUDENT_RECORD_UPDATED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  M2M_CLIENT_CREATED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  M2M_CLIENT_REVOKED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  M2M_CLIENT_VERIFIED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  M2M_CLIENT_SECRET_ROTATED: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  M2M_CLIENT_USED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  M2M_CLIENT_INVALID: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  M2M_AUTH_SUCCESS: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  M2M_AUTH_FAILED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  M2M_TOKEN_REFRESHED: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  M2M_DATA_ACCESS: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
-  M2M_DATA_ACCESS_DENIED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-  EMAIL_SEND_SUCCESS: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  EMAIL_SEND_FAILED: "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400",
-};
-
 function formatLogDate(value?: string) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
-
-const formatAction = (action: string) => capitalizeWords(action.replace(/_/g, " "));
 
 export function TraceTracksViewer({ traceId, currentLogId }: { traceId: string; currentLogId: number }) {
   const { data: tracks, isLoading, error } = useTraceTracks(traceId);
@@ -345,8 +306,9 @@ export default function LogsTable({
           <div className="px-3 py-3">
             <span
               className={cn(
-                "inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide leading-none",
-                ACTION_BADGE_COLORS[log.action] ?? "border-white/20 bg-white/40 text-muted-foreground",
+                "inline-flex rounded-full border px-2.5 py-1 text-[10px]",
+                "font-bold uppercase tracking-wide leading-none",
+                getActionBadgeColor(log.action),
               )}
             >
               {formatAction(log.action)}
@@ -409,7 +371,7 @@ export default function LogsTable({
           variant="outline"
           className={cn(
             "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
-            ACTION_BADGE_COLORS[log.action] ?? "border-white/20 bg-white/40 text-muted-foreground",
+            getActionBadgeColor(log.action),
           )}
         >
           {formatAction(log.action)}

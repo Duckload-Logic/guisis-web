@@ -22,9 +22,11 @@ import {
 export default function BioCard({
   data,
   iirId,
+  isExpedited = false,
 }: {
   data: StudentSection | undefined;
   iirId?: string | number;
+  isExpedited?: boolean;
 }) {
   const DefaultProfileIcon =
     data?.personalInfo?.gender?.id === 1 ? ProfileMale : ProfileFemale;
@@ -78,6 +80,19 @@ export default function BioCard({
             {data?.personalInfo?.program?.code || NOT_SPECIFIED}-
             {data?.personalInfo?.yearLevel || NOT_SPECIFIED}
           </span>
+          {isExpedited && (
+            <div className="mt-2">
+              <span
+                className={cn(
+                  "inline-block rounded-lg border border-amber-500/20",
+                  "bg-amber-500/10 px-3 py-1 text-[10px] font-bold",
+                  "uppercase text-amber-700 dark:text-amber-300",
+                )}
+              >
+                Expedited Profile
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid w-full grid-cols-1 gap-4 border-t border-border/50 pt-6">

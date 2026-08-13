@@ -103,9 +103,24 @@ export default function IIRProfile() {
 
   const isLoading = isWaitingForMe || isWaitingForIirId || isWaitingForProfile;
 
+  const isStaff =
+    me?.roles?.some((r) =>
+      ["admin", "counselor"].includes(r.name.toLowerCase()),
+    ) || false;
   const isAdmin =
     me?.roles?.some((r) => r.name.toLowerCase() === "admin") || false;
-  const showSignificantNotes = isAdmin;
+  const showSignificantNotes = isStaff;
+
+  const isOwnExpedited =
+    !isStaff &&
+    sessionIir?.isSubmitted &&
+    !sessionIir?.isCompleted;
+
+  useEffect(() => {
+    if (isOwnExpedited && activeTab !== "personal") {
+      setActiveTab("personal");
+    }
+  }, [isOwnExpedited, activeTab]);
 
   const badgeIcon = useMemo(() => <User size={16} />, []);
 
@@ -137,7 +152,11 @@ export default function IIRProfile() {
         {!isAdmin && (
           <button
             onClick={() =>
-              navigate(`/student/iir/form?edit=true&iirId=${finalIirId}`)
+              navigate(
+                isOwnExpedited
+                  ? "/student/iir/form"
+                  : `/student/iir/form?edit=true&iirId=${finalIirId}`,
+              )
             }
             className={cn(
               "group flex h-10 w-10 items-center justify-center rounded-xl",
@@ -273,7 +292,11 @@ export default function IIRProfile() {
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
-            <BioCard data={studentData?.student} iirId={finalIirId} />
+            <BioCard
+              data={studentData?.student}
+              iirId={finalIirId}
+              isExpedited={isOwnExpedited}
+            />
           </div>
 
           <div
@@ -284,6 +307,7 @@ export default function IIRProfile() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               showSignificantNotes={showSignificantNotes}
+              isExpedited={isOwnExpedited}
             />
             <InfoContent
               activeTab={activeTab}
