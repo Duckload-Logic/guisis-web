@@ -587,7 +587,7 @@ export const HealthSection = forwardRef<
                       "animate-in fade-in slide-in-from-top-2",
                     )}
                   >
-                    {type.sessions.map((session, sIdx) => (
+                    {type.sessions.map((session: any, sIdx: number) => (
                       <div
                         key={sIdx}
                         className={cn(
