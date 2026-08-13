@@ -369,7 +369,7 @@ export const InterestsSection = forwardRef<
         const extraActivities = currentActivities.filter(
           (a: Activity) => !isAcademicActivity(a),
         );
-        const existingRole = extraActivities[0]?.role || "Member";
+        const existingRole = extraActivities[0]?.role || "";
         const existingRoleSpec = extraActivities[0]?.roleSpecification || "";
 
         currentActivities.push({
@@ -707,7 +707,7 @@ export const InterestsSection = forwardRef<
   const firstExtraOrigIdx = (interests?.activities || []).findIndex(
     (a: Activity) => !isAcademicActivity(a),
   );
-  const sharedRole = extraActivities[0]?.role || "Member";
+  const sharedRole = extraActivities[0]?.role || "";
   const sharedRoleSpec = extraActivities[0]?.roleSpecification || "";
 
   const otherExtraActivityItem = (interests?.activities || [])
