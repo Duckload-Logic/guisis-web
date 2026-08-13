@@ -47,6 +47,36 @@ export default function HealthView({
     },
   ];
 
+  const professionalTypes = ["Psychiatrist", "Psychologist", "Counselor"];
+
+  const groupedConsultations = professionalTypes.map((type) => {
+    const consultations = Array.isArray(data?.consultations)
+      ? data.consultations.filter(
+          (c: ConsultationRecord) => asText(c.professionalType) === type,
+        )
+      : [];
+
+    const hasYes = consultations.some(
+      (c: ConsultationRecord) => c.hasConsulted === true,
+    );
+    const hasNo = consultations.some(
+      (c: ConsultationRecord) => c.hasConsulted === false,
+    );
+    const yesSessions = consultations
+      .filter((c: ConsultationRecord) => c.hasConsulted === true)
+      .sort((a, b) => {
+        const dateA = a.whenDate || "";
+        const dateB = b.whenDate || "";
+        return dateA.localeCompare(dateB);
+      });
+
+    return {
+      type,
+      hasConsulted: hasYes ? true : hasNo ? false : null,
+      sessions: yesSessions,
+    };
+  });
+
   return (
     <div
       className={cn(
@@ -94,56 +124,70 @@ export default function HealthView({
 
       <section>
         <SectionTitle title="Professional Consultation" />
-        <div className="mt-6 grid grid-cols-1 gap-4">
-          {(data?.consultations?.length ?? 0) > 0 ? (
-            data?.consultations.map((consultation: ConsultationRecord) => (
-              <div
-                key={consultation.id}
-                className="rounded-2xl border border-primary/50 bg-primary/5 p-5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h4 className="text-sm font-bold text-card-foreground">
-                    {asText(consultation.professionalType)}
-                  </h4>
-                  {consultation.hasConsulted ? (
-                    <div
-                      className={cn(
-                        "flex items-center gap-1 text-xs font-semibold",
-                        "text-green-700",
-                      )}
-                    >
-                      <CheckCircle2 className="h-4 w-4" /> Consulted
-                    </div>
-                  ) : (
-                    <div
-                      className={cn(
-                        "flex items-center gap-1 text-xs font-semibold",
-                        "text-muted-foreground",
-                      )}
-                    >
-                      <XCircle className="h-4 w-4" /> Not Consulted
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <InfoItem
-                    label="When"
-                    value={
-                      consultation.whenDate
-                        ? formatDate(consultation.whenDate)
-                        : NOT_SPECIFIED
-                    }
-                  />
-                  <InfoItem
-                    label="Reason"
-                    value={asText(consultation.forWhat)}
-                  />
-                </div>
+        <div className="mt-6 grid grid-cols-1 gap-6">
+          {groupedConsultations.map((group) => (
+            <div
+              key={group.type}
+              className={cn(
+                "rounded-2xl border bg-glass-bg/5 p-5 transition-all",
+                group.hasConsulted
+                  ? "border-primary/50 bg-primary/5"
+                  : "border-glass-border/40",
+              )}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h4 className="text-sm font-bold text-card-foreground">
+                  {group.type}
+                </h4>
+                {group.hasConsulted === true ? (
+                  <div
+                    className={cn(
+                      "flex items-center gap-1 text-xs font-semibold",
+                      "text-green-700",
+                    )}
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> Consulted
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      "flex items-center gap-1 text-xs font-semibold",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    <XCircle className="h-4 w-4" /> Not Consulted
+                  </div>
+                )}
               </div>
-            ))
-          ) : (
-            <EmptyState label="No consultations recorded" />
-          )}
+
+              {group.hasConsulted === true && group.sessions.length > 0 && (
+                <div className="mt-4 space-y-4">
+                  {group.sessions.map((session, idx) => (
+                    <div
+                      key={session.id || idx}
+                      className={cn(
+                        "grid grid-cols-1 gap-4 md:grid-cols-2 pt-4",
+                        idx > 0 && "border-t border-glass-border/20",
+                      )}
+                    >
+                      <InfoItem
+                        label="When"
+                        value={
+                          session.whenDate
+                            ? formatDate(session.whenDate)
+                            : NOT_SPECIFIED
+                        }
+                      />
+                      <InfoItem
+                        label="Reason"
+                        value={asText(session.forWhat)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </section>
     </div>

@@ -385,11 +385,17 @@ export const HealthSection = forwardRef<
             ? User
             : Users,
       consulted: hasYes ? true : hasNo ? false : undefined,
-      sessions: yesSessions.map((s: any) => ({
-        originalIndex: health.consultations.indexOf(s),
-        when: s.whenDate || "",
-        forWhat: s.forWhat || "",
-      })),
+      sessions: yesSessions
+        .map((s: any) => ({
+          originalIndex: health.consultations.indexOf(s),
+          when: s.whenDate || "",
+          forWhat: s.forWhat || "",
+        }))
+        .sort((a: any, b: any) => {
+          if (!a.when) return 1;
+          if (!b.when) return -1;
+          return a.when.localeCompare(b.when);
+        }),
     };
   });
 
