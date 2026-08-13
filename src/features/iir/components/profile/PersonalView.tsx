@@ -119,7 +119,7 @@ export default function PersonalView({
                 key={entry?.id}
                 title={
                   asText(entry.addressType) === "Residential"
-                    ? "Permanent Address"
+                    ? "City Address"
                     : "Provincial Address"
                 }
               >

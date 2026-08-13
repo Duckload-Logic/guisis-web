@@ -10,15 +10,15 @@ import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import { FormDividerGroup } from "./shared";
-import { 
-  User, 
-  MapPin, 
-  Phone, 
-  Briefcase, 
-  Activity, 
-  Camera, 
-  Upload, 
-  Pencil, 
+import {
+  User,
+  MapPin,
+  Phone,
+  Briefcase,
+  Activity,
+  Camera,
+  Upload,
+  Pencil,
   X,
   Info,
   CheckCircle2,
@@ -31,9 +31,7 @@ import {
   useStudentRelationshipTypes,
   useAddressSync,
 } from "@/features/iir/hooks";
-import {
-  CheckStudentNumberUniqueness,
-} from "@/features/iir/services/service";
+import { CheckStudentNumberUniqueness } from "@/features/iir/services/service";
 import { COMPLEXIONS } from "@/features/iir/constants";
 import {
   useGetRegions,
@@ -116,8 +114,7 @@ export const PersonalSection = forwardRef<
   const [studentNumberStatus, setStudentNumberStatus] = useState<
     "idle" | "checking" | "taken" | "available"
   >("idle");
-  const [checkedStudentNumber, setCheckedStudentNumber] =
-    useState<string>("");
+  const [checkedStudentNumber, setCheckedStudentNumber] = useState<string>("");
 
   const performUniquenessCheck = useCallback(
     async (num: string) => {
@@ -137,8 +134,7 @@ export const PersonalSection = forwardRef<
           setCheckedStudentNumber(num);
           setErrors((prev: FormErrors) => {
             const updated = { ...prev };
-            const currentErr =
-              updated["student.personalInfo.studentNumber"];
+            const currentErr = updated["student.personalInfo.studentNumber"];
             if (
               currentErr === "Student number is already registered" ||
               currentErr === "Checking student number availability..."
@@ -634,10 +630,7 @@ export const PersonalSection = forwardRef<
       onFieldBlur(fieldPath);
     }
 
-    if (
-      !isEditMode &&
-      fieldPath === "student.personalInfo.studentNumber"
-    ) {
+    if (!isEditMode && fieldPath === "student.personalInfo.studentNumber") {
       const num = studentInfo?.personalInfo?.studentNumber || "";
       const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
       if (isValidFormat && num !== checkedStudentNumber) {
@@ -1363,7 +1356,7 @@ export const PersonalSection = forwardRef<
             <div className="space-y-8">
               {/* Permanent Address */}
               <FormDividerGroup
-                title="Permanent Address"
+                title="City Address"
                 className="border-t-0 pt-0"
               >
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -1472,7 +1465,7 @@ export const PersonalSection = forwardRef<
                 action={
                   <Checkbox
                     id="provincialSameAsResidential"
-                    label="Same as permanent address"
+                    label="Same as city address"
                     name="provincialSameAsResidential"
                     checked={provincialSync.isSynced}
                     onCheckedChange={(checked: any) =>
@@ -1847,7 +1840,7 @@ export const PersonalSection = forwardRef<
                 action={
                   <Checkbox
                     id="emergencySameAsResidential"
-                    label="Same as permanent address"
+                    label="Same as city address"
                     name="emergencySameAsResidential"
                     checked={emergencySync.isSynced}
                     onCheckedChange={(checked: any) =>
@@ -1857,7 +1850,6 @@ export const PersonalSection = forwardRef<
                   />
                 }
               >
-
                 <div
                   className={cn(
                     "grid grid-cols-1 gap-6 transition-opacity duration-300",

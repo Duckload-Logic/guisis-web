@@ -9,12 +9,15 @@ import {
   User,
   Users,
   Check,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   validateObject,
   isFieldRequired,
   validateField,
+  commonRules,
 } from "@/services/validationSchema";
 import { healthValidationSchema } from "@/features/iir/config/healthValidationSchema";
 import { Radio } from "@/components/form";
@@ -48,18 +51,67 @@ export const HealthSection = forwardRef<
   const validate = (
     step?: number,
   ): { isValid: boolean; errors: FormErrors } => {
-    // Helper to map consultations by type for easy access in rules
-    const _consultations = (health?.consultations || []).reduce(
+    const _consultationsMap = (health?.consultations || []).reduce(
       (acc: any, c: any) => {
-        acc[c.professionalType] = c;
+        if (!acc[c.professionalType]) {
+          acc[c.professionalType] = [];
+        }
+        acc[c.professionalType].push(c);
         return acc;
       },
-      {},
+      {} as any,
     );
 
+    const dynamicSchema = { ...healthValidationSchema };
+
+    ["Psychiatrist", "Psychologist", "Counselor"].forEach((type) => {
+      delete dynamicSchema[`_consultations.${type}.hasConsulted`];
+      delete dynamicSchema[`_consultations.${type}.whenDate`];
+      delete dynamicSchema[`_consultations.${type}.forWhat`];
+
+      dynamicSchema[`_consultations.${type}.hasConsulted`] = [
+        {
+          type: "required",
+          validate: () => {
+            const list = _consultationsMap[type] || [];
+            return list.length > 0;
+          },
+          message: `Please select Yes or No`,
+        },
+      ];
+
+      const sessions = _consultationsMap[type] || [];
+      sessions.forEach((session: any, idx: number) => {
+        if (session.hasConsulted) {
+          dynamicSchema[`_consultations.${type}.${idx}.whenDate`] = [
+            {
+              type: "required",
+              validate: (value: any) =>
+                value && String(value).trim().length > 0,
+              message: `Please specify when`,
+            },
+            commonRules.pattern(
+              /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
+              "Must be a valid date (YYYY-MM-DD)",
+            ),
+          ];
+
+          dynamicSchema[`_consultations.${type}.${idx}.forWhat`] = [
+            {
+              type: "required",
+              validate: (value: any) =>
+                value && String(value).trim().length > 0,
+              message: `Please specify reason`,
+            },
+            commonRules.noSpecialChars(`Reason for consultation`),
+          ];
+        }
+      });
+    });
+
     const sectionErrors = validateObject(
-      { health, _consultations },
-      healthValidationSchema,
+      { health, _consultations: _consultationsMap },
+      dynamicSchema,
     );
     delete sectionErrors["health.healthRecord.mentalEmotionalHasProblem"];
     delete sectionErrors["health.healthRecord.mentalEmotionalDetails"];
@@ -95,15 +147,17 @@ export const HealthSection = forwardRef<
       });
     }
 
-    // Instant validation
     const fieldRules = healthValidationSchema[fieldPath];
     if (fieldRules) {
       const _consultations = (health?.consultations || []).reduce(
         (acc: any, c: any) => {
-          acc[c.professionalType] = c;
+          if (!acc[c.professionalType]) {
+            acc[c.professionalType] = [];
+          }
+          acc[c.professionalType].push(c);
           return acc;
         },
-        {},
+        {} as any,
       );
 
       const error = validateField(value, fieldRules, {
@@ -125,80 +179,149 @@ export const HealthSection = forwardRef<
 
   const handleConsultationChange = (
     professionalType: string,
-    field: "consulted" | "whenDate" | "forWhat",
-    value: any,
+    field: "consulted",
+    value: boolean,
   ) => {
     const consultations = Array.isArray(health?.consultations)
       ? [...health.consultations]
       : [];
 
-    const existingIndex = consultations.findIndex(
-      (c: any) => c.professionalType === professionalType,
+    const filtered = consultations.filter(
+      (c: any) => c.professionalType !== professionalType,
     );
 
-    if (existingIndex >= 0) {
-      // Update existing consultation
-      if (field === "consulted" && value === false) {
-        consultations[existingIndex] = {
-          ...consultations[existingIndex],
-          hasConsulted: false,
-          whenDate: null,
-          forWhat: null,
-        };
-        setErrors((prev: FormErrors) => {
-          const updated = { ...prev };
-          delete updated[`_consultations.${professionalType}.whenDate`];
-          delete updated[`_consultations.${professionalType}.forWhat`];
-          return updated;
-        });
-      } else {
-        consultations[existingIndex] = {
-          ...consultations[existingIndex],
-          [field === "consulted" ? "hasConsulted" : field]: value,
-        };
-      }
-    } else if (field === "consulted" || (value !== "" && value !== null)) {
-      // Create a new record for any consulted click (yes or no)
-      // or non-empty text fields
-      consultations.push({
+    if (value) {
+      filtered.push({
         professionalType,
-        hasConsulted: field === "consulted" ? value : false,
-        whenDate: field === "whenDate" ? value : null,
-        forWhat: field === "forWhat" ? value : null,
+        hasConsulted: true,
+        whenDate: "",
+        forWhat: "",
+      });
+    } else {
+      filtered.push({
+        professionalType,
+        hasConsulted: false,
+        whenDate: null,
+        forWhat: null,
       });
     }
 
-    onChange("health.consultations", consultations);
+    onChange("health.consultations", filtered);
 
-    // Instant validation for the specific field
-    const isConsulted = field === "consulted";
-    const fieldName = isConsulted ? "hasConsulted" : field;
-    const errorField = `_consultations.${professionalType}.${fieldName}`;
-    const fieldRules = healthValidationSchema[errorField];
-    if (fieldRules) {
-      // Re-map consultations for current context
-      const _consultationsMap = consultations.reduce((acc: any, c: any) => {
-        acc[c.professionalType] = c;
-        return acc;
-      }, {});
-
-      // val is already correct
-      const val = value;
-      const error = validateField(value, fieldRules, {
-        health,
-        _consultations: _consultationsMap,
+    setErrors((prev: FormErrors) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((key) => {
+        if (key.startsWith(`_consultations.${professionalType}`)) {
+          delete updated[key];
+        }
       });
-
-      setErrors((prev: FormErrors) => {
-        const updated = { ...prev };
-        if (error) updated[errorField] = error;
-        else delete updated[errorField];
-        return updated;
-      });
-    }
+      return updated;
+    });
 
     if (onFieldBlur) {
-      onFieldBlur(errorField);
+      onFieldBlur(`_consultations.${professionalType}.hasConsulted`);
+    }
+  };
+
+  const getDynamicRule = (field: "whenDate" | "forWhat") => {
+    if (field === "whenDate") {
+      return [
+        {
+          type: "required",
+          validate: (value: any) => value && String(value).trim().length > 0,
+          message: `Please specify when`,
+        },
+        commonRules.pattern(
+          /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
+          "Must be a valid date (YYYY-MM-DD)",
+        ),
+      ];
+    } else {
+      return [
+        {
+          type: "required",
+          validate: (value: any) => value && String(value).trim().length > 0,
+          message: `Please specify reason`,
+        },
+        commonRules.noSpecialChars(`Reason for consultation`),
+      ];
+    }
+  };
+
+  const handleSessionFieldChange = (
+    originalIndex: number,
+    field: "whenDate" | "forWhat",
+    value: any,
+  ) => {
+    const consultations = Array.isArray(health?.consultations)
+      ? [...health.consultations]
+      : [];
+    if (originalIndex >= 0 && originalIndex < consultations.length) {
+      consultations[originalIndex] = {
+        ...consultations[originalIndex],
+        [field]: value,
+      };
+      onChange("health.consultations", consultations);
+
+      const type = consultations[originalIndex].professionalType;
+      const typeYesSessions = consultations.filter(
+        (c: any) => c.professionalType === type && c.hasConsulted === true,
+      );
+      const relativeIndex = typeYesSessions.indexOf(
+        consultations[originalIndex],
+      );
+
+      const errorField = `_consultations.${type}.${relativeIndex}.${field}`;
+      const fieldRules = getDynamicRule(field);
+      if (fieldRules) {
+        const _consultationsMap = consultations.reduce(
+          (acc: any, c: any) => {
+            if (!acc[c.professionalType]) {
+              acc[c.professionalType] = [];
+            }
+            acc[c.professionalType].push(c);
+            return acc;
+          },
+          {} as any,
+        );
+
+        const error = validateField(value, fieldRules, {
+          health,
+          _consultations: _consultationsMap,
+        });
+
+        setErrors((prev: FormErrors) => {
+          const updated = { ...prev };
+          if (error) updated[errorField] = error;
+          else delete updated[errorField];
+          return updated;
+        });
+      }
+    }
+  };
+
+  const addSession = (professionalType: string) => {
+    const consultations = Array.isArray(health?.consultations)
+      ? [...health.consultations]
+      : [];
+    consultations.push({
+      professionalType,
+      hasConsulted: true,
+      whenDate: "",
+      forWhat: "",
+    });
+    onChange("health.consultations", consultations);
+  };
+
+  const deleteSession = (originalIndex: number, professionalType: string) => {
+    const consultations = Array.isArray(health?.consultations)
+      ? [...health.consultations]
+      : [];
+    if (originalIndex >= 0 && originalIndex < consultations.length) {
+      consultations.splice(originalIndex, 1);
+      onChange("health.consultations", consultations);
+
+      setTimeout(() => validate(), 0);
     }
   };
 
@@ -242,9 +365,15 @@ export const HealthSection = forwardRef<
   const professionalTypes = ["Psychiatrist", "Psychologist", "Counselor"];
 
   const consultationTypes = professionalTypes.map((type) => {
-    const consultation = Array.isArray(health?.consultations)
-      ? health.consultations.find((c: any) => c.professionalType === type)
-      : null;
+    const consultations = Array.isArray(health?.consultations)
+      ? health.consultations.filter((c: any) => c.professionalType === type)
+      : [];
+
+    const hasYes = consultations.some((c: any) => c.hasConsulted === true);
+    const hasNo = consultations.some((c: any) => c.hasConsulted === false);
+    const yesSessions = consultations.filter(
+      (c: any) => c.hasConsulted === true,
+    );
 
     return {
       label: type,
@@ -255,9 +384,18 @@ export const HealthSection = forwardRef<
           : type === "Psychologist"
             ? User
             : Users,
-      consulted: consultation?.hasConsulted,
-      when: consultation?.whenDate || "",
-      forWhat: consultation?.forWhat || "",
+      consulted: hasYes ? true : hasNo ? false : undefined,
+      sessions: yesSessions
+        .map((s: any) => ({
+          originalIndex: health.consultations.indexOf(s),
+          when: s.whenDate || "",
+          forWhat: s.forWhat || "",
+        }))
+        .sort((a: any, b: any) => {
+          if (!a.when) return 1;
+          if (!b.when) return -1;
+          return a.when.localeCompare(b.when);
+        }),
     };
   });
 
@@ -451,41 +589,99 @@ export const HealthSection = forwardRef<
                 {type.consulted === true && (
                   <div
                     className={cn(
-                      "pl-0 duration-300 sm:pl-8",
+                      "pl-0 duration-300 sm:pl-8 space-y-6",
                       "animate-in fade-in slide-in-from-top-2",
-                      "grid grid-cols-1 gap-4 sm:grid-cols-2",
                     )}
                   >
-                    <DatePicker
-                      label="When"
-                      value={type.when}
-                      onChange={(val: string) =>
-                        handleConsultationChange(type.type, "whenDate", val)
-                      }
-                      error={getFieldError(
-                        `_consultations.${type.type}.whenDate`,
+                    {type.sessions.map((session: any, sIdx: number) => (
+                      <div
+                        key={sIdx}
+                        className={cn(
+                          "p-4 rounded-xl border",
+                          "border-glass-border/10 bg-glass-bg/5",
+                          "space-y-4 relative",
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={cn(
+                              "text-xs font-bold text-primary",
+                              "uppercase tracking-wider",
+                            )}
+                          >
+                            Session #{sIdx + 1}
+                          </span>
+                          {type.sessions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteSession(
+                                  session.originalIndex,
+                                  type.type,
+                                )
+                              }
+                              className={cn(
+                                "text-xs font-semibold text-primary",
+                                "hover:text-primary-hover",
+                                "flex items-center gap-1 transition-colors",
+                              )}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Remove
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <DatePicker
+                            label="When"
+                            value={session.when}
+                            onChange={(val: string) =>
+                              handleSessionFieldChange(
+                                session.originalIndex,
+                                "whenDate",
+                                val,
+                              )
+                            }
+                            error={getFieldError(
+                              `_consultations.${type.type}.${sIdx}.whenDate`,
+                            )}
+                            required={true}
+                          />
+                          <FormField
+                            label="For What"
+                            placeholder="Specify reason..."
+                            value={session.forWhat}
+                            onChange={(val: string) =>
+                              handleSessionFieldChange(
+                                session.originalIndex,
+                                "forWhat",
+                                val,
+                              )
+                            }
+                            noSpecialCharacters={true}
+                            error={getFieldError(
+                              `_consultations.${type.type}.${sIdx}.forWhat`,
+                            )}
+                            required={true}
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => addSession(type.type)}
+                      className={cn(
+                        "inline-flex items-center gap-2 px-4 py-2",
+                        "text-xs font-bold text-primary bg-primary/5",
+                        "hover:bg-primary/10 rounded-lg border",
+                        "border-primary/15 transition-all",
                       )}
-                      required={isFieldRequired(
-                        healthValidationSchema,
-                        `_consultations.${type.type}.whenDate`,
-                      )}
-                    />
-                    <FormField
-                      label="For What"
-                      placeholder="Specify reason..."
-                      value={type.forWhat}
-                      onChange={(val: string) =>
-                        handleConsultationChange(type.type, "forWhat", val)
-                      }
-                      noSpecialCharacters={true}
-                      error={getFieldError(
-                        `_consultations.${type.type}.forWhat`,
-                      )}
-                      required={isFieldRequired(
-                        healthValidationSchema,
-                        `_consultations.${type.type}.forWhat`,
-                      )}
-                    />
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Another Session
+                    </button>
                   </div>
                 )}
                 {getFieldError(`_consultations.${type.type}.hasConsulted`) && (
