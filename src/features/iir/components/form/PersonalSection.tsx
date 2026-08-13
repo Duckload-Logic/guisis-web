@@ -1465,7 +1465,7 @@ export const PersonalSection = forwardRef<
                 action={
                   <Checkbox
                     id="provincialSameAsResidential"
-                    label="Same as permanent address"
+                    label="Same as city address"
                     name="provincialSameAsResidential"
                     checked={provincialSync.isSynced}
                     onCheckedChange={(checked: any) =>
@@ -1840,7 +1840,7 @@ export const PersonalSection = forwardRef<
                 action={
                   <Checkbox
                     id="emergencySameAsResidential"
-                    label="Same as permanent address"
+                    label="Same as city address"
                     name="emergencySameAsResidential"
                     checked={emergencySync.isSynced}
                     onCheckedChange={(checked: any) =>
