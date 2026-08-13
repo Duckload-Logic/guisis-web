@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import svgr from "vite-plugin-svgr";
 import path from "path";
@@ -11,6 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
   plugins: [
     react(),
