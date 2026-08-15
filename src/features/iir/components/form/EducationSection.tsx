@@ -555,8 +555,12 @@ export const EducationSection = forwardRef<
                   </p>
                 ) : (
                   <div className="space-y-4 pl-7">
-                    {levelSchools.map(({ s: school, idx }, subIdx) => {
-                      const status = getCompletionStatus(idx);
+                    {levelSchools.map(
+                      (
+                        { s: school, idx }: { s: any; idx: number },
+                        subIdx: number,
+                      ) => {
+                        const status = getCompletionStatus(idx);
                       const StatusIcon = status.icon;
                       const isExpanded = expandedIndex === idx;
                       const hasData = [
