@@ -180,7 +180,8 @@ export const EducationSection = forwardRef<
       fieldPath.endsWith(".yearCompleted");
 
     if (isYearField) {
-      for (let i = 0; i < 5; i++) {
+      const schoolsLen = updatedEducation?.schools?.length || 0;
+      for (let i = 0; i < schoolsLen; i++) {
         const startPath = `education.schools.${i}.yearStarted`;
         const compPath = `education.schools.${i}.yearCompleted`;
 
@@ -254,7 +255,8 @@ export const EducationSection = forwardRef<
       path.startsWith(`education.schools.${idx}.`),
     );
 
-    const isRequiredSlot = idx === 1 || idx === 2; // Junior & Senior High
+    const levelId = school.educationalLevel?.id;
+    const isRequiredSlot = levelId === 3 || levelId === 4;
 
     if (!hasData) {
       if (isRequiredSlot) {
@@ -274,6 +276,71 @@ export const EducationSection = forwardRef<
     { id: "Public", name: "Public" },
     { id: "Private", name: "Private" },
   ];
+
+  const handleAddSchool = (levelId: number, levelName: string) => {
+    const currentSchools = [...(education?.schools || [])];
+    let insertIndex = -1;
+    for (let i = currentSchools.length - 1; i >= 0; i--) {
+      if (currentSchools[i].educationalLevel?.id === levelId) {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+    if (insertIndex === -1) {
+      for (let i = 0; i < currentSchools.length; i++) {
+        if (currentSchools[i].educationalLevel?.id > levelId) {
+          insertIndex = i;
+          break;
+        }
+      }
+    }
+    if (insertIndex === -1) {
+      insertIndex = currentSchools.length;
+    }
+    const newSchool = {
+      schoolName: "",
+      schoolAddress: "",
+      schoolType: "",
+      yearStarted: "",
+      yearCompleted: "",
+      awards: "",
+      educationalLevel: { id: levelId, name: levelName },
+    };
+    currentSchools.splice(insertIndex, 0, newSchool);
+    onChange("education.schools", currentSchools);
+    setExpandedIndex(insertIndex);
+  };
+
+  const handleRemoveSchool = (originalIdx: number) => {
+    const currentSchools = [...(education?.schools || [])];
+    currentSchools.splice(originalIdx, 1);
+    onChange("education.schools", currentSchools);
+
+    if (expandedIndex === originalIdx) {
+      setExpandedIndex(null);
+    } else if (expandedIndex !== null && expandedIndex > originalIdx) {
+      setExpandedIndex(expandedIndex - 1);
+    }
+
+    setErrors((prev: FormErrors) => {
+      const updated: FormErrors = {};
+      Object.entries(prev).forEach(([key, val]) => {
+        const match = key.match(/^education\.schools\.(\d+)\.(.+)$/);
+        if (match) {
+          const idx = parseInt(match[1], 10);
+          const field = match[2];
+          if (idx < originalIdx) {
+            updated[key] = val;
+          } else if (idx > originalIdx) {
+            updated[`education.schools.${idx - 1}.${field}`] = val;
+          }
+        } else {
+          updated[key] = val;
+        }
+      });
+      return updated;
+    });
+  };
 
   return (
     <>
@@ -431,247 +498,320 @@ export const EducationSection = forwardRef<
         description="Record each level of your educational background"
         icon={School}
       >
-        <div className="space-y-6">
+        <div className="space-y-8">
           {[
-            { name: "Elementary" },
-            { name: "Junior High School" },
-            { name: "Senior High School" },
-            { name: "Vocational" },
-            { name: "College" },
-          ].map((level: any, idx: number) => {
-          const school = education?.schools?.[idx] || {};
-          const status = getCompletionStatus(idx);
-          const StatusIcon = status.icon;
-          const isExpanded = expandedIndex === idx;
-          const hasData = [
-            "schoolName",
-            "schoolAddress",
-            "schoolType",
-            "yearStarted",
-            "yearCompleted",
-            "awards",
-          ].some((field) => !!school[field]?.toString().trim());
+            { id: 2, name: "Elementary" },
+            { id: 3, name: "Junior High School" },
+            { id: 4, name: "Senior High School" },
+            { id: 5, name: "Vocational" },
+            { id: 6, name: "College" },
+          ].map((level: any) => {
+            const levelSchools = (education?.schools || [])
+              .map((s: any, idx: number) => ({ s, idx }))
+              .filter(
+                (item: any) => item.s.educationalLevel?.id === level.id,
+              );
+            const isRequired = level.id === 3 || level.id === 4;
 
-          return (
-            <div
-              key={idx}
-              className={cn(
-                "bg-glass-bg/60 border-glass-border/40 group overflow-hidden",
-                "rounded-xl border shadow-sm backdrop-blur-glass",
-                "transition-all duration-300 hover:shadow-md",
-              )}
-            >
+            return (
               <div
-                onClick={() =>
-                  setExpandedIndex((prev) => (prev === idx ? null : idx))
-                }
-                className={cn(
-                  "bg-glass-bg/40 border-glass-border/20 flex flex-wrap",
-                  "items-center justify-between gap-3 px-5 py-4 sm:px-8",
-                  "cursor-pointer select-none sm:py-5",
-                  isExpanded && "border-b",
-                )}
+                key={level.id}
+                className="space-y-4 border-b border-glass-border/10 pb-6 last:border-b-0"
               >
-                <div className="flex items-center gap-3">
-                  <div
+                <div
+                  className={cn(
+                    "flex items-center justify-between border-b",
+                    "border-glass-border/20 pb-2",
+                  )}
+                >
+                  <h3
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-xl",
-                      "bg-primary/10 text-primary shadow-sm",
+                      "text-base font-bold text-foreground",
+                      "flex items-center gap-2",
                     )}
                   >
-                    <School className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">
-                      {level.name}{" "}
-                      <span
-                        className={cn(
-                          "text-xs font-normal",
-                          "text-muted-foreground",
-                        )}
-                      >
-                        {idx === 1 || idx === 2 ? "(Required)" : "(Optional)"}
-                      </span>
-                    </h3>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${status.color}`}
-                      />
-                      <span
-                        className={cn(
-                          "text-[10px] font-bold uppercase",
-                          "text-muted-foreground",
-                        )}
-                      >
-                        {status.text}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {hasData && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleClearSection(idx, e)}
-                      className={cn(
-                        "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
-                        "bg-destructive/10 text-destructive",
-                        "transition-all hover:bg-destructive/20",
-                        "duration-200",
-                      )}
-                    >
-                      Clear
-                    </button>
-                  )}
-                  {StatusIcon && (
-                    <StatusIcon
-                      className={cn(
-                        "h-5 w-5",
-                        status.color.replace("bg-", "text-"),
-                      )}
-                    />
-                  )}
-                  <ChevronDown
+                    <School className="h-5 w-5 text-primary/80" />
+                    {level.name}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {isRequired ? "(Required)" : "(Optional)"}
+                    </span>
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => handleAddSchool(level.id, level.name)}
                     className={cn(
-                      "h-5 w-5 text-muted-foreground transition-transform duration-300",
-                      isExpanded && "rotate-180",
+                      "rounded-lg px-3 py-1.5 text-xs font-bold",
+                      "bg-primary/10 text-primary hover:bg-primary/20",
+                      "transition-all duration-200",
                     )}
-                  />
+                  >
+                    + Add School
+                  </button>
                 </div>
-              </div>
 
-              {isExpanded && (
-                <div className="p-6 sm:p-8">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="md:col-span-2">
-                      <FormField
-                        name={`education.schools.${idx}.schoolName`}
-                        label="School Name"
-                        required={isFieldRequired(
-                          educationValidationSchema,
-                          `education.schools.${idx}.schoolName`,
-                        )}
-                        value={school.schoolName || ""}
-                        onChange={(val) =>
-                          handleInputChange(
-                            `education.schools.${idx}.schoolName`,
-                            val,
-                          )
-                        }
-                        noSpecialCharacters={true}
-                        placeholder="e.g. Philippine Science High School"
-                        error={getFieldError(
-                          `education.schools.${idx}.schoolName`,
-                        )}
-                      />
-                    </div>
+                {levelSchools.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic pl-7">
+                    No schools added for this level.
+                  </p>
+                ) : (
+                  <div className="space-y-4 pl-7">
+                    {levelSchools.map(({ s: school, idx }, subIdx) => {
+                      const status = getCompletionStatus(idx);
+                      const StatusIcon = status.icon;
+                      const isExpanded = expandedIndex === idx;
+                      const hasData = [
+                        "schoolName",
+                        "schoolAddress",
+                        "schoolType",
+                        "yearStarted",
+                        "yearCompleted",
+                        "awards",
+                      ].some((field) => !!school[field]?.toString().trim());
 
-                    <div className="md:col-span-2">
-                      <FormField
-                        name={`education.schools.${idx}.schoolAddress`}
-                        label="School Address"
-                        required={isFieldRequired(
-                          educationValidationSchema,
-                          `education.schools.${idx}.schoolAddress`,
-                        )}
-                        value={school.schoolAddress || ""}
-                        onChange={(val) =>
-                          handleInputChange(
-                            `education.schools.${idx}.schoolAddress`,
-                            val,
-                          )
-                        }
-                        noSpecialCharacters={true}
-                        placeholder="Street, City, Province"
-                        error={getFieldError(
-                          `education.schools.${idx}.schoolAddress`,
-                        )}
-                      />
-                    </div>
+                      const canRemove = isRequired
+                        ? levelSchools.length > 1
+                        : true;
 
-                    <SelectField
-                      formStyle
-                      label="School Type"
-                      options={schoolTypes}
-                      value={school.schoolType || ""}
-                      onChange={(val: any) =>
-                        handleInputChange(
-                          `education.schools.${idx}.schoolType`,
-                          val,
-                        )
-                      }
-                      error={getFieldError(
-                        `education.schools.${idx}.schoolType`,
-                      )}
-                      required={isFieldRequired(
-                        educationValidationSchema,
-                        `education.schools.${idx}.schoolType`,
-                      )}
-                    />
+                      return (
+                        <div
+                          key={idx}
+                          className={cn(
+                            "bg-glass-bg/60 border-glass-border/40 group overflow-hidden",
+                            "rounded-xl border shadow-sm backdrop-blur-glass",
+                            "transition-all duration-300 hover:shadow-md",
+                          )}
+                        >
+                          <div
+                            onClick={() =>
+                              setExpandedIndex((prev) =>
+                                prev === idx ? null : idx,
+                              )
+                            }
+                            className={cn(
+                              "bg-glass-bg/40 border-glass-border/20 flex flex-wrap",
+                              "items-center justify-between gap-3 px-5 py-4 sm:px-8",
+                              "cursor-pointer select-none sm:py-5",
+                              isExpanded && "border-b",
+                            )}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={cn(
+                                  "flex h-8 w-8 items-center",
+                                  "justify-center rounded-lg",
+                                  "bg-primary/10 text-primary shadow-sm",
+                                )}
+                              >
+                                <span className="text-xs font-bold">
+                                  #{subIdx + 1}
+                                </span>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-bold text-foreground">
+                                  {school.schoolName || "New School"}
+                                </h4>
+                                <div className="mt-0.5 flex items-center gap-2">
+                                  <span
+                                    className={`h-1.5 w-1.5 rounded-full ${status.color}`}
+                                  />
+                                  <span
+                                    className={cn(
+                                      "text-[10px] font-bold uppercase",
+                                      "text-muted-foreground",
+                                    )}
+                                  >
+                                    {status.text}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {hasData && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleClearSection(idx, e)}
+                                  className={cn(
+                                    "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
+                                    "bg-destructive/10 text-destructive",
+                                    "transition-all hover:bg-destructive/20",
+                                    "duration-200",
+                                  )}
+                                >
+                                  Clear
+                                </button>
+                              )}
+                              {canRemove && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveSchool(idx);
+                                  }}
+                                  className={cn(
+                                    "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
+                                    "bg-destructive/10 text-destructive",
+                                    "transition-all hover:bg-destructive/20",
+                                    "duration-200",
+                                  )}
+                                >
+                                  Remove
+                                </button>
+                              )}
+                              {StatusIcon && (
+                                <StatusIcon
+                                  className={cn(
+                                    "h-5 w-5",
+                                    status.color.replace("bg-", "text-"),
+                                  )}
+                                />
+                              )}
+                              <ChevronDown
+                                className={cn(
+                                  "h-5 w-5 text-muted-foreground",
+                                  "transition-transform duration-300",
+                                  isExpanded && "rotate-180",
+                                )}
+                              />
+                            </div>
+                          </div>
 
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                      <FormField
-                        name={`education.schools.${idx}.yearStarted`}
-                        label="Year Started"
-                        inputMode="numeric"
-                        required={isFieldRequired(
-                          educationValidationSchema,
-                          `education.schools.${idx}.yearStarted`,
-                        )}
-                        value={school.yearStarted || ""}
-                        onChange={(val) =>
-                          handleInputChange(
-                            `education.schools.${idx}.yearStarted`,
-                            val.replace(/[^0-9]/g, ""),
-                          )
-                        }
-                        placeholder="YYYY"
-                        error={getFieldError(
-                          `education.schools.${idx}.yearStarted`,
-                        )}
-                      />
-                      <FormField
-                        name={`education.schools.${idx}.yearCompleted`}
-                        label="Year Graduated"
-                        inputMode="numeric"
-                        required={isFieldRequired(
-                          educationValidationSchema,
-                          `education.schools.${idx}.yearCompleted`,
-                        )}
-                        value={school.yearCompleted || ""}
-                        onChange={(val) =>
-                          handleInputChange(
-                            `education.schools.${idx}.yearCompleted`,
-                            val.replace(/[^0-9]/g, ""),
-                          )
-                        }
-                        placeholder="YYYY"
-                        error={getFieldError(
-                          `education.schools.${idx}.yearCompleted`,
-                        )}
-                      />
-                    </div>
+                          {isExpanded && (
+                            <div className="p-6 sm:p-8">
+                              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div className="md:col-span-2">
+                                  <FormField
+                                    name={`education.schools.${idx}.schoolName`}
+                                    label="School Name"
+                                    required={isFieldRequired(
+                                      educationValidationSchema,
+                                      `education.schools.${idx}.schoolName`,
+                                    )}
+                                    value={school.schoolName || ""}
+                                    onChange={(val) =>
+                                      handleInputChange(
+                                        `education.schools.${idx}.schoolName`,
+                                        val,
+                                      )
+                                    }
+                                    noSpecialCharacters={true}
+                                    placeholder="e.g. Philippine Science High"
+                                    error={getFieldError(
+                                      `education.schools.${idx}.schoolName`,
+                                    )}
+                                  />
+                                </div>
 
-                    <div className="md:col-span-2">
-                      <FormField
-                        name={`education.schools.${idx}.awards`}
-                        label="Awards/Honors"
-                        value={school.awards || ""}
-                        onChange={(val) =>
-                          handleInputChange(
-                            `education.schools.${idx}.awards`,
-                            val,
-                          )
-                        }
-                        noSpecialCharacters={true}
-                        placeholder="e.g. With Honors, Academic Excellence..."
-                      />
-                    </div>
+                                <div className="md:col-span-2">
+                                  <FormField
+                                    name={`education.schools.${idx}.schoolAddress`}
+                                    label="School Address"
+                                    required={isFieldRequired(
+                                      educationValidationSchema,
+                                      `education.schools.${idx}.schoolAddress`,
+                                    )}
+                                    value={school.schoolAddress || ""}
+                                    onChange={(val) =>
+                                      handleInputChange(
+                                        `education.schools.${idx}.schoolAddress`,
+                                        val,
+                                      )
+                                    }
+                                    noSpecialCharacters={true}
+                                    placeholder="Street, City, Province"
+                                    error={getFieldError(
+                                      `education.schools.${idx}.schoolAddress`,
+                                    )}
+                                  />
+                                </div>
+
+                                <SelectField
+                                  formStyle
+                                  label="School Type"
+                                  options={schoolTypes}
+                                  value={school.schoolType || ""}
+                                  onChange={(val: any) =>
+                                    handleInputChange(
+                                      `education.schools.${idx}.schoolType`,
+                                      val,
+                                    )
+                                  }
+                                  error={getFieldError(
+                                    `education.schools.${idx}.schoolType`,
+                                  )}
+                                  required={isFieldRequired(
+                                    educationValidationSchema,
+                                    `education.schools.${idx}.schoolType`,
+                                  )}
+                                />
+
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                  <FormField
+                                    name={`education.schools.${idx}.yearStarted`}
+                                    label="Year Started"
+                                    inputMode="numeric"
+                                    required={isFieldRequired(
+                                      educationValidationSchema,
+                                      `education.schools.${idx}.yearStarted`,
+                                    )}
+                                    value={school.yearStarted || ""}
+                                    onChange={(val) =>
+                                      handleInputChange(
+                                        `education.schools.${idx}.yearStarted`,
+                                        val.replace(/[^0-9]/g, ""),
+                                      )
+                                    }
+                                    placeholder="YYYY"
+                                    error={getFieldError(
+                                      `education.schools.${idx}.yearStarted`,
+                                    )}
+                                  />
+                                  <FormField
+                                    name={`education.schools.${idx}.yearCompleted`}
+                                    label="Year Graduated"
+                                    inputMode="numeric"
+                                    required={isFieldRequired(
+                                      educationValidationSchema,
+                                      `education.schools.${idx}.yearCompleted`,
+                                    )}
+                                    value={school.yearCompleted || ""}
+                                    onChange={(val) =>
+                                      handleInputChange(
+                                        `education.schools.${idx}.yearCompleted`,
+                                        val.replace(/[^0-9]/g, ""),
+                                      )
+                                    }
+                                    placeholder="YYYY"
+                                    error={getFieldError(
+                                      `education.schools.${idx}.yearCompleted`,
+                                    )}
+                                  />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <FormField
+                                    name={`education.schools.${idx}.awards`}
+                                    label="Awards/Honors"
+                                    value={school.awards || ""}
+                                    onChange={(val) =>
+                                      handleInputChange(
+                                        `education.schools.${idx}.awards`,
+                                        val,
+                                      )
+                                    }
+                                    noSpecialCharacters={true}
+                                    placeholder="e.g. With Honors..."
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                </div>
-              )}
-            </div>
-          );
+                )}
+              </div>
+            );
           })}
         </div>
       </SectionContainer>

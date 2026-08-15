@@ -72,7 +72,7 @@ export const schoolSequenceCompletedRule = (
     if (isNaN(currentCompleted)) return true;
 
     const schools = rootData?.education?.schools || [];
-    for (let nextIdx = index + 1; nextIdx < 5; nextIdx++) {
+    for (let nextIdx = index + 1; nextIdx < schools.length; nextIdx++) {
       const nextSchool = schools[nextIdx];
       if (nextSchool && nextSchool.yearStarted) {
         const nextStart = Number(nextSchool.yearStarted);
@@ -126,12 +126,14 @@ const isSchoolFilled = (rootData: any, i: number): boolean => {
 };
 
 const isFieldRequiredForSchool = (rootData: any, i: number): boolean => {
-  if (i === 1 || i === 2) return true;
+  const school = rootData?.education?.schools?.[i];
+  const levelId = school?.educationalLevel?.id;
+  if (levelId === 3 || levelId === 4) return true;
   return isSchoolFilled(rootData, i);
 };
 
 // Add schools dynamically
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 20; i++) {
   educationValidationSchema[`education.schools.${i}.schoolName`] = [
     {
       type: "required",

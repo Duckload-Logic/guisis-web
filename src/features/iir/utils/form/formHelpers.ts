@@ -193,7 +193,8 @@ export function initializeFormData(
     education: {
       ...emptyData.education,
       ...baseData.education,
-      schools: [2, 3, 4, 5, 6].map((id, idx) => {
+      schools: (() => {
+        const levelIds = [2, 3, 4, 5, 6];
         const levelNames = [
           "Elementary",
           "Junior High School",
@@ -201,20 +202,38 @@ export function initializeFormData(
           "Vocational",
           "College",
         ];
-        const existing = (baseData.education?.schools || []).find(
-          (s: any) => s.educationalLevel?.id === id,
-        );
-        return {
-          id: existing?.id,
-          schoolName: existing?.schoolName || "",
-          schoolAddress: existing?.schoolAddress || "",
-          schoolType: existing?.schoolType || "",
-          yearStarted: normalizeYear(existing?.yearStarted),
-          yearCompleted: normalizeYear(existing?.yearCompleted),
-          awards: existing?.awards || "",
-          educationalLevel: { id, name: levelNames[idx] },
-        } as any;
-      }),
+        const result: any[] = [];
+        levelIds.forEach((id, idx) => {
+          const existingList = (baseData.education?.schools || []).filter(
+            (s: any) => s.educationalLevel?.id === id,
+          );
+          if (existingList.length === 0) {
+            result.push({
+              schoolName: "",
+              schoolAddress: "",
+              schoolType: "",
+              yearStarted: "",
+              yearCompleted: "",
+              awards: "",
+              educationalLevel: { id, name: levelNames[idx] },
+            });
+          } else {
+            existingList.forEach((existing: any) => {
+              result.push({
+                id: existing.id,
+                schoolName: existing.schoolName || "",
+                schoolAddress: existing.schoolAddress || "",
+                schoolType: existing.schoolType || "",
+                yearStarted: normalizeYear(existing.yearStarted),
+                yearCompleted: normalizeYear(existing.yearCompleted),
+                awards: existing.awards || "",
+                educationalLevel: { id, name: levelNames[idx] },
+              });
+            });
+          }
+        });
+        return result;
+      })(),
     },
     family: baseData.family
       ? {
