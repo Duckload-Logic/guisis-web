@@ -25,7 +25,6 @@ const isStagingEnvironment = () => {
 const getStagingMaskedMessage = (status?: number) => {
   if (!isStagingEnvironment()) return "";
   if (status === 401) return "Invalid Credentials";
-  if (status === 404) return "Network Error";
   return "";
 };
 
@@ -145,6 +144,13 @@ apiClient.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosConfigWithMeta;
+
+    console.error("[API ERROR]", {
+      url: originalRequest?.url,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
 
     if (isRefreshLockedOut && error.response?.status === 401) {
       redirectToLoginAfterSessionExpiry();
