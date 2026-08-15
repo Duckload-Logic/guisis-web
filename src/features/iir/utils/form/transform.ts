@@ -294,7 +294,10 @@ export function transformFormToPayload(formData: IIRForm): any {
           otherSpecification: handleNullableString(
             activity.otherSpecification,
           ),
-          role: activity.role,
+          roles: (activity.role || "")
+            .split(",")
+            .map((r) => r.trim())
+            .filter(Boolean),
           roleSpecification: handleNullableString(
             activity.roleSpecification,
           ),

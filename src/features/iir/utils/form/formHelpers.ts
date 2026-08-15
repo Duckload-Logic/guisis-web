@@ -305,7 +305,10 @@ export function initializeFormData(
       ...emptyData.interests,
       ...baseData.interests,
       activities: Array.isArray(baseData.interests?.activities)
-        ? baseData.interests.activities
+        ? baseData.interests.activities.map((a: any) => ({
+            ...a,
+            role: Array.isArray(a.roles) ? a.roles.join(", ") : a.role || "",
+          }))
         : emptyData.interests.activities,
       subjectPreferences: Array.isArray(baseData.interests?.subjectPreferences)
         ? baseData.interests.subjectPreferences

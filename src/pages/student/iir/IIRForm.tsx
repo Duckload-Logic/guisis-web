@@ -663,18 +663,28 @@ export default function IIRForm() {
             ...updated.student,
             personalInfo: {
               ...updated.student.personalInfo,
-              studentNumber: "",
               program: { id: 0 },
               yearLevel: 1,
               section: "",
             },
           };
-          fieldsToClearTouched.push(
-            "student.personalInfo.studentNumber",
-            "student.personalInfo.program",
-            "student.personalInfo.yearLevel",
-            "student.personalInfo.section",
-          );
+          if (!isEditMode) {
+            updated.student.personalInfo.studentNumber = "";
+          }
+          if (isEditMode) {
+            fieldsToClearTouched.push(
+              "student.personalInfo.program",
+              "student.personalInfo.yearLevel",
+              "student.personalInfo.section",
+            );
+          } else {
+            fieldsToClearTouched.push(
+              "student.personalInfo.studentNumber",
+              "student.personalInfo.program",
+              "student.personalInfo.yearLevel",
+              "student.personalInfo.section",
+            );
+          }
           break;
         case 2:
           updated.student = {
@@ -682,29 +692,39 @@ export default function IIRForm() {
             personalInfo: {
               ...updated.student.personalInfo,
               suffix: "",
-              gender: { id: 0 },
               civilStatus: { id: 0 },
               religion: { id: 0 },
-              dateOfBirth: "",
-              placeOfBirth: "",
-              highSchoolGWA: "",
-              heightM: "",
-              weightKg: "",
-              complexion: "",
             },
           };
-          fieldsToClearTouched.push(
-            "student.personalInfo.suffix",
-            "student.personalInfo.gender",
-            "student.personalInfo.civilStatus",
-            "student.personalInfo.religion",
-            "student.personalInfo.dateOfBirth",
-            "student.personalInfo.placeOfBirth",
-            "student.personalInfo.highSchoolGWA",
-            "student.personalInfo.heightM",
-            "student.personalInfo.weightKg",
-            "student.personalInfo.complexion",
-          );
+          if (!isEditMode) {
+            updated.student.personalInfo.gender = { id: 0 };
+            updated.student.personalInfo.dateOfBirth = "";
+            updated.student.personalInfo.placeOfBirth = "";
+            updated.student.personalInfo.highSchoolGWA = "";
+            updated.student.personalInfo.heightM = "";
+            updated.student.personalInfo.weightKg = "";
+            updated.student.personalInfo.complexion = "";
+          }
+          if (isEditMode) {
+            fieldsToClearTouched.push(
+              "student.personalInfo.suffix",
+              "student.personalInfo.civilStatus",
+              "student.personalInfo.religion",
+            );
+          } else {
+            fieldsToClearTouched.push(
+              "student.personalInfo.suffix",
+              "student.personalInfo.gender",
+              "student.personalInfo.civilStatus",
+              "student.personalInfo.religion",
+              "student.personalInfo.dateOfBirth",
+              "student.personalInfo.placeOfBirth",
+              "student.personalInfo.highSchoolGWA",
+              "student.personalInfo.heightM",
+              "student.personalInfo.weightKg",
+              "student.personalInfo.complexion",
+            );
+          }
           break;
         case 3:
           updated.student = {
@@ -808,10 +828,7 @@ export default function IIRForm() {
           if (updated.family?.relatedPersons) {
             const related = [...updated.family.relatedPersons];
             related[0] = {
-              firstName: "",
-              middleName: null,
-              lastName: "",
-              dateOfBirth: "",
+              ...related[0],
               educationalAttainment: { id: 0 },
               occupation: null,
               employerName: null,
@@ -821,31 +838,44 @@ export default function IIRForm() {
               isGuardian: false,
               isLiving: true,
             };
+            if (!isEditMode) {
+              related[0].firstName = "";
+              related[0].middleName = null;
+              related[0].lastName = "";
+              related[0].dateOfBirth = "";
+            }
             updated.family = {
               ...updated.family,
               relatedPersons: related,
             };
           }
-          fieldsToClearTouched.push(
-            "family.relatedPersons.0.isLiving",
-            "family.relatedPersons.0.firstName",
-            "family.relatedPersons.0.middleName",
-            "family.relatedPersons.0.lastName",
-            "family.relatedPersons.0.dateOfBirth",
-            "family.relatedPersons.0.educationalAttainment",
-            "family.relatedPersons.0.occupation",
-            "family.relatedPersons.0.employerName",
-            "family.relatedPersons.0.employerAddress",
-          );
+          if (isEditMode) {
+            fieldsToClearTouched.push(
+              "family.relatedPersons.0.isLiving",
+              "family.relatedPersons.0.educationalAttainment",
+              "family.relatedPersons.0.occupation",
+              "family.relatedPersons.0.employerName",
+              "family.relatedPersons.0.employerAddress",
+            );
+          } else {
+            fieldsToClearTouched.push(
+              "family.relatedPersons.0.isLiving",
+              "family.relatedPersons.0.firstName",
+              "family.relatedPersons.0.middleName",
+              "family.relatedPersons.0.lastName",
+              "family.relatedPersons.0.dateOfBirth",
+              "family.relatedPersons.0.educationalAttainment",
+              "family.relatedPersons.0.occupation",
+              "family.relatedPersons.0.employerName",
+              "family.relatedPersons.0.employerAddress",
+            );
+          }
           break;
         case 8:
           if (updated.family?.relatedPersons) {
             const related = [...updated.family.relatedPersons];
             related[1] = {
-              firstName: "",
-              middleName: null,
-              lastName: "",
-              dateOfBirth: "",
+              ...related[1],
               educationalAttainment: { id: 0 },
               occupation: null,
               employerName: null,
@@ -855,22 +885,38 @@ export default function IIRForm() {
               isGuardian: false,
               isLiving: true,
             };
+            if (!isEditMode) {
+              related[1].firstName = "";
+              related[1].middleName = null;
+              related[1].lastName = "";
+              related[1].dateOfBirth = "";
+            }
             updated.family = {
               ...updated.family,
               relatedPersons: related,
             };
           }
-          fieldsToClearTouched.push(
-            "family.relatedPersons.1.isLiving",
-            "family.relatedPersons.1.firstName",
-            "family.relatedPersons.1.middleName",
-            "family.relatedPersons.1.lastName",
-            "family.relatedPersons.1.dateOfBirth",
-            "family.relatedPersons.1.educationalAttainment",
-            "family.relatedPersons.1.occupation",
-            "family.relatedPersons.1.employerName",
-            "family.relatedPersons.1.employerAddress",
-          );
+          if (isEditMode) {
+            fieldsToClearTouched.push(
+              "family.relatedPersons.1.isLiving",
+              "family.relatedPersons.1.educationalAttainment",
+              "family.relatedPersons.1.occupation",
+              "family.relatedPersons.1.employerName",
+              "family.relatedPersons.1.employerAddress",
+            );
+          } else {
+            fieldsToClearTouched.push(
+              "family.relatedPersons.1.isLiving",
+              "family.relatedPersons.1.firstName",
+              "family.relatedPersons.1.middleName",
+              "family.relatedPersons.1.lastName",
+              "family.relatedPersons.1.dateOfBirth",
+              "family.relatedPersons.1.educationalAttainment",
+              "family.relatedPersons.1.occupation",
+              "family.relatedPersons.1.employerName",
+              "family.relatedPersons.1.employerAddress",
+            );
+          }
           break;
         case 9:
           if (updated.family?.relatedPersons) {

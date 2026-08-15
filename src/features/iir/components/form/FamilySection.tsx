@@ -485,10 +485,12 @@ export const FamilySection = forwardRef<
 
   const handleClearParent = (idx: number) => {
     const prefix = `family.relatedPersons.${idx}`;
-    handleInputChange(`${prefix}.firstName`, "");
-    handleInputChange(`${prefix}.middleName`, "");
-    handleInputChange(`${prefix}.lastName`, "");
-    handleInputChange(`${prefix}.dateOfBirth`, "");
+    if (!isEditMode) {
+      handleInputChange(`${prefix}.firstName`, "");
+      handleInputChange(`${prefix}.middleName`, "");
+      handleInputChange(`${prefix}.lastName`, "");
+      handleInputChange(`${prefix}.dateOfBirth`, "");
+    }
     handleInputChange(
       `${prefix}.educationalAttainment`,
       { id: 0, name: "" },
