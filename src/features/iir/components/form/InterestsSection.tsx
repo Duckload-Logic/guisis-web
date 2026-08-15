@@ -374,17 +374,11 @@ export const InterestsSection = forwardRef<
       }
 
       if (option) {
-        const extraActivities = currentActivities.filter(
-          (a: Activity) => !isAcademicActivity(a),
-        );
-        const existingRole = extraActivities[0]?.role || "";
-        const existingRoleSpec = extraActivities[0]?.roleSpecification || "";
-
         currentActivities.push({
           activityOption: { ...option, isAcademic },
           otherSpecification: "",
-          role: isAcademic ? "Member" : existingRole,
-          roleSpecification: isAcademic ? "" : existingRoleSpec,
+          role: isAcademic ? "Member" : "",
+          roleSpecification: "",
         });
       }
     }
@@ -518,65 +512,6 @@ export const InterestsSection = forwardRef<
     });
   };
 
-  const updateAllExtracurricularRoles = (role: string) => {
-    const currentActivities = (interests?.activities || []).map(
-      (a: Activity) => {
-        const isAcad = isAcademicActivity(a);
-        if (!isAcad) {
-          return {
-            ...a,
-            role,
-            roleSpecification: parseSharedRoles(role).includes("Other")
-              ? a.roleSpecification
-              : "",
-          };
-        }
-        return a;
-      },
-    );
-    handleInputChange("interests.activities", currentActivities);
-
-    const actErrors = checkActivitiesAndRoles({
-      ...interests,
-      activities: currentActivities,
-    });
-    setErrors((prev: FormErrors) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((k) => {
-        if (k.startsWith("interests.activities.")) {
-          delete updated[k];
-        }
-      });
-      return { ...updated, ...actErrors };
-    });
-  };
-
-  const updateAllExtracurricularRoleSpecs = (spec: string) => {
-    const currentActivities = (interests?.activities || []).map(
-      (a: Activity) => {
-        const isAcad = isAcademicActivity(a);
-        if (!isAcad) {
-          return { ...a, roleSpecification: spec };
-        }
-        return a;
-      },
-    );
-    handleInputChange("interests.activities", currentActivities);
-
-    const actErrors = checkActivitiesAndRoles({
-      ...interests,
-      activities: currentActivities,
-    });
-    setErrors((prev: FormErrors) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((k) => {
-        if (k.startsWith("interests.activities.")) {
-          delete updated[k];
-        }
-      });
-      return { ...updated, ...actErrors };
-    });
-  };
 
   const getHobby = (rank: number) =>
     interests?.hobbies?.find((h: Hobby) => h.priorityRank === rank)
@@ -707,26 +642,9 @@ export const InterestsSection = forwardRef<
     return hasError && showError ? errors[fieldPath] : undefined;
   };
 
-  const hasOrgsSelected = (interests?.activities || []).some(
-    (a: Activity) => !isAcademicActivity(a),
-  );
-
   const extraActivities = (interests?.activities || []).filter(
     (a: Activity) => !isAcademicActivity(a),
   );
-  const firstExtraOrigIdx = (interests?.activities || []).findIndex(
-    (a: Activity) => !isAcademicActivity(a),
-  );
-  const sharedRole = extraActivities[0]?.role || "";
-  const sharedRoleSpec = extraActivities[0]?.roleSpecification || "";
-
-  const otherExtraActivityItem = (interests?.activities || [])
-    .map((activity: Activity, origIdx: number) => ({ activity, origIdx }))
-    .find(
-      (item: { activity: Activity; origIdx: number }) =>
-        !isAcademicActivity(item.activity) &&
-        isOtherName(item.activity.activityOption.name),
-    );
 
   return (
     <SectionContainer
@@ -1020,164 +938,222 @@ export const InterestsSection = forwardRef<
                       "text-neutral-400 dark:text-neutral-500",
                     )}
                   >
-                    Organization Details & Role:
+                    Organization Details & Roles:
                   </h5>
 
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {/* Other Organization Input */}
-                    {otherExtraActivityItem && (
-                      <div
-                        className={cn(
-                          "rounded-xl border border-glass-border/40",
-                          "bg-glass-bg/25 p-5",
-                        )}
-                      >
-                        <FormField
-                          label="Specify Other Organization"
-                          value={
-                            otherExtraActivityItem.activity
-                              .otherSpecification || ""
-                          }
-                          onChange={(val: string) =>
-                            updateActivityOtherSpecification(
-                              otherExtraActivityItem.activity
-                                .activityOption.id,
-                              false,
-                              val,
-                            )
-                          }
-                          placeholder="e.g. Red Cross Youth"
-                          error={getFieldError(
-                            "interests.activities." +
-                              `${otherExtraActivityItem.origIdx}` +
-                              ".otherSpecification",
-                          )}
-                          required={true}
-                        />
-                      </div>
-                    )}
+                  <div className="grid grid-cols-1 gap-6">
+                    {extraActivities.map((activity: Activity) => {
+                      const origIdx = (interests.activities || []).findIndex(
+                        (a: Activity) =>
+                          a.activityOption.id ===
+                            activity.activityOption.id &&
+                          !isAcademicActivity(a),
+                      );
+                      const isOther = isOtherName(
+                        activity.activityOption.name,
+                      );
+                      const currentRoles = parseSharedRoles(
+                        activity.role,
+                      );
 
-                    {/* Single Shared Role Selection */}
-                    <div
-                      className={cn(
-                        "rounded-xl border border-glass-border/40",
-                        "bg-glass-bg/25 p-5 space-y-4",
-                        !otherExtraActivityItem && "md:col-span-2",
-                      )}
-                    >
-                      <div className="space-y-4">
-                        <label
-                          className={cn(
-                            "text-xs font-bold uppercase tracking-wider",
-                            "text-neutral-400 dark:text-neutral-500",
-                          )}
-                        >
-                          Occupational Position
-                        </label>
+                      return (
                         <div
-                          className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+                          key={activity.activityOption.id}
+                          className={cn(
+                            "rounded-xl border border-glass-border/40",
+                            "bg-glass-bg/25 p-5 space-y-4",
+                          )}
                         >
-                          <Checkbox
-                            id="role-member"
-                            name="role_options"
-                            label="Member"
-                            checked={parseSharedRoles(sharedRole).includes(
-                              "Member",
+                          <div
+                            className={cn(
+                              "flex flex-col gap-2 sm:flex-row",
+                              "sm:items-center sm:justify-between",
                             )}
-                            onCheckedChange={(checked) => {
-                              const roles = parseSharedRoles(sharedRole);
-                              let newRoles: string[];
-                              if (checked) {
-                                newRoles = roles.includes("Member")
-                                  ? roles
-                                  : [...roles, "Member"];
-                              } else {
-                                newRoles = roles.filter((r) => r !== "Member");
-                              }
-                              updateAllExtracurricularRoles(
-                                newRoles.join(", "),
-                              );
-                            }}
-                          />
-                          <Checkbox
-                            id="role-officer"
-                            name="role_options"
-                            label="Officer"
-                            checked={parseSharedRoles(sharedRole).includes(
-                              "Officer",
-                            )}
-                            onCheckedChange={(checked) => {
-                              const roles = parseSharedRoles(sharedRole);
-                              let newRoles: string[];
-                              if (checked) {
-                                newRoles = roles.includes("Officer")
-                                  ? roles
-                                  : [...roles, "Officer"];
-                              } else {
-                                newRoles = roles.filter((r) => r !== "Officer");
-                              }
-                              updateAllExtracurricularRoles(
-                                newRoles.join(", "),
-                              );
-                            }}
-                          />
-                          <Checkbox
-                            id="role-other"
-                            name="role_options"
-                            label="Other"
-                            checked={parseSharedRoles(sharedRole).includes(
-                              "Other",
-                            )}
-                            onCheckedChange={(checked) => {
-                              const roles = parseSharedRoles(sharedRole);
-                              let newRoles: string[];
-                              if (checked) {
-                                newRoles = roles.includes("Other")
-                                  ? roles
-                                  : [...roles, "Other"];
-                              } else {
-                                newRoles = roles.filter((r) => r !== "Other");
-                              }
-                              updateAllExtracurricularRoles(
-                                newRoles.join(", "),
-                              );
-                            }}
-                          />
-                        </div>
-
-                        {firstExtraOrigIdx !== -1 &&
-                          getFieldError(
-                            "interests.activities." +
-                              `${firstExtraOrigIdx}.role`,
-                          ) && (
-                            <p className="text-[11px] font-bold text-primary">
-                              {getFieldError(
-                                "interests.activities." +
-                                  `${firstExtraOrigIdx}.role`,
+                          >
+                            <span
+                              className={cn(
+                                "font-bold text-neutral-800",
+                                "dark:text-neutral-200",
                               )}
-                            </p>
+                            >
+                              {activity.activityOption.name}
+                            </span>
+                          </div>
+
+                          {isOther && (
+                            <FormField
+                              label="Specify Other Organization"
+                              value={activity.otherSpecification || ""}
+                              onChange={(val: string) =>
+                                updateActivityOtherSpecification(
+                                  activity.activityOption.id,
+                                  false,
+                                  val,
+                                )
+                              }
+                              placeholder="e.g. Red Cross Youth"
+                              error={
+                                origIdx !== -1
+                                  ? getFieldError(
+                                      "interests.activities." +
+                                        `${origIdx}` +
+                                        ".otherSpecification",
+                                    )
+                                  : undefined
+                              }
+                              required={true}
+                            />
                           )}
 
-                        {parseSharedRoles(sharedRole).includes("Other") && (
-                          <FormField
-                            label="Specify Role"
-                            value={sharedRoleSpec}
-                            onChange={updateAllExtracurricularRoleSpecs}
-                            placeholder="e.g. President"
-                            error={
-                              firstExtraOrigIdx !== -1
-                                ? getFieldError(
+                          <div className="space-y-4">
+                            <label
+                              className={cn(
+                                "text-xs font-bold uppercase tracking-wider",
+                                "text-neutral-400 dark:text-neutral-500",
+                              )}
+                            >
+                              Role / Position in Organization
+                            </label>
+                            <div
+                              className={cn(
+                                "grid grid-cols-1 gap-4",
+                                "sm:grid-cols-3",
+                              )}
+                            >
+                              <Checkbox
+                                id={
+                                  "role-member-" +
+                                  `${activity.activityOption.id}`
+                                }
+                                name={
+                                  "role_options_" +
+                                  `${activity.activityOption.id}`
+                                }
+                                label="Member"
+                                checked={currentRoles.includes("Member")}
+                                onCheckedChange={(checked) => {
+                                  let newRoles: string[];
+                                  if (checked) {
+                                    newRoles = currentRoles.includes("Member")
+                                      ? currentRoles
+                                      : [...currentRoles, "Member"];
+                                  } else {
+                                    newRoles = currentRoles.filter(
+                                      (r) => r !== "Member",
+                                    );
+                                  }
+                                  updateActivityRole(
+                                    activity.activityOption.id,
+                                    false,
+                                    newRoles.join(", "),
+                                  );
+                                }}
+                              />
+                              <Checkbox
+                                id={
+                                  "role-officer-" +
+                                  `${activity.activityOption.id}`
+                                }
+                                name={
+                                  "role_options_" +
+                                  `${activity.activityOption.id}`
+                                }
+                                label="Officer"
+                                checked={currentRoles.includes("Officer")}
+                                onCheckedChange={(checked) => {
+                                  let newRoles: string[];
+                                  if (checked) {
+                                    newRoles = currentRoles.includes("Officer")
+                                      ? currentRoles
+                                      : [...currentRoles, "Officer"];
+                                  } else {
+                                    newRoles = currentRoles.filter(
+                                      (r) => r !== "Officer",
+                                    );
+                                  }
+                                  updateActivityRole(
+                                    activity.activityOption.id,
+                                    false,
+                                    newRoles.join(", "),
+                                  );
+                                }}
+                              />
+                              <Checkbox
+                                id={
+                                  "role-other-" +
+                                  `${activity.activityOption.id}`
+                                }
+                                name={
+                                  "role_options_" +
+                                  `${activity.activityOption.id}`
+                                }
+                                label="Other"
+                                checked={currentRoles.includes("Other")}
+                                onCheckedChange={(checked) => {
+                                  let newRoles: string[];
+                                  if (checked) {
+                                    newRoles = currentRoles.includes("Other")
+                                      ? currentRoles
+                                      : [...currentRoles, "Other"];
+                                  } else {
+                                    newRoles = currentRoles.filter(
+                                      (r) => r !== "Other",
+                                    );
+                                  }
+                                  updateActivityRole(
+                                    activity.activityOption.id,
+                                    false,
+                                    newRoles.join(", "),
+                                  );
+                                }}
+                              />
+                            </div>
+
+                            {origIdx !== -1 &&
+                              getFieldError(
+                                "interests.activities." +
+                                  `${origIdx}.role`,
+                              ) && (
+                                <p
+                                  className={cn(
+                                    "text-[11px] font-bold text-primary",
+                                  )}
+                                >
+                                  {getFieldError(
                                     "interests.activities." +
-                                      `${firstExtraOrigIdx}` +
-                                      ".roleSpecification",
+                                      `${origIdx}.role`,
+                                  )}
+                                </p>
+                              )}
+
+                            {currentRoles.includes("Other") && (
+                              <FormField
+                                label="Specify Role"
+                                value={activity.roleSpecification || ""}
+                                onChange={(val: string) =>
+                                  updateActivityRoleSpecification(
+                                    activity.activityOption.id,
+                                    false,
+                                    val,
                                   )
-                                : undefined
-                            }
-                            required={true}
-                          />
-                        )}
-                      </div>
-                    </div>
+                                }
+                                placeholder="e.g. President"
+                                error={
+                                  origIdx !== -1
+                                    ? getFieldError(
+                                        "interests.activities." +
+                                          `${origIdx}` +
+                                          ".roleSpecification",
+                                      )
+                                    : undefined
+                                }
+                                required={true}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
