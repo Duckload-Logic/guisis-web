@@ -550,19 +550,24 @@ export const EducationSection = forwardRef<
               >
                 <div
                   className={cn(
-                    "flex items-center justify-between border-b",
-                    "border-glass-border/20 pb-2",
+                    "flex flex-wrap items-center justify-between border-b",
+                    "border-glass-border/20 pb-2 gap-2",
                   )}
                 >
                   <h3
                     className={cn(
                       "text-base font-bold text-foreground",
-                      "flex items-center gap-2",
+                      "flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0",
                     )}
                   >
-                    <School className="h-5 w-5 text-primary/80" />
-                    {level.name}
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <School className="h-5 w-5 text-primary/80 shrink-0" />
+                    <span className="truncate">{level.name}</span>
+                    <span
+                      className={cn(
+                        "text-xs font-normal text-muted-foreground shrink-0",
+                        "whitespace-nowrap",
+                      )}
+                    >
                       {isRequired ? "(Required)" : "(Optional)"}
                     </span>
                   </h3>
@@ -570,7 +575,7 @@ export const EducationSection = forwardRef<
                     type="button"
                     onClick={() => handleAddSchool(level.id, level.name)}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-bold",
+                      "rounded-lg px-3 py-1.5 text-xs font-bold shrink-0",
                       "bg-primary/10 text-primary hover:bg-primary/20",
                       "transition-all duration-200",
                     )}
@@ -622,16 +627,23 @@ export const EducationSection = forwardRef<
                               )
                             }
                             className={cn(
-                              "bg-glass-bg/40 border-glass-border/20 flex flex-wrap",
-                              "items-center justify-between gap-3 px-5 py-4 sm:px-8",
-                              "cursor-pointer select-none sm:py-5",
+                              "bg-glass-bg/40 border-glass-border/20 flex",
+                              "flex-wrap sm:flex-nowrap items-center",
+                              "justify-between gap-3 px-4 py-3.5",
+                              "sm:px-8 sm:py-5",
+                              "cursor-pointer select-none",
                               isExpanded && "border-b",
                             )}
                           >
-                            <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex items-center gap-3",
+                                "min-w-0 flex-1",
+                              )}
+                            >
                               <div
                                 className={cn(
-                                  "flex h-8 w-8 items-center",
+                                  "flex h-8 w-8 items-center shrink-0",
                                   "justify-center rounded-lg",
                                   "bg-primary/10 text-primary shadow-sm",
                                 )}
@@ -640,8 +652,13 @@ export const EducationSection = forwardRef<
                                   #{subIdx + 1}
                                 </span>
                               </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-foreground">
+                              <div className="min-w-0 flex-1">
+                                <h4
+                                  className={cn(
+                                    "text-sm font-bold text-foreground",
+                                    "break-words sm:truncate",
+                                  )}
+                                >
                                   {school.schoolName || "New School"}
                                 </h4>
                                 <div className="mt-0.5 flex items-center gap-2">
@@ -659,13 +676,19 @@ export const EducationSection = forwardRef<
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex items-center shrink-0",
+                                "gap-1.5 sm:gap-3",
+                              )}
+                            >
                               {hasData && (
                                 <button
                                   type="button"
                                   onClick={(e) => handleClearSection(idx, e)}
                                   className={cn(
-                                    "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
+                                    "rounded-lg px-2 py-1 font-bold",
+                                    "text-[11px] sm:px-2.5 sm:py-1 sm:text-xs",
                                     "bg-destructive/10 text-destructive",
                                     "transition-all hover:bg-destructive/20",
                                     "duration-200",
@@ -682,7 +705,8 @@ export const EducationSection = forwardRef<
                                     handleRemoveSchool(idx);
                                   }}
                                   className={cn(
-                                    "mr-2 rounded-lg px-2.5 py-1 text-xs font-bold",
+                                    "rounded-lg px-2 py-1 font-bold",
+                                    "text-[11px] sm:px-2.5 sm:py-1 sm:text-xs",
                                     "bg-destructive/10 text-destructive",
                                     "transition-all hover:bg-destructive/20",
                                     "duration-200",
@@ -694,14 +718,14 @@ export const EducationSection = forwardRef<
                               {StatusIcon && (
                                 <StatusIcon
                                   className={cn(
-                                    "h-5 w-5",
+                                    "h-5 w-5 shrink-0",
                                     status.color.replace("bg-", "text-"),
                                   )}
                                 />
                               )}
                               <ChevronDown
                                 className={cn(
-                                  "h-5 w-5 text-muted-foreground",
+                                  "h-5 w-5 text-muted-foreground shrink-0",
                                   "transition-transform duration-300",
                                   isExpanded && "rotate-180",
                                 )}
