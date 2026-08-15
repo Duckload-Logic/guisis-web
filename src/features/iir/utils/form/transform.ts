@@ -265,7 +265,7 @@ export function transformFormToPayload(formData: IIRForm): any {
           formData.health.healthRecord.generalHealthDetails,
         ),
         mentalEmotionalHasProblem:
-          formData.health.healthRecord.mentalEmotionalHasProblem,
+          !!formData.health.healthRecord.mentalEmotionalHasProblem,
         mentalEmotionalDetails: handleNullableString(
           formData.health.healthRecord.mentalEmotionalDetails,
         ),

@@ -228,6 +228,63 @@ describe("iirValidationSchemas", () => {
       const errors = validateObject(data, healthValidationSchema);
       expect(Object.keys(errors).length).toBe(0);
     });
+
+    it("should require details if hasProblem is true", () => {
+      const data = {
+        health: {
+          healthRecord: {
+            visionHasProblem: false,
+            hearingHasProblem: false,
+            speechHasProblem: false,
+            generalHealthHasProblem: false,
+            mentalEmotionalHasProblem: true,
+            mentalEmotionalDetails: "",
+          },
+        },
+      };
+      const errors = validateObject(data, healthValidationSchema);
+      expect(errors["health.healthRecord.mentalEmotionalDetails"]).toBe(
+        "Please specify the details",
+      );
+    });
+
+    it("should fail on special chars when problem is true", () => {
+      const data = {
+        health: {
+          healthRecord: {
+            visionHasProblem: false,
+            hearingHasProblem: false,
+            speechHasProblem: false,
+            generalHealthHasProblem: false,
+            mentalEmotionalHasProblem: true,
+            mentalEmotionalDetails: "Invalid % character",
+          },
+        },
+      };
+      const errors = validateObject(data, healthValidationSchema);
+      expect(errors["health.healthRecord.mentalEmotionalDetails"]).toBe(
+        "Mental health details contains invalid special characters",
+      );
+    });
+
+    it("should ignore invalid details when hasProblem is false", () => {
+      const data = {
+        health: {
+          healthRecord: {
+            visionHasProblem: false,
+            hearingHasProblem: false,
+            speechHasProblem: false,
+            generalHealthHasProblem: false,
+            mentalEmotionalHasProblem: false,
+            mentalEmotionalDetails: "Invalid % character",
+          },
+        },
+      };
+      const errors = validateObject(data, healthValidationSchema);
+      expect(
+        errors["health.healthRecord.mentalEmotionalDetails"],
+      ).toBeUndefined();
+    });
   });
 
   describe("interestsValidationSchema", () => {

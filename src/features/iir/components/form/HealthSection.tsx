@@ -64,6 +64,46 @@ export const HealthSection = forwardRef<
 
     const dynamicSchema = { ...healthValidationSchema };
 
+    // Dynamically filter schema based on visible physical health fields
+    const visibleKeys = new Set<string>();
+    const checkVisibility = (
+      yesKey: string,
+      detailsKey: string,
+      yesValue: boolean | null | undefined,
+    ) => {
+      visibleKeys.add(yesKey);
+      if (yesValue === true) {
+        visibleKeys.add(detailsKey);
+      }
+    };
+
+    checkVisibility(
+      "health.healthRecord.visionHasProblem",
+      "health.healthRecord.visionDetails",
+      health?.healthRecord?.visionHasProblem,
+    );
+    checkVisibility(
+      "health.healthRecord.hearingHasProblem",
+      "health.healthRecord.hearingDetails",
+      health?.healthRecord?.hearingHasProblem,
+    );
+    checkVisibility(
+      "health.healthRecord.speechHasProblem",
+      "health.healthRecord.speechDetails",
+      health?.healthRecord?.speechHasProblem,
+    );
+    checkVisibility(
+      "health.healthRecord.generalHealthHasProblem",
+      "health.healthRecord.generalHealthDetails",
+      health?.healthRecord?.generalHealthHasProblem,
+    );
+
+    Object.keys(dynamicSchema).forEach((key) => {
+      if (key.startsWith("health.healthRecord.") && !visibleKeys.has(key)) {
+        delete dynamicSchema[key];
+      }
+    });
+
     ["Psychiatrist", "Psychologist", "Counselor"].forEach((type) => {
       delete dynamicSchema[`_consultations.${type}.hasConsulted`];
       delete dynamicSchema[`_consultations.${type}.whenDate`];
@@ -113,8 +153,6 @@ export const HealthSection = forwardRef<
       { health, _consultations: _consultationsMap },
       dynamicSchema,
     );
-    delete sectionErrors["health.healthRecord.mentalEmotionalHasProblem"];
-    delete sectionErrors["health.healthRecord.mentalEmotionalDetails"];
     setErrors(sectionErrors);
     return {
       isValid: Object.keys(sectionErrors).length === 0,
