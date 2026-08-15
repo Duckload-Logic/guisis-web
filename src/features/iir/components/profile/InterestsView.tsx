@@ -125,10 +125,21 @@ function ActivityCard({ title, list }: { title: string; list: any[] }) {
               isOtherName(name) && activity.otherSpecification
                 ? activity.otherSpecification
                 : (name || "Activity");
-            const displayRole =
-              activity.role === "Other" && activity.roleSpecification
-                ? activity.roleSpecification
-                : activity.role;
+            const rolesList = Array.isArray(activity.roles)
+              ? activity.roles
+              : activity.role
+                ? activity.role
+                    .split(",")
+                    .map((r: any) => String(r).trim())
+                    .filter(Boolean)
+                : [];
+            const resolvedRoles = rolesList.map((r: string) => {
+              if (r === "Other" && activity.roleSpecification) {
+                return activity.roleSpecification;
+              }
+              return r;
+            });
+            const displayRole = resolvedRoles.join(", ") || "-";
 
             return (
               <div

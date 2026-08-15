@@ -8,7 +8,7 @@ import {
   Briefcase,
   Sparkles,
 } from "lucide-react";
-import { Checkbox } from "@/components/form";
+import { Checkbox, Radio } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
@@ -1006,108 +1006,27 @@ export const InterestsSection = forwardRef<
                           )}
 
                           <div className="space-y-4">
-                            <label
-                              className={cn(
-                                "text-xs font-bold uppercase tracking-wider",
-                                "text-neutral-400 dark:text-neutral-500",
-                              )}
-                            >
-                              Role / Position in Organization
-                            </label>
-                            <div
-                              className={cn(
-                                "grid grid-cols-1 gap-4",
-                                "sm:grid-cols-3",
-                              )}
-                            >
-                              <Checkbox
-                                id={
-                                  "role-member-" +
-                                  `${activity.activityOption.id}`
-                                }
-                                name={
-                                  "role_options_" +
-                                  `${activity.activityOption.id}`
-                                }
-                                label="Member"
-                                checked={currentRoles.includes("Member")}
-                                onCheckedChange={(checked) => {
-                                  let newRoles: string[];
-                                  if (checked) {
-                                    newRoles = currentRoles.includes("Member")
-                                      ? currentRoles
-                                      : [...currentRoles, "Member"];
-                                  } else {
-                                    newRoles = currentRoles.filter(
-                                      (r) => r !== "Member",
-                                    );
-                                  }
-                                  updateActivityRole(
-                                    activity.activityOption.id,
-                                    false,
-                                    newRoles.join(", "),
-                                  );
-                                }}
-                              />
-                              <Checkbox
-                                id={
-                                  "role-officer-" +
-                                  `${activity.activityOption.id}`
-                                }
-                                name={
-                                  "role_options_" +
-                                  `${activity.activityOption.id}`
-                                }
-                                label="Officer"
-                                checked={currentRoles.includes("Officer")}
-                                onCheckedChange={(checked) => {
-                                  let newRoles: string[];
-                                  if (checked) {
-                                    newRoles = currentRoles.includes("Officer")
-                                      ? currentRoles
-                                      : [...currentRoles, "Officer"];
-                                  } else {
-                                    newRoles = currentRoles.filter(
-                                      (r) => r !== "Officer",
-                                    );
-                                  }
-                                  updateActivityRole(
-                                    activity.activityOption.id,
-                                    false,
-                                    newRoles.join(", "),
-                                  );
-                                }}
-                              />
-                              <Checkbox
-                                id={
-                                  "role-other-" +
-                                  `${activity.activityOption.id}`
-                                }
-                                name={
-                                  "role_options_" +
-                                  `${activity.activityOption.id}`
-                                }
-                                label="Other"
-                                checked={currentRoles.includes("Other")}
-                                onCheckedChange={(checked) => {
-                                  let newRoles: string[];
-                                  if (checked) {
-                                    newRoles = currentRoles.includes("Other")
-                                      ? currentRoles
-                                      : [...currentRoles, "Other"];
-                                  } else {
-                                    newRoles = currentRoles.filter(
-                                      (r) => r !== "Other",
-                                    );
-                                  }
-                                  updateActivityRole(
-                                    activity.activityOption.id,
-                                    false,
-                                    newRoles.join(", "),
-                                  );
-                                }}
-                              />
-                            </div>
+                            <Radio
+                              label="Role / Position in Organization"
+                              name={
+                                "role_options_" +
+                                `${activity.activityOption.id}`
+                              }
+                              columns={3}
+                              options={[
+                                { id: "Member", name: "Member" },
+                                { id: "Officer", name: "Officer" },
+                                { id: "Other", name: "Other" },
+                              ]}
+                              value={activity.role || ""}
+                              onChange={(val) => {
+                                updateActivityRole(
+                                  activity.activityOption.id,
+                                  false,
+                                  String(val),
+                                );
+                              }}
+                            />
 
                             {origIdx !== -1 &&
                               getFieldError(
