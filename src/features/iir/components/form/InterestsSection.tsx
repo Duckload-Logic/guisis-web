@@ -159,17 +159,25 @@ const checkActivitiesAndRoles = (interests: any): FormErrors => {
       if (!role) {
         localErrors[`interests.activities.${index}.role`] =
           "Please select your role.";
-      } else if (role === "Other") {
+      } else if (parseSharedRoles(role).includes("Other")) {
         const roleSpec = (a.roleSpecification || "").trim();
         if (!roleSpec) {
-          localErrors[`interests.activities.${index}.roleSpecification`] =
-            "Please specify your role.";
+          localErrors[
+            `interests.activities.${index}.roleSpecification`
+          ] = "Please specify your role.";
         }
       }
     }
   });
 
   return localErrors;
+};
+
+const parseSharedRoles = (roleStr: string): string[] => {
+  return (roleStr || "")
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
 };
 
 export const InterestsSection = forwardRef<
@@ -518,7 +526,9 @@ export const InterestsSection = forwardRef<
           return {
             ...a,
             role,
-            roleSpecification: role === "Other" ? a.roleSpecification : "",
+            roleSpecification: parseSharedRoles(role).includes("Other")
+              ? a.roleSpecification
+              : "",
           };
         }
         return a;
@@ -1055,35 +1065,100 @@ export const InterestsSection = forwardRef<
                         !otherExtraActivityItem && "md:col-span-2",
                       )}
                     >
-                      <div
-                        className={cn(
-                          "grid grid-cols-1 gap-4",
-                          sharedRole === "Other"
-                            ? "sm:grid-cols-2"
-                            : "sm:grid-cols-1",
-                        )}
-                      >
-                        <SelectField
-                          label="Role"
-                          options={[
-                            { id: "Member", name: "Member" },
-                            { id: "Officer", name: "Officer" },
-                            { id: "Other", name: "Other (Specify)" },
-                          ]}
-                          value={sharedRole}
-                          onChange={updateAllExtracurricularRoles}
-                          error={
-                            firstExtraOrigIdx !== -1
-                              ? getFieldError(
-                                  "interests.activities." +
-                                    `${firstExtraOrigIdx}.role`,
-                                )
-                              : undefined
-                          }
-                          required={true}
-                        />
+                      <div className="space-y-4">
+                        <label
+                          className={cn(
+                            "text-xs font-bold uppercase tracking-wider",
+                            "text-neutral-400 dark:text-neutral-500",
+                          )}
+                        >
+                          Occupational Position
+                        </label>
+                        <div
+                          className="grid grid-cols-1 gap-4 sm:grid-cols-3"
+                        >
+                          <Checkbox
+                            id="role-member"
+                            name="role_options"
+                            label="Member"
+                            checked={parseSharedRoles(sharedRole).includes(
+                              "Member",
+                            )}
+                            onCheckedChange={(checked) => {
+                              const roles = parseSharedRoles(sharedRole);
+                              let newRoles: string[];
+                              if (checked) {
+                                newRoles = roles.includes("Member")
+                                  ? roles
+                                  : [...roles, "Member"];
+                              } else {
+                                newRoles = roles.filter((r) => r !== "Member");
+                              }
+                              updateAllExtracurricularRoles(
+                                newRoles.join(", "),
+                              );
+                            }}
+                          />
+                          <Checkbox
+                            id="role-officer"
+                            name="role_options"
+                            label="Officer"
+                            checked={parseSharedRoles(sharedRole).includes(
+                              "Officer",
+                            )}
+                            onCheckedChange={(checked) => {
+                              const roles = parseSharedRoles(sharedRole);
+                              let newRoles: string[];
+                              if (checked) {
+                                newRoles = roles.includes("Officer")
+                                  ? roles
+                                  : [...roles, "Officer"];
+                              } else {
+                                newRoles = roles.filter((r) => r !== "Officer");
+                              }
+                              updateAllExtracurricularRoles(
+                                newRoles.join(", "),
+                              );
+                            }}
+                          />
+                          <Checkbox
+                            id="role-other"
+                            name="role_options"
+                            label="Other"
+                            checked={parseSharedRoles(sharedRole).includes(
+                              "Other",
+                            )}
+                            onCheckedChange={(checked) => {
+                              const roles = parseSharedRoles(sharedRole);
+                              let newRoles: string[];
+                              if (checked) {
+                                newRoles = roles.includes("Other")
+                                  ? roles
+                                  : [...roles, "Other"];
+                              } else {
+                                newRoles = roles.filter((r) => r !== "Other");
+                              }
+                              updateAllExtracurricularRoles(
+                                newRoles.join(", "),
+                              );
+                            }}
+                          />
+                        </div>
 
-                        {sharedRole === "Other" && (
+                        {firstExtraOrigIdx !== -1 &&
+                          getFieldError(
+                            "interests.activities." +
+                              `${firstExtraOrigIdx}.role`,
+                          ) && (
+                            <p className="text-[11px] font-bold text-primary">
+                              {getFieldError(
+                                "interests.activities." +
+                                  `${firstExtraOrigIdx}.role`,
+                              )}
+                            </p>
+                          )}
+
+                        {parseSharedRoles(sharedRole).includes("Other") && (
                           <FormField
                             label="Specify Role"
                             value={sharedRoleSpec}
