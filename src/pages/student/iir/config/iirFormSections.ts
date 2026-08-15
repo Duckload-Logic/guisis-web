@@ -23,7 +23,7 @@ export function getActiveIIRSections(isEditMode: boolean) {
   if (!isEditMode) return FORM_SECTIONS;
 
   return FORM_SECTIONS.filter((section) =>
-    [1, 2, 3, 4, 7, 8, 9].includes(section.id),
+    [1, 2, 3, 4, 7, 8, 9, 10].includes(section.id),
   ).map((section) => {
     if (section.id === 9) {
       return { ...section, title: "Guardian's Information" };

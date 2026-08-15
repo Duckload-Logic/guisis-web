@@ -247,5 +247,31 @@ describe("formHelpers", () => {
       expect(res.health.consultations).toEqual([]);
       expect(res.interests.activities).toEqual([]);
     });
+
+    it("should initialize multiple schools for transferee students", () => {
+      const source: any = {
+        ...COMPLETE_IIR_FORM,
+        education: {
+          ...COMPLETE_IIR_FORM.education,
+          schools: [
+            {
+              schoolName: "JHS 1",
+              educationalLevel: { id: 3, name: "Junior High School" },
+            },
+            {
+              schoolName: "JHS 2",
+              educationalLevel: { id: 3, name: "Junior High School" },
+            },
+          ],
+        },
+      };
+      const res = initializeFormData(source, EMPTY_IIR_FORM, null);
+      const jhsSchools = res.education.schools.filter(
+        (s) => s.educationalLevel.id === 3,
+      );
+      expect(jhsSchools).toHaveLength(2);
+      expect(jhsSchools[0].schoolName).toBe("JHS 1");
+      expect(jhsSchools[1].schoolName).toBe("JHS 2");
+    });
   });
 });

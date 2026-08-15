@@ -265,7 +265,7 @@ export function transformFormToPayload(formData: IIRForm): any {
           formData.health.healthRecord.generalHealthDetails,
         ),
         mentalEmotionalHasProblem:
-          formData.health.healthRecord.mentalEmotionalHasProblem,
+          !!formData.health.healthRecord.mentalEmotionalHasProblem,
         mentalEmotionalDetails: handleNullableString(
           formData.health.healthRecord.mentalEmotionalDetails,
         ),
@@ -294,7 +294,10 @@ export function transformFormToPayload(formData: IIRForm): any {
           otherSpecification: handleNullableString(
             activity.otherSpecification,
           ),
-          role: activity.role,
+          roles: (activity.role || "")
+            .split(",")
+            .map((r) => r.trim())
+            .filter(Boolean),
           roleSpecification: handleNullableString(
             activity.roleSpecification,
           ),

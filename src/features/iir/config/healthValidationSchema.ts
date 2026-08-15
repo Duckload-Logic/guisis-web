@@ -109,7 +109,20 @@ export const healthValidationSchema: FieldValidationSchema = {
       },
       message: "Please specify the details",
     },
-    commonRules.noSpecialChars("Mental health details"),
+    {
+      validate: (value: any, rootData: any) => {
+        if (
+          rootData?.health?.healthRecord?.mentalEmotionalHasProblem ===
+          true
+        ) {
+          return commonRules
+            .noSpecialChars("Mental health details")
+            .validate(value);
+        }
+        return true;
+      },
+      message: "Mental health details contains invalid special characters",
+    },
   ],
 
   ...["Psychiatrist", "Psychologist", "Counselor"].reduce((acc, type) => {
