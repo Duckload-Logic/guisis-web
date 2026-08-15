@@ -16,6 +16,7 @@ import {
 } from "@/services/validationSchema";
 import { educationValidationSchema } from "@/features/iir/config/educationValidationSchema";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/context";
 
 interface FormErrors {
   [key: string]: string;
@@ -39,6 +40,7 @@ export const EducationSection = forwardRef<
 ) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const { triggerToast } = useToast();
 
   const validate = (
     step?: number,
@@ -279,6 +281,34 @@ export const EducationSection = forwardRef<
 
   const handleAddSchool = (levelId: number, levelName: string) => {
     const currentSchools = [...(education?.schools || [])];
+
+    const levelSchools = currentSchools.filter(
+      (s: any) => s.educationalLevel?.id === levelId,
+    );
+
+    if (levelSchools.length > 0) {
+      const lastSchool = levelSchools[levelSchools.length - 1];
+      const isFieldFilled = (val: any) => {
+        if (val === null || val === undefined) return false;
+        return val.toString().trim() !== "";
+      };
+
+      const hasDetails = [
+        lastSchool.schoolName,
+        lastSchool.schoolAddress,
+        lastSchool.schoolType,
+        lastSchool.yearStarted,
+        lastSchool.yearCompleted,
+      ].some(isFieldFilled);
+
+      if (!hasDetails) {
+        triggerToast(
+          "Please fill out the details of the preceding school first.",
+        );
+        return;
+      }
+    }
+
     let insertIndex = -1;
     for (let i = currentSchools.length - 1; i >= 0; i--) {
       if (currentSchools[i].educationalLevel?.id === levelId) {
