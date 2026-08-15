@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateObject } from "@/services/validationSchema";
+import { validateObject } from "../../../services/validationSchema";
 import { personalInformationValidationSchema } from "./personalInfoValidationSchema";
 import { educationValidationSchema } from "./educationValidationSchema";
 import { familyValidationSchema } from "./familyValidationSchema";
