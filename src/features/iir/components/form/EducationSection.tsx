@@ -585,11 +585,16 @@ export const EducationSection = forwardRef<
                 </div>
 
                 {levelSchools.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic pl-7">
+                  <p
+                    className={cn(
+                      "text-xs text-muted-foreground italic",
+                      "pl-0 sm:pl-7",
+                    )}
+                  >
                     No schools added for this level.
                   </p>
                 ) : (
-                  <div className="space-y-4 pl-7">
+                  <div className="space-y-4 pl-0 sm:pl-7">
                     {levelSchools.map(
                       (
                         { s: school, idx }: { s: any; idx: number },
@@ -628,57 +633,136 @@ export const EducationSection = forwardRef<
                             }
                             className={cn(
                               "bg-glass-bg/40 border-glass-border/20",
-                              "flex items-center justify-between gap-3",
+                              "flex flex-col sm:flex-row",
+                              "sm:items-center justify-between gap-3",
                               "px-4 py-3.5 sm:px-8 sm:py-5",
                               "cursor-pointer select-none",
                               isExpanded && "border-b",
                             )}
                           >
+                            {/* Top row: School Info & Mobile Icons */}
                             <div
                               className={cn(
-                                "flex items-center gap-3",
-                                "min-w-0 flex-1",
+                                "flex items-center justify-between",
+                                "gap-3 min-w-0 w-full sm:w-auto",
                               )}
                             >
-                              <div
-                                className={cn(
-                                  "flex h-8 w-8 items-center shrink-0",
-                                  "justify-center rounded-lg",
-                                  "bg-primary/10 text-primary shadow-sm",
-                                )}
-                              >
-                                <span className="text-xs font-bold">
-                                  #{subIdx + 1}
-                                </span>
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h4
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div
                                   className={cn(
-                                    "text-sm font-bold text-foreground",
-                                    "break-words sm:truncate",
+                                    "flex h-8 w-8 items-center shrink-0",
+                                    "justify-center rounded-lg",
+                                    "bg-primary/10 text-primary shadow-sm",
                                   )}
                                 >
-                                  {school.schoolName || "New School"}
-                                </h4>
-                                <div className="mt-0.5 flex items-center gap-2">
-                                  <span
-                                    className={`h-1.5 w-1.5 rounded-full ${status.color}`}
-                                  />
-                                  <span
-                                    className={cn(
-                                      "text-[10px] font-bold uppercase",
-                                      "text-muted-foreground",
-                                    )}
-                                  >
-                                    {status.text}
+                                  <span className="text-xs font-bold">
+                                    #{subIdx + 1}
                                   </span>
                                 </div>
+                                <div className="min-w-0">
+                                  <h4
+                                    className={cn(
+                                      "text-sm font-bold text-foreground",
+                                      "break-words sm:truncate",
+                                    )}
+                                  >
+                                    {school.schoolName || "New School"}
+                                  </h4>
+                                  <div
+                                    className={cn(
+                                      "mt-0.5 flex items-center gap-2",
+                                    )}
+                                  >
+                                    <span
+                                      className={cn(
+                                        "h-1.5 w-1.5 rounded-full",
+                                        status.color,
+                                      )}
+                                    />
+                                    <span
+                                      className={cn(
+                                        "text-[10px] font-bold uppercase",
+                                        "text-muted-foreground",
+                                      )}
+                                    >
+                                      {status.text}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Mobile Icons */}
+                              <div
+                                className={cn(
+                                  "flex sm:hidden items-center",
+                                  "gap-2 shrink-0",
+                                )}
+                              >
+                                {StatusIcon && (
+                                  <StatusIcon
+                                    className={cn(
+                                      "h-5 w-5",
+                                      status.color.replace("bg-", "text-"),
+                                    )}
+                                  />
+                                )}
+                                <ChevronDown
+                                  className={cn(
+                                    "h-5 w-5 text-muted-foreground",
+                                    "transition-transform duration-300",
+                                    isExpanded && "rotate-180",
+                                  )}
+                                />
                               </div>
                             </div>
+
+                            {/* Mobile Buttons */}
+                            {(hasData || canRemove) && (
+                              <div
+                                className={cn(
+                                  "flex sm:hidden items-center",
+                                  "gap-2 pl-11 mt-1",
+                                )}
+                              >
+                                {hasData && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleClearSection(idx, e)}
+                                    className={cn(
+                                      "rounded-lg px-2 py-1 font-bold",
+                                      "text-[11px] bg-destructive/10",
+                                      "text-destructive transition-all",
+                                      "hover:bg-destructive/20 duration-200",
+                                    )}
+                                  >
+                                    Clear
+                                  </button>
+                                )}
+                                {canRemove && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveSchool(idx);
+                                    }}
+                                    className={cn(
+                                      "rounded-lg px-2 py-1 font-bold",
+                                      "text-[11px] bg-destructive/10",
+                                      "text-destructive transition-all",
+                                      "hover:bg-destructive/20 duration-200",
+                                    )}
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Desktop Controls */}
                             <div
                               className={cn(
-                                "flex items-center shrink-0",
-                                "gap-1.5 sm:gap-3",
+                                "hidden sm:flex items-center",
+                                "gap-3 shrink-0",
                               )}
                             >
                               {hasData && (
@@ -686,11 +770,10 @@ export const EducationSection = forwardRef<
                                   type="button"
                                   onClick={(e) => handleClearSection(idx, e)}
                                   className={cn(
-                                    "rounded-lg px-2 py-1 font-bold",
-                                    "text-[11px] sm:px-2.5 sm:py-1 sm:text-xs",
-                                    "bg-destructive/10 text-destructive",
-                                    "transition-all hover:bg-destructive/20",
-                                    "duration-200",
+                                    "rounded-lg px-2.5 py-1 text-xs",
+                                    "font-bold bg-destructive/10",
+                                    "text-destructive transition-all",
+                                    "hover:bg-destructive/20 duration-200",
                                   )}
                                 >
                                   Clear
@@ -704,11 +787,10 @@ export const EducationSection = forwardRef<
                                     handleRemoveSchool(idx);
                                   }}
                                   className={cn(
-                                    "rounded-lg px-2 py-1 font-bold",
-                                    "text-[11px] sm:px-2.5 sm:py-1 sm:text-xs",
-                                    "bg-destructive/10 text-destructive",
-                                    "transition-all hover:bg-destructive/20",
-                                    "duration-200",
+                                    "rounded-lg px-2.5 py-1 text-xs",
+                                    "font-bold bg-destructive/10",
+                                    "text-destructive transition-all",
+                                    "hover:bg-destructive/20 duration-200",
                                   )}
                                 >
                                   Remove
@@ -717,14 +799,14 @@ export const EducationSection = forwardRef<
                               {StatusIcon && (
                                 <StatusIcon
                                   className={cn(
-                                    "h-5 w-5 shrink-0",
+                                    "h-5 w-5",
                                     status.color.replace("bg-", "text-"),
                                   )}
                                 />
                               )}
                               <ChevronDown
                                 className={cn(
-                                  "h-5 w-5 text-muted-foreground shrink-0",
+                                  "h-5 w-5 text-muted-foreground",
                                   "transition-transform duration-300",
                                   isExpanded && "rotate-180",
                                 )}
