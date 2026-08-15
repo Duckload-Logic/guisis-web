@@ -86,8 +86,8 @@ export const HealthSection = forwardRef<
           dynamicSchema[`_consultations.${type}.${idx}.whenDate`] = [
             {
               type: "required",
-              validate: (value: any) =>
-                value && String(value).trim().length > 0,
+              validate: (val: any) =>
+                val && String(val).trim().length > 0,
               message: `Please specify when`,
             },
             commonRules.pattern(
@@ -99,8 +99,8 @@ export const HealthSection = forwardRef<
           dynamicSchema[`_consultations.${type}.${idx}.forWhat`] = [
             {
               type: "required",
-              validate: (value: any) =>
-                value && String(value).trim().length > 0,
+              validate: (val: any) =>
+                val && String(val).trim().length > 0,
               message: `Please specify reason`,
             },
             commonRules.noSpecialChars(`Reason for consultation`),
@@ -523,10 +523,14 @@ export const HealthSection = forwardRef<
         </section>
 
         {/* B. Psychological */}
+        {/* B. Psychological */}
         <section>
           <div className="mb-6 flex items-center gap-3">
             <div className="h-8 w-1.5 rounded-full bg-primary" />
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+            <h3 className={cn(
+              "text-xl font-bold",
+              "text-neutral-900 dark:text-white"
+            )}>
               B. Psychological Consultations
             </h3>
           </div>
@@ -559,10 +563,6 @@ export const HealthSection = forwardRef<
                     <Radio
                       label=""
                       name={type.type}
-                      // required={isFieldRequired(
-                      //   healthValidationSchema,
-                      //   `_consultations.${type.type}.hasConsulted`,
-                      // )}
                       options={[
                         { id: "yes", name: "Yes" },
                         { id: "no", name: "No" },
@@ -593,81 +593,90 @@ export const HealthSection = forwardRef<
                       "animate-in fade-in slide-in-from-top-2",
                     )}
                   >
-                    {type.sessions.map((session: any, sIdx: number) => (
-                      <div
-                        key={sIdx}
-                        className={cn(
-                          "p-4 rounded-xl border",
-                          "border-glass-border/10 bg-glass-bg/5",
-                          "space-y-4 relative",
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={cn(
-                              "text-xs font-bold text-primary",
-                              "uppercase tracking-wider",
-                            )}
-                          >
-                            Session #{sIdx + 1}
-                          </span>
-                          {type.sessions.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                deleteSession(
-                                  session.originalIndex,
-                                  type.type,
-                                )
-                              }
+                    {type.sessions.map((session: any, sIdx: number) => {
+                      const whenDateKey =
+                        `_consultations.${type.type}.` +
+                        `${sIdx}.whenDate`;
+                      const forWhatKey =
+                        `_consultations.${type.type}.` +
+                        `${sIdx}.forWhat`;
+
+                      return (
+                        <div
+                          key={sIdx}
+                          className={cn(
+                            "p-4 rounded-xl border",
+                            "border-glass-border/10 bg-glass-bg/5",
+                            "space-y-4 relative",
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span
                               className={cn(
-                                "text-xs font-semibold text-primary",
-                                "hover:text-primary-hover",
-                                "flex items-center gap-1 transition-colors",
+                                "text-xs font-bold text-primary",
+                                "uppercase tracking-wider",
                               )}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Remove
-                            </button>
-                          )}
-                        </div>
+                              Session #{sIdx + 1}
+                            </span>
+                            {type.sessions.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteSession(
+                                    session.originalIndex,
+                                    type.type,
+                                  )
+                                }
+                                className={cn(
+                                  "text-xs font-semibold text-primary",
+                                  "hover:text-primary-hover",
+                                  "flex items-center gap-1",
+                                  "transition-colors",
+                                )}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Remove
+                              </button>
+                            )}
+                          </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          <DatePicker
-                            label="When"
-                            value={session.when}
-                            onChange={(val: string) =>
-                              handleSessionFieldChange(
-                                session.originalIndex,
-                                "whenDate",
-                                val,
-                              )
-                            }
-                            error={getFieldError(
-                              `_consultations.${type.type}.${sIdx}.whenDate`,
-                            )}
-                            required={true}
-                          />
-                          <FormField
-                            label="For What"
-                            placeholder="Specify reason..."
-                            value={session.forWhat}
-                            onChange={(val: string) =>
-                              handleSessionFieldChange(
-                                session.originalIndex,
-                                "forWhat",
-                                val,
-                              )
-                            }
-                            noSpecialCharacters={true}
-                            error={getFieldError(
-                              `_consultations.${type.type}.${sIdx}.forWhat`,
-                            )}
-                            required={true}
-                          />
+                          <div className={cn(
+                            "grid grid-cols-1 gap-4",
+                            "sm:grid-cols-2"
+                          )}>
+                            <DatePicker
+                              label="When"
+                              value={session.when}
+                              onChange={(val: string) =>
+                                handleSessionFieldChange(
+                                  session.originalIndex,
+                                  "whenDate",
+                                  val,
+                                )
+                              }
+                              error={getFieldError(whenDateKey)}
+                              required={true}
+                            />
+                            <FormField
+                              label="For What"
+                              placeholder="Specify reason..."
+                              value={session.forWhat}
+                              onChange={(val: string) =>
+                                handleSessionFieldChange(
+                                  session.originalIndex,
+                                  "forWhat",
+                                  val,
+                                )
+                              }
+                              noSpecialCharacters={true}
+                              error={getFieldError(forWhatKey)}
+                              required={true}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     <button
                       type="button"
@@ -684,7 +693,9 @@ export const HealthSection = forwardRef<
                     </button>
                   </div>
                 )}
-                {getFieldError(`_consultations.${type.type}.hasConsulted`) && (
+                {getFieldError(
+                  `_consultations.${type.type}.hasConsulted`,
+                ) && (
                   <p
                     className={cn(
                       "mt-2 flex items-center gap-1 pl-0 sm:pl-8",
@@ -692,7 +703,9 @@ export const HealthSection = forwardRef<
                     )}
                   >
                     <span className="h-1 w-1 rounded-full bg-primary" />
-                    {getFieldError(`_consultations.${type.type}.hasConsulted`)}
+                    {getFieldError(
+                      `_consultations.${type.type}.hasConsulted`,
+                    )}
                   </p>
                 )}
               </div>

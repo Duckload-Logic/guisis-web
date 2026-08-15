@@ -97,7 +97,7 @@ export default function IIRForm() {
     const saved = localStorage.getItem("iir_visited_sections");
     const parsed = saved ? JSON.parse(saved) : [1];
     if (isEditMode) {
-      const ids = [1, 2, 3, 4, 7, 8, 9];
+      const ids = [1, 2, 3, 4, 7, 8, 9, 10];
       return parsed.filter((id: number) => ids.includes(id));
     }
     return parsed;
