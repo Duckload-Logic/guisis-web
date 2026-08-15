@@ -627,10 +627,9 @@ export const EducationSection = forwardRef<
                               )
                             }
                             className={cn(
-                              "bg-glass-bg/40 border-glass-border/20 flex",
-                              "flex-wrap sm:flex-nowrap items-center",
-                              "justify-between gap-3 px-4 py-3.5",
-                              "sm:px-8 sm:py-5",
+                              "bg-glass-bg/40 border-glass-border/20",
+                              "flex items-center justify-between gap-3",
+                              "px-4 py-3.5 sm:px-8 sm:py-5",
                               "cursor-pointer select-none",
                               isExpanded && "border-b",
                             )}
