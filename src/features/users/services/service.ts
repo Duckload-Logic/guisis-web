@@ -58,10 +58,7 @@ export async function UploadProfilePicture(
     const response = await apiClient.post(
       API_ROUTES.users.profilePictureUpload,
       formData,
-      {
-        ...config,
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      config,
     );
 
     return response.data?.data ?? response.data;

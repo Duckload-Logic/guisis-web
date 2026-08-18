@@ -162,70 +162,7 @@ export function SelectField({
         </div>
       )}
 
-      {/* Mobile Select Component */}
-      <div className="relative h-11 w-full sm:hidden">
-        <button
-          type="button"
-          disabled={disabled}
-          className={cn(fieldStateClasses, "pointer-events-none w-full")}
-        >
-          <span
-            className={cn(
-              "min-w-0 flex-1 truncate text-left",
-              !filled && "font-normal italic text-muted-foreground/60",
-            )}
-          >
-            {filled
-              ? getLabel(selectedOption)
-              : `Select ${label ?? "option"}`}
-          </span>
-          <span className="ml-2 flex shrink-0 items-center gap-2">
-            {!enabled && <Lock className="size-4 text-muted-foreground" />}
-            <ChevronDown className="size-4 opacity-50" />
-          </span>
-        </button>
-
-        <select
-          id={id}
-          name={name}
-          disabled={disabled}
-          value={value ?? ""}
-          onChange={(event) => {
-            const val = event.target.value;
-            const found = safeOptions.find(
-              (o) => String(o?.[get]) === val,
-            );
-            if (found) {
-              onChange(found?.[get]);
-            } else {
-              onChange("");
-            }
-          }}
-          onBlur={onBlur}
-          className={cn(
-            "absolute inset-0 h-full w-full opacity-0",
-            disabled ? "pointer-events-none" : "cursor-pointer",
-          )}
-        >
-          <option value="">Select {label ?? "option"}</option>
-          {safeOptions.map((option, index) => {
-            const optVal = option?.[get];
-            const optId = option?.[identifier] ?? index;
-            return (
-              <option
-                key={optId}
-                value={String(optVal)}
-                disabled={Boolean(option?.disabled)}
-              >
-                {getLabel(option)}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-
-      {/* Desktop Select Component */}
-      <div className="hidden sm:block">
+      <div>
         <DropdownMenu
         open={open}
         onOpenChange={(nextOpen) => {
@@ -324,7 +261,7 @@ export function SelectField({
             optionElement?.scrollIntoView({ block: "nearest" });
           }}
         >
-          <div className="max-h-64 overflow-y-auto overscroll-contain">
+          <div className="max-h-[min(16rem,calc(100dvh-8rem))] overflow-y-auto overscroll-contain">
             {safeOptions.map((option, index) => {
               const optionId = option?.[identifier];
               const optionValue = option?.[get];

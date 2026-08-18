@@ -84,6 +84,11 @@ apiClient.interceptors.request.use((config) => {
   if (config.params) {
     config.params = decamelizeKeys(config.params);
   }
+  if (config.data instanceof FormData) {
+    if (config.headers) {
+      delete config.headers["Content-Type"];
+    }
+  }
   return config;
 });
 

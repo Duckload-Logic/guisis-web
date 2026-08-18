@@ -21,10 +21,7 @@ export async function UploadCOR(
     const response = await apiClient.post(
       "/students/inventory/cors",
       formData,
-      {
-        ...config,
-        headers: { "Content-Type": "multipart/form-data" },
-      },
+      config,
     );
     return response.data?.data ?? response.data;
   } catch (error: any) {

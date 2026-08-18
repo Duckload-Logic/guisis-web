@@ -335,10 +335,7 @@ export const UploadIIRCor = async (
     const formData = new FormData();
     formData.append("cor", file);
 
-    await apiClient.post(POST_ROUTES.cor(iirID), formData, {
-      ...config,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    await apiClient.post(POST_ROUTES.cor(iirID), formData, config);
   } catch (error) {
 
     throw error;
@@ -357,10 +354,11 @@ export const UploadIIRTwoByTwoPhoto = async (
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await apiClient.post(POST_ROUTES.twoByTwoPhoto, formData, {
-      ...config,
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await apiClient.post(
+      POST_ROUTES.twoByTwoPhoto,
+      formData,
+      config,
+    );
 
     return response.data?.data ?? response.data;
   } catch (error) {

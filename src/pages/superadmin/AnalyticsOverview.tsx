@@ -38,6 +38,9 @@ import {
 } from "@/features/system-admin/hooks";
 import { cn } from "@/lib/utils";
 
+const SYSTEM_LOGINS_COLOR = "#10b981";
+const SYSTEM_ACTIVITY_COLOR = "hsl(var(--secondary))";
+
 export default function AnalyticsOverview() {
   const [range, setRange] = useState<"daily" | "weekly" | "monthly" | "yearly">(
     "daily",
@@ -151,7 +154,7 @@ export default function AnalyticsOverview() {
       label: "Active M2M Clients",
       value: `${activeM2M} / ${totalM2M}`,
       icon: Fingerprint,
-      color: "secondary",
+      color: "success",
     },
     {
       label: "Total System Logs",
@@ -169,7 +172,7 @@ export default function AnalyticsOverview() {
       label: "Active Redis Sessions",
       value: analytics?.liveSessions ?? 0,
       icon: Activity,
-      color: "primary",
+      color: "success",
     },
   ];
 
@@ -250,7 +253,9 @@ export default function AnalyticsOverview() {
                     "rounded-2xl p-3 " +
                     (item.color === "primary"
                       ? "bg-primary/10 text-primary"
-                      : "bg-secondary/10 text-secondary")
+                      : item.color === "success"
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "bg-secondary/10 text-secondary")
                   }
                 >
                   <item.icon size={20} />
@@ -353,24 +358,38 @@ export default function AnalyticsOverview() {
                     type="monotone"
                     dataKey="logins"
                     name="System Logins"
-                    stroke="hsl(var(--primary))"
+                    stroke={SYSTEM_LOGINS_COLOR}
                     strokeWidth={4}
                     dot={{
                       r: 6,
-                      fill: "hsl(var(--primary))",
+                      fill: SYSTEM_LOGINS_COLOR,
                       strokeWidth: 2,
                       stroke: "#fff",
                     }}
-                    activeDot={{ r: 8, strokeWidth: 0 }}
+                    activeDot={{
+                      r: 8,
+                      fill: SYSTEM_LOGINS_COLOR,
+                      strokeWidth: 0,
+                    }}
                   />
                   <Line
                     type="monotone"
                     dataKey="activity"
                     name="System Activity"
-                    stroke="hsl(var(--secondary))"
+                    stroke={SYSTEM_ACTIVITY_COLOR}
                     strokeWidth={4}
                     strokeDasharray="8 8"
-                    dot={false}
+                    dot={{
+                      r: 6,
+                      fill: SYSTEM_ACTIVITY_COLOR,
+                      strokeWidth: 2,
+                      stroke: "#fff",
+                    }}
+                    activeDot={{
+                      r: 8,
+                      fill: SYSTEM_ACTIVITY_COLOR,
+                      strokeWidth: 0,
+                    }}
                   />
                 </LineChart>
               </ResponsiveContainer>
