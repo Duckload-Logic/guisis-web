@@ -5,7 +5,11 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { FullScreenLoader, FriendlyErrorState } from "@/components/shared";
+import {
+  FullScreenLoader,
+  FriendlyErrorState,
+  PDFPreview,
+} from "@/components/shared";
 import {
   useIIRProfile,
   useUserIIR,
@@ -345,43 +349,13 @@ export default function IIRProfile() {
           </ResponsiveModalHeader>
           <div className="flex-1 overflow-hidden bg-muted/20">
             {pdfUrl && (
-              /Android/i.test(navigator.userAgent) ? (
-                <div
-                  className={cn(
-                    "flex h-full w-full flex-col items-center justify-center",
-                    "p-8 text-center bg-card",
-                  )}
-                >
-                  <FileText
-                    size={48}
-                    className="text-muted-foreground/60 mb-4"
-                  />
-                  <p className="text-sm font-semibold text-foreground">
-                    PDF Preview not supported on Android
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                    Please download the Individual Inventory Record to view
-                    it on your device.
-                  </p>
-                  <button
-                    onClick={downloadFromPreview}
-                    className={cn(
-                      "mt-4 flex items-center gap-2 rounded-xl bg-emerald-500",
-                      "px-4 py-2 text-sm font-semibold text-white",
-                      "transition-colors hover:bg-emerald-600",
-                    )}
-                  >
-                    <Download size={14} /> Download PDF
-                  </button>
-                </div>
-              ) : (
-                <iframe
-                  src={`${pdfUrl}#toolbar=0`}
-                  className="h-full w-full rounded-b-lg border-0"
-                  title="PDF Preview"
-                />
-              )
+              <PDFPreview
+                url={pdfUrl}
+                className="h-full w-full rounded-b-lg border-0"
+                title="PDF Preview"
+              />
             )}
+
           </div>
         </ResponsiveModalContent>
       </ResponsiveModal>

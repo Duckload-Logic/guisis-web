@@ -18,6 +18,7 @@ import {
 import { SlipAttachment } from "../types";
 import { useDownloadAttachment, useGetAttachmentPreview } from "../hooks";
 import { cn } from "@/lib/utils";
+import { PDFPreview } from "@/components/shared";
 
 interface AttachmentsGridProps {
   slipId: string;
@@ -171,30 +172,11 @@ function PreviewModal({
                 className="max-h-[62vh] max-w-full object-contain"
               />
             ) : previewUrl && kind === "pdf" ? (
-              /Android/i.test(navigator.userAgent) ? (
-                <div className="flex flex-col items-center gap-4 p-6 text-center">
-                  <FileText className="h-12 w-12 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      PDF preview not supported on Android.
-                    </p>
-                    <p
-                      className={cn(
-                        "mt-1 text-xs leading-5",
-                        "text-muted-foreground",
-                      )}
-                    >
-                      Please download the file to view it on your device.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <iframe
-                  src={previewUrl}
-                  className="h-[62vh] w-full border-0"
-                  title={fileName}
-                />
-              )
+              <PDFPreview
+                url={previewUrl}
+                className="h-[62vh] w-full border-0"
+                title={fileName}
+              />
             ) : (
               <div className="flex max-w-sm flex-col items-center gap-4 p-6 text-center">
                 <AttachmentIcon kind={kind} />
