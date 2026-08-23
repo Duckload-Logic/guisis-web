@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
 } from "react";
 import { Checkbox } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
@@ -115,6 +116,14 @@ export const PersonalSection = forwardRef<
     "idle" | "checking" | "taken" | "available"
   >("idle");
   const [checkedStudentNumber, setCheckedStudentNumber] = useState<string>("");
+  const initialStudentNumber = useRef<string | null>(null);
+  if (
+    initialStudentNumber.current === null &&
+    studentInfo?.personalInfo?.studentNumber
+  ) {
+    initialStudentNumber.current =
+      studentInfo.personalInfo.studentNumber;
+  }
 
   const performUniquenessCheck = useCallback(
     async (num: string) => {
@@ -163,8 +172,11 @@ export const PersonalSection = forwardRef<
   );
 
   useEffect(() => {
-    if (isEditMode) return;
     const num = studentInfo?.personalInfo?.studentNumber || "";
+    if (isEditMode && num === initialStudentNumber.current) {
+      setStudentNumberStatus("idle");
+      return;
+    }
     const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
     if (!isValidFormat) {
       setStudentNumberStatus("idle");
@@ -515,24 +527,7 @@ export const PersonalSection = forwardRef<
     const filteredSchema: FieldValidationSchema = {};
     let targetFields = PERSONAL_SUBSTEP_FIELDS[activeStep] || [];
 
-    if (isEditMode) {
-      if (activeStep === 2) {
-        targetFields = targetFields.filter(
-          (field) =>
-            ![
-              "student.personalInfo.placeOfBirth",
-              "student.personalInfo.highSchoolGWA",
-              "student.personalInfo.heightM",
-              "student.personalInfo.weightKg",
-              "student.personalInfo.complexion",
-            ].includes(field),
-        );
-      } else if (activeStep === 3) {
-        targetFields = targetFields.filter(
-          (field) => field !== "student.personalInfo.telephoneNumber",
-        );
-      }
-    }
+
 
     targetFields.forEach((field) => {
       if (runtimeSchema[field]) {
@@ -547,16 +542,20 @@ export const PersonalSection = forwardRef<
       filteredSchema,
     );
 
-    if (activeStep === 1 && !isEditMode) {
+    if (activeStep === 1) {
       const num = studentInfo?.personalInfo?.studentNumber || "";
-      const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
-      if (isValidFormat) {
-        if (studentNumberStatus === "taken") {
-          sectionErrors["student.personalInfo.studentNumber"] =
-            "Student number is already registered";
-        } else if (studentNumberStatus === "checking") {
-          sectionErrors["student.personalInfo.studentNumber"] =
-            "Checking student number availability...";
+      const isOriginal =
+        isEditMode && num === initialStudentNumber.current;
+      if (!isOriginal) {
+        const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+        if (isValidFormat) {
+          if (studentNumberStatus === "taken") {
+            sectionErrors["student.personalInfo.studentNumber"] =
+              "Student number is already registered";
+          } else if (studentNumberStatus === "checking") {
+            sectionErrors["student.personalInfo.studentNumber"] =
+              "Checking student number availability...";
+          }
         }
       }
     }
@@ -630,8 +629,11 @@ export const PersonalSection = forwardRef<
       onFieldBlur(fieldPath);
     }
 
-    if (!isEditMode && fieldPath === "student.personalInfo.studentNumber") {
+    if (fieldPath === "student.personalInfo.studentNumber") {
       const num = studentInfo?.personalInfo?.studentNumber || "";
+      if (isEditMode && num === initialStudentNumber.current) {
+        return;
+      }
       const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
       if (isValidFormat && num !== checkedStudentNumber) {
         performUniquenessCheck(num);
@@ -916,7 +918,7 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.studentNumber",
                 )}
-                disabled={isEditMode}
+
               />
             </div>
             <div className="md:col-span-3">
@@ -1021,7 +1023,7 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.gender",
                 )}
-                enabled={!isEditMode}
+
               />
             </div>
             <div className="md:col-span-2">
@@ -1110,11 +1112,10 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.dateOfBirth",
                 )}
-                disabled={isEditMode}
+
                 maxDate={new Date()}
               />
             </div>
-            {!isEditMode && (
               <>
                 <div className="md:col-span-3">
                   <FormField
@@ -1238,7 +1239,6 @@ export const PersonalSection = forwardRef<
                   />
                 </div>
               </>
-            )}
           </div>
         </SectionContainer>
       )}

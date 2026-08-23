@@ -258,7 +258,8 @@ export const EducationSection = forwardRef<
     );
 
     const levelId = school.educationalLevel?.id;
-    const isRequiredSlot = levelId === 3 || levelId === 4;
+    const isRequiredSlot =
+      levelId === 2 || levelId === 3 || levelId === 4;
 
     if (!hasData) {
       if (isRequiredSlot) {
@@ -541,7 +542,8 @@ export const EducationSection = forwardRef<
               .filter(
                 (item: any) => item.s.educationalLevel?.id === level.id,
               );
-            const isRequired = level.id === 3 || level.id === 4;
+            const isRequired =
+              level.id === 2 || level.id === 3 || level.id === 4;
 
             return (
               <div
