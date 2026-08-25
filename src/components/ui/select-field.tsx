@@ -199,7 +199,7 @@ export function SelectField({
           >
             <span
               className={cn(
-                "min-w-0 flex-1 truncate",
+                "min-w-0 flex-1 whitespace-normal break-words text-left sm:truncate sm:whitespace-nowrap",
                 !filled && "font-normal italic text-muted-foreground/60",
               )}
             >
@@ -291,7 +291,9 @@ export function SelectField({
                     selected && "bg-primary/10 font-bold text-primary",
                   )}
                 >
-                  <span className="truncate">{getLabel(option)}</span>
+                  <span className="min-w-0 flex-1 whitespace-normal break-words leading-5">
+                    {getLabel(option)}
+                  </span>
                   {selected && <Check className="size-4 shrink-0" />}
                 </DropdownMenuItem>
               );
