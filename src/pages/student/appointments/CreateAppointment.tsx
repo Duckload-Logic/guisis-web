@@ -318,47 +318,34 @@ export default function CreateAppointment() {
       >
         <DialogContent
           className={cn(
-            "overflow-hidden rounded-[34px] border border-blue-200/70 p-0",
-            "bg-white/95 shadow-2xl shadow-blue-950/10 backdrop-blur-xl",
-            "dark:border-blue-400/20 dark:bg-background/95 dark:shadow-blue-950/30 sm:max-w-[960px]",
+            "overflow-hidden rounded-xl border border-border bg-background p-0",
+            "shadow-md sm:max-w-[600px]",
           )}
         >
-          <div
-            className={cn(
-              "relative overflow-hidden px-7 pb-8 pt-8 sm:px-10 sm:pb-9 sm:pt-9",
-              "bg-gradient-to-br from-blue-50 via-sky-50/80 to-white",
-              "dark:from-blue-950/35 dark:via-sky-950/20 dark:to-background",
-            )}
-          >
-            <div className="pointer-events-none absolute -right-14 -top-16 h-44 w-44 rounded-full bg-blue-400/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-sky-300/20 blur-3xl" />
-
-            <DialogHeader className="relative space-y-5 text-left">
-              <div className="flex items-start gap-4">
+          <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
+            <DialogHeader className="space-y-4 text-left">
+              <div className="flex items-start gap-3">
                 <div
                   className={cn(
-                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px]",
-                    "border border-blue-200/90 bg-blue-100/80 text-blue-700",
-                    "shadow-sm shadow-blue-600/10 dark:border-blue-400/25",
-                    "dark:bg-blue-400/10 dark:text-blue-300",
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                    "border border-primary/20 bg-primary/10 text-primary",
                   )}
                 >
-                  <CalendarDays className="h-6 w-6" />
+                  <CalendarDays className="h-5 w-5" />
                 </div>
 
-                <div className="min-w-0 space-y-1.5 pt-0.5">
+                <div className="min-w-0 space-y-1.5">
                   <span
                     className={cn(
-                      "inline-flex rounded-full border border-blue-200/80 bg-white/70",
-                      "px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em]",
-                      "text-blue-700 shadow-sm backdrop-blur-md",
-                      "dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300",
+                      "inline-flex rounded-full border border-primary/20 bg-primary/5",
+                      "px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]",
+                      "text-primary",
                     )}
                   >
                     Appointment Notice
                   </span>
 
-                  <DialogTitle className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                  <DialogTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                     Guidance Office Schedule
                   </DialogTitle>
                 </div>
@@ -366,29 +353,29 @@ export default function CreateAppointment() {
 
               <DialogDescription
                 className={cn(
-                  "rounded-[22px] border border-blue-100/90 bg-white/80 px-5 py-5 sm:px-6",
-                  "text-base leading-7 text-muted-foreground shadow-sm backdrop-blur-md sm:whitespace-nowrap",
-                  "dark:border-blue-400/10 dark:bg-white/[0.04]",
+                  "rounded-xl border border-border bg-muted/40 px-4 py-4",
+                  "text-sm leading-6 text-muted-foreground sm:px-5",
                 )}
               >
-                Ma&apos;am Liwanag L. Maliksi&apos;s schedule is strictly from 8:00 AM to 5:00 PM only.
+                Ma&apos;am Liwanag L. Maliksi&apos;s schedule is strictly from
+                8:00 AM to 5:00 PM only.
               </DialogDescription>
             </DialogHeader>
           </div>
 
           <DialogFooter
             className={cn(
-              "border-t border-blue-100/80 bg-white/80 px-7 py-6 sm:px-10",
-              "dark:border-blue-400/10 dark:bg-white/[0.03] sm:justify-end",
+              "border-t border-border bg-background px-5 py-4",
+              "sm:justify-end sm:px-6",
             )}
           >
             <Button
               type="button"
               onClick={() => setIsScheduleNoticeOpen(false)}
               className={cn(
-                "h-12 rounded-[18px] bg-blue-600 px-9 font-semibold text-white",
-                "shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:bg-blue-700",
-                "focus-visible:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-400",
+                "h-10 rounded-xl bg-primary px-7 text-sm font-semibold",
+                "text-primary-foreground shadow-md transition-colors",
+                "hover:bg-primary/90 focus-visible:ring-primary",
               )}
             >
               I understand
@@ -957,4 +944,3 @@ export default function CreateAppointment() {
     </>
   );
 }
-
