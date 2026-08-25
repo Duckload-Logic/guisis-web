@@ -128,7 +128,7 @@ const isSchoolFilled = (rootData: any, i: number): boolean => {
 const isFieldRequiredForSchool = (rootData: any, i: number): boolean => {
   const school = rootData?.education?.schools?.[i];
   const levelId = school?.educationalLevel?.id;
-  if (levelId === 3 || levelId === 4) return true;
+  if (levelId === 2 || levelId === 3 || levelId === 4) return true;
   return isSchoolFilled(rootData, i);
 };
 

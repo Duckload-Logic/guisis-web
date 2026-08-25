@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PDFPreview from "./PDFPreview";
 
 interface CORPreviewDialogProps {
   isOpen: boolean;
@@ -87,45 +88,11 @@ export function CORPreviewDialog({
 
         <div className="relative flex-1 bg-muted/30">
           {isPdf ? (
-            /Android/i.test(navigator.userAgent) ? (
-              <div
-                className={cn(
-                  "flex h-full w-full flex-col items-center justify-center",
-                  "p-8 text-center",
-                )}
-              >
-                <FileText
-                  size={48}
-                  className="text-muted-foreground/60 mb-4"
-                />
-                <p className="text-sm font-semibold text-foreground">
-                  PDF Preview not supported on Android
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                  Please download the Certificate of Registration to view
-                  it on your device.
-                </p>
-                <Button
-                  className="mt-4 gap-2 rounded-xl"
-                  asChild
-                >
-                  <a
-                    href={fullUrl}
-                    download
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Download size={14} /> Download PDF
-                  </a>
-                </Button>
-              </div>
-            ) : (
-              <iframe
-                src={`${fullUrl}#toolbar=0`}
-                className="h-full w-full border-none"
-                title="COR Preview"
-              />
-            )
+            <PDFPreview
+              url={fullUrl}
+              title="COR Preview"
+              className="h-full w-full"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center overflow-auto p-8">
               <img

@@ -77,8 +77,7 @@ const ParentInformationCard = memo(
       const ageDate = new Date(diffMs);
       return Math.abs(ageDate.getUTCFullYear() - 1970);
     };
-    const isNameDisabled =
-      isEditMode && (idx === FATHER_IDX || idx === MOTHER_IDX);
+    const isNameDisabled = false;
     const isNA =
       person.occupation?.trim().toLowerCase() === "not applicable" ||
       person.occupation?.trim().toLowerCase() === "n/a";
@@ -214,7 +213,7 @@ const ParentInformationCard = memo(
                   error={getFieldError(
                     `family.relatedPersons.${idx}.dateOfBirth`,
                   )}
-                  disabled={isEditMode}
+
                   maxDate={new Date()}
                 />
               </div>
@@ -440,11 +439,7 @@ export const FamilySection = forwardRef<
     const filteredSchema: any = {};
     let targetFields = FAMILY_SUBSTEP_FIELDS[activeStep] || [];
 
-    if (isEditMode && activeStep === 4) {
-      targetFields = targetFields.filter((field) =>
-        field.startsWith("family.relatedPersons.2."),
-      );
-    }
+
 
     targetFields.forEach((field) => {
       if (familyValidationSchema[field]) {
@@ -485,12 +480,10 @@ export const FamilySection = forwardRef<
 
   const handleClearParent = (idx: number) => {
     const prefix = `family.relatedPersons.${idx}`;
-    if (!isEditMode) {
-      handleInputChange(`${prefix}.firstName`, "");
-      handleInputChange(`${prefix}.middleName`, "");
-      handleInputChange(`${prefix}.lastName`, "");
-      handleInputChange(`${prefix}.dateOfBirth`, "");
-    }
+    handleInputChange(`${prefix}.firstName`, "");
+    handleInputChange(`${prefix}.middleName`, "");
+    handleInputChange(`${prefix}.lastName`, "");
+    handleInputChange(`${prefix}.dateOfBirth`, "");
     handleInputChange(
       `${prefix}.educationalAttainment`,
       { id: 0, name: "" },
@@ -1060,7 +1053,6 @@ export const FamilySection = forwardRef<
             </div>
           </SectionContainer>
 
-          {!isEditMode && (
             <>
               <SectionContainer
                 title="Sibling Information"
@@ -1346,7 +1338,6 @@ export const FamilySection = forwardRef<
                 </div>
               </SectionContainer>
             </>
-          )}
         </div>
       )}
     </div>

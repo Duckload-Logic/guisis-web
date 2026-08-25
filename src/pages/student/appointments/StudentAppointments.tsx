@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -180,6 +180,15 @@ export default function StudentAppointments() {
       year: "numeric",
     });
   };
+
+  const mobileSortOptions = [
+    { id: "whenDate-asc", displayName: "Appointment: soonest" },
+    { id: "whenDate-desc", displayName: "Appointment: latest" },
+    { id: "createdAt-desc", displayName: "Requested: newest" },
+    { id: "createdAt-asc", displayName: "Requested: oldest" },
+    { id: "category-asc", displayName: "Category: A–Z" },
+    { id: "category-desc", displayName: "Category: Z–A" },
+  ];
 
   const renderSortableHeader = (label: string, sortKey: string) => {
     const isActive = selectedSort === sortKey;
@@ -440,6 +449,48 @@ export default function StudentAppointments() {
       ) : null}
 
       <Card className={cn(GLASS_CARD, "min-w-0 animate-fade-in-up overflow-hidden")}>
+        <CardHeader className="border-b border-white/30 px-4 py-3.5 dark:border-white/10 xl:hidden">
+          <div className="grid w-full gap-3 sm:grid-cols-2">
+            <SelectField
+              label="Appointment status"
+              options={filterStatuses.map((status) => {
+                const count =
+                  status.id === 0
+                    ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
+                    : statusCounts.find((item) => item.id === status.id)?.count || 0;
+
+                return {
+                  id: status.id,
+                  displayName: status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
+                  disabled: status.id !== 0 && count === 0,
+                };
+              })}
+              value={selectedStatus.id}
+              onChange={(value) => {
+                const status = filterStatuses.find((item) => String(item.id) === String(value));
+                if (status) {
+                  setSelectedStatus(status);
+                  setCurrentPage(1);
+                }
+              }}
+              labelKey="displayName"
+              enabled={!isAppointmentsLoading}
+            />
+            <SelectField
+              label="Sort appointments"
+              options={mobileSortOptions}
+              value={`${selectedSort}-${selectedOrder}`}
+              onChange={(value) => {
+                const [sort, order] = String(value).split("-") as [string, SortOrder];
+                setSelectedSort(sort);
+                setSelectedOrder(order);
+                setCurrentPage(1);
+              }}
+              labelKey="displayName"
+              enabled={!isAppointmentsLoading}
+            />
+          </div>
+        </CardHeader>
         <CardContent className="bg-glass-bg p-0">
           <Table
             data={sortedAppointments}
@@ -447,8 +498,61 @@ export default function StudentAppointments() {
             isLoading={isAppointmentsLoading}
             emptyState={emptyState}
             onRowClick={(appointment) => navigate(`/student/appointments/${appointment.id}`)}
-            containerClassName="overflow-x-auto"
-            tableClassName="w-full table-fixed min-w-[800px]"
+            renderMobileItem={(appointment) => (
+              <button
+                type="button"
+                onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+                className={cn(
+                  "w-full rounded-xl border border-border/70 bg-background/70 p-4 text-left",
+                  "transition-colors hover:bg-muted/50 focus-visible:outline-none",
+                  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  "dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
+                )}
+                aria-label={`View appointment: ${appointment.appointmentCategory?.name || "Uncategorized"}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <Badge
+                    variant="outline"
+                    className="max-w-[60%] whitespace-normal break-words border-white/45 bg-white/40 text-[11px] font-medium backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.05]"
+                  >
+                    <Tag className="mr-1 h-3 w-3 shrink-0" />
+                    {appointment.appointmentCategory?.name || "Uncategorized"}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "max-w-[40%] whitespace-normal break-words px-2.5 py-0.5 text-center text-xs font-semibold",
+                      getStatusColor(appointment.status?.name),
+                    )}
+                  >
+                    {appointment.status?.name || "Unknown"}
+                  </Badge>
+                </div>
+                <p className="mt-3 break-words text-sm font-medium text-foreground">
+                  {appointment.reason}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border/60 pt-3 text-xs text-muted-foreground dark:border-white/10">
+                  <div className="min-w-0">
+                    <span className="block font-semibold uppercase tracking-wide">Requested</span>
+                    <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
+                      <Calendar className="h-3.5 w-3.5 shrink-0" />
+                      {formatCompactDate(appointment.createdAt)}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <span className="block font-semibold uppercase tracking-wide">Appointment</span>
+                    <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
+                      <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+                      {formatCompactDate(appointment.whenDate)}
+                    </span>
+                    <span className="mt-1 block pl-5 text-[11px]">
+                      {format12HourTime(appointment.timeSlot?.time || "")}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            )}
+            tableClassName="w-full table-fixed"
           />
 
           <Separator className="bg-white/25 dark:bg-white/10" />

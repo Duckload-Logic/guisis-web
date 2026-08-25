@@ -32,6 +32,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { getErrorMessage } from "@/lib/api";
+import { PDFPreview } from "@/components/shared";
 
 export default function CORManagement() {
   const { user, refresh } = useAuth();
@@ -239,55 +240,16 @@ export default function CORManagement() {
         >
           {corUrl ? (
             isPdf ? (
-              /Android/i.test(navigator.userAgent) ? (
-                <div
-                  className={cn(
-                    "flex h-full min-h-[420px] w-full flex-col items-center",
-                    "justify-center p-8 text-center sm:min-h-0 sm:h-full",
-                  )}
-                >
-                  <FileText
-                    size={48}
-                    className="text-muted-foreground/60 mb-4"
-                  />
-                  <p className="text-sm font-semibold text-foreground">
-                    PDF Preview not supported on Android
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground max-w-xs">
-                    Please open or download the COR to view it on your
-                    device.
-                  </p>
-                  <div className="mt-4 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl"
-                      asChild
-                    >
-                      <a
-                        href={
-                          `${import.meta.env.VITE_API_BASE_URL}${corUrl}`
-                        }
-                        download
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Download size={14} className="mr-2 h-3.5 w-3.5" />
-                        Download PDF
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <iframe
-                  src={
-                    `${import.meta.env.VITE_API_BASE_URL}` +
-                    `${corUrl}#toolbar=0`
-                  }
-                  className="h-full min-h-[420px] w-full border-none sm:min-h-0"
-                  title="COR PDF Preview"
-                />
-              )
+            <PDFPreview
+              url={
+                `${import.meta.env.VITE_API_BASE_URL}${corUrl}`
+              }
+              className={cn(
+                "h-full min-h-[420px] w-full",
+                "border-none sm:min-h-0",
+              )}
+              title="COR PDF Preview"
+            />
             ) : (
               <div
                 className={cn(
