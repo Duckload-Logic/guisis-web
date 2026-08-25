@@ -2,6 +2,7 @@ import {
   forwardRef,
   useImperativeHandle,
   useState,
+  useMemo,
   useCallback,
   useEffect,
   useRef,
@@ -106,6 +107,17 @@ export const PersonalSection = forwardRef<
   ref,
 ) {
   const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
+  const programOptions = useMemo(
+    () =>
+      programs.map((program: any) => ({
+        ...program,
+        label:
+          program?.code && program?.name
+            ? `${program.code} - ${program.name}`
+            : program?.code || program?.name || "",
+      })),
+    [programs],
+  );
   const { data: genders = [] } = useGenders();
   const { data: civilStatuses = [] } = useCivilStatuses();
   const { data: religions = [] } = useReligions();
@@ -925,7 +937,7 @@ export const PersonalSection = forwardRef<
               <SelectField
                 formStyle
                 label="Program"
-                options={programs}
+                options={programOptions}
                 value={studentInfo?.personalInfo?.program?.id || ""}
                 onChange={(val: any) =>
                   handleInputChange("student.personalInfo.program", { id: val })
