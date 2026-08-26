@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { format } from "date-fns";
+
 import {
   TrendingUp,
   Users,
@@ -479,8 +481,12 @@ export default function AnalyticsOverview() {
                     tick={{ fontSize: 10, fill: "#888888" }}
                     tickFormatter={(value) => {
                       if (!value) return "";
-                      const parts = value.split(" ");
-                      return parts.length > 1 ? parts[1] : value;
+                      try {
+                        const date = new Date(value.replace(" ", "T"));
+                        return format(date, "h:mm a");
+                      } catch {
+                        return value;
+                      }
                     }}
                     interval="preserveStartEnd"
                   />
@@ -501,6 +507,15 @@ export default function AnalyticsOverview() {
                     }}
                     itemStyle={{ color: "#fff" }}
                     labelStyle={{ color: "#fff" }}
+                    labelFormatter={(value) => {
+                      if (!value) return "";
+                      try {
+                        const date = new Date(value.replace(" ", "T"));
+                        return format(date, "MMMM d, yyyy, h:mm a");
+                      } catch {
+                        return value;
+                      }
+                    }}
                   />
 
                   <Area
