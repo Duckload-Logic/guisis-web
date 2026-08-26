@@ -6,6 +6,7 @@
 import { useLookup, useLookupWithMeta } from "@/hooks/useLookup";
 import { appointmentService } from "@/features/appointments/services";
 import { QUERY_KEYS } from "@/config/queryKeys";
+import { toISODateString } from "@/utils";
 import type {
   AvailableTimeSlotView,
   ConcernCategory,
@@ -21,7 +22,9 @@ import type {
  */
 export const useAvailableSlots = (date: Date | undefined) => {
   return useLookup<AvailableTimeSlotView[]>(
-    QUERY_KEYS.appointments.lookups.slots(date ? date.toISOString() : ""),
+    QUERY_KEYS.appointments.lookups.slots(
+      date ? toISODateString(date) : "",
+    ),
     () => appointmentService.GetAvailableSlots(date),
     { enabled: !!date },
   );
