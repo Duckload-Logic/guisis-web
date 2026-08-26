@@ -35,11 +35,15 @@ import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
+const FIRST_OPTION_INDEX = 0;
+const SECOND_OPTION_INDEX = 1;
+const THIRD_OPTION_INDEX = 2;
+
 const EMPTY_APPOINTMENT_FORM: Appointment = {
   reason: "",
   whenDate: "",
-  timeSlot: { id: 0, time: "" },
-  appointmentCategory: { id: 0, name: "" },
+  timeSlot: { id: FIRST_OPTION_INDEX, time: "" },
+  appointmentCategory: { id: FIRST_OPTION_INDEX, name: "" },
 };
 
 type PreferredScheduleOption = {
@@ -58,7 +62,8 @@ export default function CreateAppointment() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isScheduleNoticeOpen, setIsScheduleNoticeOpen] = useState(true);
 
-  const [activePreferredIndex, setActivePreferredIndex] = useState(0);
+  const [activePreferredIndex, setActivePreferredIndex] =
+    useState(FIRST_OPTION_INDEX);
 
   const [preferredOptions, setPreferredOptions] = useState<
     PreferredScheduleOption[]
@@ -125,26 +130,42 @@ export default function CreateAppointment() {
   };
 
   const getPreferredSlots = (index: number) => {
-    if (index === 0) return preferredSlotsOne || [];
-    if (index === 1) return preferredSlotsTwo || [];
-    return preferredSlotsThree || [];
+    if (index === FIRST_OPTION_INDEX) return preferredSlotsOne || [];
+    if (index === SECOND_OPTION_INDEX) return preferredSlotsTwo || [];
+    if (index === THIRD_OPTION_INDEX) return preferredSlotsThree || [];
+    return [];
   };
 
   const getPreferredSlotsLoading = (index: number) => {
-    if (index === 0) return isPreferredSlotsOneLoading;
-    if (index === 1) return isPreferredSlotsTwoLoading;
-    return isPreferredSlotsThreeLoading;
+    if (index === FIRST_OPTION_INDEX) return isPreferredSlotsOneLoading;
+    if (index === SECOND_OPTION_INDEX) return isPreferredSlotsTwoLoading;
+    if (index === THIRD_OPTION_INDEX) return isPreferredSlotsThreeLoading;
+    return false;
   };
 
   const updatePreferredOption = (
     index: number,
     updates: Partial<PreferredScheduleOption>,
   ) => {
-    setPreferredOptions((prev) =>
-      prev.map((option, optionIndex) =>
-        optionIndex === index ? { ...option, ...updates } : option,
-      ),
-    );
+    setPreferredOptions((prev) => {
+      const isClearing =
+        ("date" in updates && !updates.date) ||
+        ("time" in updates && !updates.time);
+
+      return prev.map((option, optionIndex) => {
+        if (optionIndex === index) {
+          return { ...option, ...updates };
+        }
+        if (isClearing && optionIndex > index) {
+          return {
+            date: undefined,
+            time: undefined,
+            month: new Date(),
+          };
+        }
+        return option;
+      });
+    });
   };
 
   const resetPreferredOption = (index: number) => {
@@ -167,7 +188,7 @@ export default function CreateAppointment() {
       { date: undefined, time: undefined, month: new Date() },
       { date: undefined, time: undefined, month: new Date() },
     ]);
-    setActivePreferredIndex(0);
+    setActivePreferredIndex(FIRST_OPTION_INDEX);
   };
 
   const resetDateAndTime = () => {
@@ -231,11 +252,7 @@ export default function CreateAppointment() {
     }
 
     preferredOptions.forEach((option, idx) => {
-      if (
-        idx !== excludePreferredIndex &&
-        option.date &&
-        option.time?.id
-      ) {
+      if (idx !== excludePreferredIndex && option.date && option.time?.id) {
         selections.push({
           dateStr: toISODateString(option.date),
           slotId: option.time.id,
@@ -245,8 +262,7 @@ export default function CreateAppointment() {
 
     return slotsList.map((slot) => {
       const isConflicting = selections.some(
-        (sel) =>
-          sel.dateStr === targetDateStr && sel.slotId === slot.id,
+        (sel) => sel.dateStr === targetDateStr && sel.slotId === slot.id,
       );
       if (isConflicting) {
         return { ...slot, isAvailable: false };
@@ -532,7 +548,7 @@ export default function CreateAppointment() {
                     "xl:items-start",
                   )}
                 >
-                  <div className="min-w-0 w-full">
+                  <div className="w-full min-w-0">
                     <AppointmentForm
                       data={appointmentFormData}
                       onChange={(name: string, value: any) => {
@@ -548,7 +564,7 @@ export default function CreateAppointment() {
                     />
                   </div>
 
-                  <div className="min-w-0 w-full">
+                  <div className="w-full min-w-0">
                     <Card
                       className={cn(
                         "overflow-hidden rounded-2xl border bg-glass-bg",
@@ -592,9 +608,9 @@ export default function CreateAppointment() {
                             </CardTitle>
 
                             <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                              Select at least one preferred schedule. Option 1 is
-                              required, while Options 2 and 3 are optional backup
-                              schedules.
+                              Select at least one preferred schedule. Option 1
+                              is required, while Options 2 and 3 are optional
+                              backup schedules.
                             </p>
                           </div>
                         </div>
@@ -635,22 +651,40 @@ export default function CreateAppointment() {
                             <div className="grid gap-3 md:grid-cols-3">
                               {preferredOptions.map((option, index) => {
                                 const isActive = activePreferredIndex === index;
-                                const isRequired = index === 0;
+                                const isRequired = index === FIRST_OPTION_INDEX;
                                 const isComplete =
                                   !!option.date && !!option.time;
+                                const isDisabled =
+                                  index > FIRST_OPTION_INDEX &&
+                                  (!preferredOptions[index - 1].date ||
+                                    !preferredOptions[index - 1].time);
 
                                 return (
                                   <button
                                     key={index}
                                     type="button"
+                                    disabled={isDisabled}
                                     onClick={() =>
                                       setActivePreferredIndex(index)
                                     }
                                     className={cn(
-                                      "min-h-[92px] rounded-2xl border px-3 py-3 text-left transition-all sm:px-4",
+                                      "min-h-[92px] rounded-2xl border",
+                                      "px-3 py-3 text-left",
+                                      "transition-all sm:px-4",
                                       isActive
-                                        ? "border-primary/40 bg-primary/10 shadow-sm"
-                                        : "border-border bg-card hover:bg-muted/30",
+                                        ? cn(
+                                            "border-primary/40 bg-primary/10",
+                                            "shadow-sm",
+                                          )
+                                        : cn(
+                                            "border-border bg-card",
+                                            "hover:bg-muted/30",
+                                          ),
+                                      isDisabled &&
+                                        cn(
+                                          "cursor-not-allowed opacity-50",
+                                          "hover:bg-card",
+                                        ),
                                     )}
                                   >
                                     <div className="flex items-center justify-between gap-2">
@@ -769,15 +803,11 @@ export default function CreateAppointment() {
                                     <SlotSelector
                                       selectedDate={activePreferredOption.date}
                                       selectedTime={activePreferredOption.time}
-                                      availableSlots={
-                                        filterConflictingSlots(
-                                          getPreferredSlots(
-                                            activePreferredIndex,
-                                          ),
-                                          activePreferredOption.date,
-                                          activePreferredIndex,
-                                        )
-                                      }
+                                      availableSlots={filterConflictingSlots(
+                                        getPreferredSlots(activePreferredIndex),
+                                        activePreferredOption.date,
+                                        activePreferredIndex,
+                                      )}
                                       loading={getPreferredSlotsLoading(
                                         activePreferredIndex,
                                       )}
@@ -803,7 +833,8 @@ export default function CreateAppointment() {
                                 >
                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm leading-6">
-                                      Option {activePreferredIndex + 1} selected:{" "}
+                                      Option {activePreferredIndex + 1}{" "}
+                                      selected:{" "}
                                       <span className="font-semibold">
                                         {formatFullDate(
                                           activePreferredOption.date,
@@ -919,7 +950,10 @@ export default function CreateAppointment() {
               )}
             >
               <div className="relative">
-                <RefreshCw size={48} className="animate-spin text-primary" />
+                <RefreshCw
+                  size={48}
+                  className="animate-spin text-primary"
+                />
                 <div
                   className={cn(
                     "absolute inset-0 animate-ping rounded-full",
