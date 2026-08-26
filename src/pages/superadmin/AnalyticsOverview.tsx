@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import {
   TrendingUp,
   Users,
-  ArrowUpRight,
   BarChart,
   Activity,
   Fingerprint,
@@ -19,10 +18,7 @@ import {
   LineChart,
   Line,
   AreaChart,
-  PieChart,
   Area,
-  Cell,
-  Pie,
 } from "recharts";
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,17 +111,6 @@ export default function AnalyticsOverview() {
     () => (userDistData ?? []).reduce((acc, curr) => acc + curr.count, 0),
     [userDistData],
   );
-
-  const getCategoryColor = (category: string) => {
-    switch (category.toUpperCase()) {
-      case "SECURITY":
-        return "bg-red-500";
-      case "SYSTEM":
-        return "bg-amber-500";
-      default:
-        return "bg-primary";
-    }
-  };
 
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
@@ -341,12 +326,14 @@ export default function AnalyticsOverview() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      backdropFilter: "blur(16px)",
-                      borderRadius: "20px",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                      boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
+                      backgroundColor: "rgba(0, 0, 0, 0.7)",
+                      backdropFilter: "blur(12px)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      borderRadius: "16px",
+                      color: "#fff",
                     }}
+                    itemStyle={{ color: "#fff" }}
+                    labelStyle={{ color: "#fff" }}
                   />
                   <Legend
                     verticalAlign="top"
@@ -490,7 +477,12 @@ export default function AnalyticsOverview() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fill: "#888888" }}
-                    interval={0}
+                    tickFormatter={(value) => {
+                      if (!value) return "";
+                      const parts = value.split(" ");
+                      return parts.length > 1 ? parts[1] : value;
+                    }}
+                    interval="preserveStartEnd"
                   />
 
                   {/* Set concrete baseline constraints */}
@@ -503,11 +495,12 @@ export default function AnalyticsOverview() {
                     contentStyle={{
                       backgroundColor: "rgba(0, 0, 0, 0.7)",
                       backdropFilter: "blur(12px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
                       borderRadius: "16px",
                       color: "#fff",
                     }}
                     itemStyle={{ color: "#fff" }}
+                    labelStyle={{ color: "#fff" }}
                   />
 
                   <Area
