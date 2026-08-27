@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCalendarStats } from "../hooks/useCalendar";
 import { DailyStatusCount } from "../types/calendar";
 import { cn } from "@/lib/utils";
+import { usePHHolidays, getFallbackHolidayName } from "@/utils/holidays";
 
 interface Legend {
   color: string;
@@ -63,6 +64,18 @@ export default function Calendar({
   const todayDate = today.getDate();
   const currentYear = currentMonth.getFullYear();
   const currentMonthIndex = currentMonth.getMonth();
+
+  const { data: holidays = {} } = usePHHolidays(currentYear);
+
+  const checkIsHoliday = useCallback(
+    (day: number): string | null => {
+      const monthPart = String(currentMonthIndex + 1).padStart(2, "0");
+      const dayPart = String(day).padStart(2, "0");
+      const dateKey = `${currentYear}-${monthPart}-${dayPart}`;
+      return holidays[dateKey] || getFallbackHolidayName(dateKey);
+    },
+    [currentYear, currentMonthIndex, holidays],
+  );
 
   const { data: daysMeta } = useCalendarStats({
     isAdmin,
@@ -171,6 +184,10 @@ export default function Calendar({
     { color: "bg-primary", label: "Selected" },
     { color: "bg-muted border border-border", label: "Available" },
     { color: "bg-muted/50 opacity-50", label: "Unavailable" },
+    {
+      color: "border border-dashed border-amber-500 bg-amber-500/10",
+      label: "Holiday",
+    },
   ];
 
   const displayLegends = legends || defaultLegends;
@@ -218,23 +235,24 @@ export default function Calendar({
       <CardContent className="px-3 pb-5 pt-5 min-[420px]:px-4 sm:px-6 sm:pb-8 sm:pt-8">
         <div className="mx-auto w-full max-w-[34rem]">
           <CalendarContent
-          monthName={monthName}
-          handlePrevMonth={handlePrevMonth}
-          handleNextMonth={handleNextMonth}
-          emptyDays={emptyDays}
-          days={days}
-          formatDateKey={formatDateKey}
-          isCurrentMonth={isCurrentMonth}
-          todayDate={todayDate}
-          selectedDate={selectedDate}
-          currentMonthIndex={currentMonthIndex}
-          currentYear={currentYear}
-          isDateDisabled={isDateDisabled}
-          handleDateClick={handleDateClick}
-          isAdmin={isAdmin}
-          statsMap={statsMap}
-          displayLegends={displayLegends}
+            monthName={monthName}
+            handlePrevMonth={handlePrevMonth}
+            handleNextMonth={handleNextMonth}
+            emptyDays={emptyDays}
+            days={days}
+            formatDateKey={formatDateKey}
+            isCurrentMonth={isCurrentMonth}
+            todayDate={todayDate}
+            selectedDate={selectedDate}
+            currentMonthIndex={currentMonthIndex}
+            currentYear={currentYear}
+            isDateDisabled={isDateDisabled}
+            handleDateClick={handleDateClick}
+            isAdmin={isAdmin}
+            statsMap={statsMap}
+            displayLegends={displayLegends}
             occupiedDayColor={occupiedDayColor}
+            isHoliday={checkIsHoliday}
           />
         </div>
       </CardContent>
@@ -260,6 +278,7 @@ interface CalendarContentProps {
   statsMap: any;
   displayLegends: Legend[];
   occupiedDayColor: string;
+  isHoliday: (day: number) => string | null;
 }
 
 function CalendarContent({
@@ -280,6 +299,7 @@ function CalendarContent({
   statsMap,
   displayLegends,
   occupiedDayColor,
+  isHoliday,
 }: CalendarContentProps) {
   return (
     <div className="flex min-w-0 flex-col p-0">
@@ -344,11 +364,16 @@ function CalendarContent({
               selectedDate.getMonth() === currentMonthIndex &&
               selectedDate.getFullYear() === currentYear;
             const isDisabled = isDateDisabled(day);
+            const holidayName = isHoliday(day);
+            const isHolidayDate = !!holidayName;
 
             const btnClass = cn(
-              "mx-auto flex aspect-square w-full max-w-[2.25rem] items-center justify-center rounded-full p-0",
-              "whitespace-nowrap text-center text-xs font-semibold leading-none transition-all sm:max-w-[3rem] sm:text-sm",
-              "[overflow-wrap:normal] [word-break:normal] focus:outline-none focus:ring-1 focus:ring-primary/50",
+              "mx-auto flex aspect-square w-full max-w-[2.25rem] " +
+                "items-center justify-center rounded-full p-0",
+              "whitespace-nowrap text-center text-xs font-semibold " +
+                "leading-none transition-all sm:max-w-[3rem] sm:text-sm",
+              "[overflow-wrap:normal] [word-break:normal] " +
+                "focus:outline-none focus:ring-1 focus:ring-primary/50",
               isDisabled &&
                 "cursor-not-allowed bg-transparent text-muted-foreground/35",
               !isDisabled &&
@@ -361,21 +386,30 @@ function CalendarContent({
               !isDisabled &&
                 !isSelected &&
                 !isToday &&
-                "bg-transparent text-foreground hover:bg-muted/80",
+                (isHolidayDate
+                  ? "border border-dashed border-amber-500 bg-amber-500/5 " +
+                    "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  : "bg-transparent text-foreground hover:bg-muted/80"),
             );
 
             return (
               <div
                 key={day}
-                className="group relative flex aspect-square w-full items-center justify-center"
+                className={cn(
+                  "group relative flex aspect-square w-full",
+                  "items-center justify-center",
+                )}
               >
                 <button
                   type="button"
                   disabled={isDisabled}
                   onClick={() => handleDateClick(day)}
                   className={btnClass}
-                  aria-label={`${day} ${monthName}`}
+                  aria-label={`${day} ${monthName}${
+                    holidayName ? ` - ${holidayName}` : ""
+                  }`}
                   aria-pressed={isSelected}
+                  title={holidayName || undefined}
                 >
                   {day}
                 </button>

@@ -11,6 +11,7 @@ import {
   CreateAppointmentRequest,
 } from "@/features/appointments";
 import Calendar from "@/features/appointments/components/Calendar";
+import { usePHHolidays, getFallbackHolidayName } from "@/utils/holidays";
 import {
   CalendarDays,
   CheckCircle2,
@@ -61,6 +62,16 @@ export default function CreateAppointment() {
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isScheduleNoticeOpen, setIsScheduleNoticeOpen] = useState(true);
+
+  const { data: holidays = {} } = usePHHolidays(
+    currentMonth.getFullYear(),
+  );
+
+  const selectedDateKey = selectedDate ? toISODateString(selectedDate) : "";
+  const selectedHolidayName = selectedDateKey
+    ? holidays[selectedDateKey] ||
+      getFallbackHolidayName(selectedDateKey)
+    : null;
 
   const [activePreferredIndex, setActivePreferredIndex] =
     useState(FIRST_OPTION_INDEX);
@@ -326,6 +337,14 @@ export default function CreateAppointment() {
 
   const activePreferredOption = preferredOptions[activePreferredIndex];
 
+  const activePreferredOptionKey = activePreferredOption.date
+    ? toISODateString(activePreferredOption.date)
+    : "";
+  const activePreferredHolidayName = activePreferredOptionKey
+    ? holidays[activePreferredOptionKey] ||
+      getFallbackHolidayName(activePreferredOptionKey)
+    : null;
+
   return (
     <>
       <Dialog
@@ -422,7 +441,14 @@ export default function CreateAppointment() {
                   }}
                   title="Select a Date"
                   occupiedDayColor="bg-primary/80"
-                  legends={[]}
+                  legends={[
+                    {
+                      color:
+                        "border border-dashed border-amber-500 " +
+                        "bg-amber-500/10",
+                      label: "Holiday",
+                    },
+                  ]}
                   hasHeader
                   className="mx-auto w-full max-w-lg"
                   allowCurrentDate={false}
@@ -476,6 +502,40 @@ export default function CreateAppointment() {
                     </Button>
                   </CardContent>
                 </Card>
+
+                {selectedHolidayName && (
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 rounded-2xl border " +
+                        "border-amber-200/60 bg-amber-50/50 p-4",
+                      "text-amber-800 dark:border-amber-500/20 " +
+                        "dark:bg-amber-500/5 dark:text-amber-400",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 " +
+                          "items-center justify-center " +
+                          "rounded-full bg-amber-100 " +
+                          "text-amber-800 " +
+                          "dark:bg-amber-900/35 " +
+                          "dark:text-amber-400 text-xs",
+                      )}
+                    >
+                      ⚠️
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">
+                        Notice: Selected Date is a Holiday
+                      </p>
+                      <p className="mt-1 text-xs leading-5 opacity-90">
+                        {selectedDate && formatSelectedDate(selectedDate)} is{" "}
+                        <strong>{selectedHolidayName}</strong>. The Guidance
+                        Office may have limited counselor availability.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <SlotSelector
                   selectedDate={selectedDate}
@@ -739,7 +799,14 @@ export default function CreateAppointment() {
                                   activePreferredIndex + 1
                                 }`}
                                 occupiedDayColor="bg-primary/80"
-                                legends={[]}
+                                legends={[
+                                  {
+                                    color:
+                                      "border border-dashed border-amber-500 " +
+                                      "bg-amber-500/10",
+                                    label: "Holiday",
+                                  },
+                                ]}
                                 hasHeader
                                 className="mx-auto w-full max-w-full sm:max-w-[430px]"
                                 allowCurrentDate={false}
@@ -798,6 +865,49 @@ export default function CreateAppointment() {
                                       </Button>
                                     </CardContent>
                                   </Card>
+
+                                  {activePreferredHolidayName && (
+                                    <div
+                                      className={cn(
+                                        "flex items-start gap-3 rounded-2xl " +
+                                          "border border-amber-200/60 " +
+                                          "bg-amber-50/50 p-4",
+                                        "text-amber-800 " +
+                                          "dark:border-amber-500/20 " +
+                                          "dark:bg-amber-500/5 " +
+                                          "dark:text-amber-400",
+                                      )}
+                                    >
+                                      <div
+                                        className={cn(
+                                          "flex h-5 w-5 shrink-0 " +
+                                            "items-center justify-center " +
+                                            "rounded-full bg-amber-100 " +
+                                            "text-amber-800 " +
+                                            "dark:bg-amber-900/35 " +
+                                            "dark:text-amber-400 text-xs",
+                                        )}
+                                      >
+                                        ⚠️
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-semibold">
+                                          Notice: Selected Date is a Holiday
+                                        </p>
+                                        <p className="mt-1 text-xs leading-5 opacity-90">
+                                          {formatFullDate(
+                                            activePreferredOption.date,
+                                          )}{" "}
+                                          is{" "}
+                                          <strong>
+                                            {activePreferredHolidayName}
+                                          </strong>
+                                          . The Guidance Office may have limited
+                                          availability.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
 
                                   <div className="min-w-0">
                                     <SlotSelector
