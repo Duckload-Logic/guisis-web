@@ -255,6 +255,15 @@ export default function AnalyticsPage() {
     ],
   );
 
+  const majorityGender = useMemo(() => {
+    if (!data?.genderDistribution || data.genderDistribution.length === 0) {
+      return null;
+    }
+    return data.genderDistribution.reduce((max, current) =>
+      current.totalPct > max.totalPct ? current : max
+    );
+  }, [data?.genderDistribution]);
+
   const pageBadgeIcon = useMemo(() => <TrendingUp className="h-4 w-4" />, []);
 
   usePageMetadata({
@@ -298,15 +307,6 @@ export default function AnalyticsPage() {
   }
 
   if (!data) return null;
-
-  const majorityGender = useMemo(() => {
-    if (!data?.genderDistribution || data.genderDistribution.length === 0) {
-      return null;
-    }
-    return data.genderDistribution.reduce((max, current) =>
-      current.totalPct > max.totalPct ? current : max
-    );
-  }, [data?.genderDistribution]);
 
   return (
     <>
