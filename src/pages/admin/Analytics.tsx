@@ -299,6 +299,15 @@ export default function AnalyticsPage() {
 
   if (!data) return null;
 
+  const majorityGender = useMemo(() => {
+    if (!data?.genderDistribution || data.genderDistribution.length === 0) {
+      return null;
+    }
+    return data.genderDistribution.reduce((max, current) =>
+      current.totalPct > max.totalPct ? current : max
+    );
+  }, [data?.genderDistribution]);
+
   return (
     <>
       <FullScreenLoader
@@ -379,14 +388,8 @@ export default function AnalyticsPage() {
             />
             <KPICard
               title="Gender Balance"
-              value={
-                data?.genderDistribution?.[0]
-                  ? `${data.genderDistribution[0].totalPct}%`
-                  : "0%"
-              }
-              subtitle={`${
-                data?.genderDistribution?.[0]?.category || "N/A"
-              } Majority`}
+              value={majorityGender ? `${majorityGender.totalPct}%` : "0%"}
+              subtitle={`${majorityGender?.category || "N/A"} Majority`}
               icon={<Network className="h-5 w-5 text-indigo-500" />}
               gradient="from-indigo-500/10 via-background to-background"
             />
