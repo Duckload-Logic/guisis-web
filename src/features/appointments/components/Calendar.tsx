@@ -155,6 +155,7 @@ export default function Calendar({
       if (!allowPastDates && isPast) return true;
       if (!allowCurrentDate && isToday) return true;
       if (maxDate && date > maxDate) return true;
+      if (!isAdmin && checkIsHoliday(day)) return true;
       if (!isAdmin && bookedDates.has(dateKey)) return true;
       return false;
     },
@@ -171,6 +172,7 @@ export default function Calendar({
       maxDate,
       bookedDates,
       isAdmin,
+      checkIsHoliday,
     ],
   );
 
