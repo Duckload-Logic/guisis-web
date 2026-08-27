@@ -582,22 +582,55 @@ export function SupportManagement() {
                       key={t.id}
                       className="space-y-4"
                     >
-                      {msgs.map((msg) => {
+                      {msgs.map((msg, idx) => {
                         const isStaff =
                           msg.senderId && msg.senderId !== t.userId;
+
+                        const prevMsg = idx > 0 ? msgs[idx - 1] : null;
+                        const isPrevStaff = prevMsg
+                          ? prevMsg.senderId &&
+                            prevMsg.senderId !== t.userId
+                          : null;
+                        const isNewStack =
+                          idx === 0 ||
+                          isStaff !== isPrevStaff ||
+                          msg.senderName !== prevMsg?.senderName;
+
+                        const formattedDate = new Date(
+                          msg.createdAt,
+                        ).toLocaleString(undefined, {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        });
 
                         return (
                           <div
                             key={msg.id}
                             className={`flex flex-col ${
                               isStaff ? "items-end" : "items-start"
+                            } ${
+                              isNewStack
+                                ? idx === 0
+                                  ? "mt-0"
+                                  : "mt-3.5"
+                                : "mt-1"
                             }`}
                           >
-                            <span className="px-1 text-[10px] text-muted-foreground">
-                              {isStaff
-                                ? `Admin (${msg.senderName})`
-                                : msg.senderName}
-                            </span>
+                            {isNewStack && (
+                              <span
+                                className={
+                                  "px-1 text-[10px] text-muted-foreground"
+                                }
+                              >
+                                {isStaff
+                                  ? `Admin (${msg.senderName})`
+                                  : msg.senderName}
+                              </span>
+                            )}
                             <div
                               className={`mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
                                 isStaff
@@ -605,6 +638,7 @@ export function SupportManagement() {
                                     "rounded-tr-none"
                                   : "rounded-tl-none bg-muted text-foreground"
                               }`}
+                              title={formattedDate}
                             >
                               <p className="whitespace-pre-wrap break-words">
                                 {msg.message}

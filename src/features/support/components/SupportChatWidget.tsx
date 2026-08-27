@@ -210,22 +210,51 @@ export function SupportChatWidget() {
             )
           ) : viewMode === "history-detail" ? (
             /* History Message Thread */
-            <div className="space-y-3">
-              {historyMessages.map((msg) => {
+            <div className="flex flex-col">
+              {historyMessages.map((msg, idx) => {
                 const isMe =
                   (user && msg.senderId === user.id) ||
                   (!user && !msg.senderId);
 
+                const prevMsg = idx > 0 ? historyMessages[idx - 1] : null;
+                const isPrevMe = prevMsg
+                  ? (user && prevMsg.senderId === user.id) ||
+                    (!user && !prevMsg.senderId)
+                  : null;
+                const isNewStack =
+                  idx === 0 ||
+                  isMe !== isPrevMe ||
+                  msg.senderName !== prevMsg?.senderName;
+
+                const formattedDate = new Date(
+                  msg.createdAt,
+                ).toLocaleString(undefined, {
+                  weekday: "short",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${
-                      isMe ? "items-end" : "items-start"
-                    }`}
+                    className={cn(
+                      "flex flex-col",
+                      isMe ? "items-end" : "items-start",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
+                    )}
                   >
-                    <span className="px-1 text-[10px] text-muted-foreground">
-                      {isMe ? "You" : msg.senderName}
-                    </span>
+                    {isNewStack && (
+                      <span
+                        className={
+                          "px-1 text-[10px] text-muted-foreground"
+                        }
+                      >
+                        {isMe ? "You" : "GuiSIS Support"}
+                      </span>
+                    )}
                     <div
                       className={cn(
                         "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
@@ -234,6 +263,7 @@ export function SupportChatWidget() {
                               "rounded-tr-none"
                           : "rounded-tl-none bg-muted text-foreground",
                       )}
+                      title={formattedDate}
                     >
                       <p className="whitespace-pre-wrap break-words">
                         {msg.message}
@@ -314,24 +344,53 @@ export function SupportChatWidget() {
             </form>
           ) : (
             /* Message Thread */
-            <div className="space-y-3">
-              {messages.map((msg) => {
+            <div className="flex flex-col">
+              {messages.map((msg, idx) => {
                 // Determine sender category: if user ID matches current
                 // or sender is guest (for anonymous sessions), it's "me"
                 const isMe =
                   (user && msg.senderId === user.id) ||
                   (!user && !msg.senderId);
 
+                const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                const isPrevMe = prevMsg
+                  ? (user && prevMsg.senderId === user.id) ||
+                    (!user && !prevMsg.senderId)
+                  : null;
+                const isNewStack =
+                  idx === 0 ||
+                  isMe !== isPrevMe ||
+                  msg.senderName !== prevMsg?.senderName;
+
+                const formattedDate = new Date(
+                  msg.createdAt,
+                ).toLocaleString(undefined, {
+                  weekday: "short",
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${
-                      isMe ? "items-end" : "items-start"
-                    }`}
+                    className={cn(
+                      "flex flex-col",
+                      isMe ? "items-end" : "items-start",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
+                    )}
                   >
-                    <span className="px-1 text-[10px] text-muted-foreground">
-                      {isMe ? "You" : msg.senderName}
-                    </span>
+                    {isNewStack && (
+                      <span
+                        className={
+                          "px-1 text-[10px] text-muted-foreground"
+                        }
+                      >
+                        {isMe ? "You" : "GuiSIS Support"}
+                      </span>
+                    )}
                     <div
                       className={cn(
                         "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
@@ -340,6 +399,7 @@ export function SupportChatWidget() {
                               "rounded-tr-none"
                           : "rounded-tl-none bg-muted text-foreground",
                       )}
+                      title={formattedDate}
                     >
                       <p className="whitespace-pre-wrap break-words">
                         {msg.message}
