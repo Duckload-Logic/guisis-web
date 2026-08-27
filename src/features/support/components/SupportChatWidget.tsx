@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from "framer-motion";
 export function SupportChatWidget() {
   const { isAdmin, isSuperAdmin, isDeveloper } = useAuth();
   const [menuExpanded, setMenuExpanded] = useState(false);
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const {
     isAuthenticated,
     user,
@@ -255,8 +256,14 @@ export function SupportChatWidget() {
                       </span>
                     )}
                     <div
+                      onClick={() =>
+                        setActiveMessageId((prev) =>
+                          prev === msg.id ? null : msg.id,
+                        )
+                      }
                       className={cn(
                         "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        "cursor-pointer select-none",
                         isMe
                           ? "bg-primary text-primary-foreground " +
                               "rounded-tr-none"
@@ -268,6 +275,17 @@ export function SupportChatWidget() {
                         {msg.message}
                       </p>
                     </div>
+                    {activeMessageId === msg.id && (
+                      <span
+                        className={
+                          "mt-1 px-1 text-[9px] " +
+                          "text-muted-foreground animate-in " +
+                          "fade-in duration-150"
+                        }
+                      >
+                        {formattedDate}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -379,7 +397,7 @@ export function SupportChatWidget() {
                     className={cn(
                       "flex flex-col",
                       isMe ? "items-end" : "items-start",
-                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-1") : "mt-1",
                     )}
                   >
                     {isNewStack && (
@@ -390,8 +408,14 @@ export function SupportChatWidget() {
                       </span>
                     )}
                     <div
+                      onClick={() =>
+                        setActiveMessageId((prev) =>
+                          prev === msg.id ? null : msg.id,
+                        )
+                      }
                       className={cn(
                         "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        "cursor-pointer select-none",
                         isMe
                           ? "bg-primary text-primary-foreground " +
                               "rounded-tr-none"
@@ -403,6 +427,17 @@ export function SupportChatWidget() {
                         {msg.message}
                       </p>
                     </div>
+                    {activeMessageId === msg.id && (
+                      <span
+                        className={
+                          "mt-1 px-1 text-[9px] " +
+                          "text-muted-foreground animate-in " +
+                          "fade-in duration-150"
+                        }
+                      >
+                        {formattedDate}
+                      </span>
+                    )}
                   </div>
                 );
               })}

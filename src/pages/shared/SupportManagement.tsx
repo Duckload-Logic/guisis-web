@@ -79,6 +79,7 @@ export function SupportManagement() {
   const [isSending, setIsSending] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -632,18 +633,37 @@ export function SupportManagement() {
                               </span>
                             )}
                             <div
-                              className={`mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                                isStaff
-                                  ? "bg-primary text-primary-foreground " +
-                                    "rounded-tr-none"
-                                  : "rounded-tl-none bg-muted text-foreground"
-                              }`}
+                              onClick={() =>
+                                setActiveMessageId((prev) =>
+                                  prev === msg.id ? null : msg.id,
+                                )
+                              }
+                              className={
+                                `mt-1 max-w-[80%] rounded-2xl px-3 py-2 ` +
+                                `text-sm cursor-pointer select-none ${
+                                  isStaff
+                                    ? "bg-primary text-primary-foreground " +
+                                      "rounded-tr-none"
+                                    : "rounded-tl-none bg-muted text-foreground"
+                                }`
+                              }
                               title={formattedDate}
                             >
                               <p className="whitespace-pre-wrap break-words">
                                 {msg.message}
                               </p>
                             </div>
+                            {activeMessageId === msg.id && (
+                              <span
+                                className={
+                                  "mt-1 px-1 text-[9px] " +
+                                  "text-muted-foreground animate-in " +
+                                  "fade-in duration-150"
+                                }
+                              >
+                                {formattedDate}
+                              </span>
+                            )}
                           </div>
                         );
                       })}
