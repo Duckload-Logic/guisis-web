@@ -31,10 +31,13 @@ import {
 } from "@/features/activity-meta/services/logService";
 import { format12HourTime, formatDate } from "@/utils";
 import { cn } from "@/lib/utils";
-import { UploadProfilePicture } from "@/features/users/services/service";
+import {
+  UploadProfilePicture,
+  GetUserById,
+} from "@/features/users/services/service";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
-import { useUsers } from "@/features/system-admin/hooks";
 import { superadminService } from "@/features/system-admin/services";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
   const { user: authUser, refresh } = useAuth();
@@ -47,14 +50,18 @@ export default function Profile() {
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
 
   // Fetch target user if userId is provided
-  const { data: usersData, isLoading: isLoadingTarget } = useUsers(
-    userId ? { search: userId } : undefined,
-  );
+  const { data: targetUser, isLoading: isLoadingTarget } = useQuery({
+    queryKey: ["superadmin", "users", "detail", userId],
+    queryFn: () => GetUserById(userId!),
+    enabled: !!userId,
+  });
 
   const user = useMemo(() => {
-    if (!userId) return authUser;
-    return usersData?.users.find((u) => u.id === userId) || null;
-  }, [userId, authUser, usersData]);
+    if (userId) {
+      return targetUser || null;
+    }
+    return authUser;
+  }, [userId, authUser, targetUser]);
 
   useEffect(() => {
     const fetchActivities = async () => {
