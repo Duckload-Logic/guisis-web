@@ -77,7 +77,7 @@ export default function CORManagement() {
       }
 
       setSelectedFile(file);
-      triggerToast("COR file verified. You may now confirm the upload.");
+      triggerToast("COR file selected. You may now confirm the upload.");
       return true;
     },
     [triggerToast],
