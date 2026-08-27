@@ -333,7 +333,7 @@ export default function CreateAppointment() {
   );
 
   const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 14);
+  maxDate.setMonth(maxDate.getMonth() + 2);
 
   const activePreferredOption = preferredOptions[activePreferredIndex];
 
