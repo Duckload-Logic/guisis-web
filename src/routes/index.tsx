@@ -1,4 +1,4 @@
-import { RouteObject, Navigate } from "react-router-dom";
+import { RouteObject } from "react-router-dom";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { IIRGate } from "@/features/auth/components/IIRGate";
 
@@ -270,6 +270,7 @@ export const routes: RouteObject[] = [
       { path: "m2m-logs", element: <M2MLogs /> },
       { path: "users/:userId/activity", element: <UserActivity /> },
       { path: "users/:userId/sessions", element: <UserSessions /> },
+      { path: "users/:userId/profile", element: <Profile /> },
       { path: ":logType/:id", element: <LogDetails /> },
       { path: "profile", element: <Profile /> },
       { path: "notifications", element: <NotificationsPage /> },

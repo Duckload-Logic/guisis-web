@@ -31,10 +31,10 @@ import {
   ArrowUp,
   Calendar,
   Mail,
-  MoreVertical,
   MoreHorizontal,
   Shield,
   ShieldAlert,
+  User,
   UserCheck,
   UserMinus,
   UserPlus,
@@ -243,32 +243,50 @@ export default function UserManagement() {
     }
   };
 
-  const menuActions = (user: UserAccount) => [
-    {
-      id: "activity",
-      label: "View Activity",
-      icon: ArrowRight,
-      onAction: () => navigate(`/superadmin/users/${user.id}/activity`),
-    },
-    {
-      id: "sessions",
-      label: "Audit Sessions",
-      icon: ShieldAlert,
-      onAction: () => navigate(`/superadmin/users/${user.id}/sessions`),
-    },
-    {
-      id: "roles",
-      label: "Manage Roles",
-      icon: Shield,
-      onAction: () => setUserToManageRoles(user),
-    },
-    {
-      id: "status",
-      label: user.isActive ? "Block Account" : "Unlock Account",
-      icon: user.isActive ? UserX : UserCheck,
-      onAction: () => setUserToToggle(user),
-    },
-  ];
+  const menuActions = (user: UserAccount) => {
+    const isStudent = user.roles.some(
+      (r) => r.name.toLowerCase() === "student",
+    );
+    const actions = [];
+
+    if (isStudent) {
+      actions.push({
+        id: "profile",
+        label: "View Profile",
+        icon: User,
+        onAction: () => navigate(`/superadmin/users/${user.id}/profile`),
+      });
+    }
+
+    actions.push(
+      {
+        id: "activity",
+        label: "View Activity",
+        icon: ArrowRight,
+        onAction: () => navigate(`/superadmin/users/${user.id}/activity`),
+      },
+      {
+        id: "sessions",
+        label: "Audit Sessions",
+        icon: ShieldAlert,
+        onAction: () => navigate(`/superadmin/users/${user.id}/sessions`),
+      },
+      {
+        id: "roles",
+        label: "Manage Roles",
+        icon: Shield,
+        onAction: () => setUserToManageRoles(user),
+      },
+      {
+        id: "status",
+        label: user.isActive ? "Block Account" : "Unlock Account",
+        icon: user.isActive ? UserX : UserCheck,
+        onAction: () => setUserToToggle(user),
+      },
+    );
+
+    return actions;
+  };
 
   const renderSortableHeader = (label: string, sortKey: string) => {
     const isActive = selectedSort === sortKey;

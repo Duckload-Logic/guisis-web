@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import { useAuth, useToast } from "@/context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,12 @@ import { format12HourTime, formatDate } from "@/utils";
 import { cn } from "@/lib/utils";
 import { UploadProfilePicture } from "@/features/users/services/service";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
+import { useUsers } from "@/features/system-admin/hooks";
+import { superadminService } from "@/features/system-admin/services";
 
 export default function Profile() {
-  const { user, logout, refresh } = useAuth();
+  const { user: authUser, refresh } = useAuth();
+  const { userId } = useParams<{ userId: string }>();
   const { triggerToast } = useToast();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,11 +46,28 @@ export default function Profile() {
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
 
+  // Fetch target user if userId is provided
+  const { data: usersData, isLoading: isLoadingTarget } = useUsers(
+    userId ? { search: userId } : undefined,
+  );
+
+  const user = useMemo(() => {
+    if (!userId) return authUser;
+    return usersData?.users.find((u) => u.id === userId) || null;
+  }, [userId, authUser, usersData]);
+
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const response = await GetMyActivities();
-        setActivities(response.logs);
+        let logs: any[] = [];
+        if (userId) {
+          const response = await superadminService.getUserActivity(userId);
+          logs = response.logs;
+        } else {
+          const response = await GetMyActivities();
+          logs = response.logs;
+        }
+        setActivities(logs);
       } catch (error) {
         console.error("Failed to fetch activities:", error);
       } finally {
@@ -55,7 +76,7 @@ export default function Profile() {
     };
 
     fetchActivities();
-  }, []);
+  }, [userId]);
 
   const stats = useMemo(() => {
     if (!activities.length) return { logins: 0, reports: 0, lastSession: null };
@@ -82,6 +103,13 @@ export default function Profile() {
     };
   }, [activities]);
 
+  const userType = useMemo(() => {
+    if (!user) return "";
+    if ("type" in user && user.type) return user.type;
+    const roleName = user.roles?.[0]?.name?.toLowerCase() || "";
+    return roleName;
+  }, [user]);
+
   const profileCompleteness = useMemo(() => {
     if (!user) return 0;
     const fields = [
@@ -90,11 +118,11 @@ export default function Profile() {
       user.middleName,
       user.profilePicture,
       user.email,
-      user.type,
+      userType,
     ];
     const filledFields = fields.filter((field) => !!field);
     return Math.round((filledFields.length / fields.length) * 100);
-  }, [user]);
+  }, [user, userType]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,19 +166,42 @@ export default function Profile() {
     fileInputRef.current?.click();
   };
 
-  if (!user) return null;
+  const isLoading = userId ? !!isLoadingTarget : !authUser;
 
   usePageMetadata(
     useMemo(
       () => ({
-        title: "Account Profile",
-        isLoading: false,
+        title: userId ? "User Profile View" : "Account Profile",
+        isLoading,
         badgeText: "Management",
         badgeIcon: <Settings size={16} />,
       }),
-      [user],
+      [userId, isLoading],
     ),
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div
+          className={cn(
+            "h-10 w-10 animate-spin rounded-full border-4 border-primary",
+            "border-t-transparent",
+          )}
+        />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex h-[50vh] flex-col items-center justify-center">
+        <p className="text-muted-foreground">
+          User not found or access denied.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -196,29 +247,36 @@ export default function Profile() {
               </Avatar>
             </div>
 
-            <button
-              type="button"
-              onClick={triggerFileInput}
-              className={cn(
-                "absolute bottom-2 right-2 z-20 transform rounded-full",
-                "bg-primary p-3.5 text-primary-foreground shadow-2xl",
-                "transition-all duration-300 hover:scale-110",
-                "active:scale-95 disabled:cursor-not-allowed disabled:opacity-60",
-              )}
-              title={
-                isUploadingPicture ? "Uploading..." : "Change profile picture"
-              }
-              disabled={isUploadingPicture}
-            >
-              <Camera size={20} />
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              className="hidden"
-              accept="image/jpeg,image/png,image/webp"
-            />
+            {!userId && (
+              <>
+                <button
+                  type="button"
+                  onClick={triggerFileInput}
+                  className={cn(
+                    "absolute bottom-2 right-2 z-20 transform rounded-full",
+                    "bg-primary p-3.5 text-primary-foreground shadow-2xl",
+                    "transition-all duration-300 hover:scale-110",
+                    "active:scale-95 disabled:cursor-not-allowed " +
+                      "disabled:opacity-60",
+                  )}
+                  title={
+                    isUploadingPicture
+                      ? "Uploading..."
+                      : "Change profile picture"
+                  }
+                  disabled={isUploadingPicture}
+                >
+                  <Camera size={20} />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+              </>
+            )}
           </div>
 
           {/* User Essential Info */}
@@ -232,7 +290,7 @@ export default function Profile() {
                     "text-primary backdrop-blur-md",
                   )}
                 >
-                  {user.type.toUpperCase()} ACCOUNT
+                  {userType.toUpperCase()} ACCOUNT
                 </Badge>
                 {user.roles.map((role) => (
                   <Badge
