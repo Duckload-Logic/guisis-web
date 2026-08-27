@@ -51,6 +51,17 @@ function getAppointmentUrgency(appointment?: any) {
     typeof raw === "string" ? raw : raw.name || raw.label || "Medium";
   const normalized = String(label).toLowerCase();
 
+  if (normalized.includes("critical")) {
+    return {
+      label: "Critical",
+      description:
+        "Immediate attention required due to critical nature of concern.",
+      className:
+        "border-red-700/25 bg-red-700/10 text-red-700 " +
+        "dark:text-red-400 font-extrabold animate-pulse",
+    };
+  }
+
   if (normalized.includes("high") || normalized.includes("urgent")) {
     return {
       label: "High",
