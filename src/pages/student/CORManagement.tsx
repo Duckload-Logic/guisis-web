@@ -126,7 +126,14 @@ export default function CORManagement() {
       triggerToast("COR uploaded and validated successfully!");
     } catch (error: any) {
       const errMsg = getErrorMessage(error);
-      triggerToast(errMsg);
+      if (errMsg.includes("couldn't connect to the server")) {
+        triggerToast(
+          "Connection failed. If you are on a school/office Wi-Fi " +
+            "or using a VPN, please switch networks (e.g., to mobile data).",
+        );
+      } else {
+        triggerToast(errMsg);
+      }
     } finally {
       setIsUploading(false);
     }

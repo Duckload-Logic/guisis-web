@@ -41,7 +41,7 @@ export interface CorValidationResult {
   error?: string;
 }
 
-const DEFAULT_MAX_SIZE_BYTES = 10 * 1024 * 1024;
+const DEFAULT_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 const getFileExtension = (fileName: string) => {
   const extension = fileName.split(".").pop()?.trim().toLowerCase();
