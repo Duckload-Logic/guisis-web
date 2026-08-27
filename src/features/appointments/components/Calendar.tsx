@@ -377,7 +377,14 @@ function CalendarContent({
               "[overflow-wrap:normal] [word-break:normal] " +
                 "focus:outline-none focus:ring-1 focus:ring-primary/50",
               isDisabled &&
-                "cursor-not-allowed bg-transparent text-muted-foreground/35",
+                "cursor-not-allowed",
+              isDisabled &&
+                !isHolidayDate &&
+                "bg-transparent text-muted-foreground/35",
+              isDisabled &&
+                isHolidayDate &&
+                "border border-dashed border-amber-500/40 bg-amber-500/5 " +
+                "text-amber-600/40 dark:text-amber-400/40",
               !isDisabled &&
                 isSelected &&
                 `${occupiedDayColor} text-primary-foreground shadow`,
