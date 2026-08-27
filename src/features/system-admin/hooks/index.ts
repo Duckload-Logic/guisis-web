@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { superadminService } from "../services";
 import { QUERY_KEYS } from "@/config/queryKeys";
 import { CACHE_TIMING } from "@/config/constants";
@@ -152,12 +157,15 @@ export function useUpdateUserRoles() {
 }
 
 // Analytics hooks
-export function useAdminAnalytics(range?: "daily" | "weekly" | "monthly" | "yearly") {
+export function useAdminAnalytics(
+  range?: "daily" | "weekly" | "monthly" | "yearly",
+) {
   return useQuery({
     queryKey: [QUERY_KEYS.superadmin.analytics, { range }],
     queryFn: () => superadminService.getAdminAnalytics(range),
     staleTime: CACHE_TIMING.LONG.staleTime,
     gcTime: CACHE_TIMING.LONG.gcTime,
+    placeholderData: keepPreviousData,
   });
 }
 

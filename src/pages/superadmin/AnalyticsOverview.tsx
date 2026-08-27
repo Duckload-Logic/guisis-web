@@ -44,8 +44,11 @@ export default function AnalyticsOverview() {
     "daily",
   );
 
-  const { data: analytics, isLoading: analyticsLoading } =
-    useAdminAnalytics(range);
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    isFetching: analyticsFetching,
+  } = useAdminAnalytics(range);
   const { data: usersData, isLoading: usersLoading } = useUsers({
     page_size: 1,
   });
@@ -55,8 +58,8 @@ export default function AnalyticsOverview() {
   const { data: logActivityData, isLoading: activityLoading } =
     useLogActivity();
 
-  const isLoading =
-    analyticsLoading ||
+  const isInitialLoading =
+    (analyticsLoading && !analytics) ||
     usersLoading ||
     m2mLoading ||
     statsLoading ||
@@ -163,7 +166,7 @@ export default function AnalyticsOverview() {
     },
   ];
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="mx-auto w-full max-w-[1700px] space-y-6">
         {/* Metrics Grid Skeleton */}
@@ -303,7 +306,23 @@ export default function AnalyticsOverview() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[320px] w-full">
+            <div className="relative h-[320px] w-full">
+              {analyticsFetching && (
+                <div
+                  className={
+                    "absolute inset-0 z-10 flex items-center " +
+                    "justify-center rounded-xl bg-background/50 " +
+                    "backdrop-blur-[2px]"
+                  }
+                >
+                  <div
+                    className={
+                      "h-8 w-8 animate-spin rounded-full border-4 " +
+                      "border-primary border-t-transparent"
+                    }
+                  />
+                </div>
+              )}
               <ResponsiveContainer
                 width="100%"
                 height="100%"
