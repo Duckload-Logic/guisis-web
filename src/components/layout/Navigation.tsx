@@ -9,6 +9,7 @@ import {
   Gavel,
   Pin,
   PinOff,
+  LayoutDashboard,
 } from "lucide-react";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
@@ -456,9 +457,14 @@ function MobileSettingsContent({
       </div>
 
       {/* Mobile Role Switcher */}
-      {/* {user?.roles?.length > 1 && (
+      {user?.roles && user.roles.length > 1 && (
         <div className="space-y-3">
-          <p className="px-2 text-[10px] uppercase text-muted-foreground/60">
+          <p
+            className={
+              "px-2 text-[10px] uppercase " +
+              "text-muted-foreground/60"
+            }
+          >
             Switch Workspace
           </p>
           <div className="grid grid-cols-1 gap-2">
@@ -469,15 +475,18 @@ function MobileSettingsContent({
                   key={r.id}
                   onClick={() => onRoleSwitch(r)}
                   className={cn(
-                    "flex items-center gap-4 rounded-2xl border p-4 transition-all active:scale-95",
+                    "flex items-center gap-4 rounded-2xl border p-4 " +
+                      "transition-all active:scale-95",
                     isActiveRole
-                      ? "border-primary/50 bg-primary/10 text-primary shadow-sm"
+                      ? "border-primary/50 bg-primary/10 " +
+                          "text-primary shadow-sm"
                       : "border-border/50 bg-muted/30",
                   )}
                 >
                   <div
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-xl bg-background",
+                      "flex h-10 w-10 items-center justify-center " +
+                        "rounded-xl bg-background",
                       isActiveRole && "bg-primary/20 text-primary",
                     )}
                   >
@@ -490,14 +499,16 @@ function MobileSettingsContent({
                     </p>
                   </div>
                   {isActiveRole && (
-                    <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                    <div
+                      className="ml-auto h-2 w-2 rounded-full bg-primary"
+                    />
                   )}
                 </button>
               );
             })}
           </div>
         </div>
-      )} */}
+      )}
 
       <div className="my-2 border-t border-border" />
       <div className="flex flex-col gap-2">

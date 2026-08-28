@@ -1,11 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Settings, LogOut, Gavel, ShieldCheck, FileText } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  Gavel,
+  ShieldCheck,
+  FileText,
+  LayoutDashboard,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
+import { UserRole } from "@/features/users/types/user";
+
+const ROLE_ROUTES: Record<string, string> = {
+  student: "/student",
+  admin: "/admin",
+  counselor: "/admin",
+  superadmin: "/superadmin",
+  developer: "/developer",
+};
 
 interface ProfileMenuProps {
   firstName?: string;
@@ -33,8 +49,14 @@ export default function ProfileMenu({
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const { user, isStudent } = useAuth();
+  const { user, isStudent, activeRole, setActiveRole } = useAuth();
+
+  const handleRoleSwitch = (r: UserRole) => {
+    setActiveRole(r);
+    const roleKey = r.name.toLowerCase().replace(/\s+/g, "");
+    navigate(ROLE_ROUTES[roleKey] || "/");
+    setOpen(false);
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -133,6 +155,56 @@ export default function ProfileMenu({
               </button>
             )}
 
+
+            {user && user.roles && user.roles.length > 1 && (
+              <div className="border-b border-border py-2">
+                <p
+                  className={
+                    "px-4 py-1.5 text-[10px] font-semibold " +
+                    "uppercase tracking-wider text-muted-foreground"
+                  }
+                >
+                  Switch Workspace
+                </p>
+                <div
+                  className={
+                    "max-h-[160px] overflow-y-auto " +
+                    "px-2 py-1 space-y-1"
+                  }
+                >
+                  {user.roles.map((r) => {
+                    const isActive = r.id === activeRole?.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => handleRoleSwitch(r)}
+                        className={cn(
+                          "flex w-full items-center gap-2.5 " +
+                            "rounded-lg px-3 py-2 text-left " +
+                            "text-xs transition-all",
+                          isActive
+                            ? "bg-primary/10 font-semibold " +
+                                "text-primary"
+                            : "hover:bg-muted text-muted-foreground " +
+                                "hover:text-foreground",
+                        )}
+                      >
+                        <LayoutDashboard size={14} />
+                        <span className="flex-1 truncate">{r.name}</span>
+                        {isActive && (
+                          <div
+                            className={
+                              "h-1.5 w-1.5 rounded-full " +
+                              "bg-primary"
+                            }
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => {
