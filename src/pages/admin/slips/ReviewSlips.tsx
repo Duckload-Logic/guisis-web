@@ -381,6 +381,7 @@ export default function ReviewSlips() {
           object-fit: cover !important;
           width: 100% !important;
           height: 100% !important;
+          transform: scaleX(-1);
         }
       `}</style>
 
