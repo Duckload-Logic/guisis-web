@@ -589,8 +589,7 @@ export function SupportManagement() {
 
                         const prevMsg = idx > 0 ? msgs[idx - 1] : null;
                         const isPrevStaff = prevMsg
-                          ? prevMsg.senderId &&
-                            prevMsg.senderId !== t.userId
+                          ? prevMsg.senderId && prevMsg.senderId !== t.userId
                           : null;
                         const isNewStack =
                           idx === 0 ||
@@ -617,7 +616,7 @@ export function SupportManagement() {
                               isNewStack
                                 ? idx === 0
                                   ? "mt-0"
-                                  : "mt-3.5"
+                                  : "mt-1"
                                 : "mt-1"
                             }`}
                           >
@@ -640,7 +639,7 @@ export function SupportManagement() {
                               }
                               className={
                                 `mt-1 max-w-[80%] rounded-2xl px-3 py-2 ` +
-                                `text-sm cursor-pointer select-none ${
+                                `cursor-pointer select-none text-sm ${
                                   isStaff
                                     ? "bg-primary text-primary-foreground " +
                                       "rounded-tr-none"
@@ -657,7 +656,7 @@ export function SupportManagement() {
                               <span
                                 className={
                                   "mt-1 px-1 text-[9px] " +
-                                  "text-muted-foreground animate-in " +
+                                  "animate-in text-muted-foreground " +
                                   "fade-in duration-150"
                                 }
                               >
