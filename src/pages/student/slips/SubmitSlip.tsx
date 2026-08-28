@@ -676,12 +676,38 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
-                            <div className="flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 p-4 text-violet-900 shadow-sm dark:border-violet-900/50 dark:bg-violet-950/20 dark:text-violet-200">
-                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-violet-600 dark:text-violet-400" />
+                            <div
+                              className={cn(
+                                "flex items-start gap-3 rounded-xl border",
+                                "border-violet-200 bg-violet-50 p-4",
+                                "text-violet-900 shadow-sm",
+                                "dark:border-violet-900/50",
+                                "dark:bg-violet-950/20 dark:text-violet-200",
+                              )}
+                            >
+                              <Info
+                                className={cn(
+                                  "mt-0.5 h-5 w-5 shrink-0",
+                                  "text-violet-600 dark:text-violet-400",
+                                )}
+                              />
                               <div className="text-sm">
-                                <p className="mb-1 font-semibold">Excuse Letter Format Requirement:</p>
-                                <p className="text-violet-800 dark:text-violet-300">
-                                  Please ensure the letter includes the <strong>signature of your parent or guardian</strong> placed directly above their printed name.
+                                <p className="mb-1 font-semibold">
+                                  Excuse Letter Format Requirement:
+                                </p>
+                                <p
+                                  className={cn(
+                                    "text-violet-800",
+                                    "dark:text-violet-300",
+                                  )}
+                                >
+                                  Please ensure the letter is{" "}
+                                  <strong>clearly readable and legible</strong>
+                                  , and includes the{" "}
+                                  <strong>
+                                    signature of your parent or guardian
+                                  </strong>{" "}
+                                  placed directly above their printed name.
                                 </p>
                               </div>
                             </div>
@@ -862,36 +888,150 @@ export default function SubmitSlip() {
                           )}
                         >
                           <div className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div
+                              className={cn(
+                                "flex items-start gap-3 rounded-xl border",
+                                "border-violet-200 bg-violet-50 p-4",
+                                "text-violet-900 shadow-sm",
+                                "dark:border-violet-900/50",
+                                "dark:bg-violet-950/20 dark:text-violet-200",
+                              )}
+                            >
+                              <Info
+                                className={cn(
+                                  "mt-0.5 h-5 w-5 shrink-0",
+                                  "text-violet-600 dark:text-violet-400",
+                                )}
+                              />
+                              <div className="text-sm">
+                                <p className="mb-1 font-semibold">
+                                  Parent ID Xerox Copy Requirement:
+                                </p>
+                                <p
+                                  className={cn(
+                                    "text-violet-800",
+                                    "dark:text-violet-300",
+                                  )}
+                                >
+                                  The parent&apos;s valid ID must be submitted
+                                  as a{" "}
+                                  <strong>
+                                    xerox photocopy containing the parent&apos;s
+                                    actual signature
+                                  </strong>
+                                  .
+                                </p>
+                              </div>
+                            </div>
+
+                            <div
+                              className={cn(
+                                "grid grid-cols-1 gap-4",
+                                "sm:grid-cols-2",
+                              )}
+                            >
                               {/* Valid Requirements */}
-                              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
-                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">
-                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                              <div
+                                className={cn(
+                                  "rounded-xl border border-emerald-200",
+                                  "bg-emerald-50 p-4 shadow-sm",
+                                  "dark:border-emerald-900/50",
+                                  "dark:bg-emerald-950/20",
+                                )}
+                              >
+                                <h4
+                                  className={cn(
+                                    "mb-2 flex items-center gap-2",
+                                    "font-semibold text-emerald-900",
+                                    "dark:text-emerald-200",
+                                  )}
+                                >
+                                  <CheckCircle2
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      "text-emerald-600 dark:text-emerald-400",
+                                    )}
+                                  />
                                   Valid ID Requirements
                                 </h4>
-                                <ul className="ml-6 list-outside list-disc space-y-1 text-xs text-emerald-800 dark:text-emerald-300">
-                                  <li>Upload a government-issued or school-issued ID (if accepted).</li>
+                                <ul
+                                  className={cn(
+                                    "ml-6 list-outside list-disc",
+                                    "space-y-1 text-xs text-emerald-800",
+                                    "dark:text-emerald-300",
+                                  )}
+                                >
+                                  <li>
+                                    Must be a xerox photocopy with the
+                                    parent&apos;s signature.
+                                  </li>
+                                  <li>
+                                    Upload a government-issued or
+                                    school-issued ID (if accepted).
+                                  </li>
                                   <li>The ID must be valid (not expired).</li>
-                                  <li>Ensure all text and photo are clear and readable.</li>
-                                  <li>Capture the entire ID (all four corners must be visible).</li>
-                                  <li>Use a plain, non-reflective background.</li>
-                                  <li>Avoid glare, shadows, blur, or filters.</li>
-                                  <li>Do not crop, edit, or cover any part of the ID.</li>
-                                  <li>Upload the front side (and back side if required).</li>
+                                  <li>
+                                    Ensure all text and photo are clear
+                                    and readable.
+                                  </li>
+                                  <li>
+                                    Capture the entire ID (all four corners
+                                    must be visible).
+                                  </li>
+                                  <li>
+                                    Use a plain, non-reflective background.
+                                  </li>
+                                  <li>
+                                    Avoid glare, shadows, blur, or filters.
+                                  </li>
+                                  <li>
+                                    Do not crop, edit, or cover any part
+                                    of the ID.
+                                  </li>
+                                  <li>
+                                    Upload the front side (and back side
+                                    if required).
+                                  </li>
                                 </ul>
                               </div>
 
-                              <div className="rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
-                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-red-900 dark:text-red-200">
-                                  <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+                              <div
+                                className={cn(
+                                  "rounded-xl border border-red-200",
+                                  "bg-red-50 p-4 shadow-sm",
+                                  "dark:border-red-900/50",
+                                  "dark:bg-red-950/20",
+                                )}
+                              >
+                                <h4
+                                  className={cn(
+                                    "mb-2 flex items-center gap-2",
+                                    "font-semibold text-red-900",
+                                    "dark:text-red-200",
+                                  )}
+                                >
+                                  <X
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      "text-red-600 dark:text-red-400",
+                                    )}
+                                  />
                                   Do Not Upload
                                 </h4>
-                                <ul className="ml-6 list-outside list-disc space-y-1 text-xs text-red-800 dark:text-red-300">
+                                <ul
+                                  className={cn(
+                                    "ml-6 list-outside list-disc",
+                                    "space-y-1 text-xs text-red-800",
+                                    "dark:text-red-300",
+                                  )}
+                                >
                                   <li>Expired IDs.</li>
                                   <li>Blurry or low-resolution photos.</li>
                                   <li>Cropped or partially visible IDs.</li>
-                                  <li>IDs with glare, reflections, or shadows.</li>
-                                  <li>Screenshots or photocopies (unless explicitly allowed).</li>
+                                  <li>
+                                    IDs with glare, reflections, or shadows.
+                                  </li>
+                                  <li>Screenshots.</li>
                                   <li>Edited or digitally altered IDs.</li>
                                 </ul>
                               </div>
