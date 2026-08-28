@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
-import { getDateRange, getFilterLabel, type TimeFilter } from "@/utils";
+import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,6 @@ const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
 export default function ReviewSlips() {
   const navigate = useNavigate();
 
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("month");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState("dateNeeded");
@@ -88,7 +87,27 @@ export default function ReviewSlips() {
   ]);
 
   const debouncedSearch = useDebounce(searchTerm, 500);
-  const dateRange = useMemo(() => getDateRange(timeFilter), [timeFilter]);
+
+  const dateRange = useMemo(() => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    const daysRemaining = endOfMonth.getDate() - today.getDate();
+    let endDate = endOfMonth;
+    let isExtended = false;
+
+    if (daysRemaining <= 7) {
+      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 7);
+      isExtended = true;
+    }
+
+    return {
+      startDate: toISODateString(startOfMonth),
+      endDate: toISODateString(endDate),
+      isExtended,
+    };
+  }, []);
 
   const { data: slipStats } = useGetSlipStats({
     params: {
@@ -106,9 +125,12 @@ export default function ReviewSlips() {
 
   const statusWithAll = useMemo(() => {
     if (!slipStatuses) return [];
+    const filtered = slipStatuses.filter(
+      (s) => s.name?.toLowerCase() !== "approved",
+    );
     return [
       { id: "0", name: "All Statuses", colorKey: "stale" },
-      ...slipStatuses,
+      ...filtered,
     ];
   }, [slipStatuses]);
 
@@ -128,7 +150,13 @@ export default function ReviewSlips() {
     },
   });
 
-  const slips = data?.slips || [];
+  const slips = useMemo(() => {
+    const rawSlips = data?.slips || [];
+    return rawSlips.filter(
+      (slip: Slip) => slip.status?.name?.toLowerCase() !== "approved",
+    );
+  }, [data]);
+
   const totalPages = data?.totalPages || 1;
 
   const verifyTicketByCode = async (code: string) => {
@@ -311,21 +339,12 @@ export default function ReviewSlips() {
 
   const headerActions = useMemo(
     () => (
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
-        {(["today", "week", "month"] as TimeFilter[]).map((filter) => (
-          <Button
-            key={filter}
-            variant={timeFilter === filter ? "default" : "outline"}
-            onClick={() => {
-              setTimeFilter(filter);
-              setCurrentPage(1);
-            }}
-            className="h-10 min-w-[100px] rounded-xl px-4 shadow-sm"
-          >
-            {getFilterLabel(filter)}
-          </Button>
-        ))}
-
+      <div
+        className={cn(
+          "flex flex-col gap-2.5 sm:flex-row",
+          "sm:flex-wrap sm:items-center",
+        )}
+      >
         <Button
           variant="outline"
           onClick={() => navigate("/admin/slips/logs")}
@@ -347,7 +366,7 @@ export default function ReviewSlips() {
         </Button>
       </div>
     ),
-    [timeFilter, navigate],
+    [navigate],
   );
 
   usePageMetadata({
@@ -384,6 +403,33 @@ export default function ReviewSlips() {
           transform: scaleX(-1);
         }
       `}</style>
+
+      {dateRange.isExtended && (
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl border",
+            "border-amber-300/40 bg-amber-500/10 p-4",
+            "text-amber-800 dark:text-amber-200",
+            "animate-in fade-in slide-in-from-top-4 duration-500",
+          )}
+        >
+          <Calendar
+            className={cn(
+              "h-5 w-5 shrink-0",
+              "text-amber-600 dark:text-amber-400",
+            )}
+          />
+          <div className="min-w-0">
+            <p className="font-semibold text-sm">
+              Nearing Next Month's Requests Included
+            </p>
+            <p className="text-xs opacity-90 mt-0.5">
+              Today is the last week of the month. Active requests for the
+              first week of next month are automatically included below.
+            </p>
+          </div>
+        </div>
+      )}
 
       <SlipList
         className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:150ms]"
