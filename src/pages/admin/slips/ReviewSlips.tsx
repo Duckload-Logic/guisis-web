@@ -57,6 +57,7 @@ const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
 
 export default function ReviewSlips() {
   const navigate = useNavigate();
+  const { mutateAsync: claimTicket } = useClaimTicket();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -125,12 +126,9 @@ export default function ReviewSlips() {
 
   const statusWithAll = useMemo(() => {
     if (!slipStatuses) return [];
-    const filtered = slipStatuses.filter(
-      (s) => s.name?.toLowerCase() !== "approved",
-    );
     return [
       { id: "0", name: "All Statuses", colorKey: "stale" },
-      ...filtered,
+      ...slipStatuses,
     ];
   }, [slipStatuses]);
 
@@ -152,9 +150,7 @@ export default function ReviewSlips() {
 
   const slips = useMemo(() => {
     const rawSlips = data?.slips || [];
-    return rawSlips.filter(
-      (slip: Slip) => slip.status?.name?.toLowerCase() !== "approved",
-    );
+    return rawSlips.filter((slip: Slip) => !slip.ticket?.isVerified);
   }, [data]);
 
   const totalPages = data?.totalPages || 1;
@@ -175,6 +171,18 @@ export default function ReviewSlips() {
       });
 
       if (slip.id) {
+        try {
+          await claimTicket(finalCode);
+          triggerToast("Ticket successfully verified!");
+        } catch (claimErr: any) {
+          const errMsg =
+            claimErr.response?.data?.error || claimErr.message || "";
+          if (errMsg.toLowerCase().includes("already verified")) {
+            triggerToast("Ticket is already verified!");
+          } else {
+            throw claimErr;
+          }
+        }
         setIsVerifyModalOpen(false);
         navigate(`/admin/slips/${slip.id}`);
       }
@@ -182,9 +190,11 @@ export default function ReviewSlips() {
       if (error.response?.status === 404) {
         setShowNotFound(true);
       } else {
-        triggerToast(
-          error.message || "Failed to fetch ticket details",
-        );
+        const errMsg =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to verify ticket";
+        triggerToast(errMsg);
       }
     } finally {
       setIsVerifying(false);

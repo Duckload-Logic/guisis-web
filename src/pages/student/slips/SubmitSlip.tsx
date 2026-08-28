@@ -29,7 +29,7 @@ import {
   FileText,
   RefreshCw,
   Info,
-  X
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -80,7 +80,8 @@ const EMPTY_FORM_DATA: SubmitSlipFormState = {
 };
 
 export default function SubmitSlip() {
-  const [formData, setFormData] = useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
+  const [formData, setFormData] =
+    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
   const [currentStep, setCurrentStep] = useState(1);
   const [previewData, setPreviewData] = useState<{
     file: File;
@@ -702,8 +703,8 @@ export default function SubmitSlip() {
                                   )}
                                 >
                                   Please ensure the letter is{" "}
-                                  <strong>clearly readable and legible</strong>
-                                  , and includes the{" "}
+                                  <strong>clearly readable and legible</strong>,
+                                  and includes the{" "}
                                   <strong>
                                     signature of your parent or guardian
                                   </strong>{" "}
@@ -916,7 +917,7 @@ export default function SubmitSlip() {
                                   The parent&apos;s valid ID must be submitted
                                   as a{" "}
                                   <strong>
-                                    xerox photocopy containing the parent&apos;s
+                                    photocopy containing the parent&apos;s
                                     actual signature
                                   </strong>
                                   .
@@ -962,21 +963,18 @@ export default function SubmitSlip() {
                                   )}
                                 >
                                   <li>
-                                    Must be a xerox photocopy with the
-                                    parent&apos;s signature.
+                                    Must be a photocopy with the parent&apos;s
+                                    signature.
                                   </li>
-                                  <li>
-                                    Upload a government-issued or
-                                    school-issued ID (if accepted).
-                                  </li>
+                                  <li>Upload a government-issued ID.</li>
                                   <li>The ID must be valid (not expired).</li>
                                   <li>
-                                    Ensure all text and photo are clear
-                                    and readable.
+                                    Ensure all text and photo are clear and
+                                    readable.
                                   </li>
                                   <li>
-                                    Capture the entire ID (all four corners
-                                    must be visible).
+                                    Capture the entire ID (all four corners must
+                                    be visible).
                                   </li>
                                   <li>
                                     Use a plain, non-reflective background.
@@ -985,12 +983,12 @@ export default function SubmitSlip() {
                                     Avoid glare, shadows, blur, or filters.
                                   </li>
                                   <li>
-                                    Do not crop, edit, or cover any part
-                                    of the ID.
+                                    Do not crop, edit, or cover any part of the
+                                    ID.
                                   </li>
                                   <li>
-                                    Upload the front side (and back side
-                                    if required).
+                                    Upload the front side (and back side if
+                                    required).
                                   </li>
                                 </ul>
                               </div>
@@ -1212,7 +1210,7 @@ export default function SubmitSlip() {
                               "px-4 py-3",
                             )}
                           >
-                            <div className="space-y-4">  
+                            <div className="space-y-4">
                               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="flex flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
                                   <h4 className="mb-3 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">
@@ -1220,9 +1218,9 @@ export default function SubmitSlip() {
                                     Upload this
                                   </h4>
                                   <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
-                                    <img 
-                                      src={goodCertImage} 
-                                      alt="Example of a valid medical certificate" 
+                                    <img
+                                      src={goodCertImage}
+                                      alt="Example of a valid medical certificate"
                                       className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
                                     />
                                   </div>
@@ -1234,9 +1232,9 @@ export default function SubmitSlip() {
                                     Do Not Upload
                                   </h4>
                                   <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
-                                    <img 
-                                      src={badCertImage} 
-                                      alt="Example of an invalid medical certificate" 
+                                    <img
+                                      src={badCertImage}
+                                      alt="Example of an invalid medical certificate"
                                       className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
                                     />
                                   </div>
