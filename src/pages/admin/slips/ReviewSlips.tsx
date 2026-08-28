@@ -201,15 +201,24 @@ export default function ReviewSlips() {
   };
 
   useEffect(() => {
-    if (activeTab !== "qr") {
+    let active = true;
+    if (isVerifyModalOpen && activeTab === "qr") {
+      const timer = setTimeout(() => {
+        if (active) {
+          startScanner();
+        }
+      }, 100);
+      return () => {
+        active = false;
+        clearTimeout(timer);
+        if (qrReaderRef.current && qrReaderRef.current.isScanning) {
+          qrReaderRef.current.stop().catch(() => {});
+        }
+      };
+    } else {
       stopScanner();
     }
-    return () => {
-      if (qrReaderRef.current && qrReaderRef.current.isScanning) {
-        qrReaderRef.current.stop().catch(() => {});
-      }
-    };
-  }, [activeTab]);
+  }, [isVerifyModalOpen, activeTab]);
 
   const handleManualCodeChange = (index: number, value: string) => {
     const cleanVal = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -275,7 +284,6 @@ export default function ReviewSlips() {
 
   useEffect(() => {
     if (!isVerifyModalOpen) {
-      stopScanner();
       setManualCodeParts(Array(6).fill(""));
     }
   }, [isVerifyModalOpen]);
