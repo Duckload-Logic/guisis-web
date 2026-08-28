@@ -231,6 +231,10 @@ export function SupportChatWidget() {
                   isMe !== isPrevMe ||
                   msg.senderName !== prevMsg?.senderName ||
                   timeDiff > 3 * 60 * 1000;
+                const showSenderLabel =
+                  idx === 0 ||
+                  isMe !== isPrevMe ||
+                  msg.senderName !== prevMsg?.senderName;
 
                 const formattedDate = new Date(msg.createdAt).toLocaleString(
                   undefined,
@@ -250,10 +254,10 @@ export function SupportChatWidget() {
                     className={cn(
                       "flex flex-col",
                       isMe ? "items-end" : "items-start",
-                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-[1px]",
                     )}
                   >
-                    {isNewStack && (
+                    {showSenderLabel && (
                       <span
                         className={"px-1 text-[10px] text-muted-foreground"}
                       >
@@ -388,6 +392,10 @@ export function SupportChatWidget() {
                   isMe !== isPrevMe ||
                   msg.senderName !== prevMsg?.senderName ||
                   timeDiff > 3 * 60 * 1000;
+                const showSenderLabel =
+                  idx === 0 ||
+                  isMe !== isPrevMe ||
+                  msg.senderName !== prevMsg?.senderName;
 
                 const formattedDate = new Date(msg.createdAt).toLocaleString(
                   undefined,
@@ -407,10 +415,10 @@ export function SupportChatWidget() {
                     className={cn(
                       "flex flex-col",
                       isMe ? "items-end" : "items-start",
-                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-[1px]",
                     )}
                   >
-                    {isNewStack && (
+                    {showSenderLabel && (
                       <span
                         className={"px-1 text-[10px] text-muted-foreground"}
                       >
