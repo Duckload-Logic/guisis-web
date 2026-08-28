@@ -49,6 +49,7 @@ export default function ProfileMenu({
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { user, isStudent, activeRole, setActiveRole } = useAuth();
 
   const handleRoleSwitch = (r: UserRole) => {
