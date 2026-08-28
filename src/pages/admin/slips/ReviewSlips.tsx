@@ -167,7 +167,11 @@ export default function ReviewSlips() {
     setIsScanning(true);
     try {
       if (qrReaderRef.current) {
-        await qrReaderRef.current.stop().catch(() => {});
+        const prevScanner = qrReaderRef.current;
+        if (prevScanner.isScanning) {
+          await prevScanner.stop().catch(() => {});
+        }
+        qrReaderRef.current = null;
       }
 
       const html5QrCode = new Html5Qrcode("qr-reader-viewport");
@@ -180,7 +184,9 @@ export default function ReviewSlips() {
           qrbox: { width: 200, height: 200 },
         },
         async (decodedText) => {
-          await html5QrCode.stop().catch(() => {});
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop().catch(() => {});
+          }
           setIsScanning(false);
           verifyTicketByCode(decodedText);
         },
@@ -190,12 +196,17 @@ export default function ReviewSlips() {
       console.error("Scanner start error:", err);
       triggerToast("Failed to access camera. Check permissions.");
       setIsScanning(false);
+      qrReaderRef.current = null;
     }
   };
 
   const stopScanner = async () => {
-    if (qrReaderRef.current && qrReaderRef.current.isScanning) {
-      await qrReaderRef.current.stop().catch(() => {});
+    if (qrReaderRef.current) {
+      const currentScanner = qrReaderRef.current;
+      if (currentScanner.isScanning) {
+        await currentScanner.stop().catch(() => {});
+      }
+      qrReaderRef.current = null;
     }
     setIsScanning(false);
   };
@@ -211,8 +222,12 @@ export default function ReviewSlips() {
       return () => {
         active = false;
         clearTimeout(timer);
-        if (qrReaderRef.current && qrReaderRef.current.isScanning) {
-          qrReaderRef.current.stop().catch(() => {});
+        if (qrReaderRef.current) {
+          const currentScanner = qrReaderRef.current;
+          if (currentScanner.isScanning) {
+            currentScanner.stop().catch(() => {});
+          }
+          qrReaderRef.current = null;
         }
       };
     } else {
