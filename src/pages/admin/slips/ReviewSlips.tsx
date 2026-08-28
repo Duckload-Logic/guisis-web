@@ -357,6 +357,16 @@ export default function ReviewSlips() {
         .scanner-line {
           animation: scan 2.5s linear infinite;
         }
+        #qr-reader-viewport {
+          border: none !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        #qr-reader-viewport video {
+          object-fit: cover !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
       `}</style>
 
       <SlipList
