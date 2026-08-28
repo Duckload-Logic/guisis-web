@@ -591,10 +591,15 @@ export function SupportManagement() {
                         const isPrevStaff = prevMsg
                           ? prevMsg.senderId && prevMsg.senderId !== t.userId
                           : null;
+                        const timeDiff = prevMsg
+                          ? new Date(msg.createdAt).getTime() -
+                            new Date(prevMsg.createdAt).getTime()
+                          : 0;
                         const isNewStack =
                           idx === 0 ||
                           isStaff !== isPrevStaff ||
-                          msg.senderName !== prevMsg?.senderName;
+                          msg.senderName !== prevMsg?.senderName ||
+                          timeDiff > 3 * 60 * 1000;
 
                         const formattedDate = new Date(
                           msg.createdAt,
@@ -616,7 +621,7 @@ export function SupportManagement() {
                               isNewStack
                                 ? idx === 0
                                   ? "mt-0"
-                                  : "mt-1"
+                                  : "mt-3.5"
                                 : "mt-1"
                             }`}
                           >

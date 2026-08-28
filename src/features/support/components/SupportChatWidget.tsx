@@ -222,10 +222,15 @@ export function SupportChatWidget() {
                   ? (user && prevMsg.senderId === user.id) ||
                     (!user && !prevMsg.senderId)
                   : null;
+                const timeDiff = prevMsg
+                  ? new Date(msg.createdAt).getTime() -
+                    new Date(prevMsg.createdAt).getTime()
+                  : 0;
                 const isNewStack =
                   idx === 0 ||
                   isMe !== isPrevMe ||
-                  msg.senderName !== prevMsg?.senderName;
+                  msg.senderName !== prevMsg?.senderName ||
+                  timeDiff > 3 * 60 * 1000;
 
                 const formattedDate = new Date(msg.createdAt).toLocaleString(
                   undefined,
@@ -245,7 +250,7 @@ export function SupportChatWidget() {
                     className={cn(
                       "flex flex-col",
                       isMe ? "items-end" : "items-start",
-                      isNewStack ? (idx === 0 ? "mt-0" : "mt-1") : "mt-1",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
                     )}
                   >
                     {isNewStack && (
@@ -374,10 +379,15 @@ export function SupportChatWidget() {
                   ? (user && prevMsg.senderId === user.id) ||
                     (!user && !prevMsg.senderId)
                   : null;
+                const timeDiff = prevMsg
+                  ? new Date(msg.createdAt).getTime() -
+                    new Date(prevMsg.createdAt).getTime()
+                  : 0;
                 const isNewStack =
                   idx === 0 ||
                   isMe !== isPrevMe ||
-                  msg.senderName !== prevMsg?.senderName;
+                  msg.senderName !== prevMsg?.senderName ||
+                  timeDiff > 3 * 60 * 1000;
 
                 const formattedDate = new Date(msg.createdAt).toLocaleString(
                   undefined,
@@ -397,7 +407,7 @@ export function SupportChatWidget() {
                     className={cn(
                       "flex flex-col",
                       isMe ? "items-end" : "items-start",
-                      isNewStack ? (idx === 0 ? "mt-0" : "mt-1") : "mt-1",
+                      isNewStack ? (idx === 0 ? "mt-0" : "mt-3.5") : "mt-1",
                     )}
                   >
                     {isNewStack && (
