@@ -23,32 +23,38 @@ export function useSubmitSlip() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateSlipRequest) => {
+    mutationFn: async (
+      data: CreateSlipRequest & {
+        onUploadProgress?: (progressEvent: any) => void;
+      },
+    ) => {
+      const { onUploadProgress, ...rest } = data;
       const formData = new FormData();
 
-      if (data.studentNumber) {
-        formData.append("studentNumber", data.studentNumber);
+      if (rest.studentNumber) {
+        formData.append("studentNumber", rest.studentNumber);
       }
-      formData.append("reason", data.reason);
-      formData.append("dateOfAbsence", data.dateOfAbsence);
-      formData.append("dateNeeded", data.dateNeeded);
-      formData.append("categoryId", String(data.categoryId));
+      formData.append("reason", rest.reason);
+      formData.append("dateOfAbsence", rest.dateOfAbsence);
+      formData.append("dateNeeded", rest.dateNeeded);
+      formData.append("categoryId", String(rest.categoryId));
 
-      data.files?.excuseLetter?.forEach((file) => {
+      rest.files?.excuseLetter?.forEach((file) => {
         formData.append("excuseLetter", file);
       });
 
-      data.files?.parentId?.forEach((file) => {
+      rest.files?.parentId?.forEach((file) => {
         formData.append("parentId", file);
       });
 
-      data.files?.medicalCert?.forEach((file) => {
+      rest.files?.medicalCert?.forEach((file) => {
         formData.append("medicalCert", file);
       });
 
       return PostSlip(formData, {
         handlerName: "useSubmitSlip",
         stepName: "Submit Slip",
+        onUploadProgress,
       });
     },
     onSuccess: () => {
@@ -78,9 +84,11 @@ export function useUpdateSlip() {
     mutationFn: async ({
       id,
       data,
+      onUploadProgress,
     }: {
       id: string;
       data: CreateSlipRequest;
+      onUploadProgress?: (progressEvent: any) => void;
     }) => {
       const formData = new FormData();
 
@@ -109,6 +117,7 @@ export function useUpdateSlip() {
       return PatchSlip(id, formData, {
         handlerName: "useUpdateSlip",
         stepName: "Update Slip",
+        onUploadProgress,
       });
     },
     onSuccess: () => {

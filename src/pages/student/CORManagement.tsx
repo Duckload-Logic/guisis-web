@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useAuth, useToast, usePageMetadata } from "@/context";
 import {
   Card,
@@ -38,6 +38,8 @@ export default function CORManagement() {
   const { user, refresh } = useAuth();
   const { triggerToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const uploadingRef = useRef(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -107,9 +109,11 @@ export default function CORManagement() {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || uploadingRef.current) return;
 
+    uploadingRef.current = true;
     setIsUploading(true);
+    setUploadProgress(0);
 
     try {
       const validation = await validateCorFile(selectedFile);
@@ -119,7 +123,16 @@ export default function CORManagement() {
         return;
       }
 
-      await UploadCOR(selectedFile);
+      await UploadCOR(selectedFile, {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            setUploadProgress(percent);
+          }
+        },
+      });
       await refresh();
       setSelectedFile(null);
       setIsUploadModalOpen(false);
@@ -136,6 +149,7 @@ export default function CORManagement() {
       }
     } finally {
       setIsUploading(false);
+      uploadingRef.current = false;
     }
   };
 
@@ -531,33 +545,134 @@ export default function CORManagement() {
             exit={{ opacity: 0 }}
             className={cn(
               "fixed inset-0 z-[100] flex flex-col items-center",
-              "justify-center bg-slate-950/40 shadow-md",
+              "justify-center bg-slate-950/60 backdrop-blur-sm",
             )}
           >
             <div
               className={cn(
-                "flex w-[calc(100%-2rem)] max-w-sm flex-col items-center",
-                "gap-4 rounded-xl border border-border bg-card p-6",
-                "shadow-2xl backdrop-blur-2xl sm:p-10",
+                "flex w-[calc(100%-2rem)] max-w-md flex-col items-center",
+                "gap-6 rounded-2xl border border-border/40 bg-card/85 p-6",
+                "shadow-2xl backdrop-blur-2xl sm:p-8",
               )}
             >
-              <div className="relative">
-                <RefreshCw size={48} className="animate-spin text-primary" />
+              <div className="space-y-1.5 text-center">
+                <h3 className="text-xl font-bold text-foreground">
+                  COR Upload Progress
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Processing file. Please do not close this window.
+                </p>
+              </div>
+
+              {/* Progress Bar & Percentage */}
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">
+                    Overall Progress
+                  </span>
+                  <span className="font-bold text-primary">
+                    {uploadProgress}%
+                  </span>
+                </div>
                 <div
                   className={cn(
-                    "absolute inset-0 animate-ping rounded-full",
-                    "border border-primary/20",
+                    "h-2.5 w-full overflow-hidden",
+                    "rounded-full bg-muted/50",
                   )}
-                />
+                >
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-300",
+                      "bg-gradient-to-r from-[#8f1113] to-red-500",
+                    )}
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
               </div>
-              <div className="space-y-1 text-center">
-                <h3 className="text-lg font-bold text-foreground">
-                  Processing COR
-                </h3>
-                <p className="max-w-[280px] text-sm text-muted-foreground">
-                  Extracting document details and validating academic term.
-                  Please wait...
-                </p>
+
+              {/* Steps Checklist */}
+              <div className="w-full space-y-4 rounded-xl bg-muted/30 p-4">
+                {/* Step 1: File Upload */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0",
+                      "items-center justify-center rounded-full",
+                      "text-[10px] font-bold",
+                      uploadProgress === 100
+                        ? "bg-emerald-500/20 text-emerald-500"
+                        : "bg-primary/20 text-primary animate-pulse",
+                    )}
+                  >
+                    {uploadProgress === 100 ? (
+                      <CheckCircle2 className="h-4.5 w-4.5" />
+                    ) : (
+                      "1"
+                    )}
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      uploadProgress === 100
+                        ? "text-emerald-500"
+                        : "text-foreground",
+                    )}
+                  >
+                    Uploading COR file to server
+                  </span>
+                </div>
+
+                {/* Step 2: OCR Extraction */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0",
+                      "items-center justify-center rounded-full",
+                      "text-[10px] font-bold",
+                      uploadProgress < 100
+                        ? "bg-muted-foreground/10 text-muted-foreground/50"
+                        : "bg-primary/20 text-primary animate-pulse",
+                    )}
+                  >
+                    2
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      uploadProgress < 100
+                        ? "text-muted-foreground/50"
+                        : "text-foreground",
+                    )}
+                  >
+                    Extracting details (OCR Scanning)
+                  </span>
+                </div>
+
+                {/* Step 3: Academic setting verification */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0",
+                      "items-center justify-center rounded-full",
+                      "text-[10px] font-bold",
+                      uploadProgress < 100
+                        ? "bg-muted-foreground/10 text-muted-foreground/50"
+                        : "bg-primary/20 text-primary animate-pulse",
+                    )}
+                  >
+                    3
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      uploadProgress < 100
+                        ? "text-muted-foreground/50"
+                        : "text-foreground",
+                    )}
+                  >
+                    Verifying academic setting
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>

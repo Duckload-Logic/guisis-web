@@ -78,14 +78,12 @@ export default function ReviewSlips() {
   const [activeTab, setActiveTab] = useState<"qr" | "manual">("qr");
   const [isScanning, setIsScanning] = useState(false);
   const qrReaderRef = useRef<Html5Qrcode | null>(null);
-  
+
   const [manualCodeParts, setManualCodeParts] = useState<string[]>(
     Array(6).fill(""),
   );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const codeString = useMemo(() => manualCodeParts.join(""), [
-    manualCodeParts,
-  ]);
+  const codeString = useMemo(() => manualCodeParts.join(""), [manualCodeParts]);
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
@@ -114,8 +112,7 @@ export default function ReviewSlips() {
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
-      categoryId:
-        selectedCategory === "all" ? undefined : selectedCategory,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
     },
   });
 
@@ -139,8 +136,7 @@ export default function ReviewSlips() {
       search: debouncedSearch,
       statusId:
         String(selectedStatus?.id) === "0" ? undefined : selectedStatus?.id,
-      categoryId:
-        selectedCategory === "all" ? undefined : selectedCategory,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
       sortBy: selectedSort,
@@ -368,7 +364,7 @@ export default function ReviewSlips() {
           onClick={() => setIsVerifyModalOpen(true)}
           className={cn(
             "h-10 gap-2 rounded-xl bg-[#8f1113] hover:bg-[#6a0d0d]",
-            "px-4 shadow-md font-semibold text-white",
+            "px-4 font-semibold text-white shadow-md",
           )}
         >
           <Ticket className="h-4 w-4" />
@@ -390,8 +386,7 @@ export default function ReviewSlips() {
   });
 
   return (
-    <div className="animate-in fade-in duration-500 mx-auto flex w-full flex-col space-y-6 py-2 px-4 sm:px-6 md:px-8">
-
+    <div className="animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2 duration-500 sm:px-6 md:px-8">
       <style>{`
         @keyframes scan {
           0% { top: 0%; }
@@ -430,19 +425,19 @@ export default function ReviewSlips() {
             )}
           />
           <div className="min-w-0">
-            <p className="font-semibold text-sm">
+            <p className="text-sm font-semibold">
               Nearing Next Month's Requests Included
             </p>
-            <p className="text-xs opacity-90 mt-0.5">
-              Today is the last week of the month. Active requests for the
-              first week of next month are automatically included below.
+            <p className="mt-0.5 text-xs opacity-90">
+              Today is the last week of the month. Active requests for the first
+              week of next month are automatically included below.
             </p>
           </div>
         </div>
       )}
 
       <SlipList
-        className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both [animation-delay:150ms]"
+        className="animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-500 [animation-delay:150ms]"
         slips={slips}
         isLoading={isLoading}
         onViewClick={handleViewSlip}
@@ -481,8 +476,6 @@ export default function ReviewSlips() {
         totalPages={totalPages}
       />
 
-
-
       {/* Not Found */}
       <AlertDialog
         open={showNotFound}
@@ -490,20 +483,16 @@ export default function ReviewSlips() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Ticket Not Found
-            </AlertDialogTitle>
+            <AlertDialogTitle>Ticket Not Found</AlertDialogTitle>
 
             <AlertDialogDescription>
-              The ticket code you entered could not be found. Please
-              check the code and try again.
+              The ticket code you entered could not be found. Please check the
+              code and try again.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogAction>
-              OK
-            </AlertDialogAction>
+            <AlertDialogAction>OK</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -527,11 +516,11 @@ export default function ReviewSlips() {
             </AlertDialogDescription>
 
             {/* Switch Tabs */}
-            <div className="mt-4 flex rounded-xl bg-muted/60 p-1 border border-border/40">
+            <div className="mt-4 flex rounded-xl border border-border/40 bg-muted/60 p-1">
               <button
                 onClick={() => setActiveTab("qr")}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 rounded-lg py-2",
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2",
                   "text-xs font-bold transition-all",
                   activeTab === "qr"
                     ? "bg-white text-primary shadow-sm dark:bg-neutral-800"
@@ -544,7 +533,7 @@ export default function ReviewSlips() {
               <button
                 onClick={() => setActiveTab("manual")}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 rounded-lg py-2",
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2",
                   "text-xs font-bold transition-all",
                   activeTab === "manual"
                     ? "bg-white text-primary shadow-sm dark:bg-neutral-800"
@@ -565,35 +554,38 @@ export default function ReviewSlips() {
                   className={cn(
                     "relative mx-auto aspect-square w-full max-w-[240px]",
                     "overflow-hidden rounded-2xl border border-border",
-                    "bg-neutral-950 shadow-inner flex items-center",
+                    "flex items-center bg-neutral-950 shadow-inner",
                     "justify-center",
                   )}
                 >
-                  <div id="qr-reader-viewport" className="h-full w-full" />
+                  <div
+                    id="qr-reader-viewport"
+                    className="h-full w-full"
+                  />
                   {isScanning && (
                     <>
                       <div
                         className={cn(
                           "absolute left-4 top-4 h-5 w-5",
-                          "border-l-4 border-t-4 border-primary rounded-tl-sm",
+                          "rounded-tl-sm border-l-4 border-t-4 border-primary",
                         )}
                       />
                       <div
                         className={cn(
                           "absolute right-4 top-4 h-5 w-5",
-                          "border-r-4 border-t-4 border-primary rounded-tr-sm",
+                          "rounded-tr-sm border-r-4 border-t-4 border-primary",
                         )}
                       />
                       <div
                         className={cn(
-                          "absolute left-4 bottom-4 h-5 w-5",
-                          "border-l-4 border-b-4 border-primary rounded-bl-sm",
+                          "absolute bottom-4 left-4 h-5 w-5",
+                          "rounded-bl-sm border-b-4 border-l-4 border-primary",
                         )}
                       />
                       <div
                         className={cn(
-                          "absolute right-4 bottom-4 h-5 w-5",
-                          "border-r-4 border-b-4 border-primary rounded-br-sm",
+                          "absolute bottom-4 right-4 h-5 w-5",
+                          "rounded-br-sm border-b-4 border-r-4 border-primary",
                         )}
                       />
                       <div
@@ -609,11 +601,11 @@ export default function ReviewSlips() {
                     <div
                       className={cn(
                         "absolute inset-0 flex flex-col items-center",
-                        "justify-center p-4 text-center bg-muted/10",
+                        "justify-center bg-muted/10 p-4 text-center",
                         "backdrop-blur-sm",
                       )}
                     >
-                      <Camera className="h-5 w-5 text-primary/80 animate-pulse mb-2" />
+                      <Camera className="mb-2 h-5 w-5 animate-pulse text-primary/80" />
                       <p className="text-xs font-bold text-foreground">
                         Scanner Ready
                       </p>
@@ -643,12 +635,15 @@ export default function ReviewSlips() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleManualSubmit} className="space-y-4">
+              <form
+                onSubmit={handleManualSubmit}
+                className="space-y-4"
+              >
                 <div className="flex flex-col items-center gap-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Enter Ticket Code (SLIP-XXXXXX)
                   </span>
-                  
+
                   {/* 6 Individual Character Inputs */}
                   <div className="flex items-center gap-2">
                     {manualCodeParts.map((char, idx) => (
@@ -666,9 +661,9 @@ export default function ReviewSlips() {
                         className={cn(
                           "h-12 w-10 text-center font-mono text-lg font-bold",
                           "rounded-xl border border-border bg-background",
-                          "transition-all outline-none focus:border-primary",
+                          "outline-none transition-all focus:border-primary",
                           "focus:ring-2 focus:ring-primary/20",
-                          "uppercase select-all dark:bg-white/5",
+                          "select-all uppercase dark:bg-white/5",
                         )}
                       />
                     ))}
@@ -681,7 +676,7 @@ export default function ReviewSlips() {
                   className={cn(
                     "h-10 w-full gap-2 rounded-xl bg-[#8f1113]",
                     "font-semibold text-white shadow-sm transition-all",
-                    "hover:bg-[#6a0d0d] active:scale-95 text-xs mt-2",
+                    "mt-2 text-xs hover:bg-[#6a0d0d] active:scale-95",
                   )}
                 >
                   {isVerifying ? (
@@ -695,7 +690,7 @@ export default function ReviewSlips() {
             )}
           </div>
 
-          <div className="flex justify-end border-t border-border/40 pt-4 mt-2">
+          <div className="mt-2 flex justify-end border-t border-border/40 pt-4">
             <AlertDialogCancel
               onClick={() => setIsVerifyModalOpen(false)}
               className="h-9 rounded-lg px-4 text-xs font-semibold"
@@ -705,7 +700,6 @@ export default function ReviewSlips() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,8 @@ export default function SubmitSlip() {
     file: File;
     url: string;
   } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const submittingRef = useRef(false);
 
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -309,7 +311,10 @@ export default function SubmitSlip() {
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid) return;
+    if (!isFormValid || submittingRef.current) return;
+
+    submittingRef.current = true;
+    setUploadProgress(0);
 
     const payload: CreateSlipRequest = {
       reason: formData.reason,
@@ -328,33 +333,56 @@ export default function SubmitSlip() {
         : undefined,
     };
 
+    const progressHandler = (progressEvent: any) => {
+      if (progressEvent.total) {
+        const percent = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total,
+        );
+        setUploadProgress(percent);
+      }
+    };
+
     if (isEditMode && id) {
       updateSlip(
-        { id, data: payload },
+        {
+          id,
+          data: payload,
+          onUploadProgress: progressHandler,
+        },
         {
           onSuccess: () => {
+            submittingRef.current = false;
             triggerToast("Admission slip updated successfully");
             navigate(`/student/slips/${id}`);
           },
           onError: (error: any) => {
+            submittingRef.current = false;
             triggerToast(getErrorMessage(error));
           },
         },
       );
     } else {
-      submitSlip(payload, {
-        onSuccess: () => {
-          triggerToast("Admission slip submitted successfully");
-          navigate("/student/slips");
+      submitSlip(
+        {
+          ...payload,
+          onUploadProgress: progressHandler,
         },
-        onError: (error: any) => {
-          if (error.message?.includes("IIR profile")) {
-            navigate("/iir-form");
-          } else {
-            triggerToast(getErrorMessage(error));
-          }
+        {
+          onSuccess: () => {
+            submittingRef.current = false;
+            triggerToast("Admission slip submitted successfully");
+            navigate("/student/slips");
+          },
+          onError: (error: any) => {
+            submittingRef.current = false;
+            if (error.message?.includes("IIR profile")) {
+              navigate("/iir-form");
+            } else {
+              triggerToast(getErrorMessage(error));
+            }
+          },
         },
-      });
+      );
     }
   };
 
@@ -1445,35 +1473,108 @@ export default function SubmitSlip() {
             exit={{ opacity: 0 }}
             className={cn(
               "fixed inset-0 z-[100] flex flex-col items-center",
-              "justify-center bg-slate-950/40 shadow-md",
+              "justify-center bg-slate-950/60 backdrop-blur-sm",
             )}
           >
             <div
               className={cn(
-                "flex w-[calc(100%-2rem)] max-w-sm flex-col items-center",
-                "gap-4 rounded-xl border border-border bg-card p-6",
-                "shadow-2xl backdrop-blur-2xl sm:p-10",
+                "flex w-[calc(100%-2rem)] max-w-md flex-col items-center",
+                "gap-6 rounded-2xl border border-border/40 bg-card/85 p-6",
+                "shadow-2xl backdrop-blur-2xl sm:p-8",
               )}
             >
-              <div className="relative">
-                <RefreshCw
-                  size={48}
-                  className="animate-spin text-primary"
-                />
-                <div
-                  className={cn(
-                    "absolute inset-0 animate-ping rounded-full",
-                    "border border-primary/20",
-                  )}
-                />
-              </div>
-              <div className="space-y-1 text-center">
-                <h3 className="text-lg font-bold text-foreground">
+              <div className="space-y-1.5 text-center">
+                <h3 className="text-xl font-bold text-foreground">
                   {isEditMode ? "Updating Slip" : "Submitting Slip"}
                 </h3>
-                <p className="max-w-[280px] text-sm text-muted-foreground">
-                  Validating files and saving admission slip. Please wait...
+                <p className="text-xs text-muted-foreground">
+                  Uploading files. Please do not close this window.
                 </p>
+              </div>
+
+              {/* Progress Bar & Percentage */}
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">
+                    Overall Progress
+                  </span>
+                  <span className="font-bold text-primary">
+                    {uploadProgress}%
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "h-2.5 w-full overflow-hidden",
+                    "rounded-full bg-muted/50",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-300",
+                      "bg-gradient-to-r from-[#8f1113] to-red-500",
+                    )}
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Steps Checklist */}
+              <div className="w-full space-y-4 rounded-xl bg-muted/30 p-4">
+                {/* Step 1: File Upload */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0",
+                      "items-center justify-center rounded-full",
+                      "text-[10px] font-bold",
+                      uploadProgress === 100
+                        ? "bg-emerald-500/20 text-emerald-500"
+                        : "bg-primary/20 text-primary animate-pulse",
+                    )}
+                  >
+                    {uploadProgress === 100 ? (
+                      <CheckCircle2 className="h-4.5 w-4.5" />
+                    ) : (
+                      "1"
+                    )}
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      uploadProgress === 100
+                        ? "text-emerald-500"
+                        : "text-foreground",
+                    )}
+                  >
+                    Uploading attached documents
+                  </span>
+                </div>
+
+                {/* Step 2: Saving to Database */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-6 w-6 shrink-0",
+                      "items-center justify-center rounded-full",
+                      "text-[10px] font-bold",
+                      uploadProgress < 100
+                        ? "bg-muted-foreground/10 text-muted-foreground/50"
+                        : "bg-primary/20 text-primary animate-pulse",
+                    )}
+                  >
+                    2
+                  </div>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      uploadProgress < 100
+                        ? "text-muted-foreground/50"
+                        : "text-foreground",
+                    )}
+                  >
+                    Registering admission slip request
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>
