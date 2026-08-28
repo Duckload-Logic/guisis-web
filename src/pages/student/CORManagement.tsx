@@ -138,14 +138,24 @@ export default function CORManagement() {
       setIsUploadModalOpen(false);
       triggerToast("COR uploaded and validated successfully!");
     } catch (error: any) {
-      const errMsg = getErrorMessage(error);
-      if (errMsg.includes("couldn't connect to the server")) {
+      const status = error.response?.status;
+      if (status && status >= 500) {
         triggerToast(
-          "Connection failed. If you are on a school/office Wi-Fi " +
-            "or using a VPN, please switch networks (e.g., to mobile data).",
+          "Upload failed due to a server error or timeout. Please " +
+            "check if your COR is updated under the preview, or try " +
+            "again.",
         );
       } else {
-        triggerToast(errMsg);
+        const errMsg = getErrorMessage(error);
+        if (errMsg.includes("couldn't connect to the server")) {
+          triggerToast(
+            "Connection failed. If you are on a school/office Wi-Fi " +
+              "or using a VPN, please switch networks " +
+              "(e.g., to mobile data).",
+          );
+        } else {
+          triggerToast(errMsg);
+        }
       }
     } finally {
       setIsUploading(false);
