@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -396,11 +397,34 @@ export default function SlipDetails() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-col items-center justify-center rounded-xl bg-background/50 py-6 text-center shadow-inner">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                    <div
+                      className={cn(
+                        "flex flex-col items-center justify-center",
+                        "rounded-xl bg-background/50 py-6",
+                        "text-center shadow-inner",
+                      )}
+                    >
+                      <div className="mb-4 rounded-xl bg-white p-3 shadow-md">
+                        <QRCodeSVG
+                          value={slip.ticket.ticketCode}
+                          size={140}
+                          level="H"
+                        />
+                      </div>
+                      <p
+                        className={cn(
+                          "text-[10px] font-bold uppercase",
+                          "text-muted-foreground",
+                        )}
+                      >
                         Your Ticket Code
                       </p>
-                      <p className="font-mono text-3xl tracking-tighter text-foreground">
+                      <p
+                        className={cn(
+                          "font-mono text-3xl tracking-tighter",
+                          "text-foreground",
+                        )}
+                      >
                         {slip.ticket.ticketCode}
                       </p>
                     </div>

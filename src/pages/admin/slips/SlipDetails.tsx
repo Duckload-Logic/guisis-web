@@ -4,6 +4,7 @@ import {
   useGetSlipById,
   useUpdateSlipStatus,
   useGetSlipAttachments,
+  useClaimTicket,
 } from "@/features/slips/hooks";
 import {
   CheckCircle2,
@@ -21,6 +22,7 @@ import {
   Clock3,
   Ticket,
   StickyNote,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
-import { usePageMetadata } from "@/context";
+import { usePageMetadata, useToast } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
 import { parseAuditTrail } from "@/utils/auditTrail";
@@ -56,6 +58,21 @@ export default function SlipDetails() {
   const [reason, setReason] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
   const [showCorPreview, setShowCorPreview] = useState(false);
+
+  const claimTicketMutation = useClaimTicket();
+  const isClaiming = claimTicketMutation.isPending;
+  const { triggerToast } = useToast();
+
+  const handleVerifyTicket = async () => {
+    if (!slip.ticket?.ticketCode) return;
+    try {
+      await claimTicketMutation.mutateAsync(slip.ticket.ticketCode);
+      triggerToast("✓ Ticket verified successfully!");
+      refetch();
+    } catch (error: any) {
+      triggerToast(error.message || "Failed to verify ticket");
+    }
+  };
 
   const auditEntries = useMemo(() => {
     return parseAuditTrail(slip?.adminNotes);
@@ -582,6 +599,26 @@ export default function SlipDetails() {
                       {slip.ticket.isVerified ? "Claimed" : "Pending Claim"}
                     </Badge>
                   </div>
+
+                  {!slip.ticket.isVerified && (
+                    <Button
+                      onClick={handleVerifyTicket}
+                      disabled={isClaiming}
+                      className={cn(
+                        "mt-4 w-full gap-2 rounded-xl bg-green-600",
+                        "font-semibold text-white shadow-md",
+                        "transition-all hover:bg-green-700",
+                        "hover:scale-[1.01] active:scale-95",
+                      )}
+                    >
+                      {isClaiming ? (
+                        <Clock3 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4" />
+                      )}
+                      Verify Ticket
+                    </Button>
+                  )}
                 </div>
               )}
               {isPending ? (
