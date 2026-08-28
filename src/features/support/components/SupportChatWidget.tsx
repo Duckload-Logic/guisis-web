@@ -271,7 +271,8 @@ export function SupportChatWidget() {
                         )
                       }
                       className={cn(
-                        "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        showSenderLabel ? "mt-1" : "mt-0",
+                        "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
                         "cursor-pointer select-none",
                         isMe
                           ? "bg-primary text-primary-foreground " +
@@ -432,7 +433,8 @@ export function SupportChatWidget() {
                         )
                       }
                       className={cn(
-                        "mt-1 max-w-[80%] rounded-2xl px-3 py-2 text-sm",
+                        showSenderLabel ? "mt-1" : "mt-0",
+                        "max-w-[80%] rounded-2xl px-3 py-2 text-sm",
                         "cursor-pointer select-none",
                         isMe
                           ? "bg-primary text-primary-foreground " +

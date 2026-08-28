@@ -647,7 +647,9 @@ export function SupportManagement() {
                                 )
                               }
                               className={
-                                `mt-1 max-w-[80%] rounded-2xl px-3 py-2 ` +
+                                `${
+                                  showSenderLabel ? "mt-1" : "mt-0"
+                                } max-w-[80%] rounded-2xl px-3 py-2 ` +
                                 `cursor-pointer select-none text-sm ${
                                   isStaff
                                     ? "bg-primary text-primary-foreground " +
