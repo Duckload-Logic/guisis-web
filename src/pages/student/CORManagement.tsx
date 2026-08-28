@@ -427,7 +427,7 @@ export default function CORManagement() {
                     <div className="space-y-1">
                       <p className="font-bold">Click or drag file here</p>
                       <p className="text-xs text-muted-foreground">
-                        PDF (Max 10MB). Filename must include "COR" or
+                        PDF (Max 5MB). Filename must include "COR" or
                         "Certificate of Registration".
                       </p>
                     </div>
