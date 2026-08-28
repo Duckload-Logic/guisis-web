@@ -51,10 +51,19 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
           "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" +
           "3.4.120/pdf.worker.min.js";
 
-        const loadingTask = pdfjsLib.getDocument({
-          url,
-          withCredentials: true,
-        });
+        let loadingTask;
+        if (url.startsWith("blob:")) {
+          const response = await fetch(url);
+          const arrayBuffer = await response.arrayBuffer();
+          loadingTask = pdfjsLib.getDocument({
+            data: new Uint8Array(arrayBuffer),
+          });
+        } else {
+          loadingTask = pdfjsLib.getDocument({
+            url,
+            withCredentials: true,
+          });
+        }
 
         const pdf = await loadingTask.promise;
 
