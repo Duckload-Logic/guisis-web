@@ -71,6 +71,12 @@ export function SupportChatWidget() {
     };
   }, [isMobile, isOpen]);
 
+  useEffect(() => {
+    if (isStaff && isOpen) {
+      handleClose();
+    }
+  }, [isStaff, isOpen, handleClose]);
+
   const renderChatContent = () => {
     return (
       <div className="flex h-full min-h-0 flex-col">
