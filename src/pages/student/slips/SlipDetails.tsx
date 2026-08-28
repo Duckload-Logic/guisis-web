@@ -448,9 +448,35 @@ export default function SlipDetails() {
                       </div>
                     </div>
 
+                    <div
+                      className={cn(
+                        "rounded-xl border border-amber-500/25 bg-amber-500/5",
+                        "p-3 text-[11px] leading-relaxed text-amber-800",
+                        "dark:text-amber-200",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "font-bold flex items-center gap-1",
+                          "text-[11px] mb-1",
+                        )}
+                      >
+                        <AlertCircle
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            "text-amber-600 dark:text-amber-400",
+                          )}
+                        />
+                        Hardcopy Requirement
+                      </span>
+                      Please present the physical hardcopies of your uploaded
+                      supporting documents to the counselor when claiming your
+                      printed admission slip in the Guidance Office.
+                    </div>
+
                     <p className="text-center text-[9px] italic leading-relaxed text-muted-foreground">
-                      Present this code to the guidance counselor to claim your
-                      printed admission slip.
+                      Present this QR code or ticket number to the guidance
+                      counselor to claim your printed admission slip.
                     </p>
                   </CardContent>
                 </Card>
