@@ -581,7 +581,7 @@ export function SupportManagement() {
                   return (
                     <div
                       key={t.id}
-                      className="space-y-4"
+                      className="flex flex-col"
                     >
                       {msgs.map((msg, idx) => {
                         const isStaff =

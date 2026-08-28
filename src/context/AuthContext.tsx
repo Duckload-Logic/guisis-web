@@ -171,12 +171,13 @@ export const AuthProvider: React.FC<{
 
   const isAuthenticated = !sessionExpired && status === "success" && !!user;
 
-  const userRoles =
-    user?.roles?.map((r) => r.name.toLowerCase().replace(/\s+/g, "")) || [];
-  const isStudent = userRoles.includes("student");
-  const isAdmin = userRoles.includes("admin");
-  const isSuperAdmin = userRoles.includes("superadmin");
-  const isDeveloper = userRoles.includes("developer");
+  const currentRoleName =
+    activeRole?.name?.toLowerCase().replace(/\s+/g, "") || "";
+  const isStudent = currentRoleName === "student";
+  const isAdmin =
+    currentRoleName === "admin" || currentRoleName === "counselor";
+  const isSuperAdmin = currentRoleName === "superadmin";
+  const isDeveloper = currentRoleName === "developer";
 
   const isAuthLoading = status === "pending" && !isError && !hasTimedOut;
 
