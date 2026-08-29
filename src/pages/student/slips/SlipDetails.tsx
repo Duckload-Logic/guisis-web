@@ -380,113 +380,104 @@ export default function SlipDetails() {
             {/* Right Column: Status & Timeline */}
             <div className="space-y-6">
               {slip?.ticket && (
-                <Card className="overflow-hidden border border-border bg-card shadow-md">
-                  <CardHeader className="border-b border-border/60 bg-muted/20 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <Ticket className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-sm font-bold">
-                            Admission Slip Ticket
-                          </CardTitle>
-                          <p className="mt-0.5 text-[10px] text-muted-foreground">
-                            Present this when claiming your approved slip.
-                          </p>
-                        </div>
-                      </div>
-
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "rounded-xl px-2.5 py-1 text-[9px] font-bold uppercase",
-                          slip.ticket.isVerified
-                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                            : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-                        )}
-                      >
-                        {slip.ticket.isVerified ? (
-                          <ShieldCheck className="mr-1 h-3 w-3" />
-                        ) : (
-                          <Clock className="mr-1 h-3 w-3" />
-                        )}
-                        {slip.ticket.isVerified ? "Verified" : "Pending"}
-                      </Badge>
+                <Card
+                  className={cn(
+                    "border-2 border-dashed transition-all duration-500 hover:shadow-lg",
+                    slip.ticket.isVerified
+                      ? "border-green-500/30 bg-green-500/5"
+                      : "border-primary/30 bg-primary/5",
+                  )}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Ticket className="h-4 w-4" />
+                      <CardTitle className="text-sm">
+                        Admission Slip Ticket
+                      </CardTitle>
                     </div>
                   </CardHeader>
-
-                  <CardContent className="space-y-4 p-4">
-                    <div className="flex flex-col items-center rounded-xl border border-border/60 bg-muted/20 p-4 text-center">
-                      <div className="rounded-xl border border-border/60 bg-white p-3 shadow-sm">
+                  <CardContent className="space-y-4">
+                    <div
+                      className={cn(
+                        "flex flex-col items-center justify-center",
+                        "rounded-xl bg-background/50 py-6",
+                        "text-center shadow-inner",
+                      )}
+                    >
+                      <div className="mb-4 rounded-xl bg-white p-3 shadow-md">
                         <QRCodeSVG
                           value={slip.ticket.ticketCode}
-                          size={144}
+                          size={140}
                           level="H"
-                          aria-label="Admission slip ticket QR code"
                         />
                       </div>
-
-                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                        Ticket Code
+                      <p
+                        className={cn(
+                          "text-[10px] font-bold uppercase",
+                          "text-muted-foreground",
+                        )}
+                      >
+                        Your Ticket Code
                       </p>
-                      <p className="mt-1 break-all font-mono text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                      <p
+                        className={cn(
+                          "font-mono text-3xl tracking-tighter",
+                          "text-foreground",
+                        )}
+                      >
                         {slip.ticket.ticketCode}
                       </p>
                     </div>
 
-                    {slip.ticket.isVerified ? (
-                      <div
+                    <div className="flex items-center justify-between rounded-lg border border-border/40 bg-muted/30 px-3 py-2">
+                      <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                        Status
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {slip.ticket.isVerified ? (
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-green-600">
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                            VERIFIED
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600">
+                            <Clock className="h-3.5 w-3.5" />
+                            PENDING
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "rounded-xl border border-amber-500/25 bg-amber-500/5",
+                        "p-3 text-[11px] leading-relaxed text-amber-800",
+                        "dark:text-amber-200",
+                      )}
+                    >
+                      <span
                         className={cn(
-                          "rounded-xl border border-emerald-500/25 bg-emerald-500/5",
-                          "p-3 text-[11px] leading-relaxed text-emerald-800",
-                          "dark:text-emerald-200",
+                          "font-bold flex items-center gap-1",
+                          "text-[11px] mb-1",
                         )}
                       >
-                        <div className="flex items-start gap-2">
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          <div>
-                            <p className="font-bold">Ticket verified</p>
-                            <p className="mt-0.5">
-                              This ticket has already been verified by the
-                              Guidance Office.
-                            </p>
-                            {slip.ticket.verifiedAt && (
-                              <p className="mt-1 text-[10px] opacity-80">
-                                Verified on {formatDate(slip.ticket.verifiedAt)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div
+                        <AlertCircle
                           className={cn(
-                            "rounded-xl border border-amber-500/25 bg-amber-500/5",
-                            "p-3 text-[11px] leading-relaxed text-amber-800",
-                            "dark:text-amber-200",
+                            "h-3.5 w-3.5",
+                            "text-amber-600 dark:text-amber-400",
                           )}
-                        >
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                            <div>
-                              <p className="font-bold">Bring your hardcopies</p>
-                              <p className="mt-0.5">
-                                Present the physical copies of your uploaded
-                                supporting documents when claiming your printed
-                                admission slip in the Guidance Office.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                        />
+                        Hardcopy Requirement
+                      </span>
+                      Please present the physical hardcopies of your uploaded
+                      supporting documents to the counselor when claiming your
+                      printed admission slip in the Guidance Office.
+                    </div>
 
-                        <p className="text-center text-[10px] leading-relaxed text-muted-foreground">
-                          Show either the QR code or ticket code to the guidance
-                          counselor for on-site verification.
-                        </p>
-                      </>
-                    )}
+                    <p className="text-center text-[9px] italic leading-relaxed text-muted-foreground">
+                      Present this QR code or ticket number to the guidance
+                      counselor to claim your printed admission slip.
+                    </p>
                   </CardContent>
                 </Card>
               )}
