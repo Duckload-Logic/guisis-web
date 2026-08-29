@@ -165,8 +165,16 @@ const isParentNA = (rootData: any, idx: number): boolean => {
   const person =
     rootData?.family?.relatedPersons?.[idx] ||
     rootData?.relatedPersons?.[idx];
-  const name = person?.firstName?.trim().toLowerCase();
-  return name === "n/a" || name === "none" || name === "not applicable";
+  const first = person?.firstName?.trim().toLowerCase();
+  const last = person?.lastName?.trim().toLowerCase();
+  return (
+    first === "n/a" ||
+    first === "none" ||
+    first === "not applicable" ||
+    last === "n/a" ||
+    last === "none" ||
+    last === "not applicable"
+  );
 };
 
 RELATIONS.forEach(({ prefix, label }, idx) => {
