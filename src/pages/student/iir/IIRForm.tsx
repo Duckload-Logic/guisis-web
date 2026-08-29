@@ -381,6 +381,13 @@ export default function IIRForm() {
 
   const handleDiscardDraft = () => {
     clearDraft();
+    const baselineData = initializeFormData(
+      profileData ?? null,
+      EMPTY_IIR_FORM,
+      me,
+      { preserveBasicInfoFromSource: !!profileId }
+    );
+    setLocalFormData(baselineData);
     setShowDraftPrompt(false);
   };
 

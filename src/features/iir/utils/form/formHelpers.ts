@@ -142,6 +142,21 @@ export function createResetFormData(emptyForm: IIRForm, me: any): IIRForm {
 }
 
 /**
+ * Normalizes an address object, ensuring region/province/city/barangay are objects with a 'code' property
+ * if they were provided as plain strings from the backend profile/draft data.
+ */
+function normalizeAddress(addr: any): any {
+  if (!addr) return addr;
+  return {
+    ...addr,
+    region: typeof addr.region === "string" ? { code: addr.region } : addr.region,
+    province: typeof addr.province === "string" ? { code: addr.province } : addr.province,
+    city: typeof addr.city === "string" ? { code: addr.city } : addr.city,
+    barangay: typeof addr.barangay === "string" ? { code: addr.barangay } : addr.barangay,
+  };
+}
+
+/**
  * Initializes form data from draft, profile data, or empty template
  * @param source - Draft/profile data from API
  * @param emptyForm - Empty form template
@@ -185,9 +200,18 @@ export function initializeFormData(
         ...emptyData.student?.personalInfo,
         ...baseData.student?.personalInfo,
         dateOfBirth: toDateOnly(baseData.student?.personalInfo?.dateOfBirth),
+        emergencyContact: baseData.student?.personalInfo?.emergencyContact
+          ? {
+              ...baseData.student.personalInfo.emergencyContact,
+              address: normalizeAddress(baseData.student.personalInfo.emergencyContact.address),
+            }
+          : emptyData.student?.personalInfo?.emergencyContact,
       },
       addresses: Array.isArray(baseData.student?.addresses)
-        ? baseData.student.addresses
+        ? baseData.student.addresses.map((a: any) => ({
+            ...a,
+            address: normalizeAddress(a.address),
+          }))
         : emptyData.student.addresses,
     },
     education: {
