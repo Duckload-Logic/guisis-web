@@ -51,7 +51,7 @@ export const GetM2MClients = async (
           sort_by: params.sort_by,
           sort_order: params.sort_order
         },
-      },
+      } as AxiosConfigWithMeta,
     );
     return data;
   } catch (error) {
@@ -215,7 +215,7 @@ export const GetAdminAnalytics = async (
       {
         ...config,
         params: { range, source: "system" },
-      },
+      } as AxiosConfigWithMeta,
     );
     return data;
   } catch (error) {
@@ -310,7 +310,7 @@ export const GetLogStats = async (
         start_date: startDate,
         end_date: endDate,
       },
-    });
+    } as AxiosConfigWithMeta);
     return data;
   } catch (error) {
     throw error;

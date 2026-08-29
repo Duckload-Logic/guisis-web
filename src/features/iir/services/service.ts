@@ -43,7 +43,7 @@ export const CheckStudentNumberUniqueness = async (
       {
         ...config,
         params: { student_number: studentNumber },
-      },
+      } as AxiosConfigWithMeta,
     );
     return !!data?.exists;
   } catch (error) {
