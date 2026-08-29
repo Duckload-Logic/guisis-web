@@ -160,6 +160,15 @@ const hasParentData = (rootData: any, idx: number) => {
   return !isParentSectionEmpty(person);
 };
 
+const isParentNA = (rootData: any, idx: number): boolean => {
+  if (!rootData) return false;
+  const person =
+    rootData?.family?.relatedPersons?.[idx] ||
+    rootData?.relatedPersons?.[idx];
+  const name = person?.firstName?.trim().toLowerCase();
+  return name === "n/a" || name === "none" || name === "not applicable";
+};
+
 RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.firstName`] = [
     {
@@ -177,7 +186,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.lastName`] = [
     {
       type: "required",
-      validate: (value: any) => {
+      validate: (value: any, rootData: any) => {
+        if (isParentNA(rootData, idx)) {
+          return true;
+        }
         return !!value && String(value).trim().length > 0;
       },
       message: `${label} last name is required`,
@@ -195,7 +207,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.dateOfBirth`] = [
     {
       type: "required",
-      validate: (value: any) => {
+      validate: (value: any, rootData: any) => {
+        if (isParentNA(rootData, idx)) {
+          return true;
+        }
         return !!value && String(value).trim().length > 0;
       },
       message: `${label} date of birth is required`,
@@ -206,7 +221,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.educationalAttainment`] = [
     {
       type: "required",
-      validate: (value: any) => {
+      validate: (value: any, rootData: any) => {
+        if (isParentNA(rootData, idx)) {
+          return true;
+        }
         const id = value?.id || value;
         return !!id && Number(id) > 0;
       },
@@ -217,7 +235,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.occupation`] = [
     {
       type: "required",
-      validate: (value: any) => {
+      validate: (value: any, rootData: any) => {
+        if (isParentNA(rootData, idx)) {
+          return true;
+        }
         return !!value && String(value).trim().length > 0;
       },
       message: `${label} occupation is required`,
@@ -237,7 +258,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
     familyValidationSchema[`${prefix}.isLiving`] = [
       {
         type: "required",
-        validate: (value: any) => {
+        validate: (value: any, rootData: any) => {
+          if (isParentNA(rootData, idx)) {
+            return true;
+          }
           return value !== undefined && value !== null && value !== "";
         },
         message: `${label} status (Living/Deceased) is required`,
@@ -248,7 +272,10 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.relationship`] = [
     {
       type: "required",
-      validate: (value: any) => {
+      validate: (value: any, rootData: any) => {
+        if (isParentNA(rootData, idx)) {
+          return true;
+        }
         const id = value?.id || value;
         return !!id && Number(id) > 0;
       },
