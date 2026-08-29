@@ -75,7 +75,9 @@ export default function StudentSlips() {
     statusId: selectedStatus?.id === "0" ? undefined : selectedStatus?.id,
   });
   
-  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({});
+  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
+    params: { scope: "me" },
+  });
 
   const isLoading = isStatsLoading || isStatusesLoading;
 

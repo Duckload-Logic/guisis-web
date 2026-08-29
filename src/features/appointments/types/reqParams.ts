@@ -9,5 +9,6 @@ export type QueryParam = {
   urgency?: string;
   startDate?: string;
   endDate?: string;
+  scope?: string;
 };
 

@@ -11,6 +11,7 @@ export interface QueryParams {
   search?: string;
   startDate?: string;
   endDate?: string;
+  scope?: string;
 }
 
 export interface SlipCategory {

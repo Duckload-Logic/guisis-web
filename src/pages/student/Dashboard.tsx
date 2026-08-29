@@ -32,8 +32,10 @@ export default function Dashboard() {
   const { data: iir, isLoading: isIIRLoading } = useUserIIR(
     me?.id || undefined,
   );
-  const { data: slipStats } = useGetSlipStats({});
-  const { data: appointmentStats } = useAppointmentsStats({ params: {} });
+  const { data: slipStats } = useGetSlipStats({ params: { scope: "me" } });
+  const { data: appointmentStats } = useAppointmentsStats({
+    params: { scope: "me" },
+  });
 
   const [isPageLoaded, setIsPageLoaded] = useState(false);
 
@@ -77,6 +79,7 @@ export default function Dashboard() {
           "bg-slate-500/10 border-slate-500/20",
           "text-slate-600 dark:text-slate-400",
         ),
+        href: "/student/appointments",
       },
       {
         title: "Admission Slip",
@@ -87,6 +90,7 @@ export default function Dashboard() {
           "bg-emerald-500/10 border-emerald-500/20",
           "text-emerald-600 dark:text-emerald-400",
         ),
+        href: "/student/slips",
       },
       {
         title: "IIR Record",
@@ -99,6 +103,7 @@ export default function Dashboard() {
             : "bg-rose-500/10 border-rose-500/20 text-rose-600",
           iir?.isSubmitted ? "dark:text-emerald-400" : "dark:text-rose-400",
         ),
+        href: "/student/iir",
       },
       {
         title: "COR Status",
@@ -121,9 +126,17 @@ export default function Dashboard() {
               : "dark:text-amber-400"
             : "dark:text-slate-400",
         ),
+        href: "/student/cor-management",
       },
     ],
-    [corStatus, iir?.isSubmitted, iirProfileStatus, me, totalAppointments, totalSlips],
+    [
+      corStatus,
+      iir?.isSubmitted,
+      iirProfileStatus,
+      me,
+      totalAppointments,
+      totalSlips,
+    ],
   );
 
   const pageMeta = useMemo(

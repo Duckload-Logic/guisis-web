@@ -70,7 +70,9 @@ export default function StudentAppointments() {
     },
   });
 
-  const { data: appointmentStats } = useAppointmentsStats({});
+  const { data: appointmentStats } = useAppointmentsStats({
+    params: { scope: "me" },
+  });
 
   const appointments = data?.appointments || [];
   const statusCounts = appointmentStats || ([] as StatusCount[]);

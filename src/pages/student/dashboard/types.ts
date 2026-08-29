@@ -27,4 +27,5 @@ export interface StudentStatCard {
   subtitle: string;
   icon: LucideIcon;
   iconWrap: string;
+  href?: string;
 }
