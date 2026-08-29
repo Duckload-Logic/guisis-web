@@ -85,7 +85,11 @@ const ParentInformationCard = memo(
     return (
       <SectionContainer
         title={title}
-        description={`If any information is unknown, just leave it blank. Fill only the ${title.toLowerCase().replace("'s information", "")} details you know.`}
+        description={
+          `${title} is required. If unknown/unavailable, ` +
+          `please type 'N/A' in the name fields, select standard options, ` +
+          `and make sure to complete the Guardian section.`
+        }
         icon={User}
       >
         <div className="flex flex-col gap-8">
