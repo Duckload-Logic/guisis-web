@@ -164,10 +164,7 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.firstName`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
+      validate: (value: any) => {
         return !!value && String(value).trim().length > 0;
       },
       message: `${label} first name is required`,
@@ -180,10 +177,7 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.lastName`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
+      validate: (value: any) => {
         return !!value && String(value).trim().length > 0;
       },
       message: `${label} last name is required`,
@@ -201,15 +195,8 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.dateOfBirth`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
-        const person = rootData?.family?.relatedPersons?.[idx];
-        if (idx === 0 || idx === 2 || person?.isLiving !== false) {
-          return !!value && String(value).trim().length > 0;
-        }
-        return true;
+      validate: (value: any) => {
+        return !!value && String(value).trim().length > 0;
       },
       message: `${label} date of birth is required`,
     },
@@ -219,16 +206,9 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.educationalAttainment`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
-        const person = rootData?.family?.relatedPersons?.[idx];
+      validate: (value: any) => {
         const id = value?.id || value;
-        if (idx === 0 || idx === 2 || person?.isLiving !== false) {
-          return !!id && Number(id) > 0;
-        }
-        return true;
+        return !!id && Number(id) > 0;
       },
       message: `${label} educational attainment is required`,
     },
@@ -237,15 +217,8 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.occupation`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
-        const person = rootData?.family?.relatedPersons?.[idx];
-        if (idx === 0 || idx === 2 || person?.isLiving !== false) {
-          return !!value && String(value).trim().length > 0;
-        }
-        return true;
+      validate: (value: any) => {
+        return !!value && String(value).trim().length > 0;
       },
       message: `${label} occupation is required`,
     },
@@ -264,10 +237,7 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
     familyValidationSchema[`${prefix}.isLiving`] = [
       {
         type: "required",
-        validate: (value: any, rootData: any) => {
-          if (!hasParentData(rootData, idx)) {
-            return true;
-          }
+        validate: (value: any) => {
           return value !== undefined && value !== null && value !== "";
         },
         message: `${label} status (Living/Deceased) is required`,
@@ -278,10 +248,7 @@ RELATIONS.forEach(({ prefix, label }, idx) => {
   familyValidationSchema[`${prefix}.relationship`] = [
     {
       type: "required",
-      validate: (value: any, rootData: any) => {
-        if ((idx === 0 || idx === 1) && !hasParentData(rootData, idx)) {
-          return true;
-        }
+      validate: (value: any) => {
         const id = value?.id || value;
         return !!id && Number(id) > 0;
       },
