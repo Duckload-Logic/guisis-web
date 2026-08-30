@@ -329,7 +329,7 @@ export default function Layout({
 
             <div
               className={cn(
-                "relative h-full min-w-0 max-w-full flex-1 overflow-hidden",
+                "relative z-10 h-full min-w-0 max-w-full flex-1 overflow-hidden",
               )}
             >
               <div

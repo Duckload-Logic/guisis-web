@@ -175,8 +175,6 @@ export default function Navigation({
     }
   }, [location.pathname]);
 
-
-
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
     admin: "/admin",
