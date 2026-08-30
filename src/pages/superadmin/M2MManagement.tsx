@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { LabeledSwitch } from "@/components/ui/labeled-switch";
 import {
   Dialog,
   DialogContent,
@@ -735,12 +735,11 @@ export default function M2MManagement() {
                   </span>
                 </label>
 
-                <Switch
+                <LabeledSwitch
                   id="grant-personal-info-access"
                   checked={verifyPersonalInfo}
                   onCheckedChange={setVerifyPersonalInfo}
-                  aria-label="Grant student personal information access"
-                  className="!h-6 !min-h-0 !w-11 !min-w-0 shrink-0"
+                  className="shrink-0"
                 />
               </div>
             </div>

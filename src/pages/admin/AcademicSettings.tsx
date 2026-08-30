@@ -7,6 +7,7 @@ import {
 } from "@/features/student-core/services/academicSettingsService";
 import { useToast, usePageMetadata } from "@/context/hooks";
 import { SelectField } from "@/components/ui/select-field";
+import { LabeledSwitch } from "@/components/ui/labeled-switch";
 import { cn } from "@/lib/utils";
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -221,27 +222,11 @@ export default function AcademicSettings() {
               perform an "Express Submit" validating only basic profile info.
             </p>
           </div>
-          <button
-            type="button"
+          <LabeledSwitch
             id="toggle-expedited-iir"
-            onClick={() => setAllowExpeditedIIR(!allowExpeditedIIR)}
-            className={cn(
-              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer",
-              "rounded-full border-2 border-transparent transition-colors",
-              "duration-200 ease-in-out focus:outline-none focus:ring-2",
-              "focus:ring-primary focus:ring-offset-2",
-              allowExpeditedIIR ? "bg-primary" : "bg-muted"
-            )}
-          >
-            <span
-              className={cn(
-                "pointer-events-none inline-block h-5 w-5 transform",
-                "rounded-full bg-background shadow ring-0 transition",
-                "duration-200 ease-in-out",
-                allowExpeditedIIR ? "translate-x-5" : "translate-x-0"
-              )}
-            />
-          </button>
+            checked={allowExpeditedIIR}
+            onCheckedChange={setAllowExpeditedIIR}
+          />
         </div>
 
         {/* Warning notice */}
