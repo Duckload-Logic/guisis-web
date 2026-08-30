@@ -7,8 +7,8 @@ import {
   LogOut,
   ShieldCheck,
   Gavel,
-  Pin,
-  PinOff,
+  ChevronLeft,
+  ChevronRight,
   LayoutDashboard,
 } from "lucide-react";
 
@@ -295,123 +295,146 @@ export default function Navigation({
         sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]",
       )}
     >
-      <aside
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={`relative z-30 flex h-[95%] flex-col overflow-x-hidden rounded-3xl rounded-bl-none rounded-tl-none border border-l-0 border-glass-border shadow-lg transition-all duration-300 ${isExpanded ? "w-64" : "w-[4.5rem]"}`}
+      <div
+        className={cn(
+          "relative h-[95%] shrink-0 transition-[width] duration-300",
+          isExpanded ? "w-64" : "w-[4.5rem]",
+        )}
       >
-        <nav className="mt-2 flex flex-col gap-2 p-3">
-          {navigationItems.map((item) => {
-            return (
-              <NavItem
-                key={item.href}
-                item={item}
-                active={isActive(item)}
-                isExpanded={isExpanded}
-                variant="desktop"
-              />
-            );
-          })}
-        </nav>
+        <aside
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className={cn(
+            "relative z-30 flex h-full w-full flex-col overflow-hidden",
+            "rounded-3xl rounded-bl-none rounded-tl-none border border-l-0",
+            "border-glass-border bg-background shadow-lg",
+          )}
+        >
+          {/*
+            Keep a small header area exclusively for the expand/collapse
+            control so it never overlaps the first navigation item.
+          */}
+          <nav className="flex flex-col gap-2 p-3 pt-14">
+            {navigationItems.map((item) => {
+              return (
+                <NavItem
+                  key={item.href}
+                  item={item}
+                  active={isActive(item)}
+                  isExpanded={isExpanded}
+                  variant="desktop"
+                />
+              );
+            })}
+          </nav>
 
         {/* Role Switcher (Desktop) */}
-        {/* {user?.roles?.length > 1 && (
-          <div className="mb-2 mt-auto p-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={cn(
-                    "sidebar-icon-tilt group flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm",
-                    "border border-secondary/20 bg-secondary/10 text-secondary hover:bg-secondary/20",
-                  )}
-                  title="Switch Workspace"
-                >
-                  <div className="flex w-6 shrink-0 items-center justify-center">
-                    <RefreshCw
-                      className={cn(
-                        "h-5 w-5",
-                        isExpanded && "animate-spin-once",
-                      )}
-                    />
-                  </div>
-                  {isExpanded && (
-                    <span className="flex-1 overflow-hidden whitespace-nowrap text-left text-xs font-bold uppercase">
-                      Switch Role
-                    </span>
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side={isExpanded ? "bottom" : "right"}
-                align="start"
-                className="w-56 rounded-2xl border-white/20 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/90"
-              >
-                <p className="px-3 py-2 text-[10px] uppercase text-muted-foreground/60">
-                  Your Workspaces
-                </p>
-                <DropdownMenuSeparator className="bg-white/10" />
-                {user.roles.map((r: any) => {
-                  const isActiveRole = r.id === activeRole?.id;
-                  return (
-                    <DropdownMenuItem
-                      key={r.id}
-                      onClick={() => handleRoleSwitch(r)}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all focus:bg-primary/10",
-                        isActiveRole && "bg-primary/5 font-bold text-primary",
-                      )}
-                    >
-                      <div
+          {/* {user?.roles?.length > 1 && (
+            <div className="mb-2 mt-auto p-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={cn(
+                      "sidebar-icon-tilt group flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm",
+                      "border border-secondary/20 bg-secondary/10 text-secondary hover:bg-secondary/20",
+                    )}
+                    title="Switch Workspace"
+                  >
+                    <div className="flex w-6 shrink-0 items-center justify-center">
+                      <RefreshCw
                         className={cn(
-                          "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50",
-                          isActiveRole && "bg-primary/20",
+                          "h-5 w-5",
+                          isExpanded && "animate-spin-once",
+                        )}
+                      />
+                    </div>
+                    {isExpanded && (
+                      <span className="flex-1 overflow-hidden whitespace-nowrap text-left text-xs font-bold uppercase">
+                        Switch Role
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side={isExpanded ? "bottom" : "right"}
+                  align="start"
+                  className="w-56 rounded-2xl border-white/20 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/90"
+                >
+                  <p className="px-3 py-2 text-[10px] uppercase text-muted-foreground/60">
+                    Your Workspaces
+                  </p>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  {user.roles.map((r: any) => {
+                    const isActiveRole = r.id === activeRole?.id;
+                    return (
+                      <DropdownMenuItem
+                        key={r.id}
+                        onClick={() => handleRoleSwitch(r)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all focus:bg-primary/10",
+                          isActiveRole && "bg-primary/5 font-bold text-primary",
                         )}
                       >
-                        <LayoutDashboard size={16} />
-                      </div>
-                      <span className="text-sm">{r.name}</span>
-                      {isActiveRole && (
-                        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )} */}
-
-        {/* Pin Toggle (Desktop Only) - Balanced spacing */}
-        <div className={cn("mb-2 mt-auto p-3")}>
-          <button
-            onClick={toggleSidebarPinned}
-            className={`sidebar-icon-tilt group flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm ${
-              sidebarPinned
-                ? "bg-primary/10 text-primary shadow-lg"
-                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-            }`}
-            title={sidebarPinned ? "Unpin Sidebar" : "Pin Sidebar"}
-          >
-            <div className="flex w-6 shrink-0 items-center justify-center">
-              {sidebarPinned ? (
-                <PinOff size="1.25rem" />
-              ) : (
-                <Pin size="1.25rem" />
-              )}
+                        <div
+                          className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50",
+                            isActiveRole && "bg-primary/20",
+                          )}
+                        >
+                          <LayoutDashboard size={16} />
+                        </div>
+                        <span className="text-sm">{r.name}</span>
+                        {isActiveRole && (
+                          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            {isExpanded && (
-              <span
-                className={cn(
-                  "animate-in fade-in slide-in-from-left-2 w-auto",
-                  "overflow-hidden whitespace-nowrap font-medium duration-200",
-                )}
-              >
-                {sidebarPinned ? "Unpin Sidebar" : "Pin Sidebar"}
-              </span>
-            )}
-          </button>
-        </div>
-      </aside>
+          )} */}
+
+        </aside>
+
+        {/* Sidebar edge toggle */}
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            setSidebarHovered(false);
+            toggleSidebarPinned();
+          }}
+          aria-label={sidebarPinned ? "Collapse sidebar" : "Expand sidebar"}
+          aria-expanded={sidebarPinned}
+          title={sidebarPinned ? "Collapse Sidebar" : "Expand Sidebar"}
+          className={cn(
+            "absolute right-0 top-4 z-50 translate-x-1/2",
+            "flex h-8 w-8 items-center justify-center rounded-xl",
+            "border border-border bg-background text-primary shadow-md",
+            "transition-all duration-200",
+            "hover:border-primary/40 hover:bg-primary hover:text-primary-foreground",
+            "hover:shadow-md active:scale-95",
+            "focus-visible:outline-none focus-visible:ring-2",
+            "focus-visible:ring-primary/30 focus-visible:ring-offset-2",
+            "dark:bg-card",
+          )}
+        >
+          {sidebarPinned ? (
+            <ChevronLeft
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0"
+              strokeWidth={2.5}
+            />
+          ) : (
+            <ChevronRight
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0"
+              strokeWidth={2.5}
+            />
+          )}
+        </button>
+      </div>
     </div>
   );
 }

@@ -7,10 +7,10 @@ import {
   FileText,
   Ticket,
   ShieldCheck,
-  User,
   Calendar,
-  Clock,
   Camera,
+  AlertCircle,
+  Keyboard,
 } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -38,7 +38,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
 import { toISODateString } from "@/utils";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -55,6 +54,50 @@ const SORT_ORDER_OPTIONS: { id: SortOrder; name: string }[] = [
   { id: "asc", name: "Ascending" },
   { id: "desc", name: "Descending" },
 ];
+
+const TICKET_PREFIX = "SLIP-";
+const TICKET_CODE_LENGTH = 6;
+
+function normalizeTicketCode(rawCode: string): string | null {
+  const value = rawCode.trim().toUpperCase();
+
+  if (!value) return null;
+
+  const embeddedTicket = value.match(/SLIP[-\s]?([A-Z0-9]{6})/);
+  if (embeddedTicket) {
+    return `${TICKET_PREFIX}${embeddedTicket[1]}`;
+  }
+
+  const compact = value.replace(/[^A-Z0-9]/g, "");
+
+  if (compact.length === TICKET_CODE_LENGTH) {
+    return `${TICKET_PREFIX}${compact}`;
+  }
+
+  if (
+    compact.startsWith("SLIP") &&
+    compact.length === 4 + TICKET_CODE_LENGTH
+  ) {
+    return `${TICKET_PREFIX}${compact.slice(4)}`;
+  }
+
+  return null;
+}
+
+function getTicketSuffix(rawCode: string): string {
+  const normalized = normalizeTicketCode(rawCode);
+
+  if (normalized) {
+    return normalized.slice(TICKET_PREFIX.length);
+  }
+
+  return rawCode
+    .trim()
+    .toUpperCase()
+    .replace(/^SLIP[-\s]?/, "")
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, TICKET_CODE_LENGTH);
+}
 
 export default function ReviewSlips() {
   const navigate = useNavigate();
@@ -87,10 +130,12 @@ export default function ReviewSlips() {
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"qr" | "manual">("qr");
   const [isScanning, setIsScanning] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
   const qrReaderRef = useRef<Html5Qrcode | null>(null);
+  const verificationInFlightRef = useRef(false);
 
   const [manualCodeParts, setManualCodeParts] = useState<string[]>(
-    Array(6).fill(""),
+    Array(TICKET_CODE_LENGTH).fill(""),
   );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const codeString = useMemo(() => manualCodeParts.join(""), [manualCodeParts]);
@@ -162,38 +207,56 @@ export default function ReviewSlips() {
   const totalPages = data?.totalPages || 1;
 
   const verifyTicketByCode = async (code: string) => {
-    const cleanCode = code.trim().toUpperCase();
-    let finalCode = cleanCode;
-    if (cleanCode.length === 6) {
-      finalCode = `SLIP-${cleanCode}`;
-    }
-    if (!finalCode) return;
+    if (verificationInFlightRef.current) return;
 
+    const finalCode = normalizeTicketCode(code);
+
+    if (!finalCode) {
+      triggerToast(
+        "Invalid ticket code. Enter the 6-character code shown after SLIP-.",
+      );
+      return;
+    }
+
+    verificationInFlightRef.current = true;
     setIsVerifying(true);
+
     try {
       const slip = await GetTicketDetails(finalCode, {
         handlerName: "ReviewSlips",
         stepName: "Fetch Ticket Details",
       });
 
-      if (slip.id) {
-        try {
-          await claimTicket(finalCode);
-          triggerToast("Ticket successfully verified!");
-        } catch (claimErr: any) {
-          const errMsg =
-            claimErr.response?.data?.error || claimErr.message || "";
-          if (errMsg.toLowerCase().includes("already verified")) {
-            triggerToast("Ticket is already verified!");
-          } else {
-            throw claimErr;
-          }
-        }
+      if (!slip.id) {
+        throw new Error("Ticket details are incomplete. Please try again.");
+      }
+
+      if (slip.ticket?.isVerified) {
+        triggerToast("Ticket is already verified. Opening slip details.");
         setIsVerifyModalOpen(false);
         navigate(`/admin/slips/${slip.id}`);
+        return;
       }
+
+      try {
+        await claimTicket(finalCode);
+        triggerToast("Ticket successfully verified!");
+      } catch (claimError: any) {
+        const claimMessage =
+          claimError.response?.data?.error || claimError.message || "";
+
+        if (claimMessage.toLowerCase().includes("already verified")) {
+          triggerToast("Ticket is already verified. Opening slip details.");
+        } else {
+          throw claimError;
+        }
+      }
+
+      setIsVerifyModalOpen(false);
+      navigate(`/admin/slips/${slip.id}`);
     } catch (error: any) {
       if (error.response?.status === 404) {
+        setIsVerifyModalOpen(false);
         setShowNotFound(true);
       } else {
         const errMsg =
@@ -203,18 +266,23 @@ export default function ReviewSlips() {
         triggerToast(errMsg);
       }
     } finally {
+      verificationInFlightRef.current = false;
       setIsVerifying(false);
     }
   };
 
   const startScanner = async () => {
+    setScannerError(null);
     setIsScanning(true);
+
     try {
       if (qrReaderRef.current) {
-        const prevScanner = qrReaderRef.current;
-        if (prevScanner.isScanning) {
-          await prevScanner.stop().catch(() => {});
+        const previousScanner = qrReaderRef.current;
+
+        if (previousScanner.isScanning) {
+          await previousScanner.stop().catch(() => {});
         }
+
         qrReaderRef.current = null;
       }
 
@@ -227,18 +295,24 @@ export default function ReviewSlips() {
           fps: 10,
           qrbox: { width: 200, height: 200 },
         },
-        async (decodedText) => {
+        async (decodedText: string) => {
           if (html5QrCode.isScanning) {
             await html5QrCode.stop().catch(() => {});
           }
+
           setIsScanning(false);
-          verifyTicketByCode(decodedText);
+          void verifyTicketByCode(decodedText);
         },
         () => {},
       );
-    } catch (err: any) {
-      console.error("Scanner start error:", err);
-      triggerToast("Failed to access camera. Check permissions.");
+    } catch (error) {
+      console.error("Scanner start error:", error);
+
+      const message =
+        "Camera access is unavailable. Allow camera permission or use the manual code.";
+
+      setScannerError(message);
+      triggerToast(message);
       setIsScanning(false);
       qrReaderRef.current = null;
     }
@@ -293,7 +367,7 @@ export default function ReviewSlips() {
     newParts[index] = firstChar;
     setManualCodeParts(newParts);
 
-    if (index < 5 && firstChar) {
+    if (index < TICKET_CODE_LENGTH - 1 && firstChar) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -318,34 +392,44 @@ export default function ReviewSlips() {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasteData = e.clipboardData
-      .getData("text")
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "")
-      .slice(0, 6);
 
-    const newParts = [...manualCodeParts];
-    for (let i = 0; i < 6; i++) {
+    const pasteData = getTicketSuffix(e.clipboardData.getData("text"));
+    const newParts = Array(TICKET_CODE_LENGTH).fill("");
+
+    for (let i = 0; i < TICKET_CODE_LENGTH; i++) {
       newParts[i] = pasteData[i] || "";
     }
+
     setManualCodeParts(newParts);
 
-    const focusIndex = Math.min(pasteData.length, 5);
+    const focusIndex = Math.min(
+      Math.max(pasteData.length - 1, 0),
+      TICKET_CODE_LENGTH - 1,
+    );
     inputRefs.current[focusIndex]?.focus();
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (codeString.length === 6) {
+    if (codeString.length === TICKET_CODE_LENGTH) {
       verifyTicketByCode(codeString);
     }
   };
 
   useEffect(() => {
     if (!isVerifyModalOpen) {
-      setManualCodeParts(Array(6).fill(""));
+      setManualCodeParts(Array(TICKET_CODE_LENGTH).fill(""));
+      setScannerError(null);
     }
   }, [isVerifyModalOpen]);
+
+  const handleVerifyModalOpenChange = (open: boolean) => {
+    setIsVerifyModalOpen(open);
+
+    if (!open) {
+      void stopScanner();
+    }
+  };
 
   const handleViewSlip = (slip: Slip) => {
     navigate(`/admin/slips/${slip.id}`);
@@ -373,8 +457,8 @@ export default function ReviewSlips() {
         <Button
           onClick={() => setIsVerifyModalOpen(true)}
           className={cn(
-            "h-10 gap-2 rounded-xl bg-[#8f1113] hover:bg-[#6a0d0d]",
-            "px-4 font-semibold text-white shadow-md",
+            "h-10 gap-2 rounded-xl bg-primary hover:bg-primary/90",
+            "px-4 font-semibold text-primary-foreground shadow-md",
           )}
         >
           <Ticket className="h-4 w-4" />
@@ -415,7 +499,6 @@ export default function ReviewSlips() {
           object-fit: cover !important;
           width: 100% !important;
           height: 100% !important;
-          transform: scaleX(-1);
         }
       `}</style>
 
@@ -491,18 +574,21 @@ export default function ReviewSlips() {
         open={showNotFound}
         onOpenChange={setShowNotFound}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-sm rounded-xl border-border shadow-md">
           <AlertDialogHeader>
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+            </div>
             <AlertDialogTitle>Ticket Not Found</AlertDialogTitle>
 
             <AlertDialogDescription>
-              The ticket code you entered could not be found. Please check the
-              code and try again.
+              The ticket code could not be found. Check the printed code or
+              scan the student&apos;s QR code again.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogAction>OK</AlertDialogAction>
+            <AlertDialogAction className="rounded-xl">OK</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -510,200 +596,262 @@ export default function ReviewSlips() {
       {/* Verify Ticket Modal */}
       <AlertDialog
         open={isVerifyModalOpen}
-        onOpenChange={setIsVerifyModalOpen}
+        onOpenChange={handleVerifyModalOpenChange}
       >
         <AlertDialogContent
           className={cn(
-            "max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl",
+            "w-[calc(100%-2rem)] max-w-[30rem] overflow-hidden rounded-xl",
+            "border border-border bg-card p-0 shadow-md",
           )}
         >
-          <AlertDialogHeader className="relative border-b border-border/40 pb-4">
-            <AlertDialogTitle className="text-lg font-bold tracking-tight">
-              On-Site Ticket Verification
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground">
-              Scan the student's QR code or enter the 6-character code.
-            </AlertDialogDescription>
+          <AlertDialogHeader className="space-y-0 border-b border-border/60 p-5 pb-4">
+            <div className="flex items-start gap-3">
+              <div
+                className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center",
+                  "rounded-xl bg-primary/10 text-primary",
+                )}
+              >
+                <ShieldCheck className="h-5 w-5" />
+              </div>
 
-            {/* Switch Tabs */}
-            <div className="mt-4 flex rounded-xl border border-border/40 bg-muted/60 p-1">
+              <div className="min-w-0 flex-1">
+                <AlertDialogTitle className="text-base font-bold tracking-tight sm:text-lg">
+                  Verify Admission Slip Ticket
+                </AlertDialogTitle>
+                <AlertDialogDescription className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Scan the QR code or enter the six characters printed after
+                  <span className="font-mono font-semibold text-foreground">
+                    {" "}
+                    SLIP-
+                  </span>
+                  .
+                </AlertDialogDescription>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "mt-4 grid grid-cols-2 gap-1 rounded-xl border",
+                "border-border/60 bg-muted/50 p-1",
+              )}
+              role="tablist"
+              aria-label="Ticket verification method"
+            >
               <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "qr"}
                 onClick={() => setActiveTab("qr")}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2",
-                  "text-xs font-bold transition-all",
+                  "flex h-9 items-center justify-center gap-2 rounded-xl",
+                  "text-xs font-semibold transition-all",
                   activeTab === "qr"
-                    ? "bg-white text-primary shadow-sm dark:bg-neutral-800"
+                    ? "bg-background text-primary shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Camera className="h-3.5 w-3.5" />
                 QR Scanner
               </button>
+
               <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "manual"}
                 onClick={() => setActiveTab("manual")}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2",
-                  "text-xs font-bold transition-all",
+                  "flex h-9 items-center justify-center gap-2 rounded-xl",
+                  "text-xs font-semibold transition-all",
                   activeTab === "manual"
-                    ? "bg-white text-primary shadow-sm dark:bg-neutral-800"
+                    ? "bg-background text-primary shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <Ticket className="h-3.5 w-3.5" />
+                <Keyboard className="h-3.5 w-3.5" />
                 Manual Code
               </button>
             </div>
           </AlertDialogHeader>
 
-          {/* Active Tab Content */}
-          <div className="py-4">
+          <div className="p-5">
             {activeTab === "qr" ? (
-              <div className="flex flex-col items-center">
+              <div className="space-y-4">
                 <div
                   className={cn(
-                    "relative mx-auto aspect-square w-full max-w-[240px]",
-                    "overflow-hidden rounded-2xl border border-border",
-                    "flex items-center bg-neutral-950 shadow-inner",
-                    "justify-center",
+                    "relative mx-auto aspect-square w-full max-w-[230px]",
+                    "overflow-hidden rounded-xl border border-border",
+                    "flex items-center justify-center bg-neutral-950 shadow-inner",
                   )}
                 >
-                  <div
-                    id="qr-reader-viewport"
-                    className="h-full w-full"
-                  />
+                  <div id="qr-reader-viewport" className="h-full w-full" />
+
                   {isScanning && (
                     <>
-                      <div
-                        className={cn(
-                          "absolute left-4 top-4 h-5 w-5",
-                          "rounded-tl-sm border-l-4 border-t-4 border-primary",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "absolute right-4 top-4 h-5 w-5",
-                          "rounded-tr-sm border-r-4 border-t-4 border-primary",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "absolute bottom-4 left-4 h-5 w-5",
-                          "rounded-bl-sm border-b-4 border-l-4 border-primary",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "absolute bottom-4 right-4 h-5 w-5",
-                          "rounded-br-sm border-b-4 border-r-4 border-primary",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "scanner-line absolute left-4 right-4 h-0.5",
-                          "bg-primary/70",
-                          "shadow-[0_0_8px_rgba(239,68,68,0.8)]",
-                        )}
-                      />
+                      <div className="absolute left-4 top-4 h-5 w-5 rounded-tl-sm border-l-4 border-t-4 border-primary" />
+                      <div className="absolute right-4 top-4 h-5 w-5 rounded-tr-sm border-r-4 border-t-4 border-primary" />
+                      <div className="absolute bottom-4 left-4 h-5 w-5 rounded-bl-sm border-b-4 border-l-4 border-primary" />
+                      <div className="absolute bottom-4 right-4 h-5 w-5 rounded-br-sm border-b-4 border-r-4 border-primary" />
+                      <div className="scanner-line absolute left-4 right-4 h-0.5 bg-primary/80 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
                     </>
                   )}
+
                   {!isScanning && (
                     <div
                       className={cn(
-                        "absolute inset-0 flex flex-col items-center",
-                        "justify-center bg-muted/10 p-4 text-center",
-                        "backdrop-blur-sm",
+                        "absolute inset-0 flex flex-col items-center justify-center",
+                        "bg-neutral-950/80 p-5 text-center",
                       )}
                     >
-                      <Camera className="mb-2 h-5 w-5 animate-pulse text-primary/80" />
-                      <p className="text-xs font-bold text-foreground">
-                        Scanner Ready
-                      </p>
+                      {scannerError ? (
+                        <>
+                          <AlertCircle className="mb-2 h-6 w-6 text-amber-400" />
+                          <p className="text-xs font-semibold text-white">
+                            Camera unavailable
+                          </p>
+                          <p className="mt-1 max-w-[190px] text-[10px] leading-relaxed text-white/65">
+                            Use Manual Code or allow camera access and try again.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="mb-2 h-6 w-6 text-white/80" />
+                          <p className="text-xs font-semibold text-white">
+                            Camera ready
+                          </p>
+                          <p className="mt-1 text-[10px] text-white/60">
+                            Keep the QR code inside the frame.
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 flex gap-2">
+                <div className="flex items-center justify-center gap-2">
                   {isScanning ? (
                     <Button
-                      onClick={stopScanner}
+                      type="button"
+                      onClick={() => void stopScanner()}
                       variant="outline"
-                      className="h-9 rounded-lg px-4 text-xs font-semibold"
+                      className="h-9 rounded-xl px-4 text-xs font-semibold"
                     >
-                      Stop
+                      Stop Camera
                     </Button>
                   ) : (
                     <Button
-                      onClick={startScanner}
+                      type="button"
+                      onClick={() => void startScanner()}
                       disabled={isVerifying}
-                      className="h-9 gap-2 rounded-lg bg-primary px-4 text-xs font-semibold"
+                      className="h-9 gap-2 rounded-xl px-4 text-xs font-semibold shadow-sm"
                     >
                       <Camera className="h-3.5 w-3.5" />
-                      Start Camera
+                      {scannerError ? "Try Camera Again" : "Start Camera"}
                     </Button>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("manual")}
+                  className="mx-auto block text-xs font-medium text-primary hover:underline"
+                >
+                  Having trouble scanning? Enter the code instead.
+                </button>
               </div>
             ) : (
-              <form
-                onSubmit={handleManualSubmit}
-                className="space-y-4"
-              >
-                <div className="flex flex-col items-center gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Enter Ticket Code (SLIP-XXXXXX)
-                  </span>
-
-                  {/* 6 Individual Character Inputs */}
-                  <div className="flex items-center gap-2">
-                    {manualCodeParts.map((char, idx) => (
-                      <input
-                        key={idx}
-                        ref={(el) => (inputRefs.current[idx] = el)}
-                        type="text"
-                        maxLength={1}
-                        value={char}
-                        onChange={(e) =>
-                          handleManualCodeChange(idx, e.target.value)
-                        }
-                        onKeyDown={(e) => handleKeyDown(idx, e)}
-                        onPaste={idx === 0 ? handlePaste : undefined}
-                        className={cn(
-                          "h-12 w-10 text-center font-mono text-lg font-bold",
-                          "rounded-xl border border-border bg-background",
-                          "outline-none transition-all focus:border-primary",
-                          "focus:ring-2 focus:ring-primary/20",
-                          "select-all uppercase dark:bg-white/5",
-                        )}
-                      />
-                    ))}
+              <form onSubmit={handleManualSubmit} className="space-y-5">
+                <div className="space-y-3">
+                  <div className="text-center">
+                    <p className="text-xs font-semibold text-foreground">
+                      Enter ticket code
+                    </p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      You can also paste the full code, including SLIP-.
+                    </p>
                   </div>
+
+                  <div className="flex items-center justify-center gap-2">
+                    <div
+                      className={cn(
+                        "flex h-11 items-center rounded-xl border border-border",
+                        "bg-muted/50 px-3 font-mono text-xs font-bold text-muted-foreground",
+                      )}
+                    >
+                      SLIP-
+                    </div>
+
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      {manualCodeParts.map((character, index) => (
+                        <input
+                          key={index}
+                          ref={(element) =>
+                            (inputRefs.current[index] = element)
+                          }
+                          type="text"
+                          inputMode="text"
+                          autoCapitalize="characters"
+                          autoComplete="off"
+                          spellCheck={false}
+                          maxLength={1}
+                          aria-label={`Ticket character ${index + 1}`}
+                          value={character}
+                          onChange={(event) =>
+                            handleManualCodeChange(index, event.target.value)
+                          }
+                          onKeyDown={(event) => handleKeyDown(index, event)}
+                          onPaste={handlePaste}
+                          className={cn(
+                            "h-11 w-8 rounded-xl border border-border bg-background",
+                            "text-center font-mono text-base font-bold uppercase",
+                            "outline-none transition-all sm:w-9",
+                            "focus:border-primary focus:ring-2 focus:ring-primary/20",
+                            "dark:bg-white/5",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={cn(
+                    "flex items-start gap-2 rounded-xl border border-primary/15",
+                    "bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground",
+                  )}
+                >
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <p>
+                    Verification marks the ticket as claimed and then opens the
+                    admission slip details for review.
+                  </p>
                 </div>
 
                 <Button
                   type="submit"
-                  disabled={isVerifying || codeString.length !== 6}
-                  className={cn(
-                    "h-10 w-full gap-2 rounded-xl bg-[#8f1113]",
-                    "font-semibold text-white shadow-sm transition-all",
-                    "mt-2 text-xs hover:bg-[#6a0d0d] active:scale-95",
-                  )}
+                  disabled={
+                    isVerifying || codeString.length !== TICKET_CODE_LENGTH
+                  }
+                  className="h-10 w-full gap-2 rounded-xl text-xs font-semibold shadow-sm"
                 >
                   {isVerifying ? (
                     <Clock3 className="h-4 w-4 animate-spin" />
                   ) : (
                     <ShieldCheck className="h-4 w-4" />
                   )}
-                  Verify Ticket Code
+                  {isVerifying ? "Verifying..." : "Verify Ticket"}
                 </Button>
               </form>
             )}
           </div>
 
-          <div className="mt-2 flex justify-end border-t border-border/40 pt-4">
+          <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-muted/20 px-5 py-4">
+            <p className="hidden text-[10px] text-muted-foreground sm:block">
+              Verify only when the student presents the ticket on-site.
+            </p>
             <AlertDialogCancel
-              onClick={() => setIsVerifyModalOpen(false)}
-              className="h-9 rounded-lg px-4 text-xs font-semibold"
+              onClick={() => handleVerifyModalOpenChange(false)}
+              className="ml-auto h-9 rounded-xl px-4 text-xs font-semibold"
             >
               Cancel
             </AlertDialogCancel>
