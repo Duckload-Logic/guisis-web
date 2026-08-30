@@ -159,9 +159,35 @@ export default function Navigation({
   role: string;
   roleLabel: string;
 }) {
-  const { sidebarPinned, toggleSidebarPinned, setSidebarHovered } = useUI();
+  const { sidebarPinned, setSidebarPinned, toggleSidebarPinned, setSidebarHovered } = useUI();
   const { activeRole, setActiveRole } = useAuth();
   const navigate = useNavigate();
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (sidebarPinned) {
+      setSidebarPinned(false);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        sidebarPinned &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setSidebarPinned(false);
+      }
+    }
+    
+    if (sidebarPinned) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebarPinned, setSidebarPinned]);
 
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
@@ -404,6 +430,7 @@ export default function Navigation({
         }}
       >
         <aside
+          ref={sidebarRef}
           className={cn(
             "relative z-50 flex h-full w-full flex-col overflow-visible rounded-3xl border",
             "border-glass-border bg-background/95 shadow-md backdrop-blur-xl",
