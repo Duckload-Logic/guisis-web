@@ -25,23 +25,15 @@ export default function SubHeader({
   const today = new Date();
 
   return (
-    <section
-      className={cn(
-        "relative mb-6 min-w-0 max-w-full overflow-hidden rounded-xl border",
-        "border-glass-border bg-glass-bg p-4 sm:p-5",
-        "shadow-md",
-        "dark:border-white/10 dark:bg-glass-bg",
-        "dark:shadow-[0_8px_24px_rgba(0,0,0,0.25)] sm:p-6",
-      )}
-    >
-      {/* <div className={cn(
-    "pointer-events-none absolute inset-0",
-    "bg-[radial-gradient(circle_at_top_right,rgba(220,38,38,0.10),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.08),transparent_28%)]"
-  )} /> */}
-
+    <section className="relative mb-8 min-w-0 max-w-full space-y-4 border-b border-border/60 pb-6">
       <Breadcrumbs />
 
-      <div className="relative flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div
+        className={cn(
+          "relative flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end",
+          "lg:justify-between border-l-[4px] border-primary pl-4 sm:pl-5",
+        )}
+      >
         <div className="min-w-0 space-y-3">
           {badgeText && (
             <div

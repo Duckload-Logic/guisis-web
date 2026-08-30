@@ -23,11 +23,11 @@ export function StatusSummaryCards({ statCards }: StatusSummaryCardsProps) {
         const cardContent = (
           <Card
             className={cn(
-              "group overflow-hidden rounded-xl border border-glass-border",
-              "bg-glass-bg shadow-md backdrop-blur-xl transition-all duration-300",
+              "group overflow-hidden rounded-xl border border-border",
+              "bg-background/80 shadow-sm backdrop-blur-md transition-all duration-300",
               "hover:-translate-y-0.5",
               item.href &&
-                "cursor-pointer hover:border-primary/30 hover:bg-glass-bg/60",
+                "cursor-pointer hover:border-primary/30 hover:bg-background/90",
               "animate-fade-in-up",
             )}
             style={{

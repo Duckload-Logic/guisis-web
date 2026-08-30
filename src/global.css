@@ -482,6 +482,22 @@
     }
   }
 
+  @keyframes expand-x {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-divider-in {
+    animation: expand-x 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-origin: center;
+  }
+
   .perf-mode * {
     backdrop-filter: none !important;
   }

@@ -191,38 +191,36 @@ export default function Navigation({
 
     return (
       <>
-        <nav
-          className={cn(
-            "fixed inset-x-0 bottom-0 z-40 w-full shrink-0 border-t",
-            "bg-background xl:hidden",
-          )}
-        >
-          <div className="flex h-16 items-center justify-around px-2">
-            {homeItem && (
-              <NavItem
-                item={homeItem}
-                active={isActive(homeItem)}
-                variant="mobile-bottom"
-              />
+        <div className="fixed inset-x-0 bottom-4 z-40 flex w-full justify-center px-4 xl:hidden">
+          <div
+            className={cn(
+              "flex h-16 w-full max-w-sm items-center rounded-2xl border",
+              "border-border bg-background/10 px-2 shadow-lg backdrop-blur-xl",
             )}
+          >
+            {/* Scrollable Nav Area */}
+            <nav className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,black_85%,transparent_100%)]">
+              {navigationItems
+                .filter((item) => item.href !== SETTINGS_HREF)
+                .map((item) => (
+                  <NavItem
+                    key={item.href}
+                    item={item}
+                    active={isActive(item)}
+                    variant="mobile-bottom"
+                  />
+                ))}
+            </nav>
 
-            <button
-              onClick={() => {
-                setDrawerMode("menu");
-                setOpenDrawer(true);
-              }}
-              className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
-                isOverflowActive ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              <MoreHorizontal className="h-6 w-6 transition-transform group-aria-pressed:animate-spin" />
-            </button>
+            {/* Static Actions */}
+            <div className="mx-1 h-8 w-[1px] shrink-0 bg-border" />
+
             <button
               onClick={() => {
                 setDrawerMode("settings");
                 setOpenDrawer(true);
               }}
-              className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
+              className={`group flex min-h-11 min-w-11 shrink-0 flex-col items-center justify-center rounded-xl p-2 ${
                 location.pathname.includes(SETTINGS_HREF)
                   ? "text-primary"
                   : "text-muted-foreground"
@@ -231,7 +229,7 @@ export default function Navigation({
               <Settings className="h-6 w-6 transition-transform group-hover:rotate-45" />
             </button>
           </div>
-        </nav>
+        </div>
 
         <Drawer
           open={openDrawer}
@@ -249,17 +247,20 @@ export default function Navigation({
                 <p className="px-2 text-xs font-bold text-muted-foreground">
                   NAVIGATION
                 </p>
-                {overflowItems.map((item) => {
-                  return (
-                    <NavItem
-                      key={item.href}
-                      item={item}
-                      active={isActive(item)}
-                      variant="mobile-drawer"
-                      onClick={() => setOpenDrawer(false)}
-                    />
-                  );
-                })}
+                {navigationItems
+                  .filter((item) => item.href !== SETTINGS_HREF)
+                  .slice(3) // Only map items that didn't fit in the dock
+                  .map((item) => {
+                    return (
+                      <NavItem
+                        key={item.href}
+                        item={item}
+                        active={isActive(item)}
+                        variant="mobile-drawer"
+                        onClick={() => setOpenDrawer(false)}
+                      />
+                    );
+                  })}
               </div>
             ) : (
               <MobileSettingsContent
@@ -461,8 +462,7 @@ function MobileSettingsContent({
         <div className="space-y-3">
           <p
             className={
-              "px-2 text-[10px] uppercase " +
-              "text-muted-foreground/60"
+              "px-2 text-[10px] uppercase " + "text-muted-foreground/60"
             }
           >
             Switch Workspace
@@ -499,9 +499,7 @@ function MobileSettingsContent({
                     </p>
                   </div>
                   {isActiveRole && (
-                    <div
-                      className="ml-auto h-2 w-2 rounded-full bg-primary"
-                    />
+                    <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
                   )}
                 </button>
               );

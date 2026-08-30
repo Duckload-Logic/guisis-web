@@ -7,6 +7,7 @@ import { useToast } from "@/context/hooks";
  */
 export function useIIRDownload() {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const { triggerToast } = useToast();
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -19,21 +20,36 @@ export function useIIRDownload() {
     }
 
     setIsDownloading(true);
+    setDownloadProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setDownloadProgress((prev) => {
+        if (prev >= 90) return prev;
+        return prev + Math.floor(Math.random() * 10) + 5;
+      });
+    }, 300);
+
     try {
       const { blob, fileName } = await DownloadIIRPDF(iirID, {
         handlerName: "useIIRDownload",
         stepName: "Generate PDF Preview",
       });
 
-      const pdfBlob = new Blob([blob], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(pdfBlob);
-      setPdfUrl(url);
-      setCurrentFileName(fileName);
+      setDownloadProgress(100);
+
+      setTimeout(() => {
+        const pdfBlob = new Blob([blob], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(pdfBlob);
+        setPdfUrl(url);
+        setCurrentFileName(fileName);
+        setIsDownloading(false);
+      }, 400); // Small delay to let user see 100%
     } catch (error) {
       console.error("Failed to generate IIR PDF preview:", error);
       triggerToast("Failed to generate IIR PDF preview. Please try again.");
-    } finally {
       setIsDownloading(false);
+    } finally {
+      clearInterval(progressInterval);
     }
   };
 
@@ -62,5 +78,6 @@ export function useIIRDownload() {
     clearPreview,
     pdfUrl,
     isDownloading,
+    downloadProgress,
   };
 }

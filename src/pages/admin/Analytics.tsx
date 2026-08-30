@@ -50,9 +50,7 @@ import {
   ResponsiveModalTitle,
 } from "@/components/ui/responsive-modal";
 import { useQuery } from "@tanstack/react-query";
-import {
-  GetAcademicSettings,
-} from "@/features/student-core/services/academicSettingsService";
+import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
 
 // --- THEME COLORS ---
 const COLORS = [
@@ -260,7 +258,7 @@ export default function AnalyticsPage() {
       return null;
     }
     return data.genderDistribution.reduce((max, current) =>
-      current.totalPct > max.totalPct ? current : max
+      current.totalPct > max.totalPct ? current : max,
     );
   }, [data?.genderDistribution]);
 
@@ -376,7 +374,7 @@ export default function AnalyticsPage() {
 
           {/* Right Columns: KPIs */}
           <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-2 animate-fade-in-up"
+            className="animate-fade-in-up grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-2"
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
             <KPICard
@@ -431,7 +429,7 @@ export default function AnalyticsPage() {
                   )}
                 >
                   <Download size={16} />
-                  Download PDF
+                  <p className="hidden sm:block">Download PDF</p>
                 </button>
               </div>
             </ResponsiveModalHeader>

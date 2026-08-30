@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,12 +65,12 @@ export default function AppointmentLogs() {
   };
 
   // State for other filters
-  const [statusFilter, setStatusFilter] = useState<number>(0);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useUrlState<number>("status", 0);
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
+  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>("urgency", "all");
   const { data: categories } = useCategories();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useUrlState("q", "");
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportData, setReportData] = useState<Appointment[]>([]);
   const [isReportLoading, setIsReportLoading] = useState(false);

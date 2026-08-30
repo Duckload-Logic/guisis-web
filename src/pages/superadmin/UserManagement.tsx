@@ -59,18 +59,19 @@ import type {
 import { RoleManagementModal } from "./RoleManagementModal";
 import { WhitelistModal } from "./WhitelistModal";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useUrlState } from "@/hooks";
 
 type SortOrder = "asc" | "desc";
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState<"users" | "whitelist">("users");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useUrlState<"users" | "whitelist">("tab", "users");
+  const [page, setPage] = useUrlState("page", 1);
+  const [search, setSearch] = useUrlState("q", "");
 
-  const [roleFilter, setRoleFilter] = useState<number | undefined>();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedSort, setSelectedSort] = useState<string>("userName");
-  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
+  const [roleFilter, setRoleFilter] = useUrlState<number | undefined>("role", undefined);
+  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "all");
+  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "userName");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
 
   const [userToToggle, setUserToToggle] = useState<UserAccount | null>(null);
   const [userToManageRoles, setUserToManageRoles] =
@@ -244,7 +245,7 @@ export default function UserManagement() {
   };
 
   const menuActions = (user: UserAccount) => {
-    const isStudent = user.roles.some(
+    const isStudent = user.roles?.some(
       (r) => r.name.toLowerCase() === "student",
     );
     const actions = [];
@@ -397,7 +398,7 @@ export default function UserManagement() {
         className: "w-[25%] p-0",
         render: (user: UserAccount) => (
           <div className="flex flex-wrap gap-1 px-3 py-3">
-            {user.roles.map((role: any) => (
+            {user.roles?.map((role: any) => (
               <Badge
                 key={role.id}
                 variant="outline"
@@ -497,7 +498,7 @@ export default function UserManagement() {
                 align="end"
                 className="w-48 rounded-xl bg-card backdrop-blur-2xl"
               >
-                {menuActions(user).map((item: any) => (
+                {menuActions(user)?.map((item: any) => (
                   <DropdownMenuItem
                     key={item.id}
                     className={cn(
@@ -572,7 +573,7 @@ export default function UserManagement() {
         className: "w-[30%] p-0",
         render: (entry: WhitelistEntry) => (
           <div className="flex flex-wrap gap-1 px-3 py-3">
-            {entry.roles.map((role: any) => (
+            {entry.roles?.map((role: any) => (
               <Badge
                 key={role.id}
                 variant="outline"
@@ -895,7 +896,7 @@ export default function UserManagement() {
         onWhitelist={handleWhitelist}
         isProcessing={addWhitelistMutation.isPending}
         initialEmail={editingWhitelistEntry?.email}
-        initialRoleIds={editingWhitelistEntry?.roles.map((r) => r.id)}
+        initialRoleIds={editingWhitelistEntry?.roles?.map((r) => r.id)}
       />
 
       <AlertDialog

@@ -6,7 +6,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
-  FullScreenLoader,
   FriendlyErrorState,
   PDFPreview,
 } from "@/components/shared";
@@ -27,11 +26,11 @@ import {
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import {
-  ResponsiveModal,
-  ResponsiveModalContent,
-  ResponsiveModalHeader,
-  ResponsiveModalTitle,
-} from "@/components/ui/responsive-modal";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Download, FileText } from "lucide-react";
 
 const ICON_SIZE = 20;
@@ -72,6 +71,7 @@ export default function IIRProfile() {
     clearPreview,
     pdfUrl,
     isDownloading,
+    downloadProgress,
   } = useIIRDownload();
   const [searchParams] = useSearchParams();
 
@@ -116,9 +116,7 @@ export default function IIRProfile() {
   const showSignificantNotes = isStaff;
 
   const isOwnExpedited =
-    !isStaff &&
-    sessionIir?.isSubmitted &&
-    !sessionIir?.isCompleted;
+    !isStaff && sessionIir?.isSubmitted && !sessionIir?.isCompleted;
 
   useEffect(() => {
     if (isOwnExpedited && activeTab !== "personal") {
@@ -140,7 +138,7 @@ export default function IIRProfile() {
             "border border-emerald-500/20 p-0",
             "hover:bg-emerald-500/10 disabled:opacity-50",
             "disabled:hover:bg-transparent",
-            "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
           )}
           title="Download PDF"
         >
@@ -166,7 +164,7 @@ export default function IIRProfile() {
               "group flex h-10 w-10 items-center justify-center rounded-xl",
               "border border-primary/20 p-0",
               "hover:bg-primary/10",
-              "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+              "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
             )}
             title="Edit IIR profile"
           >
@@ -280,18 +278,33 @@ export default function IIRProfile() {
         IIR Print Copy
       </div>
 
-      <FullScreenLoader
-        isLoading={isDownloading}
-        message="Generating Document..."
-      />
-        <div
+      <Dialog open={isDownloading} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md [&>button]:hidden">
+          <div className="flex flex-col items-center justify-center p-6 text-center">
+            <FileText className="mb-4 h-12 w-12 animate-pulse text-emerald-500" />
+            <h3 className="mb-2 text-lg font-semibold">Generating Document</h3>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Please wait while we compile your Individual Inventory Record.
+            </p>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-500/20">
+              <div
+                className="h-full bg-emerald-500 transition-all duration-300 ease-out"
+                style={{ width: `${downloadProgress}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs font-bold text-emerald-600">
+              {downloadProgress}%
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <div
         className={cn(
           "mx-auto mt-4 flex w-full flex-col gap-8",
-          "px-4 sm:px-6 md:px-8"
+          "px-4 sm:px-6 md:px-8",
         )}
-        >
+      >
         <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
-
           <div
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
@@ -320,21 +333,17 @@ export default function IIRProfile() {
               iirId={finalIirId}
             />
           </div>
-
         </div>
       </div>
 
-      <ResponsiveModal
+      <Dialog
         open={!!pdfUrl}
         onOpenChange={(open) => !open && clearPreview()}
       >
-        <ResponsiveModalContent
-          hasCloseButton={false}
-          className="flex h-[90vh] max-h-[90vh] flex-col p-0 sm:max-w-4xl"
-        >
-          <ResponsiveModalHeader className="h-14 px-4 py-3 sm:px-6">
+        <DialogContent className="flex h-[90vh] max-h-[90vh] flex-col p-0 sm:max-w-4xl">
+          <DialogHeader className="h-14 px-4 py-3 sm:px-6">
             <div className="flex items-center justify-between">
-              <ResponsiveModalTitle>IIR PDF Preview</ResponsiveModalTitle>
+              <DialogTitle>IIR PDF Preview</DialogTitle>
               <button
                 onClick={downloadFromPreview}
                 className={cn(
@@ -343,10 +352,10 @@ export default function IIRProfile() {
                 )}
               >
                 <Download size={16} />
-                Download PDF
+                <p className="hidden sm:block">Download PDF</p>
               </button>
             </div>
-          </ResponsiveModalHeader>
+          </DialogHeader>
           <div className="flex-1 overflow-hidden bg-muted/20">
             {pdfUrl && (
               <PDFPreview
@@ -355,10 +364,9 @@ export default function IIRProfile() {
                 title="PDF Preview"
               />
             )}
-
           </div>
-        </ResponsiveModalContent>
-      </ResponsiveModal>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

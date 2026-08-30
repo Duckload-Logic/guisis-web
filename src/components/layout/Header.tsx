@@ -63,10 +63,10 @@ export default function Header({
           alt="Logo"
           className={cn(
             "h-9 w-9 shrink-0 rounded-full transition-transform duration-200",
-            "hover:scale-110 sm:h-12 sm:w-12",
+            "sm:h-12 sm:w-12",
           )}
         />
-        <div className="min-w-0 flex flex-col gap-0.5 text-xs">
+        <div className="flex min-w-0 flex-col gap-0.5 text-xs">
           <p className="hidden max-w-[min(48vw,34rem)] truncate font-semibold sm:block xl:max-w-none">
             Polytechnic University of the Philippines – Taguig
           </p>
@@ -79,7 +79,7 @@ export default function Header({
       </div>
 
       {!isLoggedIn && (
-        <nav className="mr-5 hidden min-w-0 items-center justify-end gap-4 xl:flex lg:gap-8">
+        <nav className="mr-5 hidden min-w-0 items-center justify-end gap-4 lg:gap-8 xl:flex">
           {isLanding ? (
             <a
               href="#top"
@@ -100,19 +100,6 @@ export default function Header({
           {isLanding ? (
             <>
               <a
-                href="#features"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavClick("features");
-                }}
-                className={cn(
-                  "text-sm font-medium text-foreground/70 transition-colors",
-                  "hover:text-foreground",
-                )}
-              >
-                What We Offer
-              </a>
-              <a
                 href="#about"
                 onClick={(event) => {
                   event.preventDefault();
@@ -124,6 +111,19 @@ export default function Header({
                 )}
               >
                 About
+              </a>
+              <a
+                href="#features"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleNavClick("features");
+                }}
+                className={cn(
+                  "text-sm font-medium text-foreground/70 transition-colors",
+                  "hover:text-foreground",
+                )}
+              >
+                What We Offer
               </a>
               <a
                 href="#faq"

@@ -45,7 +45,7 @@ export function RoleManagementModal({
 
   useEffect(() => {
     if (user) {
-      setSelectedRoles(user.roles.map((r) => r.id));
+      setSelectedRoles(user.roles?.map((r) => r.id) || []);
       setReason("");
       setReferenceId("");
     }

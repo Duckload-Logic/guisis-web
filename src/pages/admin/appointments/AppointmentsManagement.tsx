@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import {
   useAppointments,
@@ -99,8 +100,8 @@ function getChartColorKey(statusName: string): keyof typeof chartConfig {
 
 export default function AppointmentsManagement() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedUrgency, setSelectedUrgency] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
+  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>("urgency", "all");
   const { data: categories } = useCategories();
   const { data: appointmentStatuses, isLoading: isStatusesLoading } =
     useStatuses();
@@ -117,17 +118,16 @@ export default function AppointmentsManagement() {
     name: "All",
   };
 
-  const [selectedStatus, setSelectedStatus] =
-    useState<AppointmentStatus>(defaultStatus);
+  const [selectedStatus, setSelectedStatus] = useUrlState<AppointmentStatus>("status", defaultStatus);
 
-  const [selectedSort, setSelectedSort] = useState("whenDate");
-  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSort, setSelectedSort] = useUrlState("sort", "whenDate");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
     return toISODateString(new Date(now.getFullYear(), now.getMonth(), 1));
   });
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useUrlState("q", "");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const [endDate, setEndDate] = useState(() => {

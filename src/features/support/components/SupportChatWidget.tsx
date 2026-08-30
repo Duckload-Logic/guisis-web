@@ -295,7 +295,7 @@ export function SupportChatWidget() {
                       <span
                         className={
                           "mt-1 px-1 text-[9px] " +
-                          "text-muted-foreground animate-in " +
+                          "animate-in text-muted-foreground" +
                           "fade-in duration-150"
                         }
                       >
@@ -457,7 +457,7 @@ export function SupportChatWidget() {
                       <span
                         className={
                           "mt-1 px-1 text-[9px] " +
-                          "text-muted-foreground animate-in " +
+                          "animate-in text-muted-foreground" +
                           "fade-in duration-150"
                         }
                       >
@@ -543,15 +543,11 @@ export function SupportChatWidget() {
           "fixed z-40 font-sans transition-all duration-300",
           isAuthenticated
             ? isOpen
-              ? "bottom-20 left-4 right-4 sm:left-auto sm:right-5 " +
-                "sm:bottom-20 xl:bottom-8 xl:left-auto xl:right-8"
-              : "bottom-20 right-4 sm:bottom-20 sm:right-5 xl:bottom-8 " +
-                "xl:right-8"
+              ? "bottom-24 left-4 right-4 sm:bottom-32 sm:left-auto sm:right-5 xl:bottom-8 xl:left-auto xl:right-8"
+              : "bottom-24 right-4 sm:bottom-32 sm:right-5 xl:bottom-8 xl:right-8"
             : isOpen
-              ? "bottom-4 left-4 right-4 sm:bottom-5 sm:left-auto " +
-                "sm:right-5 xl:bottom-8 xl:left-auto xl:right-8"
-              : "bottom-4 right-4 sm:bottom-5 sm:right-5 xl:bottom-8 " +
-                "xl:right-8",
+              ? "bottom-4 left-4 right-4 sm:bottom-5 sm:left-auto sm:right-5 xl:bottom-8 xl:left-auto xl:right-8"
+              : "bottom-4 right-4 sm:bottom-5 sm:right-5 xl:bottom-8 xl:right-8",
         )}
       >
         {/* Floating Action Menu / Updrop Button */}

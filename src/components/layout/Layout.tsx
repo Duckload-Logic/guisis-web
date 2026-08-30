@@ -242,8 +242,7 @@ export default function Layout({
             <div
               className={cn(
                 "absolute inset-0",
-                "bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.03),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.02),transparent_25%)]",
-                "dark:bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.05),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.03),transparent_25%)]",
+                "bg-[radial-gradient(ellipse_at_top_left,rgba(220,38,38,0.05),transparent_20%),radial-gradient(ellipse_at_bottom_right,rgba(218,165,32,0.05),transparent_20%)]",
               )}
             />
           ) : (
@@ -251,21 +250,22 @@ export default function Layout({
             <div className="absolute inset-0 z-0">
               <div
                 className={cn(
-                  "absolute -left-[5%] -top-[5%] h-[30%] w-[30%] animate-pulse",
-                  "rounded-full bg-primary/5 blur-[100px]",
+                  "absolute -left-[10%] top-[5%] h-[40rem] w-[40rem] animate-pulse",
+                  "rounded-full bg-primary/20 blur-[100px] dark:bg-primary/5",
                 )}
               />
               <div
                 className={cn(
-                  "absolute -bottom-[5%] -right-[5%] h-[30%] w-[30%]",
-                  "animate-pulse rounded-full bg-secondary/5 blur-[100px]",
+                  "absolute -bottom-[5%] -right-[10%] h-[40rem] w-[40rem]",
+                  "animate-pulse rounded-full bg-secondary/20 blur-[100px] dark:bg-secondary/5",
                   "[animation-delay:3s]",
                 )}
               />
               <div
                 className={cn(
-                  "bg-primary/3 absolute left-1/2 top-1/2 h-[20%] w-[20%]",
-                  "-translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]",
+                  "absolute left-1/2 top-1/2 h-[30rem] w-[30rem]",
+                  "-translate-x-1/2 -translate-y-1/2 rounded-full",
+                  "bg-primary/15 blur-[100px] dark:bg-primary/5",
                 )}
               />
             </div>
@@ -282,7 +282,7 @@ export default function Layout({
 
         <div
           ref={contentRef}
-          className={`relative z-10 flex min-h-0 min-w-0 flex-1 transform-gpu flex-col transition-all duration-300 ${
+          className={`relative z-10 flex min-h-0 min-w-0 flex-1 flex-col transition-all duration-300 ${
             termsOpen
               ? "pointer-events-none select-none opacity-40 grayscale-[0.5]"
               : ""
@@ -308,7 +308,7 @@ export default function Layout({
             </>
           )}
 
-          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col-reverse bg-background xl:flex-row">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col-reverse xl:flex-row">
             {/* <div
               className={cn(
     "absolute inset-0 z-0 bg-[url('/src/assets/images/bg.gif')]",
@@ -335,9 +335,9 @@ export default function Layout({
               <div
                 ref={scrollRef}
                 className={cn(
-                  "relative z-10 flex h-full min-w-0 max-w-full flex-col",
+                  "relative flex h-full min-w-0 max-w-full flex-col",
                   "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  isLoggedIn ? "pb-24 md:pb-12" : "pb-0",
+                  isLoggedIn ? "pb-32 md:pb-12" : "pb-0",
                 )}
               >
                 <main

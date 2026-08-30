@@ -11,6 +11,8 @@ import {
   ArrowRight,
   HelpCircle,
   FileText,
+  ShieldCheck,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -23,82 +25,23 @@ export default function Landing() {
 
   const navigate = useNavigate();
 
-  const cardStyle = cn(
-    "rounded-xl border p-6 shadow-md border-border bg-card",
-    "text-card-foreground transition-all duration-300",
-    "hover:-translate-y-1 hover:scale-[1.02] hover:border-primary/40",
-  );
-
-  const featureCards = [
-    {
-      title: "Appointments",
-      icon: Calendar,
-      description:
-        "Schedule and manage counseling sessions with ease using the " +
-        "integrated guidance online services system.",
-    },
-    {
-      title: "Admission Slips",
-      icon: FileText,
-      description:
-        "Submit excuse letters and official documents to acquire " +
-        "admission slips",
-    },
-    {
-      title: "Secure IDP Access",
-      icon: Lock,
-      description:
-        "Login safely through the university identity provider for " +
-        "trusted access to student services.",
-    },
-    {
-      title: "Guidance Support",
-      icon: MessageSquare,
-      description:
-        "Access help and guidance resources from the PUPT guidance office " +
-        "whenever you need assistance.",
-    },
-  ];
-
-  const contactCards = [
-    {
-      title: "Support",
-      icon: LifeBuoy,
-      description:
-        "Need help with IDP login or guidance services? Our team is " +
-        "ready to assist you.",
-    },
-    {
-      title: "Email",
-      icon: Mail,
-      description:
-        "Guidance Office: \n" + "Tech Support: supportguisis@gmail.com",
-    },
-    {
-      title: "Campus Office",
-      icon: MapPin,
-      description: "Polytechnic University of the Philippines – Taguig",
-    },
-  ];
+  const handleLogin = () => {
+    if (isProd) window.open(loginUrl, "_self");
+    else navigate(loginUrl);
+  };
 
   const faqs = [
     {
       q: "How do I log in to GuiSIS?",
-      a:
-        "You must use your official university credentials via the " +
-        "integrated Identity Provider (IDP) login option.",
+      a: "You must use your official university credentials via the integrated Identity Provider (IDP) login option.",
     },
     {
       q: "Can I request guidance support off-campus?",
-      a:
-        "Yes, the GuiSIS portal allows you to book " +
-        "appointments and request admission slips directly online.",
+      a: "Yes, the portal allows you to book appointments and request admission slips directly online.",
     },
     {
       q: "How do I create an account?",
-      a:
-        "You must use your official university credentials via the " +
-        "integrated Identity Provider (IDP) login option.",
+      a: "You don't need to manually create one. Just use your official university credentials via the integrated IDP.",
     },
   ];
 
@@ -109,293 +52,227 @@ export default function Landing() {
     >
       <div
         id="top"
-        className="space-y-10"
+        className="relative space-y-12 pb-12"
       >
-        {/* Hero Section */}
-        <section
-          className={cn(
-            "relative overflow-hidden rounded-xl border border-glass-border",
-            "bg-glass-bg text-foreground shadow-md bg-grid",
-            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
-          )}
-        >
-          {/* Ambient Glows */}
-          <div className="pointer-events-none absolute inset-0 -z-10">
-            <div
-              className={cn(
-                "absolute left-[10%] top-10 h-72 w-72 rounded-full",
-                "animate-glow bg-primary/40 blur-3xl dark:bg-primary/30",
-              )}
-            />
-            <div
-              className={cn(
-                "absolute bottom-10 right-[10%] h-72 w-72 rounded-full",
-                "animate-glow bg-secondary/40 blur-3xl [animation-delay:2s] dark:bg-secondary/30",
-              )}
-            />
-          </div>
+        {/* Ambient Background Accents */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -left-[10%] top-[10%] h-[50rem] w-[50rem] rounded-full bg-primary/10 blur-[100px] dark:bg-primary/5" />
+          <div className="absolute -right-[10%] top-[40%] h-[40rem] w-[40rem] rounded-full bg-secondary/20 blur-[100px] dark:bg-secondary/5" />
+          <div className="absolute left-[20%] top-[80%] h-[45rem] w-[45rem] rounded-full bg-primary/5 blur-[100px] dark:bg-primary/5" />
+        </div>
+        {/* Asymmetric Hero Section */}
+        <section className="relative flex min-h-[80vh] flex-col items-center overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:flex-row">
+          <div className="bg-grid pointer-events-none absolute inset-0 opacity-100 dark:opacity-50" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background/60 via-background/10 to-transparent dark:from-background/80" />
 
-          <div
-            className={cn(
-              "relative mx-auto max-w-6xl px-4 py-8",
-              "sm:py-12 lg:py-16",
-            )}
-          >
-            <div className="mx-auto max-w-2xl space-y-6 text-center">
-              <div
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full border",
-                  "border-border bg-background/50 px-4 py-1.5 text-xs",
-                  "font-semibold uppercase tracking-[0.2em] sm:tracking-[0.35em]",
-                  "text-muted-foreground shadow-sm backdrop-blur",
-                  "animate-fade-in-down",
-                )}
+          <div className="relative z-10 w-full px-6 py-12 sm:px-12 lg:w-3/5 lg:py-24">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary shadow-sm backdrop-blur-sm">
+              <ShieldCheck className="h-4 w-4" />
+              Official Portal for PUP-Taguig GuiSIS
+            </div>
+            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Guidance & Support <br />
+              <span className="text-primary">Modernized.</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
+              Built exclusively for Polytechnic University of the Philippines –
+              Taguig. Access counseling appointments, admission slips, and
+              mental health resources securely.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Button
+                size="lg"
+                className="gap-2 font-semibold shadow-md transition-transform hover:-translate-y-0.5"
+                onClick={handleLogin}
               >
-                PUP-Taguig GuiSIS
-              </div>
-              <div className="space-y-4">
-                <p
-                  className={cn(
-                    "text-xs font-bold uppercase tracking-[0.15em] sm:text-sm",
-                    "text-secondary sm:tracking-[0.25em] animate-fade-in-up",
-                  )}
-                  style={{ animationDelay: "150ms", animationFillMode: "both" }}
-                >
-                  Polytechnic University of the Philippines – Taguig
-                </p>
-                <h1
-                  className={cn(
-                    "text-2xl font-extrabold sm:text-4xl lg:text-5xl",
-                    "leading-tight tracking-tight text-foreground",
-                    "animate-fade-in-up",
-                  )}
-                  style={{ animationDelay: "300ms", animationFillMode: "both" }}
-                >
-                  Your guidance journey starts with a{" "}
-                  <span className="text-gradient">secure, modern platform</span>
-                  .
-                </h1>
-                <p
-                  className={cn(
-                    "text-sm leading-relaxed sm:text-base md:text-lg",
-                    "mx-auto max-w-xl text-muted-foreground",
-                    "animate-fade-in-up",
-                  )}
-                  style={{ animationDelay: "450ms", animationFillMode: "both" }}
-                >
-                  Request counseling appointments, admission slips, and guidance
-                  services through the PUP Guidance Services Information System.
-                </p>
-              </div>
-
-              <div
-                className={cn(
-                  "flex flex-col items-center justify-center gap-4",
-                  "sm:flex-row animate-fade-in-up",
-                )}
-                style={{ animationDelay: "600ms", animationFillMode: "both" }}
+                Login with IDP <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="font-semibold"
+                onClick={() =>
+                  document.getElementById("features")?.scrollIntoView()
+                }
               >
-                {isProd ? (
-                  <Button onClick={() => window.open(loginUrl, "_self")}>
-                    Proceed to Login
-                    <ArrowRight className="h-5 w-5" />
-                  </Button>
-                ) : (
-                  <Button onClick={() => navigate(loginUrl)}>
-                    Proceed to Login
-                    <ArrowRight className="h-5 w-5" />
-                  </Button>
-                )}
-                <Button
-                  onClick={() =>
-                    document.getElementById("features")?.scrollIntoView()
-                  }
-                  variant="outline"
-                >
-                  Learn more
-                </Button>
-              </div>
+                Explore Features
+              </Button>
             </div>
           </div>
-        </section>
 
-        {/* Features Section */}
-        <section
-          id="features"
-          className={cn(
-            "relative overflow-hidden text-foreground",
-            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
-          )}
-        >
-          <div
-            className={cn(
-              "mx-auto max-w-6xl px-4 py-8",
-              "sm:px-6 lg:px-8",
-            )}
-          >
-            <div className="mx-auto max-w-2xl text-center">
-              <p
-                className={cn(
-                  "text-xs font-bold uppercase sm:text-sm",
-                  "tracking-[0.2em] text-secondary",
-                )}
-              >
-                What we offer
-              </p>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
-                A modern guidance online services system built for support.
-              </h2>
-              <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
-            </div>
-
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {featureCards.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className={cardStyle}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <h3 className="text-lg font-semibold">{item.title}</h3>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
+          {/* Hero Visual Accent (Bento Style Preview) */}
+          <div className="relative z-10 flex h-full w-full flex-col justify-center gap-4 p-6 sm:p-12 lg:w-2/5 lg:pl-0">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+                <div className="mb-3 flex items-center gap-4">
+                  <div className="rounded-lg bg-secondary/15 p-2.5 text-secondary-foreground">
+                    <Calendar className="h-5 w-5 text-foreground" />
                   </div>
-                );
-              })}
+                  <h3 className="font-semibold">Quick Scheduling</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Book appointments instantly without falling in line.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+                <FileText className="mb-3 h-6 w-6 text-primary" />
+                <h3 className="text-sm font-semibold">Admission Slips</h3>
+              </div>
+              <div className="rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+                <MessageSquare className="mb-3 h-6 w-6 text-secondary" />
+                <h3 className="text-sm font-semibold">Direct Support</h3>
+              </div>
             </div>
           </div>
         </section>
+
+        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* About Section */}
         <section
           id="about"
-          className={cn(
-            "relative scroll-mt-24 overflow-hidden rounded-xl",
-            "border border-glass-border bg-glass-bg bg-grid shadow-md",
-            "text-foreground min-h-[calc(100vh-13rem)] flex flex-col",
-            "justify-center",
-          )}
+          className="py-12"
         >
-          <div
-            className={cn(
-              "mx-auto max-w-6xl px-4 py-8",
-              "sm:px-6 lg:px-8",
-            )}
-          >
-            <div className="grid items-center gap-10 lg:grid-cols-2">
-              <div className="space-y-4 max-w-lg">
-                <p
-                  className={cn(
-                    "text-xs font-bold uppercase sm:text-sm",
-                    "tracking-[0.2em] text-secondary",
-                  )}
-                >
-                  Why GuiSIS
-                </p>
-                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                  More than login — a safer gateway for guidance and support.
-                </h2>
-                <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Built for the Polytechnic University of the Philippines
-                  Taguig, GuiSIS is designed to support students with secure
-                  access to academic guidance, counseling services, and official
-                  resources.
+          <div className="grid items-center gap-10 rounded-2xl border border-border bg-muted/30 p-8 shadow-sm transition-all hover:border-primary/30 sm:p-12 lg:grid-cols-2">
+            <div className="max-w-lg space-y-6">
+              <div className="mb-2 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h2 className="text-3xl font-bold tracking-tight">
+                The gateway for guidance and support.
+              </h2>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                Built for the Polytechnic University of the Philippines Taguig,
+                GuiSIS is designed to support students with secure access to
+                academic guidance, counseling services, and official resources.
+              </p>
+            </div>
+
+            <div className="w-full max-w-md space-y-8 lg:ml-auto">
+              <div className="space-y-3">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-foreground">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  Secure by default
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Only authenticated students and staff can access the system,
+                  with all sessions routed through the university IDP.
                 </p>
               </div>
-
-              <div
-                className={cn(
-                  "space-y-6 rounded-2xl border border-border bg-card",
-                  "p-6 shadow-md sm:p-8 max-w-lg lg:ml-auto w-full",
-                  "transition-all duration-300 hover:-translate-y-1",
-                  "hover:scale-[1.02] hover:border-primary/40",
-                )}
-              >
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Secure by default
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Only authenticated students and staff can access the system,
-                    with all sessions routed through the university IDP.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Easy navigation
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    A clean, modern interface gives you fast access to guidance
-                    resources, appointments, and support contacts.
-                  </p>
-                </div>
+              <div className="space-y-3">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-foreground">
+                  <div className="h-2 w-2 rounded-full bg-secondary" />
+                  Easy navigation
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  A clean, modern interface gives you fast access to guidance
+                  resources, appointments, and support contacts.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* FAQs Section */}
+        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
+
+        {/* Feature Bento Grid */}
         <section
-          id="faq"
-          className={cn(
-            "relative scroll-mt-24 overflow-hidden text-foreground",
-            "min-h-[calc(100vh-13rem)] flex flex-col justify-center",
-          )}
+          id="features"
+          className="py-12"
         >
-          <div
-            className={cn(
-              "mx-auto max-w-6xl px-4 py-8",
-              "sm:px-6 lg:px-8",
-            )}
-          >
-            <div className="mx-auto max-w-2xl text-center">
-              <p
-                className={cn(
-                  "text-xs font-bold uppercase sm:text-sm",
-                  "tracking-[0.2em] text-secondary",
-                )}
-              >
-                FAQ
-              </p>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
-                Frequently Asked Questions
-              </h2>
-              <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold tracking-tight">Core Services</h2>
+            <p className="mt-2 text-muted-foreground">
+              Everything you need, securely authenticated.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md md:col-span-2">
+              <div className="absolute right-0 top-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl transition-all group-hover:bg-primary/10" />
+              <div className="relative z-10">
+                <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <Calendar className="h-6 w-6" />
+                </div>
+                <h3 className="mb-3 text-2xl font-bold">
+                  Counseling Appointments
+                </h3>
+                <p className="max-w-md leading-relaxed text-muted-foreground">
+                  Manage your mental health journey. Request, track, and follow
+                  up on guidance appointments through a streamlined dashboard.
+                </p>
+              </div>
             </div>
 
-            <div className="mx-auto mt-12 max-w-3xl space-y-4">
-              {faqs.map((faq, index) => (
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-secondary/40 hover:shadow-md">
+              <div className="absolute bottom-0 right-0 -mb-10 -mr-10 h-40 w-40 rounded-full bg-secondary/10 blur-2xl transition-all group-hover:bg-secondary/20" />
+              <div className="relative z-10">
+                <div className="mb-4 inline-flex rounded-xl bg-secondary/15 p-3 text-secondary-foreground">
+                  <FileText className="h-6 w-6" />
+                </div>
+                <h3 className="mb-3 text-xl font-bold">Admission Slips</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Submit excuse letters and fetch admission slips online.
+                </p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
+              <div className="relative z-10">
+                <div className="mb-4 inline-flex rounded-xl bg-muted p-3 text-foreground">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <h3 className="mb-3 text-xl font-bold">SSO Integration</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Zero password fatigue. Login directly with your university
+                  email.
+                </p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md md:col-span-2">
+              <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl transition-all group-hover:bg-primary/10" />
+              <div className="relative z-10">
+                <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                  <MessageSquare className="h-6 w-6" />
+                </div>
+                <h3 className="mb-3 text-2xl font-bold">
+                  Direct Communication
+                </h3>
+                <p className="max-w-md leading-relaxed text-muted-foreground">
+                  Reach out to the guidance office anytime. Safe, private, and
+                  recorded for your peace of mind.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
+
+        {/* Contact & FAQ Split */}
+        <section
+          id="support"
+          className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-2"
+        >
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Need help? We've got you covered.
+              </p>
+            </div>
+            <div className="space-y-4">
+              {faqs.map((faq, i) => (
                 <div
-                  key={index}
-                  className={cn(
-                    "rounded-xl border border-border bg-card p-5 sm:p-6",
-                    "shadow-sm transition-all duration-300",
-                    "hover:scale-[1.01] hover:border-primary/30 hover:shadow-md",
-                  )}
+                  key={i}
+                  className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex gap-4">
                     <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <div className="space-y-1">
-                      <h4
-                        className={cn(
-                          "font-semibold text-foreground",
-                          "text-sm sm:text-base",
-                        )}
-                      >
-                        {faq.q}
-                      </h4>
-                      <p
-                        className={cn(
-                          "text-xs text-muted-foreground sm:text-sm",
-                          "leading-relaxed",
-                        )}
-                      >
+                    <div>
+                      <h4 className="text-sm font-semibold">{faq.q}</h4>
+                      <p className="mt-1.5 text-sm text-muted-foreground">
                         {faq.a}
                       </p>
                     </div>
@@ -404,65 +281,48 @@ export default function Landing() {
               ))}
             </div>
           </div>
-        </section>
 
-        {/* Contact Section */}
-        <section
-          id="contact"
-          className={cn(
-            "relative scroll-mt-24 overflow-hidden rounded-xl",
-            "border border-glass-border bg-glass-bg bg-grid shadow-md",
-            "text-foreground min-h-[calc(100vh-13rem)] flex flex-col",
-            "justify-center",
-          )}
-        >
-          <div
-            className={cn(
-              "mx-auto max-w-6xl px-4 py-8",
-              "sm:px-6 lg:px-8",
-            )}
-          >
-            <div className="mx-auto max-w-2xl text-center">
-              <p
-                className={cn(
-                  "text-xs font-bold uppercase sm:text-sm",
-                  "tracking-[0.2em] text-secondary",
-                )}
-              >
-                Get in touch
+          <div className="flex flex-col justify-between rounded-2xl border border-border bg-primary/5 p-8">
+            <div>
+              <div className="mb-6 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                <LifeBuoy className="h-6 w-6" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold">Still need help?</h2>
+              <p className="text-muted-foreground">
+                Our support team is available during office hours.
               </p>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Contact us for support and access help.
-              </h2>
-              <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-secondary/80" />
-            </div>
 
-            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-              {contactCards.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className={cardStyle}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <h3 className="text-lg font-semibold">{item.title}</h3>
-                    </div>
-                    <p
-                      className={cn(
-                        "mt-2 text-sm leading-relaxed",
-                        "whitespace-pre-line text-muted-foreground",
-                      )}
-                    >
-                      {item.description}
+              <div className="mt-8 space-y-5">
+                <div className="flex items-center gap-4 border-b border-border pb-4">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Tech Support</p>
+                    <p className="text-sm text-muted-foreground">
+                      supportguisis@gmail.com
                     </p>
                   </div>
-                );
-              })}
+                </div>
+                <div className="flex items-center gap-4">
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Guidance Office</p>
+                    <p className="text-sm text-muted-foreground">
+                      PUP Taguig Campus
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <Button
+              className="mt-8 w-full gap-2"
+              variant="outline"
+              onClick={() =>
+                (window.location.href = "mailto:supportguisis@gmail.com")
+              }
+            >
+              Email Support <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </section>
       </div>

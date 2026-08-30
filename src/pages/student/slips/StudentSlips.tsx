@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,8 @@ import {
   useGetSlipStatuses,
 } from "@/features/slips/hooks";
 import { Slip, SlipStatus } from "@/features/slips/types";
-import { Pagination, Table, Column } from "@/components/shared";
+import { Pagination } from "@/components/shared";
+import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -61,13 +63,13 @@ export default function StudentSlips() {
   const { data: slipStatuses = [], isLoading: isStatusesLoading } =
     useGetSlipStatuses();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [selectedStatus, setSelectedStatus] =
-    useState<SlipFilterStatus>(ALL_SLIP_STATUS);
+    useUrlState<SlipFilterStatus>("status", ALL_SLIP_STATUS);
 
   // Sorting states for table headers
-  const [selectedSort, setSelectedSort] = useState<string>("createdAt");
-  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
+  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "createdAt");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "desc");
 
   const { data, isLoading: isSlipsLoading } = useGetMySlips({
     page: currentPage,
@@ -206,136 +208,7 @@ export default function StudentSlips() {
     { id: "dateNeeded-asc", displayName: "Date needed: oldest" },
   ];
 
-  const renderSortableHeader = (label: string, sortKey: string) => {
-    const isActive = selectedSort === sortKey;
-    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
 
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setSelectedSort(sortKey);
-          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
-          setCurrentPage(1);
-        }}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
-          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        {label}
-        <Icon 
-          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
-          strokeWidth={isActive ? 2.5 : 2} 
-        />
-      </button>
-    );
-  };
-
-  const slipColumns = useMemo<Column<Slip>[]>(
-    () => [
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Category & Reason", "category")}
-          </div>
-        ),
-        className: "w-[35%] p-0",
-        render: (slip: Slip) => (
-          <div className="px-4 py-3 flex flex-col gap-1 text-left">
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "border-white/45 bg-white/40 text-[11px]",
-                  "font-medium backdrop-blur-xl",
-                  "dark:border-white/10 dark:bg-white/[0.05]",
-                )}
-              >
-                <Tag className="mr-1 h-3 w-3" />
-                {slip.category?.name}
-              </Badge>
-            </div>
-            <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">
-              {slip.reason}
-            </p>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Absence Date", "dateOfAbsence")}
-          </div>
-        ),
-        className: "w-[20%] p-0",
-        render: (slip: Slip) => (
-          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{formatCompactDate(slip.dateOfAbsence)}</span>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Date Needed", "dateNeeded")}
-          </div>
-        ),
-        className: "w-[20%] p-0",
-        render: (slip: Slip) => (
-          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{formatCompactDate(slip.dateNeeded)}</span>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full">
-            <SelectField
-              label=""
-              options={statsWithAll.map((s) => ({
-                id: s.id,
-                displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
-                disabled: String(s.id) !== "0" && (s.count || 0) === 0,
-              }))}
-              value={selectedStatus.id}
-              onChange={(val) => {
-                const found = statsWithAll.find((s) => String(s.id) === String(val));
-                if (found) {
-                  setSelectedStatus(found);
-                  setCurrentPage(1);
-                }
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                String(selectedStatus.id) === "0" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
-              )}
-            />
-          </div>
-        ),
-        className: "w-[25%] p-0",
-        render: (slip: Slip) => (
-          <div className="px-3 py-3 flex items-center">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs hover:opacity-95 font-semibold px-2.5 py-0.5",
-                getStatusColor(slip.status?.name),
-              )}
-            >
-              {slip.status?.name}
-            </Badge>
-          </div>
-        ),
-      },
-    ],
-    [selectedSort, selectedOrder, statsWithAll, selectedStatus]
-  );
 
   const emptyState = useMemo(
     () => (
@@ -451,139 +324,131 @@ export default function StudentSlips() {
           </Alert>
         ) : null}
 
-        <Card className={cn(GLASS_CARD, "animate-fade-in-up overflow-hidden")}>
-          <CardHeader
-            className={cn(
-              "border-b border-white/30 px-4 py-3.5",
-              "dark:border-white/10",
-            )}
-          >
-            {/* Mobile filters and sorting */}
-            <div className="grid w-full gap-3 sm:grid-cols-2 xl:hidden">
-              {isLoading ? (
-                <>
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                </>
-              ) : (
-                <>
-                  <SelectField
-                    label="Admission Slip Status"
-                    options={statsWithAll.map((s) => ({
-                      id: s.id,
-                      displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
-                      disabled: String(s.id) !== "0" && (s.count || 0) === 0,
-                    }))}
-                    value={selectedStatus.id}
-                    onChange={(val) => {
-                      const selected = statsWithAll.find(
-                        (s) => String(s.id) === String(val),
-                      );
-                      if (selected) {
-                        setSelectedStatus(selected);
-                        setCurrentPage(1);
-                      }
-                    }}
-                    labelKey="displayName"
-                  />
-                  <SelectField
-                    label="Sort slips"
-                    options={mobileSortOptions}
-                    value={`${selectedSort}-${selectedOrder}`}
-                    onChange={(value) => {
-                      const [sort, order] = String(value).split("-") as [
-                        string,
-                        SortOrder,
-                      ];
-                      setSelectedSort(sort);
-                      setSelectedOrder(order);
+        <div className="flex flex-col gap-6 animate-fade-in-up">
+          <div className="grid w-full gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </>
+            ) : (
+              <>
+                <SelectField
+                  label="Admission Slip Status"
+                  options={statsWithAll.map((s) => ({
+                    id: s.id,
+                    displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
+                    disabled: String(s.id) !== "0" && (s.count || 0) === 0,
+                  }))}
+                  value={selectedStatus.id}
+                  onChange={(val) => {
+                    const selected = statsWithAll.find(
+                      (s) => String(s.id) === String(val),
+                    );
+                    if (selected) {
+                      setSelectedStatus(selected);
                       setCurrentPage(1);
-                    }}
-                    labelKey="displayName"
-                  />
-                </>
-              )}
-            </div>
-            <div className="hidden xl:block">
-              {/* Optional: Add a subtle prompt or search bar here if desired later, keeping the header clean for now */}
-              <span className="text-sm text-muted-foreground italic">Track and manage your admission slip requests.</span>
-            </div>
-          </CardHeader>
+                    }
+                  }}
+                  labelKey="displayName"
+                />
+                <SelectField
+                  label="Sort slips"
+                  options={mobileSortOptions}
+                  value={`${selectedSort}-${selectedOrder}`}
+                  onChange={(value) => {
+                    const [sort, order] = String(value).split("-") as [
+                      string,
+                      SortOrder,
+                    ];
+                    setSelectedSort(sort);
+                    setSelectedOrder(order);
+                    setCurrentPage(1);
+                  }}
+                  labelKey="displayName"
+                />
+              </>
+            )}
+          </div>
 
-          <CardContent className="p-0">
-            <Table
-              data={sortedSlips}
-              columns={slipColumns}
-              isLoading={isSlipsLoading}
-              emptyState={emptyState}
-              onRowClick={(slip) => navigate(`/student/slips/${slip.id}`)}
-              renderMobileItem={(slip) => (
-                <button
-                  type="button"
-                  onClick={() => navigate(`/student/slips/${slip.id}`)}
-                  className={cn(
-                    "w-full rounded-xl border border-border/70 bg-background/70 p-4 text-left",
-                    "transition-colors hover:bg-muted/50 focus-visible:outline-none",
-                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                    "dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
-                  )}
-                  aria-label={`View admission slip: ${slip.category?.name || "Uncategorized"}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "max-w-[60%] whitespace-normal break-words border-white/45 bg-white/40 text-[11px] font-medium",
-                        "backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.05]",
-                      )}
-                    >
-                      <Tag className="mr-1 h-3 w-3 shrink-0" />
-                      {slip.category?.name || "Uncategorized"}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "max-w-[40%] whitespace-normal break-words px-2.5 py-0.5 text-center text-xs font-semibold",
-                        getStatusColor(slip.status?.name),
-                      )}
-                    >
-                      {slip.status?.name || "Unknown"}
-                    </Badge>
-                  </div>
-                  <p className="mt-3 break-words text-sm font-medium text-foreground">
-                    {slip.reason}
-                  </p>
-                  <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border/60 pt-3 text-xs text-muted-foreground dark:border-white/10">
-                    <div className="min-w-0">
-                      <span className="block font-semibold uppercase tracking-wide">Absence</span>
-                      <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
-                        <Calendar className="h-3.5 w-3.5 shrink-0" />
-                        {formatCompactDate(slip.dateOfAbsence)}
-                      </span>
+          <div className="w-full">
+            {isSlipsLoading ? (
+              <div className="flex w-full items-center justify-center p-12">
+                <Spinner size="lg" />
+              </div>
+            ) : sortedSlips.length === 0 ? (
+              emptyState
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {sortedSlips.map((slip) => (
+                  <button
+                    key={slip.id}
+                    type="button"
+                    onClick={() => navigate(`/student/slips/${slip.id}`)}
+                    className={cn(
+                      "w-full rounded-2xl border border-slate-300 bg-white p-5 text-left shadow-md",
+                      "transition-all hover:-translate-y-1 hover:shadow-lg hover:border-slate-400",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:hover:border-white/20",
+                    )}
+                    aria-label={`View admission slip: ${slip.category?.name || "Uncategorized"}`}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <Badge
+                        variant="outline"
+                        className="border-slate-300 bg-slate-200/60 text-[11px] font-bold text-slate-800 dark:border-white/20 dark:bg-white/10 dark:text-slate-200"
+                      >
+                        <Tag className="mr-1.5 h-3 w-3 shrink-0" />
+                        {slip.category?.name || "Uncategorized"}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                          getStatusColor(slip.status?.name),
+                        )}
+                      >
+                        {slip.status?.name || "Unknown"}
+                      </Badge>
                     </div>
-                    <div className="min-w-0">
-                      <span className="block font-semibold uppercase tracking-wide">Needed</span>
-                      <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
-                        <Calendar className="h-3.5 w-3.5 shrink-0" />
-                        {formatCompactDate(slip.dateNeeded)}
-                      </span>
+                    
+                    <p className="mt-4 text-sm font-medium leading-relaxed text-foreground/90">
+                      {slip.reason}
+                    </p>
+                    
+                    <div className="mt-5 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                          Absence Date
+                        </span>
+                        <span className="flex items-center gap-2 text-xs font-medium text-foreground">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          {formatCompactDate(slip.dateOfAbsence)}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                          Date Needed
+                        </span>
+                        <span className="flex items-center gap-2 text-xs font-medium text-primary">
+                          <Calendar className="h-4 w-4" />
+                          {formatCompactDate(slip.dateNeeded)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              )}
-              tableClassName="w-full table-fixed"
-            />
-
-            <Separator className="bg-white/25 dark:bg-white/10" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <Pagination
               currentPage={data?.meta?.page || 1}
               totalPages={data?.meta?.totalPages || 1}
               onPageChange={(page) => setCurrentPage(page)}
-              className="mt-0 border-t-0 px-4 py-3"
+              className="mt-6"
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </>
   );

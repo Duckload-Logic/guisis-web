@@ -143,7 +143,7 @@ export default function BioCard({
       <div
         className={cn(
           "via-glass-bg/30 relative mt-2 w-full overflow-hidden",
-          "rounded-2xl border-2 border-glass-border bg-glass-bg",
+          "rounded-2xl border-2 border-primary bg-primary/5",
           "px-6 py-5 shadow-md",
         )}
       >

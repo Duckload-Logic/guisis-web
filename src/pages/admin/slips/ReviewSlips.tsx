@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import {
   Archive,
@@ -59,12 +60,12 @@ export default function ReviewSlips() {
   const navigate = useNavigate();
   const { mutateAsync: claimTicket } = useClaimTicket();
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSort, setSelectedSort] = useState("dateNeeded");
-  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<SlipStatus>({
+  const [searchTerm, setSearchTerm] = useUrlState("q", "");
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
+  const [selectedSort, setSelectedSort] = useUrlState("sort", "dateNeeded");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
+  const [selectedStatus, setSelectedStatus] = useUrlState<SlipStatus>("status", {
     id: "0",
     name: "All Statuses",
     colorKey: "stale",

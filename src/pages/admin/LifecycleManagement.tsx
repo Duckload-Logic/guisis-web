@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import {
   GraduationCap,
@@ -208,12 +209,12 @@ export default function LifecycleManagement() {
   const { data: programs } = usePrograms();
 
   // Filters
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useUrlState("q", "");
   const debouncedSearch = useDebounce(search, 500);
-  const [programId, setProgramId] = useState(0);
-  const [yearLevel, setYearLevel] = useState(0);
-  const [enrollYear, setEnrollYear] = useState(0);
-  const [page, setPage] = useState(1);
+  const [programId, setProgramId] = useUrlState("program", 0);
+  const [yearLevel, setYearLevel] = useUrlState("year", 0);
+  const [enrollYear, setEnrollYear] = useUrlState("enrollYear", 0);
+  const [page, setPage] = useUrlState("page", 1);
   const pageSize = 20;
 
   const { data, isLoading } = useIIRPagination({

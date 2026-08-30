@@ -17,6 +17,7 @@ import {
 } from "@/features/auth/services";
 import { FormField } from "@/components/shared";
 import { Button } from "@/components/ui/button";
+import { API_ROUTES } from "@/config/apiRoutes";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -34,8 +35,18 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isCheckingIDP, setIsCheckingIDP] = useState(isFallback);
 
+  const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
+  const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
+
   useEffect(() => {
-    if (!isFallback) return;
+    if (!isFallback) {
+      if (isProd) {
+        window.location.replace(loginUrl);
+      }
+      return;
+    }
 
     const checkIDP = async () => {
       try {

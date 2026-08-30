@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Users } from "lucide-react";
 
@@ -95,15 +96,15 @@ export default function StudentRecords() {
     const saved = localStorage.getItem("student_grid_view_mode");
     return saved === "tile" ? "tile" : "list";
   });
-  const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatusId, setSelectedStatusId] = useState<string>("all");
-  const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
-  const [selectedYearLevelId, setSelectedYearLevelId] = useState<string>("all");
+  const [page, setPage] = useUrlState("page", 1);
+  const [searchTerm, setSearchTerm] = useUrlState("q", "");
+  const [selectedStatusId, setSelectedStatusId] = useUrlState("status", "all");
+  const [selectedProgramId, setSelectedProgramId] = useUrlState("program", "all");
+  const [selectedYearLevelId, setSelectedYearLevelId] = useUrlState("year", "all");
 
   const [selectedSort, setSelectedSort] =
-    useState<keyof typeof ORDER_BY_OPTIONS>("lastName");
-  const [selectedOrder, setSelectedOrder] = useState<"asc" | "desc">("asc");
+    useUrlState<keyof typeof ORDER_BY_OPTIONS>("sort", "lastName");
+  const [selectedOrder, setSelectedOrder] = useUrlState<"asc" | "desc">("order", "asc");
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
@@ -136,7 +137,7 @@ export default function StudentRecords() {
     statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
     yearLevel:
       selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-    orderBy: String(
+    sortBy: String(
       ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
     ),
     sortOrder: selectedOrder,
@@ -163,7 +164,7 @@ export default function StudentRecords() {
         programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
         statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
         yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
-        orderBy: String(
+        sortBy: String(
           ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
         ),
         sortOrder: selectedOrder,

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useUrlState } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -61,11 +62,11 @@ export default function SlipLogs() {
   };
 
   // State for other filters
-  const [statusFilter, setStatusFilter] = useState<string>("0");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useUrlState<string>("status", "0");
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
   const { data: slipCategories } = useGetSlipCategories();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useUrlState("q", "");
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportData, setReportData] = useState<Slip[]>([]);
   const [isReportLoading, setIsReportLoading] = useState(false);

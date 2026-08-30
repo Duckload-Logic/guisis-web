@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,8 @@ import {
 import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
 import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
-import { Pagination, Table, Column } from "@/components/shared";
+import { Pagination } from "@/components/shared";
+import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
 import { format12HourTime, formatDate } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
@@ -52,14 +54,15 @@ export default function StudentAppointments() {
     [appointmentStatuses],
   );
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>(
+  const [currentPage, setCurrentPage] = useUrlState("page", 1);
+  const [selectedStatus, setSelectedStatus] = useUrlState<AppointmentStatus>(
+    "status",
     ALL_APPOINTMENT_STATUS,
   );
   
   // Sorting states for table headers
-  const [selectedSort, setSelectedSort] = useState<string>("whenDate");
-  const [selectedOrder, setSelectedOrder] = useState<SortOrder>("asc");
+  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "whenDate");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
 
   const { data, isLoading: isAppointmentsLoading } = useAppointments({
     isMe: true,
@@ -192,146 +195,6 @@ export default function StudentAppointments() {
     { id: "category-desc", displayName: "Category: Z–A" },
   ];
 
-  const renderSortableHeader = (label: string, sortKey: string) => {
-    const isActive = selectedSort === sortKey;
-    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
-
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setSelectedSort(sortKey);
-          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
-          setCurrentPage(1);
-        }}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
-          "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        {label}
-        <Icon 
-          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
-          strokeWidth={isActive ? 2.5 : 2} 
-        />
-      </button>
-    );
-  };
-
-  const appointmentColumns = useMemo<Column<Appointment>[]>(
-    () => [
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Category & Reason", "category")}
-          </div>
-        ),
-        className: "w-[35%] p-0",
-        render: (appointment: Appointment) => (
-          <div className="px-4 py-3 flex flex-col gap-1 text-left">
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "border-white/45 bg-white/40 text-[11px]",
-                  "font-medium backdrop-blur-xl",
-                  "dark:border-white/10 dark:bg-white/[0.05]",
-                )}
-              >
-                <Tag className="mr-1 h-3 w-3" />
-                {appointment.appointmentCategory.name}
-              </Badge>
-            </div>
-            <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">
-              {appointment.reason}
-            </p>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Date Requested", "createdAt")}
-          </div>
-        ),
-        className: "w-[20%] p-0",
-        render: (appointment: Appointment) => (
-          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{formatCompactDate(appointment.createdAt)}</span>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full flex items-center justify-start">
-            {renderSortableHeader("Appointment Date", "whenDate")}
-          </div>
-        ),
-        className: "w-[25%] p-0",
-        render: (appointment: Appointment) => (
-          <div className="px-3 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <CalendarClock size={14} className="shrink-0" />
-            <span className="whitespace-nowrap font-medium text-foreground">
-              {formatDate(appointment.whenDate)} • {format12HourTime(appointment.timeSlot.time)}
-            </span>
-          </div>
-        ),
-      },
-      {
-        header: (
-          <div className="px-3 py-3 w-full">
-            <SelectField
-              label=""
-              options={filterStatuses.map((s) => {
-                const count =
-                  s.id === 0
-                    ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
-                    : statusCounts?.find((sc) => sc.id === s.id)?.count || 0;
-
-                return {
-                  id: s.id,
-                  displayName: s.id === 0 ? "All Statuses" : `${s.name} (${count})`,
-                  disabled: s.id !== 0 && count === 0,
-                };
-              })}
-              value={selectedStatus.id}
-              onChange={(val) => {
-                const found = filterStatuses.find((s) => String(s.id) === String(val));
-                if (found) {
-                  setSelectedStatus(found);
-                  setCurrentPage(1);
-                }
-              }}
-              labelKey="displayName"
-              enabled={!isAppointmentsLoading}
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                selectedStatus.id === 0 ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
-              )}
-            />
-          </div>
-        ),
-        className: "w-[20%] p-0",
-        render: (appointment: Appointment) => (
-          <div className="px-3 py-3 flex items-center">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs hover:opacity-95 font-semibold px-2.5 py-0.5",
-                getStatusColor(appointment.status?.name),
-              )}
-            >
-              {appointment.status?.name}
-            </Badge>
-          </div>
-        ),
-      },
-    ],
-    [selectedSort, selectedOrder, filterStatuses, selectedStatus, statusCounts, isAppointmentsLoading]
-  );
 
   const emptyState = useMemo(
     () => (
@@ -450,123 +313,126 @@ export default function StudentAppointments() {
         </Alert>
       ) : null}
 
-      <Card className={cn(GLASS_CARD, "min-w-0 animate-fade-in-up overflow-hidden")}>
-        <CardHeader className="border-b border-white/30 px-4 py-3.5 dark:border-white/10 xl:hidden">
-          <div className="grid w-full gap-3 sm:grid-cols-2">
-            <SelectField
-              label="Appointment status"
-              options={filterStatuses.map((status) => {
-                const count =
-                  status.id === 0
-                    ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
-                    : statusCounts.find((item) => item.id === status.id)?.count || 0;
+      <div className="flex flex-col gap-6 animate-fade-in-up">
+        <div className="grid w-full gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          <SelectField
+            label="Appointment status"
+            options={filterStatuses.map((status) => {
+              const count =
+                status.id === 0
+                  ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
+                  : statusCounts.find((item) => item.id === status.id)?.count || 0;
 
-                return {
-                  id: status.id,
-                  displayName: status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
-                  disabled: status.id !== 0 && count === 0,
-                };
-              })}
-              value={selectedStatus.id}
-              onChange={(value) => {
-                const status = filterStatuses.find((item) => String(item.id) === String(value));
-                if (status) {
-                  setSelectedStatus(status);
-                  setCurrentPage(1);
-                }
-              }}
-              labelKey="displayName"
-              enabled={!isAppointmentsLoading}
-            />
-            <SelectField
-              label="Sort appointments"
-              options={mobileSortOptions}
-              value={`${selectedSort}-${selectedOrder}`}
-              onChange={(value) => {
-                const [sort, order] = String(value).split("-") as [string, SortOrder];
-                setSelectedSort(sort);
-                setSelectedOrder(order);
+              return {
+                id: status.id,
+                displayName: status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
+                disabled: status.id !== 0 && count === 0,
+              };
+            })}
+            value={selectedStatus.id}
+            onChange={(value) => {
+              const status = filterStatuses.find((item) => String(item.id) === String(value));
+              if (status) {
+                setSelectedStatus(status);
                 setCurrentPage(1);
-              }}
-              labelKey="displayName"
-              enabled={!isAppointmentsLoading}
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="bg-glass-bg p-0">
-          <Table
-            data={sortedAppointments}
-            columns={appointmentColumns}
-            isLoading={isAppointmentsLoading}
-            emptyState={emptyState}
-            onRowClick={(appointment) => navigate(`/student/appointments/${appointment.id}`)}
-            renderMobileItem={(appointment) => (
-              <button
-                type="button"
-                onClick={() => navigate(`/student/appointments/${appointment.id}`)}
-                className={cn(
-                  "w-full rounded-xl border border-border/70 bg-background/70 p-4 text-left",
-                  "transition-colors hover:bg-muted/50 focus-visible:outline-none",
-                  "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  "dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
-                )}
-                aria-label={`View appointment: ${appointment.appointmentCategory?.name || "Uncategorized"}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <Badge
-                    variant="outline"
-                    className="max-w-[60%] whitespace-normal break-words border-white/45 bg-white/40 text-[11px] font-medium backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.05]"
-                  >
-                    <Tag className="mr-1 h-3 w-3 shrink-0" />
-                    {appointment.appointmentCategory?.name || "Uncategorized"}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "max-w-[40%] whitespace-normal break-words px-2.5 py-0.5 text-center text-xs font-semibold",
-                      getStatusColor(appointment.status?.name),
-                    )}
-                  >
-                    {appointment.status?.name || "Unknown"}
-                  </Badge>
-                </div>
-                <p className="mt-3 break-words text-sm font-medium text-foreground">
-                  {appointment.reason}
-                </p>
-                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border/60 pt-3 text-xs text-muted-foreground dark:border-white/10">
-                  <div className="min-w-0">
-                    <span className="block font-semibold uppercase tracking-wide">Requested</span>
-                    <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
-                      <Calendar className="h-3.5 w-3.5 shrink-0" />
-                      {formatCompactDate(appointment.createdAt)}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block font-semibold uppercase tracking-wide">Appointment</span>
-                    <span className="mt-1 flex items-center gap-1.5 whitespace-nowrap">
-                      <CalendarClock className="h-3.5 w-3.5 shrink-0" />
-                      {formatCompactDate(appointment.whenDate)}
-                    </span>
-                    <span className="mt-1 block pl-5 text-[11px]">
-                      {format12HourTime(appointment.timeSlot?.time || "")}
-                    </span>
-                  </div>
-                </div>
-              </button>
-            )}
-            tableClassName="w-full table-fixed"
+              }
+            }}
+            labelKey="displayName"
+            enabled={!isAppointmentsLoading}
           />
+          <SelectField
+            label="Sort appointments"
+            options={mobileSortOptions}
+            value={`${selectedSort}-${selectedOrder}`}
+            onChange={(value) => {
+              const [sort, order] = String(value).split("-") as [string, SortOrder];
+              setSelectedSort(sort);
+              setSelectedOrder(order);
+              setCurrentPage(1);
+            }}
+            labelKey="displayName"
+            enabled={!isAppointmentsLoading}
+          />
+        </div>
 
-          <Separator className="bg-white/25 dark:bg-white/10" />
+        <div className="w-full">
+          {isAppointmentsLoading ? (
+            <div className="flex w-full items-center justify-center p-12">
+              <Spinner size="lg" />
+            </div>
+          ) : sortedAppointments.length === 0 ? (
+            emptyState
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {sortedAppointments.map((appointment) => (
+                <button
+                  key={appointment.id}
+                  type="button"
+                  onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+                  className={cn(
+                    "w-full rounded-2xl border border-slate-300 bg-white p-5 text-left shadow-md",
+                    "transition-all hover:-translate-y-1 hover:shadow-lg hover:border-slate-400",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    "dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:hover:border-white/20",
+                  )}
+                  aria-label={`View appointment: ${appointment.appointmentCategory?.name || "Uncategorized"}`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <Badge
+                      variant="outline"
+                      className="border-slate-300 bg-slate-200/60 text-[11px] font-bold text-slate-800 dark:border-white/20 dark:bg-white/10 dark:text-slate-200"
+                    >
+                      <Tag className="mr-1.5 h-3 w-3 shrink-0" />
+                      {appointment.appointmentCategory?.name || "Uncategorized"}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                        getStatusColor(appointment.status?.name),
+                      )}
+                    >
+                      {appointment.status?.name || "Unknown"}
+                    </Badge>
+                  </div>
+                  
+                  <p className="mt-4 text-sm font-medium leading-relaxed text-foreground/90">
+                    {appointment.reason}
+                  </p>
+                  
+                  <div className="mt-5 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Requested On
+                      </span>
+                      <span className="flex items-center gap-2 text-xs font-medium text-foreground">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                        {formatCompactDate(appointment.createdAt)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Appointment Date
+                      </span>
+                      <span className="flex items-center gap-2 text-xs font-bold text-primary">
+                        <CalendarClock className="h-4 w-4" />
+                        {formatCompactDate(appointment.whenDate)} • {format12HourTime(appointment.timeSlot?.time || "")}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           <Pagination
             currentPage={data?.meta?.page || 1}
             totalPages={data?.meta?.totalPages || 1}
             onPageChange={(page) => setCurrentPage(page)}
-            className="mt-0 border-t-0 px-4 py-3"
+            className="mt-6"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

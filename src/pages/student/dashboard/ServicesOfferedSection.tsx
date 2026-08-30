@@ -14,12 +14,12 @@ export function ServicesOfferedSection({
   return (
     <section
       className={cn(
-        "mt-5 overflow-hidden rounded-[26px]",
-        "bg-background p-4 shadow-[0_14px_34px_rgba(15,23,42,0.065)]",
-        "backdrop-blur-2xl",
+        "relative mt-5 overflow-hidden rounded-[26px]",
+        "bg-muted/30 p-4 shadow-sm",
         "sm:p-6",
       )}
     >
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
       <div
         className={cn(
           "animate-fade-in-up flex flex-col gap-4",
@@ -28,17 +28,6 @@ export function ServicesOfferedSection({
         style={{ animationDelay: "0.13s", animationFillMode: "both" }}
       >
         <div className="min-w-0 space-y-2">
-          <p
-            className={cn(
-              "inline-flex max-w-full items-center gap-2 rounded-md border",
-              "border-primary/15 bg-primary/10 px-3 py-1 text-[11px]",
-              "font-semibold uppercase tracking-[0.16em] text-primary",
-            )}
-          >
-            <HeartHandshake className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Guidance Services</span>
-          </p>
-
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
               Services Offered
@@ -52,9 +41,8 @@ export function ServicesOfferedSection({
 
         <div
           className={cn(
-            "w-fit shrink-0 rounded-xl border border-white/25 bg-white/55 px-3.5 py-2",
-            "text-xs text-muted-foreground shadow-sm backdrop-blur-xl",
-            "dark:border-white/10 dark:bg-white/[0.04]",
+            "w-fit shrink-0 rounded-xl border border-border bg-background/80 px-3.5 py-2",
+            "text-xs text-muted-foreground shadow-sm backdrop-blur-md",
           )}
         >
           <span className="font-semibold text-foreground">
@@ -69,10 +57,9 @@ export function ServicesOfferedSection({
           <article
             key={service.title}
             className={cn(
-              "bg-glass group min-h-[132px] rounded-xl border border-glass-border p-4",
-              "shadow-[0_8px_20px_rgba(15,23,42,0.045)] backdrop-blur-xl",
-              "transition-all duration-300 hover:-translate-y-0.5",
-              "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
+              "group relative min-h-[132px] overflow-hidden rounded-xl border border-border bg-background p-4",
+              "shadow-sm transition-all duration-300",
+              "hover:-translate-y-1 hover:border-primary/40 hover:shadow-md",
               "animate-fade-in-up",
             )}
             style={{
@@ -80,13 +67,13 @@ export function ServicesOfferedSection({
               animationFillMode: "both",
             }}
           >
-            <div className="flex h-full min-w-0 items-start gap-4">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative z-10 flex h-full min-w-0 items-start gap-4">
               <div
                 className={cn(
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",
-                  "border border-white/35 bg-gradient-to-br shadow-sm backdrop-blur-xl",
-                  "transition-transform duration-300 group-hover:scale-105",
-                  "dark:border-white/10",
+                  "border border-border/50 bg-gradient-to-br shadow-sm",
+                  "transition-all duration-300 group-hover:-rotate-3 group-hover:scale-110 group-hover:shadow-md",
                   service.accent,
                 )}
               >
@@ -103,7 +90,7 @@ export function ServicesOfferedSection({
                   Service {String(index + 1).padStart(2, "0")}
                 </p>
 
-                <h3 className="text-base font-semibold leading-6 text-foreground">
+                <h3 className="text-base font-semibold leading-6 text-foreground transition-colors group-hover:text-primary">
                   {service.title}
                 </h3>
 

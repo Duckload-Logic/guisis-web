@@ -40,10 +40,10 @@ export default function InfoNavigation({
     : TABS.filter((tab) => tab.id !== "significantNotes");
 
   return (
-    <div className="relative z-20 -mb-[2px]">
+    <div className="relative z-20 sm:-mb-[2px]">
       <nav
         className={cn(
-          "no-scrollbar ml-0 flex w-full items-end gap-1",
+          "no-scrollbar ml-0 flex w-full items-center gap-2 pb-2 sm:items-end sm:gap-1 sm:pb-0",
           "overflow-x-auto overflow-y-hidden sm:ml-4",
           "xl:w-auto xl:overflow-visible",
         )}
@@ -58,38 +58,37 @@ export default function InfoNavigation({
               disabled={isTabDisabled}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "group relative flex-1 whitespace-nowrap border-l-2",
-                "border-r-2 border-t-2 px-4 py-3 text-xs font-medium",
-                "transition-all duration-300 sm:flex-none sm:px-6",
-                "sm:text-sm",
+                "group relative shrink-0 whitespace-nowrap",
+                "px-4 py-2.5 text-xs font-bold transition-all duration-300 sm:px-6 sm:py-3 sm:font-medium sm:text-sm",
+                // Responsive Shape: Pill on mobile, Tab on desktop
+                "rounded-full sm:rounded-none sm:rounded-t-xl sm:border-l-2 sm:border-r-2 sm:border-t-2",
                 isActive
                   ? cn(
-                      "rounded-t-xl border-glass-border bg-card",
-                      "text-card-foreground",
+                      // Active: Solid primary pill on mobile, Card tab on desktop
+                      "bg-primary text-primary-foreground shadow-md sm:border-glass-border sm:bg-card sm:text-card-foreground sm:shadow-none",
                     )
                   : cn(
-                      "z-0 rounded-t-lg border-transparent bg-muted",
-                      "text-muted-foreground opacity-70",
+                      // Inactive: Muted pill on mobile, Muted tab on desktop
+                      "bg-muted/80 text-muted-foreground hover:bg-muted sm:border-transparent sm:bg-muted sm:opacity-70",
                     ),
                 isTabDisabled &&
-                  "cursor-not-allowed opacity-30 bg-neutral-200/50" +
-                    " dark:bg-neutral-800/50 pointer-events-none",
+                  "pointer-events-none cursor-not-allowed bg-neutral-200/50 opacity-30 dark:bg-neutral-800/50",
               )}
             >
               <div
                 className={cn(
-                  "flex items-center justify-center gap-2 transition-colors",
-                  "group-hover:text-secondary",
+                  "flex items-center justify-center transition-colors",
+                  isActive ? "gap-2" : "gap-0"
                 )}
               >
                 <tab.icon
                   className={cn(
-                    "transition-all duration-300 group-hover:text-secondary",
+                    "shrink-0 transition-all duration-300",
                     isActive
-                      ? "scale-110 text-primary"
-                      : "opacity-60 group-hover:opacity-100",
+                      ? "scale-110 sm:text-primary"
+                      : "opacity-60 group-hover:text-secondary group-hover:opacity-100",
                   )}
-                  size={18}
+                  size={16}
                 />
 
                 <div
@@ -101,8 +100,8 @@ export default function InfoNavigation({
                 >
                   <span
                     className={cn(
-                      "hidden overflow-hidden whitespace-nowrap text-[10px]",
-                      "group-hover:text-secondary sm:block sm:text-sm",
+                      "overflow-hidden whitespace-nowrap text-[11px]",
+                      "sm:text-sm",
                     )}
                   >
                     {tab.label}

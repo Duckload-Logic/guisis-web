@@ -39,9 +39,7 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
               "3.4.120/pdf.min.js";
             script.onload = () => resolve();
             script.onerror = () =>
-              reject(
-                new Error("Failed to load PDF viewer library."),
-              );
+              reject(new Error("Failed to load PDF viewer library."));
             document.head.appendChild(script);
           });
         }
@@ -75,7 +73,7 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
 
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
           const page = await pdf.getPage(pageNum);
-          
+
           const viewport = page.getViewport({ scale: 1.5 });
           const canvas = document.createElement("canvas");
           canvas.className = cn(
@@ -119,7 +117,7 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
     return (
       <iframe
         src={`${url}#toolbar=0`}
-        className={cn("w-full h-full border-none", className)}
+        className={cn("h-full w-full border-none", className)}
         title={title || "PDF Preview"}
       />
     );
@@ -128,7 +126,7 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col w-full h-full",
+        "relative flex h-full w-full flex-col",
         "overflow-auto bg-muted/10 p-4",
         className,
       )}
@@ -137,13 +135,11 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
         <div
           className={cn(
             "absolute inset-0 flex flex-col items-center",
-            "justify-center bg-background/50 z-10 gap-2",
+            "z-10 justify-center gap-2 bg-background/50",
           )}
         >
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground">
-            Loading preview...
-          </p>
+          <p className="text-xs text-muted-foreground">Loading preview...</p>
         </div>
       )}
 
@@ -151,7 +147,7 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
         <div
           className={cn(
             "flex flex-col items-center justify-center",
-            "flex-1 p-6 text-center gap-4",
+            "flex-1 gap-4 p-6 text-center",
           )}
         >
           <AlertCircle className="h-12 w-12 text-destructive" />
@@ -159,21 +155,29 @@ export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
             <p className="text-sm font-semibold text-foreground">
               Preview Unavailable
             </p>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              {error}
-            </p>
+            <p className="max-w-xs text-xs text-muted-foreground">{error}</p>
           </div>
-          <Button variant="outline" size="sm" asChild className="rounded-xl">
-            <a href={url} download target="_blank" rel="noreferrer">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="rounded-xl"
+          >
+            <a
+              href={url}
+              download
+              target="_blank"
+              rel="noreferrer"
+            >
               <Download className="mr-2 h-4 w-4" />
-              Download PDF
+              <p className="hidden sm:block">Download PDF</p>
             </a>
           </Button>
         </div>
       ) : (
         <div
           ref={containerRef}
-          className="flex flex-col items-center w-full"
+          className="flex w-full flex-col items-center"
         />
       )}
     </div>

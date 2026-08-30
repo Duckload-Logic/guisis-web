@@ -53,7 +53,10 @@ const getFileKind = (file: SlipAttachment): AttachmentKind => {
   const mimeType = file.mimeType?.toLowerCase() || "";
   const extension = getFileExtension(file.fileName || file.fileUrl);
 
-  if (mimeType.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+  if (
+    mimeType.startsWith("image/") ||
+    ["jpg", "jpeg", "png", "gif", "webp"].includes(extension)
+  ) {
     return "image";
   }
 
@@ -80,7 +83,11 @@ const formatFileSize = (size?: number) => {
 };
 
 const getAttachmentTypeLabel = (file: SlipAttachment) => {
-  return file.attachmentType?.replace(/_/g, " ") || file.fileType || "Supporting file";
+  return (
+    file.attachmentType?.replace(/_/g, " ") ||
+    file.fileType ||
+    "Supporting file"
+  );
 };
 
 function AttachmentIcon({ kind }: { kind: AttachmentKind }) {
@@ -127,7 +134,10 @@ function PreviewModal({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent
         className={cn(
           "w-[calc(100vw-1.5rem)] max-w-5xl overflow-hidden rounded-3xl",
@@ -249,7 +259,10 @@ function AttachmentItem({
 
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h4 className="max-w-full truncate text-sm font-semibold text-foreground" title={fileName}>
+            <h4
+              className="max-w-full truncate text-sm font-semibold text-foreground"
+              title={fileName}
+            >
               {fileName}
             </h4>
             <span
@@ -268,7 +281,9 @@ function AttachmentItem({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span>{formatFileSize(file.fileSize)}</span>
             <span className="hidden h-1 w-1 rounded-full bg-muted-foreground/50 sm:inline-block" />
-            <span className="capitalize">{getAttachmentTypeLabel(file).toLowerCase()}</span>
+            <span className="capitalize">
+              {getAttachmentTypeLabel(file).toLowerCase()}
+            </span>
           </div>
         </div>
       </div>
@@ -281,8 +296,8 @@ function AttachmentItem({
           className="h-10 rounded-xl px-3 text-xs font-semibold"
           onClick={() => onPreview(file)}
         >
-          <Eye className="mr-2 h-3.5 w-3.5" />
-          Preview
+          <Eye className="mr-0 h-3.5 w-3.5 sm:mr-2" />
+          <p className="hidden sm:block">Preview</p>
         </Button>
 
         <Button
@@ -293,11 +308,13 @@ function AttachmentItem({
           disabled={isDownloading}
         >
           {isDownloading ? (
-            <LoaderCircle className="mr-2 h-3.5 w-3.5 animate-spin" />
+            <LoaderCircle className="mr-0 h-3.5 w-3.5 animate-spin sm:mr-2" />
           ) : (
-            <Download className="mr-2 h-3.5 w-3.5" />
+            <Download className="mr-0 h-3.5 w-3.5 sm:mr-2" />
           )}
-          {isDownloading ? "Saving..." : "Download"}
+          <p className="hidden sm:block">
+            {isDownloading ? "Saving..." : "Download"}
+          </p>
         </Button>
       </div>
     </article>
@@ -307,12 +324,8 @@ function AttachmentItem({
 export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
   const [selectedFile, setSelectedFile] = useState<SlipAttachment | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const {
-    downloadAttachment,
-    downloadingAttachmentId,
-    error,
-    clearError,
-  } = useDownloadAttachment();
+  const { downloadAttachment, downloadingAttachmentId, error, clearError } =
+    useDownloadAttachment();
 
   const normalizedFiles = useMemo(() => files || [], [files]);
 

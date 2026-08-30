@@ -202,7 +202,7 @@ export default function SlipDetails() {
             <div className="space-y-6 md:col-span-2">
               <Card className="border-0 bg-card/60 shadow-lg backdrop-blur-md">
                 <CardHeader className="border-b border-border/60 pb-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="rounded-lg bg-primary/10 p-2">
                         <FileText className="h-5 w-5 text-primary" />

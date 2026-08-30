@@ -41,18 +41,16 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
           >
             <div
               className={cn(
-                "border-glass relative hidden overflow-hidden rounded-xl sm:flex",
-                "bg-glass border border-glass-border p-4",
-                "shadow-[0_8px_22px_rgba(15,23,42,0.06)] backdrop-blur-xl",
-                "transition-all duration-200 hover:-translate-y-0.5",
-                "hover:border-primary/25 hover:bg-white/55",
-                "flex-col dark:border-white/10 dark:bg-white/[0.04]",
+                "relative hidden overflow-hidden rounded-xl sm:flex flex-col",
+                "border border-border bg-background/80 p-4 shadow-sm",
+                "backdrop-blur-md transition-all duration-200",
+                "hover:-translate-y-0.5 hover:border-primary/30",
               )}
             >
               <div
                 className={cn(
-                  "pointer-events-none absolute inset-x-0 top-0 h-20",
-                  "bg-gradient-to-br opacity-90",
+                  "pointer-events-none absolute inset-x-0 top-0 h-16",
+                  "bg-gradient-to-br opacity-20 blur-2xl dark:opacity-10",
                   action.accent,
                 )}
               />
@@ -67,8 +65,7 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
                   <div
                     className={cn(
                       "flex h-10 w-10 items-center justify-center",
-                      "rounded-xl border bg-white/70 backdrop-blur-md",
-                      "dark:bg-white/[0.06]",
+                      "rounded-xl border border-border/50 bg-background/80",
                       action.accent,
                     )}
                   >
@@ -98,17 +95,16 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
             <div
               className={cn(
                 "flex items-center justify-between p-4 sm:hidden",
-                "rounded-2xl border border-white/20 bg-white/45",
-                "shadow-[0_4px_12px_rgba(15,23,42,0.04)] backdrop-blur-xl",
-                "dark:border-white/10 dark:bg-white/[0.04]",
+                "rounded-2xl border border-border bg-background/80",
+                "shadow-sm backdrop-blur-md transition-all",
+                "hover:border-primary/30",
               )}
             >
               <div className="flex min-w-0 items-center gap-3">
                 <div
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center",
-                    "rounded-xl border bg-white/70 backdrop-blur-md",
-                    "dark:bg-white/[0.06]",
+                    "rounded-xl border border-border/50 bg-background/80",
                     action.accent,
                   )}
                 >

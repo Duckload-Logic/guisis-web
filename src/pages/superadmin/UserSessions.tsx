@@ -96,7 +96,7 @@ export default function UserSessions() {
                 {targetUser.email}
               </span>
               <div className="flex flex-wrap gap-1">
-                {targetUser.roles.map((role) => (
+                {targetUser.roles?.map((role) => (
                   <Badge
                     key={role.id}
                     variant="outline"
