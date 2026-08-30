@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,21 @@ export default function SearchInput({
   noSpecialCharacters = false,
 }: SearchInputProps) {
   const [error, setError] = useState("");
+  const [localValue, setLocalValue] = useState(searchTerm);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setLocalValue(searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localValue !== searchTerm) {
+        onSearchChange?.(localValue);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [localValue, searchTerm, onSearchChange]);
 
   const handleChange = (val: string) => {
     if (noSpecialCharacters && SPECIAL_CHARS_REGEX.test(val)) {
@@ -33,11 +47,14 @@ export default function SearchInput({
     } else {
       setError("");
     }
-    onSearchChange?.(val);
+    setLocalValue(val);
   };
 
   const handleClear = () => {
     setError("");
+    setLocalValue("");
+    // The effect will trigger onSearchChange("") after delay, 
+    // but we can also fire it immediately for clear
     onSearchChange?.("");
     requestAnimationFrame(() => inputRef.current?.focus());
   };
@@ -58,7 +75,7 @@ export default function SearchInput({
           ref={inputRef}
           type="text"
           placeholder={placeholder}
-          value={searchTerm}
+          value={localValue}
           onChange={(e) => handleChange(e.target.value)}
           className={cn(
             "hover:border-glass-border/60 h-11 bg-muted/60 py-2.5 pl-10 pr-11",
@@ -69,7 +86,7 @@ export default function SearchInput({
             error ? "border-destructive/50 ring-destructive/5" : "",
           )}
         />
-        {searchTerm && (
+        {localValue && (
           <Button
             type="button"
             variant="ghost"
