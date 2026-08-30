@@ -87,26 +87,21 @@ export default function SearchInput({
           )}
         />
         {localValue && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon"
             onMouseDown={(event) => {
               event.preventDefault();
               event.stopPropagation();
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 cursor-pointer rounded-full p-0",
-              "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+              "absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full p-1.5",
+              "text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors",
             )}
             aria-label="Clear search"
           >
-            <X
-              size={14}
-              strokeWidth={2.5}
-            />
-          </Button>
+            <X className="h-4 w-4" strokeWidth={2.5} />
+          </button>
         )}
       </div>
       {error && (
