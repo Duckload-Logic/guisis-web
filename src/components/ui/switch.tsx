@@ -19,6 +19,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         type="button"
         role="switch"
         aria-checked={checked}
+        data-state={checked ? "checked" : "unchecked"}
         disabled={disabled}
         onClick={handleToggle}
         ref={ref}
@@ -35,6 +36,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         {...props}
       >
         <span
+          data-state={checked ? "checked" : "unchecked"}
           className={cn(
             "pointer-events-none block h-5 w-5 rounded-full bg-white",
             "shadow-md transition-transform duration-200",
