@@ -169,11 +169,7 @@ export default function Navigation({
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    if (sidebarPinned) {
-      setSidebarPinned(false);
-    }
-  }, [location.pathname]);
+
 
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
