@@ -49,6 +49,44 @@ export default function Header({
     }
   };
 
+  if (isLoggedIn) {
+    return (
+      <>
+        <div
+          className={cn(
+            "fixed right-3 top-3 z-[60] flex items-center gap-1 rounded-xl border",
+            "border-border/70 bg-background/85 p-1 shadow-md backdrop-blur-xl",
+            "supports-[backdrop-filter]:bg-background/70 sm:right-4 sm:top-4",
+            "dark:border-white/10 dark:bg-neutral-900/85",
+          )}
+          aria-label="Account controls"
+        >
+          <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+
+          <NotificationBell
+            showNotifications={showNotifications}
+            setShowNotifications={setShowNotifications}
+          />
+
+          <ProfileMenu
+            firstName={user?.firstName}
+            middleName={user?.middleName}
+            lastName={user?.lastName}
+            roleLabel={getRoleLabel()}
+            role={role}
+            profilePath={`/${role}/profile`}
+            onLogout={handleLogout}
+          />
+        </div>
+
+        <UISettingsModal
+          isOpen={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+        />
+      </>
+    );
+  }
+
   return (
     <header
       className={cn(
