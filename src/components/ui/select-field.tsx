@@ -199,9 +199,10 @@ export function SelectField({
           >
             <span
               className={cn(
-                "min-w-0 flex-1 whitespace-normal break-words text-left sm:truncate sm:whitespace-nowrap",
+                "min-w-0 flex-1 truncate whitespace-nowrap text-left",
                 !filled && "font-normal italic text-muted-foreground/60",
               )}
+              title={filled ? getLabel(selectedOption) : undefined}
             >
               {filled
                 ? getLabel(selectedOption)
