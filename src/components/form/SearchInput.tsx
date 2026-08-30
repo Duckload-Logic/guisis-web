@@ -97,12 +97,15 @@ export default function SearchInput({
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 cursor-pointer rounded-full p-0",
+              "absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 cursor-pointer rounded-full p-0",
               "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
             )}
             aria-label="Clear search"
           >
-            <X size={14} strokeWidth={2.5} />
+            <X
+              size={14}
+              strokeWidth={2.5}
+            />
           </Button>
         )}
       </div>
