@@ -24,7 +24,7 @@ const LOGO_SRC = "/logo.svg";
  * Desktop sidebar sizing.
  * 24px keeps a small breathing room while keeping the sidebar visually connected.
  */
-const DESKTOP_LEFT_GUTTER = 24;
+const DESKTOP_LEFT_GUTTER = 12;
 const EXPANDED_SIDEBAR_WIDTH = 256;
 const COLLAPSED_SIDEBAR_WIDTH = 72;
 const EDGE_CONTROL_SPACE = 20;
@@ -159,7 +159,12 @@ export default function Navigation({
   role: string;
   roleLabel: string;
 }) {
-  const { sidebarPinned, setSidebarPinned, toggleSidebarPinned, setSidebarHovered } = useUI();
+  const {
+    sidebarPinned,
+    setSidebarPinned,
+    toggleSidebarPinned,
+    setSidebarHovered,
+  } = useUI();
   const { activeRole, setActiveRole } = useAuth();
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLElement>(null);
@@ -170,24 +175,7 @@ export default function Navigation({
     }
   }, [location.pathname]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        sidebarPinned &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
-        setSidebarPinned(false);
-      }
-    }
-    
-    if (sidebarPinned) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [sidebarPinned, setSidebarPinned]);
+
 
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
@@ -214,8 +202,7 @@ export default function Navigation({
    * every visual property on the same render.
    */
   const [visualExpanded, setVisualExpanded] = useState(sidebarPinned);
-  const [showExpandedContent, setShowExpandedContent] =
-    useState(sidebarPinned);
+  const [showExpandedContent, setShowExpandedContent] = useState(sidebarPinned);
 
   const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -409,7 +396,13 @@ export default function Navigation({
       {/* Expanded-state backdrop only. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-20 bg-black/15 dark:bg-black/25"
+        onClick={() => {
+          if (sidebarPinned) setSidebarPinned(false);
+        }}
+        className={cn(
+          "fixed inset-0 z-20 bg-black/15 dark:bg-black/25",
+          isExpanded ? "pointer-events-auto cursor-pointer" : "pointer-events-none"
+        )}
         style={{
           opacity: isExpanded ? 1 : 0,
           transition: `opacity 280ms ${SHELL_EASING}`,
@@ -417,7 +410,7 @@ export default function Navigation({
         }}
       />
 
-      {/* 24px left gutter: small breathing room while staying visually connected. */}
+      {/* 12px left gutter: small breathing room while staying visually connected. */}
       <div
         className="relative z-40 h-[calc(100%-1.5rem)]"
         style={{
@@ -516,12 +509,14 @@ export default function Navigation({
                   setSidebarHovered(false);
                   toggleSidebarPinned();
                 }}
-                aria-label={sidebarPinned ? "Collapse sidebar" : "Expand sidebar"}
+                aria-label={
+                  sidebarPinned ? "Collapse sidebar" : "Expand sidebar"
+                }
                 aria-expanded={sidebarPinned}
                 title={sidebarPinned ? "Collapse Sidebar" : "Expand Sidebar"}
                 className={cn(
                   "flex !h-[22px] !min-h-[22px] !w-[22px] !min-w-[22px]",
-                  "!p-0 items-center justify-center rounded-full border-0",
+                  "items-center justify-center rounded-full border-0 !p-0",
                   "bg-primary text-primary-foreground shadow-sm",
                   "transition-[background-color,box-shadow] duration-200 ease-out",
                   "hover:bg-primary/90 hover:shadow-md",
