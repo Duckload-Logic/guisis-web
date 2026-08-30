@@ -53,7 +53,7 @@ export default function SearchInput({
   const handleClear = () => {
     setError("");
     setLocalValue("");
-    // The effect will trigger onSearchChange("") after delay, 
+    // The effect will trigger onSearchChange("") after delay,
     // but we can also fire it immediately for clear
     onSearchChange?.("");
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -82,7 +82,7 @@ export default function SearchInput({
             "text-sm font-medium text-foreground shadow-md outline-none",
             "transition-all duration-200 placeholder:text-muted-foreground/70",
             "focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
-            "dark:bg-muted/20 dark:focus:bg-glass-bg/40",
+            "dark:focus:bg-glass-bg/40 dark:bg-muted/20",
             error ? "border-destructive/50 ring-destructive/5" : "",
           )}
         />
@@ -97,12 +97,12 @@ export default function SearchInput({
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 h-7 w-7 -translate-y-1/2 rounded-xl",
-              "text-card-foreground hover:bg-muted/50",
+              "absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 cursor-pointer rounded-full p-0",
+              "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
             )}
             aria-label="Clear search"
           >
-            <X size={ICON_SIZE} />
+            <X size={14} strokeWidth={2.5} />
           </Button>
         )}
       </div>
