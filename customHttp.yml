@@ -11,7 +11,7 @@ customHeaders:
           https://fonts.cdnfonts.com;
           img-src 'self' data: blob: https://*.tawk.to https://*.dllbsit2027.com;
           connect-src 'self' http://localhost:8080
-          https://*.dllbsit2027.com https://*.tawk.to wss://*.tawk.to https://date.nager.at;
+          https://*.dllbsit2027.com https://*.tawk.to wss://*.tawk.to;
           frame-src 'self' blob: https://*.dllbsit2027.com
           https://*.tawk.to;
           frame-ancestors 'none';

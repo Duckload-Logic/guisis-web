@@ -336,8 +336,7 @@ export default function Layout({
                 ref={scrollRef}
                 className={cn(
                   "relative flex h-full min-w-0 max-w-full flex-col",
-                  "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  isLoggedIn ? "pb-32 md:pb-12" : "pb-0",
+                  "overflow-y-auto overflow-x-hidden overscroll-contain pb-0",
                 )}
               >
                 <main

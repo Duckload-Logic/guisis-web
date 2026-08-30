@@ -100,8 +100,14 @@ function getChartColorKey(statusName: string): keyof typeof chartConfig {
 
 export default function AppointmentsManagement() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
-  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>("urgency", "all");
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>(
+    "category",
+    "all",
+  );
+  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>(
+    "urgency",
+    "all",
+  );
   const { data: categories } = useCategories();
   const { data: appointmentStatuses, isLoading: isStatusesLoading } =
     useStatuses();
@@ -118,10 +124,16 @@ export default function AppointmentsManagement() {
     name: "All",
   };
 
-  const [selectedStatus, setSelectedStatus] = useUrlState<AppointmentStatus>("status", defaultStatus);
+  const [selectedStatus, setSelectedStatus] = useUrlState<AppointmentStatus>(
+    "status",
+    defaultStatus,
+  );
 
   const [selectedSort, setSelectedSort] = useUrlState("sort", "whenDate");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
   const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
@@ -152,10 +164,8 @@ export default function AppointmentsManagement() {
       params: {
         startDate: getLocalDateString(selectedDate, startDate),
         endDate: getLocalDateString(selectedDate, endDate),
-        categoryId:
-          selectedCategory === "all" ? undefined : selectedCategory,
-        urgency:
-          selectedUrgency === "all" ? undefined : selectedUrgency,
+        categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+        urgency: selectedUrgency === "all" ? undefined : selectedUrgency,
       },
     });
 
@@ -166,10 +176,8 @@ export default function AppointmentsManagement() {
       pageSize: 10,
       search: debouncedSearch,
       statusId: selectedStatus?.id === 0 ? undefined : selectedStatus?.id,
-      categoryId:
-        selectedCategory === "all" ? undefined : selectedCategory,
-      urgency:
-        selectedUrgency === "all" ? undefined : selectedUrgency,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+      urgency: selectedUrgency === "all" ? undefined : selectedUrgency,
       startDate: getLocalDateString(selectedDate, startDate),
       endDate: getLocalDateString(selectedDate, endDate),
       orderBy: selectedSort,
@@ -239,7 +247,7 @@ export default function AppointmentsManagement() {
       >
         <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-6">
           <div
-            className="h-full lg:col-span-2 animate-fade-in-up"
+            className="animate-fade-in-up h-full lg:col-span-2"
             style={{ animationDelay: "0.05s", animationFillMode: "both" }}
           >
             <Calendar
@@ -291,10 +299,12 @@ export default function AppointmentsManagement() {
             )}
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
-            <div className={cn(
-              "border-border/40 flex items-center justify-between",
-              "border-b bg-muted/20 px-6 py-3" // This matches your uniform style
-            )}>
+            <div
+              className={cn(
+                "flex items-center justify-between border-border/40",
+                "border-b bg-muted/20 px-6 py-3", // This matches your uniform style
+              )}
+            >
               <h2 className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
                 Overview
               </h2>

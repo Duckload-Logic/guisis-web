@@ -195,7 +195,7 @@ export default function Navigation({
           <div
             className={cn(
               "flex h-16 w-full max-w-sm items-center rounded-2xl border",
-              "border-border bg-background/10 px-2 shadow-lg backdrop-blur-xl",
+              "border-border bg-background px-2 shadow-lg backdrop-blur-xl",
             )}
           >
             {/* Scrollable Nav Area */}

@@ -63,13 +63,22 @@ export default function ReviewSlips() {
   const [searchTerm, setSearchTerm] = useUrlState("q", "");
   const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [selectedSort, setSelectedSort] = useUrlState("sort", "dateNeeded");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
-  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
-  const [selectedStatus, setSelectedStatus] = useUrlState<SlipStatus>("status", {
-    id: "0",
-    name: "All Statuses",
-    colorKey: "stale",
-  } as any);
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>(
+    "category",
+    "all",
+  );
+  const [selectedStatus, setSelectedStatus] = useUrlState<SlipStatus>(
+    "status",
+    {
+      id: "0",
+      name: "All Statuses",
+      colorKey: "stale",
+    } as any,
+  );
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [showNotFound, setShowNotFound] = useState(false);
