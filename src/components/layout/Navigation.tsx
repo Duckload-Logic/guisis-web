@@ -1,38 +1,66 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
-  MoreHorizontal,
   Settings,
   LogOut,
   ShieldCheck,
   Gavel,
-  ChevronLeft,
   ChevronRight,
   LayoutDashboard,
 } from "lucide-react";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { useUI, useAuth } from "@/context";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { cn } from "@/lib/utils";
 
 const HOME_HREF = "/";
 const SETTINGS_HREF = "/settings";
+const LOGO_SRC = "/logo.svg";
+
+/*
+ * Desktop sidebar sizing.
+ * 24px keeps a small breathing room while keeping the sidebar visually connected.
+ */
+const DESKTOP_LEFT_GUTTER = 24;
+const EXPANDED_SIDEBAR_WIDTH = 256;
+const COLLAPSED_SIDEBAR_WIDTH = 72;
+const EDGE_CONTROL_SPACE = 20;
+
+const EXPANDED_BRANDING_HEIGHT = 214;
+const COLLAPSED_BRANDING_HEIGHT = 96;
+
+/*
+ * Animation timing.
+ *
+ * The shell and content do NOT start at exactly the same time:
+ * - Collapse: content fades first, then the shell contracts.
+ * - Expand: shell opens first, then content fades in.
+ *
+ * This staged sequence is what makes the motion visibly different from the
+ * previous "everything changes at once" animation.
+ */
+const SHELL_DURATION = 380;
+const PRE_COLLAPSE_DELAY = 90;
+const EXPAND_CONTENT_DELAY = 135;
+const SHELL_EASING = "cubic-bezier(0.4, 0, 0.2, 1)";
+const CONTENT_EASING = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function NavItem({
   item,
   active,
   variant = "desktop",
   isExpanded = false,
+  showExpandedContent = false,
   onClick,
 }: {
   item: { label: string; href: string; icon: React.ReactNode };
   active: boolean;
   variant?: "desktop" | "mobile-bottom" | "mobile-drawer";
   isExpanded?: boolean;
+  showExpandedContent?: boolean;
   onClick?: () => void;
 }) {
   if (variant === "mobile-bottom") {
@@ -44,12 +72,7 @@ function NavItem({
           active ? "text-primary" : "text-muted-foreground"
         }`}
       >
-        <div
-          className={cn(
-            "flex h-6 w-6 items-center justify-center",
-            "transition-transform group-hover:scale-110",
-          )}
-        >
+        <div className="flex h-6 w-6 items-center justify-center transition-transform group-hover:scale-110">
           {item.icon}
         </div>
       </Link>
@@ -75,25 +98,45 @@ function NavItem({
     );
   }
 
-  // Desktop variant
   return (
     <Link
       to={item.href}
       onClick={onClick}
-      className={`sidebar-icon-tilt group flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm ${
+      title={!isExpanded ? item.label : undefined}
+      className={cn(
+        "sidebar-icon-tilt group flex cursor-pointer items-center gap-3",
+        "rounded-xl px-3 py-3",
+        "transition-[background-color,color,box-shadow] duration-200 ease-out",
         active
           ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-      }`}
+          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:shadow-sm",
+      )}
     >
-      <div
-        className={`flex w-6 shrink-0 items-center justify-center transition-transform duration-200 ${isExpanded ? "scale-110" : ""}`}
-      >
+      <div className="flex w-6 shrink-0 items-center justify-center">
         {item.icon}
       </div>
 
       <span
-        className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isExpanded ? "w-auto translate-x-0 opacity-100" : "w-0 translate-x-[-3px] opacity-0"}`}
+        className="min-w-0 overflow-hidden whitespace-nowrap"
+        style={{
+          maxWidth: showExpandedContent ? 190 : 0,
+          opacity: showExpandedContent ? 1 : 0,
+          transform: showExpandedContent
+            ? "translate3d(0, 0, 0)"
+            : "translate3d(-7px, 0, 0)",
+          transition: showExpandedContent
+            ? [
+                `max-width 300ms ${CONTENT_EASING}`,
+                "opacity 220ms ease-out",
+                `transform 280ms ${CONTENT_EASING}`,
+              ].join(", ")
+            : [
+                `max-width 190ms ${SHELL_EASING}`,
+                "opacity 120ms ease-out",
+                `transform 170ms ${SHELL_EASING}`,
+              ].join(", "),
+          willChange: "max-width, opacity, transform",
+        }}
       >
         {item.label}
       </span>
@@ -116,12 +159,7 @@ export default function Navigation({
   role: string;
   roleLabel: string;
 }) {
-  const {
-    sidebarPinned,
-    toggleSidebarPinned,
-    sidebarHovered,
-    setSidebarHovered,
-  } = useUI();
+  const { sidebarPinned, toggleSidebarPinned, setSidebarHovered } = useUI();
   const { activeRole, setActiveRole } = useAuth();
   const navigate = useNavigate();
 
@@ -135,16 +173,70 @@ export default function Navigation({
 
   const handleRoleSwitch = (r: any) => {
     setActiveRole(r);
+
     const roleKey = r.name.toLowerCase().replace(/\s+/g, "");
+
     navigate(ROLE_ROUTES[roleKey] || "/");
     setSidebarHovered(false);
   };
 
-  const isExpanded = sidebarPinned || sidebarHovered;
+  /*
+   * visualExpanded controls the physical shell.
+   * showExpandedContent controls branding/nav text.
+   *
+   * Keeping these separate lets us stage the motion instead of switching
+   * every visual property on the same render.
+   */
+  const [visualExpanded, setVisualExpanded] = useState(sidebarPinned);
+  const [showExpandedContent, setShowExpandedContent] =
+    useState(sidebarPinned);
+
+  const animationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = null;
+    }
+
+    if (sidebarPinned) {
+      // EXPAND:
+      // 1. Open shell immediately.
+      // 2. Let the panel gain some width.
+      // 3. Fade/slide the labels in.
+      setVisualExpanded(true);
+
+      animationTimerRef.current = setTimeout(() => {
+        setShowExpandedContent(true);
+        animationTimerRef.current = null;
+      }, EXPAND_CONTENT_DELAY);
+    } else {
+      // COLLAPSE:
+      // 1. Fade/slide labels out first.
+      // 2. Contract the shell a fraction of a second later.
+      setShowExpandedContent(false);
+
+      animationTimerRef.current = setTimeout(() => {
+        setVisualExpanded(false);
+        animationTimerRef.current = null;
+      }, PRE_COLLAPSE_DELAY);
+    }
+
+    return () => {
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+        animationTimerRef.current = null;
+      }
+    };
+  }, [sidebarPinned]);
+
+  const isExpanded = visualExpanded;
   const isMobile = useIsMobile();
+
   const [openDrawer, setOpenDrawer] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "settings">("menu");
   const [uiSettingsOpen, setUiSettingsOpen] = useState(false);
+
   const isActive = (item: any) => {
     if (
       location.pathname === item.href ||
@@ -160,6 +252,7 @@ export default function Navigation({
       "/developer",
       "/",
     ].includes(item.href);
+
     if (isRootPath) {
       return false;
     }
@@ -167,26 +260,9 @@ export default function Navigation({
     return location.pathname.startsWith(`${item.href}/`);
   };
 
-  const debouncedSetHovered = useDebouncedCallback((value: boolean) => {
-    setSidebarHovered(value);
-  }, 150);
-
-  const handleMouseEnter = () => {
-    debouncedSetHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    debouncedSetHovered(false);
-  };
-
   if (isMobile) {
-    const homeItem = navigationItems.find((i) => i.href === HOME_HREF);
     const overflowItems = navigationItems.filter(
-      (i) => i.href !== HOME_HREF && i.href !== SETTINGS_HREF,
-    );
-
-    const isOverflowActive = overflowItems.some((item) =>
-      location.pathname.startsWith(item.href),
+      (item) => item.href !== HOME_HREF && item.href !== SETTINGS_HREF,
     );
 
     return (
@@ -195,10 +271,9 @@ export default function Navigation({
           <div
             className={cn(
               "flex h-16 w-full max-w-sm items-center rounded-2xl border",
-              "border-border bg-background px-2 shadow-lg backdrop-blur-xl",
+              "border-border bg-background/10 px-2 shadow-lg backdrop-blur-xl",
             )}
           >
-            {/* Scrollable Nav Area */}
             <nav className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,black_85%,transparent_100%)]">
               {navigationItems
                 .filter((item) => item.href !== SETTINGS_HREF)
@@ -212,10 +287,10 @@ export default function Navigation({
                 ))}
             </nav>
 
-            {/* Static Actions */}
-            <div className="mx-1 h-8 w-[1px] shrink-0 bg-border" />
+            <div className="mx-1 h-8 w-px shrink-0 bg-border" />
 
             <button
+              type="button"
               onClick={() => {
                 setDrawerMode("settings");
                 setOpenDrawer(true);
@@ -225,6 +300,7 @@ export default function Navigation({
                   ? "text-primary"
                   : "text-muted-foreground"
               }`}
+              aria-label="Open settings"
             >
               <Settings className="h-6 w-6 transition-transform group-hover:rotate-45" />
             </button>
@@ -247,20 +323,16 @@ export default function Navigation({
                 <p className="px-2 text-xs font-bold text-muted-foreground">
                   NAVIGATION
                 </p>
-                {navigationItems
-                  .filter((item) => item.href !== SETTINGS_HREF)
-                  .slice(3) // Only map items that didn't fit in the dock
-                  .map((item) => {
-                    return (
-                      <NavItem
-                        key={item.href}
-                        item={item}
-                        active={isActive(item)}
-                        variant="mobile-drawer"
-                        onClick={() => setOpenDrawer(false)}
-                      />
-                    );
-                  })}
+
+                {overflowItems.slice(2).map((item) => (
+                  <NavItem
+                    key={item.href}
+                    item={item}
+                    active={isActive(item)}
+                    variant="mobile-drawer"
+                    onClick={() => setOpenDrawer(false)}
+                  />
+                ))}
               </div>
             ) : (
               <MobileSettingsContent
@@ -279,6 +351,7 @@ export default function Navigation({
             )}
           </DrawerContent>
         </Drawer>
+
         <UISettingsModal
           isOpen={uiSettingsOpen}
           onClose={() => setUiSettingsOpen(false)}
@@ -287,153 +360,178 @@ export default function Navigation({
     );
   }
 
+  const sidebarWidth = isExpanded
+    ? EXPANDED_SIDEBAR_WIDTH
+    : COLLAPSED_SIDEBAR_WIDTH;
+
+  const brandingHeight = isExpanded
+    ? EXPANDED_BRANDING_HEIGHT
+    : COLLAPSED_BRANDING_HEIGHT;
+
+  const navigationFootprint =
+    DESKTOP_LEFT_GUTTER + sidebarWidth + EDGE_CONTROL_SPACE;
+
   return (
     <div
-      className={cn(
-        "relative z-40 hidden h-full shrink-0 items-center",
-        "transition-all duration-300 xl:flex",
-        sidebarPinned ? "w-[16.25rem]" : "w-[4.5rem]",
-      )}
+      className="relative z-40 hidden h-full shrink-0 items-center xl:flex"
+      style={{
+        width: navigationFootprint,
+        transition: `width ${SHELL_DURATION}ms ${SHELL_EASING}`,
+        willChange: "width",
+      }}
     >
+      {/* Expanded-state backdrop only. */}
       <div
-        className={cn(
-          "relative h-[95%] shrink-0 transition-[width] duration-300",
-          isExpanded ? "w-64" : "w-[4.5rem]",
-        )}
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-20 bg-black/15 dark:bg-black/25"
+        style={{
+          opacity: isExpanded ? 1 : 0,
+          transition: `opacity 280ms ${SHELL_EASING}`,
+          willChange: "opacity",
+        }}
+      />
+
+      {/* 24px left gutter: small breathing room while staying visually connected. */}
+      <div
+        className="relative z-40 h-[calc(100%-1.5rem)]"
+        style={{
+          marginLeft: DESKTOP_LEFT_GUTTER,
+          width: sidebarWidth,
+          transition: `width ${SHELL_DURATION}ms ${SHELL_EASING}`,
+          willChange: "width",
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+        }}
       >
         <aside
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           className={cn(
-            "relative z-30 flex h-full w-full flex-col overflow-hidden",
-            "rounded-3xl rounded-bl-none rounded-tl-none border border-l-0",
-            "border-glass-border bg-background shadow-lg",
+            "relative z-50 flex h-full w-full flex-col overflow-visible rounded-3xl border",
+            "border-glass-border bg-background/95 shadow-md backdrop-blur-xl",
+            "dark:border-white/10 dark:bg-neutral-900/95",
           )}
         >
-          {/*
-            Keep a small header area exclusively for the expand/collapse
-            control so it never overlaps the first navigation item.
-          */}
-          <nav className="flex flex-col gap-2 p-3 pt-14">
-            {navigationItems.map((item) => {
-              return (
-                <NavItem
-                  key={item.href}
-                  item={item}
-                  active={isActive(item)}
-                  isExpanded={isExpanded}
-                  variant="desktop"
-                />
-              );
-            })}
-          </nav>
+          <div
+            className="relative shrink-0 overflow-visible border-b border-border/60 dark:border-white/10"
+            style={{
+              height: brandingHeight,
+              transition: `height ${SHELL_DURATION}ms ${SHELL_EASING}`,
+              willChange: "height",
+              transform: "translateZ(0)",
+            }}
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+              <img
+                src={LOGO_SRC}
+                alt="Polytechnic University of the Philippines – Taguig logo"
+                className="shrink-0 rounded-full object-contain"
+                style={{
+                  width: isExpanded ? 78 : 40,
+                  height: isExpanded ? 78 : 40,
+                  transform: isExpanded
+                    ? "translate3d(0, -3px, 0)"
+                    : "translate3d(0, 0, 0)",
+                  transition: [
+                    `width ${SHELL_DURATION}ms ${SHELL_EASING}`,
+                    `height ${SHELL_DURATION}ms ${SHELL_EASING}`,
+                    `transform ${SHELL_DURATION}ms ${SHELL_EASING}`,
+                  ].join(", "),
+                  willChange: "width, height, transform",
+                }}
+              />
 
-        {/* Role Switcher (Desktop) */}
-          {/* {user?.roles?.length > 1 && (
-            <div className="mb-2 mt-auto p-3">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={cn(
-                      "sidebar-icon-tilt group flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 hover:shadow-sm",
-                      "border border-secondary/20 bg-secondary/10 text-secondary hover:bg-secondary/20",
-                    )}
-                    title="Switch Workspace"
-                  >
-                    <div className="flex w-6 shrink-0 items-center justify-center">
-                      <RefreshCw
-                        className={cn(
-                          "h-5 w-5",
-                          isExpanded && "animate-spin-once",
-                        )}
-                      />
-                    </div>
-                    {isExpanded && (
-                      <span className="flex-1 overflow-hidden whitespace-nowrap text-left text-xs font-bold uppercase">
-                        Switch Role
-                      </span>
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side={isExpanded ? "bottom" : "right"}
-                  align="start"
-                  className="w-56 rounded-2xl border-white/20 bg-white/80 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/90"
-                >
-                  <p className="px-3 py-2 text-[10px] uppercase text-muted-foreground/60">
-                    Your Workspaces
-                  </p>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  {user.roles.map((r: any) => {
-                    const isActiveRole = r.id === activeRole?.id;
-                    return (
-                      <DropdownMenuItem
-                        key={r.id}
-                        onClick={() => handleRoleSwitch(r)}
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all focus:bg-primary/10",
-                          isActiveRole && "bg-primary/5 font-bold text-primary",
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/50",
-                            isActiveRole && "bg-primary/20",
-                          )}
-                        >
-                          <LayoutDashboard size={16} />
-                        </div>
-                        <span className="text-sm">{r.name}</span>
-                        {isActiveRole && (
-                          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-                        )}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div
+                className="w-full overflow-hidden"
+                style={{
+                  maxHeight: showExpandedContent ? 96 : 0,
+                  marginTop: showExpandedContent ? 12 : 0,
+                  opacity: showExpandedContent ? 1 : 0,
+                  transform: showExpandedContent
+                    ? "translate3d(0, 0, 0)"
+                    : "translate3d(0, -6px, 0)",
+                  transition: showExpandedContent
+                    ? [
+                        `max-height 300ms ${CONTENT_EASING}`,
+                        `margin-top 300ms ${CONTENT_EASING}`,
+                        "opacity 220ms ease-out",
+                        `transform 260ms ${CONTENT_EASING}`,
+                      ].join(", ")
+                    : [
+                        `max-height 180ms ${SHELL_EASING}`,
+                        `margin-top 180ms ${SHELL_EASING}`,
+                        "opacity 110ms ease-out",
+                        `transform 160ms ${SHELL_EASING}`,
+                      ].join(", "),
+                  willChange: "max-height, margin-top, opacity, transform",
+                }}
+              >
+                <p className="mx-auto max-w-[13.5rem] text-sm font-bold leading-5 text-foreground">
+                  Polytechnic University of the Philippines – Taguig
+                </p>
+
+                <p className="mx-auto mt-2 max-w-[13rem] text-xs font-medium leading-4 text-muted-foreground">
+                  Guidance Services Information System
+                </p>
+              </div>
             </div>
-          )} */}
 
+            {/* Pod remains attached to the moving divider. */}
+            <div
+              className={cn(
+                "absolute -right-[18px] bottom-0 z-[60]",
+                "flex h-9 w-9 translate-y-1/2 items-center justify-center rounded-full",
+                "border border-border/70 bg-background shadow-md",
+                "dark:border-white/10 dark:bg-neutral-900",
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setSidebarHovered(false);
+                  toggleSidebarPinned();
+                }}
+                aria-label={sidebarPinned ? "Collapse sidebar" : "Expand sidebar"}
+                aria-expanded={sidebarPinned}
+                title={sidebarPinned ? "Collapse Sidebar" : "Expand Sidebar"}
+                className={cn(
+                  "flex !h-[22px] !min-h-[22px] !w-[22px] !min-w-[22px]",
+                  "!p-0 items-center justify-center rounded-full border-0",
+                  "bg-primary text-primary-foreground shadow-sm",
+                  "transition-[background-color,box-shadow] duration-200 ease-out",
+                  "hover:bg-primary/90 hover:shadow-md",
+                  "focus-visible:outline-none focus-visible:ring-2",
+                  "focus-visible:ring-primary/35 focus-visible:ring-offset-2",
+                  "active:!transform-none",
+                )}
+              >
+                <ChevronRight
+                  className="block h-3 w-3 shrink-0"
+                  style={{
+                    transform: sidebarPinned
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                    transition: `transform 300ms ${SHELL_EASING}`,
+                    willChange: "transform",
+                  }}
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
+          </div>
+
+          <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden p-3 pt-7">
+            {navigationItems.map((item) => (
+              <NavItem
+                key={item.href}
+                item={item}
+                active={isActive(item)}
+                isExpanded={isExpanded}
+                showExpandedContent={showExpandedContent}
+                variant="desktop"
+              />
+            ))}
+          </nav>
         </aside>
-
-        {/* Sidebar edge toggle */}
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation();
-            setSidebarHovered(false);
-            toggleSidebarPinned();
-          }}
-          aria-label={sidebarPinned ? "Collapse sidebar" : "Expand sidebar"}
-          aria-expanded={sidebarPinned}
-          title={sidebarPinned ? "Collapse Sidebar" : "Expand Sidebar"}
-          className={cn(
-            "absolute right-0 top-4 z-50 translate-x-1/2",
-            "flex h-8 w-8 items-center justify-center rounded-xl",
-            "border border-border bg-background text-primary shadow-md",
-            "transition-all duration-200",
-            "hover:border-primary/40 hover:bg-primary hover:text-primary-foreground",
-            "hover:shadow-md active:scale-95",
-            "focus-visible:outline-none focus-visible:ring-2",
-            "focus-visible:ring-primary/30 focus-visible:ring-offset-2",
-            "dark:bg-card",
-          )}
-        >
-          {sidebarPinned ? (
-            <ChevronLeft
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0"
-              strokeWidth={2.5}
-            />
-          ) : (
-            <ChevronRight
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0"
-              strokeWidth={2.5}
-            />
-          )}
-        </button>
       </div>
     </div>
   );
@@ -453,7 +551,6 @@ function MobileSettingsContent({
 
   return (
     <div className="space-y-6">
-      {/* Profile Section */}
       <div
         onClick={() => {
           navigate(`/${role}/profile`);
@@ -470,57 +567,57 @@ function MobileSettingsContent({
             {user?.lastName?.charAt(0)}
           </AvatarFallback>
         </Avatar>
+
         <div>
           <p className="font-bold">
             {user?.firstName} {user?.lastName}
           </p>
+
           <p className="text-xs text-muted-foreground">
             {activeRole?.name || roleLabel} Context
           </p>
         </div>
       </div>
 
-      {/* Mobile Role Switcher */}
       {user?.roles && user.roles.length > 1 && (
         <div className="space-y-3">
-          <p
-            className={
-              "px-2 text-[10px] uppercase " + "text-muted-foreground/60"
-            }
-          >
+          <p className="px-2 text-[10px] uppercase text-muted-foreground/60">
             Switch Workspace
           </p>
+
           <div className="grid grid-cols-1 gap-2">
             {user.roles.map((r: any) => {
               const isActiveRole = r.id === activeRole?.id;
+
               return (
                 <button
+                  type="button"
                   key={r.id}
                   onClick={() => onRoleSwitch(r)}
                   className={cn(
-                    "flex items-center gap-4 rounded-2xl border p-4 " +
-                      "transition-all active:scale-95",
+                    "flex items-center gap-4 rounded-2xl border p-4 transition-all active:scale-95",
                     isActiveRole
-                      ? "border-primary/50 bg-primary/10 " +
-                          "text-primary shadow-sm"
+                      ? "border-primary/50 bg-primary/10 text-primary shadow-sm"
                       : "border-border/50 bg-muted/30",
                   )}
                 >
                   <div
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center " +
-                        "rounded-xl bg-background",
+                      "flex h-10 w-10 items-center justify-center rounded-xl bg-background",
                       isActiveRole && "bg-primary/20 text-primary",
                     )}
                   >
                     <LayoutDashboard size={20} />
                   </div>
+
                   <div className="text-left">
                     <p className="text-sm font-bold">{r.name}</p>
+
                     <p className="text-[10px] text-muted-foreground">
                       Switch to {r.name.toLowerCase()} view
                     </p>
                   </div>
+
                   {isActiveRole && (
                     <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
                   )}
@@ -532,8 +629,10 @@ function MobileSettingsContent({
       )}
 
       <div className="my-2 border-t border-border" />
+
       <div className="flex flex-col gap-2">
         <button
+          type="button"
           onClick={onOpenUISettings}
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm",
@@ -543,9 +642,11 @@ function MobileSettingsContent({
           <Settings size={16} />
           <span>Settings</span>
         </button>
+
         <a
           href="https://www.pup.edu.ph/terms/"
           target="_blank"
+          rel="noreferrer"
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm",
             "transition hover:bg-muted",
@@ -554,9 +655,11 @@ function MobileSettingsContent({
           <Gavel size={16} />
           <span>Terms of Service</span>
         </a>
+
         <a
           href="https://www.pup.edu.ph/privacy/"
           target="_blank"
+          rel="noreferrer"
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm",
             "transition hover:bg-muted",
@@ -567,8 +670,8 @@ function MobileSettingsContent({
         </a>
       </div>
 
-      {/* Logout Action */}
       <button
+        type="button"
         onClick={onLogout}
         className={cn(
           "flex w-full items-center justify-center gap-3 rounded-xl",

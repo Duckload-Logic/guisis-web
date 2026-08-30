@@ -364,7 +364,7 @@ export default function StudentGrid({
           {renderSortableHeader("Student Name", "lastName")}
         </div>
       ),
-      className: "w-[25%] px-2 py-3",
+      className: "w-[25%] min-w-[240px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <div className="flex items-center gap-3 pl-2">
           <div
@@ -405,7 +405,7 @@ export default function StudentGrid({
           {renderSortableHeader("Student Number", "studentId")}
         </div>
       ),
-      className: "w-[15%] px-2 py-3",
+      className: "w-[15%] min-w-[170px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <span className="text-xs font-bold uppercase text-primary/60 px-2">
           {student.studentNumber}
@@ -420,7 +420,7 @@ export default function StudentGrid({
           </span>
         </div>
       ),
-      className: "w-[22%] px-2 py-3",
+      className: "w-[22%] min-w-[240px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <span className="text-sm font-medium text-foreground/80 px-2 truncate block">
           {student.email}
@@ -444,7 +444,7 @@ export default function StudentGrid({
           />
         </div>
       ),
-      className: "w-[14%] px-2 py-3",
+      className: "w-[14%] min-w-[180px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <span className="text-sm font-semibold text-primary/80 px-2">
           {student.program.code}
@@ -468,7 +468,7 @@ export default function StudentGrid({
           />
         </div>
       ),
-      className: "w-[12%] px-2 py-3",
+      className: "w-[12%] min-w-[160px] px-2 py-3",
       render: (student: IIRProfileView) => {
         const yrName =
           yearLevels.find((level) => level.id === student.yearLevel)?.name.split(" ")[0] || "N/A";
@@ -496,7 +496,7 @@ export default function StudentGrid({
           />
         </div>
       ),
-      className: "w-[12%] px-2 py-3",
+      className: "w-[12%] min-w-[170px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <div className="px-2">
           <span
@@ -927,6 +927,7 @@ export default function StudentGrid({
             columns={columns}
             renderMobileItem={renderMobileItem}
             isLoading={false}
+            tableClassName="min-w-[72rem]"
             onRowClick={(student) => onViewClick(student)}
           />
         </div>

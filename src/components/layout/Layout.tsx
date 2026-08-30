@@ -345,6 +345,7 @@ export default function Layout({
                   className={cn(
                     "responsive-page-shell min-w-0 max-w-full flex-1",
                     "p-3 sm:p-4 md:p-6 xl:p-8",
+                    isLoggedIn && showHeader && "pt-20 sm:pt-20 md:pt-20 xl:pt-20",
                     isLoading && "flex h-full flex-col",
                   )}
                 >
