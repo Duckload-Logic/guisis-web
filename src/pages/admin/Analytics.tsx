@@ -42,7 +42,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePrograms, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
-import { FullScreenLoader, PDFPreview } from "@/components/shared";
+import { FullScreenLoader, PDFPreview, DocumentProgressDialog } from "@/components/shared";
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -114,6 +114,7 @@ export default function AnalyticsPage() {
     clearPreview,
     pdfUrl,
     isDownloading,
+    downloadProgress,
   } = useAnalyticsDashboard();
   const { data: programsData } = usePrograms();
   const programs = useMemo(() => {
@@ -308,9 +309,10 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <FullScreenLoader
-        isLoading={isDownloading}
-        message="Generating Document..."
+      <DocumentProgressDialog
+        open={isDownloading}
+        progress={downloadProgress}
+        message="Please wait while we compile your report."
       />
       <div
         className={cn(

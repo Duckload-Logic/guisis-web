@@ -18,7 +18,7 @@ import {
 import { SlipAttachment } from "../types";
 import { useDownloadAttachment, useGetAttachmentPreview } from "../hooks";
 import { cn } from "@/lib/utils";
-import { PDFPreview } from "@/components/shared";
+import { PDFPreview, DocumentProgressDialog } from "@/components/shared";
 
 interface AttachmentsGridProps {
   slipId: string;
@@ -324,7 +324,7 @@ function AttachmentItem({
 export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
   const [selectedFile, setSelectedFile] = useState<SlipAttachment | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const { downloadAttachment, downloadingAttachmentId, error, clearError } =
+  const { downloadAttachment, downloadingAttachmentId, downloadProgress, error, clearError } =
     useDownloadAttachment();
 
   const normalizedFiles = useMemo(() => files || [], [files]);
@@ -352,6 +352,12 @@ export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
 
   return (
     <>
+      <DocumentProgressDialog
+        open={downloadingAttachmentId !== null}
+        progress={downloadProgress}
+        message="Please wait while we download the attachment."
+      />
+
       <div className="space-y-3">
         {error && (
           <div className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

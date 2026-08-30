@@ -20,3 +20,4 @@ export { default as Placeholder } from "./Placeholder";
 export * from "./Table";
 export * from "./FriendlyErrorState";
 export { default as PDFPreview } from "./PDFPreview";
+export * from "./DocumentProgressDialog";

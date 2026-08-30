@@ -41,6 +41,7 @@ export function useDownloadAttachment() {
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<
     string | null
   >(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
@@ -52,8 +53,18 @@ export function useDownloadAttachment() {
   ) => {
     setDownloadingAttachmentId(attachmentId);
     setError(null);
+    setDownloadProgress(0);
+
+    let progressInterval: NodeJS.Timeout | undefined;
 
     try {
+      progressInterval = setInterval(() => {
+        setDownloadProgress((prev) => {
+          if (prev >= 90) return prev;
+          return prev + Math.floor(Math.random() * 10) + 5;
+        });
+      }, 300);
+
       const blob = await GetSlipAttachmentDownload(slipId, attachmentId, {
         handlerName: "useDownloadAttachment",
         stepName: "Download Attachment",
@@ -73,23 +84,29 @@ export function useDownloadAttachment() {
         throw new Error(message || "Download failed. Empty file received.");
       }
 
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName || `attachment-${attachmentId}`;
-      link.rel = "noopener noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      setDownloadProgress(100);
+
+      setTimeout(() => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName || `attachment-${attachmentId}`;
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        setDownloadingAttachmentId(null);
+      }, 400);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "Unable to download this attachment. Please try again.",
       );
-    } finally {
       setDownloadingAttachmentId(null);
+    } finally {
+      if (progressInterval) clearInterval(progressInterval);
     }
   };
 
@@ -97,6 +114,7 @@ export function useDownloadAttachment() {
     downloadAttachment,
     downloadingAttachmentId,
     isDownloading: downloadingAttachmentId !== null,
+    downloadProgress,
     error,
     clearError,
   };

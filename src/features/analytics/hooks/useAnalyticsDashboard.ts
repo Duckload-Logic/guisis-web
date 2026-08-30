@@ -14,6 +14,7 @@ export function useAnalyticsDashboard() {
 
   // PDF Export states
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>("");
 
@@ -57,8 +58,18 @@ export function useAnalyticsDashboard() {
 
   const generatePreview = useCallback(
     async (year?: number, programId?: number) => {
+      let progressInterval: NodeJS.Timeout | undefined;
       try {
         setIsDownloading(true);
+        setDownloadProgress(0);
+
+        progressInterval = setInterval(() => {
+          setDownloadProgress((prev) => {
+            if (prev >= 90) return prev;
+            return prev + Math.floor(Math.random() * 10) + 5;
+          });
+        }, 300);
+
         const params: any = {};
         if (year) params.year = year;
         if (programId) params.program_id = programId;
@@ -71,18 +82,24 @@ export function useAnalyticsDashboard() {
           },
         );
 
-        const url = window.URL.createObjectURL(
-          new Blob([response.data], { type: "application/pdf" }),
-        );
-        setPdfUrl(url);
-        setCurrentFileName(
-          `Freshmen-Profile_${year || new Date().getFullYear()}.pdf`,
-        );
+        setDownloadProgress(100);
+
+        setTimeout(() => {
+          const url = window.URL.createObjectURL(
+            new Blob([response.data], { type: "application/pdf" }),
+          );
+          setPdfUrl(url);
+          setCurrentFileName(
+            `Freshmen-Profile_${year || new Date().getFullYear()}.pdf`,
+          );
+          setIsDownloading(false);
+        }, 400);
       } catch (err) {
         console.error("Failed to generate PDF preview", err);
         alert("Failed to generate PDF report preview. Please try again.");
-      } finally {
         setIsDownloading(false);
+      } finally {
+        if (progressInterval) clearInterval(progressInterval);
       }
     },
     [],
@@ -124,5 +141,6 @@ export function useAnalyticsDashboard() {
     clearPreview,
     pdfUrl,
     isDownloading,
+    downloadProgress,
   };
 }
