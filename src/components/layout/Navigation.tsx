@@ -391,22 +391,7 @@ export default function Navigation({
         willChange: "width",
       }}
     >
-      {/* Expanded-state backdrop only. */}
-      <div
-        aria-hidden="true"
-        onClick={() => {
-          if (sidebarPinned) setSidebarPinned(false);
-        }}
-        className={cn(
-          "fixed inset-0 z-20 bg-black/15 dark:bg-black/25",
-          isExpanded ? "pointer-events-auto cursor-pointer" : "pointer-events-none"
-        )}
-        style={{
-          opacity: isExpanded ? 1 : 0,
-          transition: `opacity 280ms ${SHELL_EASING}`,
-          willChange: "opacity",
-        }}
-      />
+
 
       {/* 12px left gutter: small breathing room while staying visually connected. */}
       <div
