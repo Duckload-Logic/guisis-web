@@ -337,7 +337,8 @@ export default function Layout({
                 className={cn(
                   "relative flex h-full min-w-0 max-w-full flex-col",
                   "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  isLoggedIn ? "pb-24 xl:pb-6" : "pb-6",
+                  "after:content-[''] after:block after:shrink-0",
+                  isLoggedIn ? "after:h-24 xl:after:h-6" : "after:h-6",
                 )}
               >
                 <main
