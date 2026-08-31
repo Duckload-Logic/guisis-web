@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { Input } from "@/components/ui/input";
+import SearchInput from "@/components/form/SearchInput";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
 
@@ -127,7 +128,6 @@ export default function StudentGrid({
   setSelectedOrder,
   onExportCSV,
 }: StudentGridProps) {
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const sortedVisibleStudents = students;
 
   const statusOptions = useMemo(() => {
@@ -230,11 +230,6 @@ export default function StudentGrid({
     setSearchTerm(value);
   };
 
-  const handleClearSearch = () => {
-    handleSearchChange("");
-    requestAnimationFrame(() => searchInputRef.current?.focus());
-  };
-
   const handleViewClick = (
     student: IIRProfileView,
     event?: MouseEvent<HTMLDivElement | HTMLButtonElement>,
@@ -270,45 +265,12 @@ export default function StudentGrid({
   };
 
   const searchInput = (
-    <div
-      className={cn(
-        "flex h-11 items-center gap-2 rounded-xl border border-border/70",
-        "bg-muted/50 px-3 shadow-md transition-all duration-200",
-        "focus-within:border-border focus-within:bg-background focus-within:ring-2 focus-within:ring-muted/70",
-        "dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:bg-white/[0.06]",
-      )}
-    >
-      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <Input
-        ref={searchInputRef}
-        type="text"
-        value={searchTerm}
-        onChange={(event) => handleSearchChange(event.target.value)}
-        placeholder="Search by name, email, or student number..."
-        spellCheck={false}
-        autoComplete="off"
-        className="h-full min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm font-medium text-foreground shadow-none outline-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
-      />
-      {searchTerm && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onMouseDown={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-          }}
-          onClick={handleClearSearch}
-          className={cn(
-            "h-7 min-h-7 w-7 shrink-0 rounded-xl shadow-none",
-            "text-muted-foreground hover:bg-background hover:text-foreground",
-          )}
-          aria-label="Clear search"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
+    <SearchInput
+      searchTerm={searchTerm}
+      onSearchChange={handleSearchChange}
+      placeholder="Search by name, email, or student number..."
+      className="h-11 border-border/70 bg-muted/50 dark:border-white/10 dark:bg-white/[0.04]"
+    />
   );
 
   const viewToggle = (
@@ -689,7 +651,7 @@ export default function StudentGrid({
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleClearSearch}
+                onClick={() => handleSearchChange("")}
                 className="rounded-xl shadow-md"
               >
                 Clear search
