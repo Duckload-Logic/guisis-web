@@ -42,7 +42,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePrograms, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
-import { FullScreenLoader, PDFPreview, DocumentProgressDialog } from "@/components/shared";
+import {
+  FullScreenLoader,
+  PDFPreview,
+  DocumentProgressDialog,
+} from "@/components/shared";
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -391,7 +395,11 @@ export default function AnalyticsPage() {
               value={majorityGender ? `${majorityGender.totalPct}%` : "0%"}
               subtitle={`${majorityGender?.category || "N/A"} Majority`}
               icon={<Network className="h-5 w-5 text-indigo-500" />}
-              gradient="from-indigo-500/10 via-background to-background"
+              gradient={
+                majorityGender?.category === "Male"
+                  ? "from-blue-500/10 via-background to-background"
+                  : "from-pink-500/10 via-background to-background"
+              }
             />
             <KPICard
               title="Top Location"
