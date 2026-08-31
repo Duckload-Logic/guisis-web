@@ -221,7 +221,10 @@ export default function StudentRecords() {
               onViewModeChange={handleViewModeChange}
               yearLevels={yearLevels}
               searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
+              setSearchTerm={(val) => {
+                setSearchTerm(val);
+                setPage(1);
+              }}
               selectedStatusId={selectedStatusId}
               setSelectedStatusId={(val) => {
                 setSelectedStatusId(val);

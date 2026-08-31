@@ -103,8 +103,6 @@ export default function LogsTable({
   const [endDate, setEndDate] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 500);
-  
   const [selectedAction, setSelectedAction] = useState<string>("all");
   const [selectedSort, setSelectedSort] = useState<string>("timestamp");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
@@ -134,8 +132,8 @@ export default function LogsTable({
       p.end_date = endDate;
     }
 
-    if (debouncedSearch) {
-      p.search = debouncedSearch;
+    if (search) {
+      p.search = search;
     }
 
     return p;
@@ -146,7 +144,7 @@ export default function LogsTable({
     endDate,
     selectedSort,
     selectedOrder,
-    debouncedSearch,
+    search,
   ]);
 
   const { data, isLoading, refetch, isFetching } = useLogsHook(params);
