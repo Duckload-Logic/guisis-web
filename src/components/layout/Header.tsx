@@ -52,6 +52,18 @@ export default function Header({
   if (isLoggedIn) {
     return (
       <>
+        <div className="fixed left-3 top-3 z-[60] flex items-center gap-2 sm:left-4 sm:top-4 xl:hidden">
+          <img
+            src={LOGO_SRC}
+            alt="Logo"
+            className="h-10 w-10 shrink-0 rounded-full bg-background/50 p-0.5 shadow-sm backdrop-blur-md"
+          />
+          <div className="flex flex-col gap-0 text-[11px] leading-tight">
+            <p className="font-bold text-foreground drop-shadow-sm">PUP Taguig</p>
+            <p className="font-semibold text-primary/90 drop-shadow-sm">GuiSIS</p>
+          </div>
+        </div>
+
         <div
           className={cn(
             "fixed right-3 top-3 z-[60] flex items-center gap-1 rounded-xl border",
