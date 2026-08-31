@@ -58,7 +58,7 @@ export function useAnalyticsDashboard() {
 
   const generatePreview = useCallback(
     async (year?: number, programId?: number) => {
-      let progressInterval: NodeJS.Timeout | undefined;
+      let progressInterval: ReturnType<typeof setInterval> | undefined;
       try {
         setIsDownloading(true);
         setDownloadProgress(0);

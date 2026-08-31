@@ -55,7 +55,7 @@ export function useDownloadAttachment() {
     setError(null);
     setDownloadProgress(0);
 
-    let progressInterval: NodeJS.Timeout | undefined;
+    let progressInterval: ReturnType<typeof setInterval> | undefined;
 
     try {
       progressInterval = setInterval(() => {
