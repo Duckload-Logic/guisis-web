@@ -10,11 +10,7 @@ interface PDFPreviewProps {
 }
 
 export default function PDFPreview({ url, title, className }: PDFPreviewProps) {
-  const [isAndroid, setIsAndroid] = useState(false);
-
-  useEffect(() => {
-    setIsAndroid(/Android/i.test(navigator.userAgent));
-  }, []);
+  const isAndroid = typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
 
   if (isAndroid) {
     return (
