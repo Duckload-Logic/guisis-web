@@ -121,20 +121,20 @@ export default function AcademicSettings() {
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-4xl flex-col space-y-8 pb-12",
+        "mx-auto flex w-full max-w-4xl flex-col space-y-8",
         "px-4 sm:px-6 md:px-8",
       )}
     >
       {/* Header (Wave 1) */}
       <div
-        className="flex items-start gap-4 animate-fade-in-up"
+        className="animate-fade-in-up flex items-start gap-4"
         style={{ animationDelay: "0.05s", animationFillMode: "both" }}
       >
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
           <GraduationCap className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="mt-0.5 text-sm font-medium text-muted-foreground max-w-2xl leading-relaxed">
+          <h1 className="mt-0.5 max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground">
             Set the current active school year and term. All student COR uploads
             will be automatically validated against this setting by the OCR
             service.
@@ -147,7 +147,7 @@ export default function AcademicSettings() {
         <div
           className={cn(
             "flex items-center gap-3 rounded-2xl border border-primary/20",
-            "bg-primary/5 px-5 py-4 shadow-sm animate-fade-in-up",
+            "animate-fade-in-up bg-primary/5 px-5 py-4 shadow-sm",
           )}
           style={{ animationDelay: "0.10s", animationFillMode: "both" }}
         >
@@ -156,7 +156,7 @@ export default function AcademicSettings() {
           </div>
           <p className="text-sm font-medium">
             Active setting:&nbsp;
-            <span className="text-primary font-bold tracking-tight">
+            <span className="font-bold tracking-tight text-primary">
               {current.currentYearStart}–{current.currentYearEnd}{" "}
               {TERM_LABELS[current.currentTerm]}
             </span>
@@ -167,12 +167,12 @@ export default function AcademicSettings() {
       {/* Form card (Wave 3) */}
       <div
         className={cn(
-          "rounded-3xl border border-border bg-glass-bg/40 backdrop-blur-2xl",
-          "space-y-6 px-6 py-8 sm:px-8 shadow-md animate-fade-in-up",
+          "bg-glass-bg/40 rounded-3xl border border-border backdrop-blur-2xl",
+          "animate-fade-in-up space-y-6 px-6 py-8 shadow-md sm:px-8",
         )}
         style={{ animationDelay: "0.15s", animationFillMode: "both" }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* School year start */}
           <SelectField
             id="yearStart"
@@ -186,7 +186,9 @@ export default function AcademicSettings() {
           <div className="space-y-2">
             <label className="block text-sm font-bold text-foreground/80">
               School Year End
-              <span className="ml-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground opacity-70">(auto)</span>
+              <span className="ml-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground opacity-70">
+                (auto)
+              </span>
             </label>
             <div
               className={cn(
@@ -209,15 +211,17 @@ export default function AcademicSettings() {
         />
 
         {/* Expedited IIR Submission Toggle */}
-        <div className={cn(
-          "flex items-center justify-between rounded-xl",
-          "border border-border/50 bg-muted/10 p-4"
-        )}>
+        <div
+          className={cn(
+            "flex items-center justify-between rounded-xl",
+            "border border-border/50 bg-muted/10 p-4",
+          )}
+        >
           <div className="space-y-1">
             <label className="block text-sm font-bold text-foreground/80">
               Allow Expedited IIR Submission
             </label>
-            <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
+            <p className="max-w-lg text-xs leading-relaxed text-muted-foreground">
               When enabled, shifters, transferees, and returning students can
               perform an "Express Submit" validating only basic profile info.
             </p>
@@ -233,21 +237,22 @@ export default function AcademicSettings() {
         <div
           className={cn(
             "flex gap-3 rounded-xl border border-yellow-500/20",
-            "bg-yellow-500/5 px-4 py-4 mt-6",
+            "mt-6 bg-yellow-500/5 px-4 py-4",
           )}
         >
-          <div className="rounded-full bg-yellow-500/10 p-1.5 h-fit mt-0.5">
+          <div className="mt-0.5 h-fit rounded-full bg-yellow-500/10 p-1.5">
             <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
           </div>
           <p className="text-xs font-medium leading-relaxed text-muted-foreground">
-            <strong className="text-yellow-600">Warning:</strong> Changing this setting immediately affects how the OCR service
-            validates COR uploads. CORs that do not match the active school year
-            and term will be marked as unvalidated.
+            <strong className="text-yellow-600">Warning:</strong> Changing this
+            setting immediately affects how the OCR service validates COR
+            uploads. CORs that do not match the active school year and term will
+            be marked as unvalidated.
           </p>
         </div>
 
         {/* Save button */}
-        <div className="pt-4 border-t border-border/50">
+        <div className="border-t border-border/50 pt-4">
           <button
             id="btn-open-confirm-dialog"
             disabled={!isDirty || isLoading}
@@ -256,9 +261,9 @@ export default function AcademicSettings() {
               setDialogOpen(true);
             }}
             className={cn(
-              "w-full sm:w-auto sm:min-w-[200px] float-right rounded-xl bg-primary py-3 px-6 text-sm font-bold",
+              "float-right w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold sm:w-auto sm:min-w-[200px]",
               "text-primary-foreground shadow-md shadow-primary/20 transition-all duration-300",
-              "hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg active:scale-95",
+              "hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg active:scale-95",
               "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-md",
             )}
           >
@@ -273,13 +278,13 @@ export default function AcademicSettings() {
         <div
           className={cn(
             "fixed inset-0 z-50 flex items-center justify-center",
-            "bg-black/60 backdrop-blur-sm animate-in fade-in duration-200",
+            "animate-in fade-in bg-black/60 backdrop-blur-sm duration-200",
           )}
         >
           <div
             className={cn(
               "w-full max-w-md rounded-3xl border border-border/50",
-              "bg-background/95 p-8 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200",
+              "animate-in zoom-in-95 bg-background/95 p-8 shadow-2xl backdrop-blur-xl duration-200",
             )}
           >
             {/* Dialog header */}
@@ -287,7 +292,7 @@ export default function AcademicSettings() {
               <div
                 className={cn(
                   "flex h-12 w-12 items-center justify-center",
-                  "rounded-2xl bg-yellow-500/15 border border-yellow-500/20",
+                  "rounded-2xl border border-yellow-500/20 bg-yellow-500/15",
                 )}
               >
                 <AlertTriangle className="h-6 w-6 text-yellow-600" />
@@ -302,16 +307,16 @@ export default function AcademicSettings() {
               </div>
             </div>
 
-            <p className="mb-4 text-sm font-medium text-foreground/80 leading-relaxed">
+            <p className="mb-4 text-sm font-medium leading-relaxed text-foreground/80">
               You are about to set the active academic period to:
             </p>
-            <p className="mb-6 rounded-xl bg-primary/5 border border-primary/10 px-4 py-3 text-center text-lg tracking-tight font-bold text-primary">
+            <p className="mb-6 rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 text-center text-lg font-bold tracking-tight text-primary">
               {expectedConfirm}
             </p>
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
               To confirm, type exactly:
             </p>
-            <p className="mb-4 w-fit select-all rounded-lg bg-muted/50 border px-3 py-1.5 font-mono text-sm font-semibold">
+            <p className="mb-4 w-fit select-all rounded-lg border bg-muted/50 px-3 py-1.5 font-mono text-sm font-semibold">
               {expectedConfirm}
             </p>
             <input
@@ -324,7 +329,7 @@ export default function AcademicSettings() {
                 "mb-6 w-full rounded-xl border bg-background/50 px-4",
                 "py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2",
                 confirmMatch
-                  ? "border-green-500 focus:ring-green-500/50 bg-green-500/5"
+                  ? "border-green-500 bg-green-500/5 focus:ring-green-500/50"
                   : "border-border focus:ring-primary/50",
               )}
             />
@@ -338,7 +343,7 @@ export default function AcademicSettings() {
                 }}
                 className={cn(
                   "flex-1 rounded-xl border border-border/60 py-3",
-                  "text-sm font-bold transition-all hover:bg-muted/50 hover:border-border active:scale-95",
+                  "text-sm font-bold transition-all hover:border-border hover:bg-muted/50 active:scale-95",
                 )}
               >
                 Cancel

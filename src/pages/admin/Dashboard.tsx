@@ -133,14 +133,22 @@ export default function Dashboard() {
       }),
     ) || [];
 
-  const getUserInitials = (user?: { firstName?: string; lastName?: string }) => {
+  const getUserInitials = (user?: {
+    firstName?: string;
+    lastName?: string;
+  }) => {
     const firstInitial = user?.firstName?.trim()?.[0] || "";
     const lastInitial = user?.lastName?.trim()?.[0] || "";
     return `${firstInitial}${lastInitial}`.toUpperCase() || "ST";
   };
 
-  const getUserFullName = (user?: { firstName?: string; lastName?: string }) => {
-    return [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Student";
+  const getUserFullName = (user?: {
+    firstName?: string;
+    lastName?: string;
+  }) => {
+    return (
+      [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Student"
+    );
   };
 
   const visitorConfig = {
@@ -165,12 +173,12 @@ export default function Dashboard() {
   }
 
   return (
-      <div
-        className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-10",
-          "px-4 sm:px-6 md:px-8",
-        )}
-      >
+    <div
+      className={cn(
+        "mx-auto flex w-full flex-col space-y-8",
+        "px-4 sm:px-6 md:px-8",
+      )}
+    >
       {/* Outdated Academic Settings Warning */}
       {isSettingsOutdated && (
         <div
@@ -272,7 +280,7 @@ export default function Dashboard() {
         <Card
           className={cn(
             "overflow-hidden shadow-md backdrop-blur-md",
-            "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
           )}
           style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
@@ -329,14 +337,14 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-8 xl:flex-row">
         {/* Main Content: Upcoming Appointments */}
-            <div className="flex-1 space-y-8">
-            <Card
-              className={cn(
-                "overflow-hidden shadow-md backdrop-blur-md",
-                "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-              )}
-              style={{ animationDelay: "0.15s", animationFillMode: "both" }}
-            >
+        <div className="flex-1 space-y-8">
+          <Card
+            className={cn(
+              "overflow-hidden shadow-md backdrop-blur-md",
+              "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+            )}
+            style={{ animationDelay: "0.15s", animationFillMode: "both" }}
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold">
                 Upcoming Appointments
@@ -379,7 +387,9 @@ export default function Dashboard() {
                             <div className="flex items-center gap-3">
                               <Avatar className="size-8 rounded-lg">
                                 <AvatarImage
-                                  src={getProfilePictureUrl(apt.user?.profilePicture)}
+                                  src={getProfilePictureUrl(
+                                    apt.user?.profilePicture,
+                                  )}
                                   alt={getUserFullName(apt.user)}
                                   className="object-cover"
                                 />
@@ -422,7 +432,7 @@ export default function Dashboard() {
 
         {/* Sidebar: Slips & Analytics */}
         <div
-          className="w-full space-y-8 xl:w-96 animate-fade-in-up"
+          className="animate-fade-in-up w-full space-y-8 xl:w-96"
           style={{ animationDelay: "0.15s", animationFillMode: "both" }}
         >
           {/* Slip Status Tracker */}
