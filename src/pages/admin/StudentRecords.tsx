@@ -106,8 +106,6 @@ export default function StudentRecords() {
     useUrlState<keyof typeof ORDER_BY_OPTIONS>("sort", "lastName");
   const [selectedOrder, setSelectedOrder] = useUrlState<"asc" | "desc">("order", "asc");
 
-  const debouncedSearch = useDebounce(searchTerm, 500);
-
   const pageSize = 12;
   const yearLevels = [
     { id: 1, name: "1st Year" },
@@ -131,7 +129,7 @@ export default function StudentRecords() {
   } = useIIRPagination({
     page,
     pageSize,
-    search: debouncedSearch,
+    search: searchTerm,
     programId:
       selectedProgramId === "all" || selectedProgramId === "" ? undefined : Number(selectedProgramId),
     statusId: 
@@ -161,7 +159,7 @@ export default function StudentRecords() {
     exportBackendCSV(
       API_ROUTES.iir.inventory.all,
       {
-        search: debouncedSearch,
+        search: searchTerm,
         programId: 
           selectedProgramId === "all" || selectedProgramId === "" ? undefined : Number(selectedProgramId),
         statusId: 

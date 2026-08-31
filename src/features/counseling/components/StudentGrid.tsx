@@ -1,4 +1,4 @@
-import { useMemo, useRef, type MouseEvent } from "react";
+import { useCallback, useMemo, useRef, type MouseEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -225,9 +225,12 @@ export default function StudentGrid({
     5: "bg-red-500/10 text-red-600 border-red-500/20",
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-  };
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+    },
+    [setSearchTerm],
+  );
 
   const handleViewClick = (
     student: IIRProfileView,

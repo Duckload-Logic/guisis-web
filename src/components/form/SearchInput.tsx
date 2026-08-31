@@ -28,6 +28,11 @@ export default function SearchInput({
   const [localValue, setLocalValue] = useState(searchTerm);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const onSearchChangeRef = useRef(onSearchChange);
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
+
   useEffect(() => {
     setLocalValue(searchTerm);
   }, [searchTerm]);
@@ -35,11 +40,11 @@ export default function SearchInput({
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localValue !== searchTerm) {
-        onSearchChange?.(localValue);
+        onSearchChangeRef.current?.(localValue);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [localValue, searchTerm, onSearchChange]);
+  }, [localValue, searchTerm]);
 
   const handleChange = (val: string) => {
     if (noSpecialCharacters && SPECIAL_CHARS_REGEX.test(val)) {
