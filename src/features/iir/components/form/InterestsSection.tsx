@@ -568,9 +568,10 @@ export const InterestsSection = forwardRef<
   };
 
   const getSubject = (isFavorite: boolean, slotIndex: number) => {
-    // We map Favorites to indices 0,1,2 and Least Liked to 3,4,5
-    const arrayIndex = isFavorite ? slotIndex : slotIndex + 3;
-    return (interests?.subjectPreferences || [])[arrayIndex]?.subjectName || "";
+    const list = (interests?.subjectPreferences || []).filter(
+      (p: any) => !!p?.isFavorite === isFavorite,
+    );
+    return list[slotIndex]?.subjectName || "";
   };
 
   const updateSubject = (
@@ -578,39 +579,44 @@ export const InterestsSection = forwardRef<
     slotIndex: number,
     name: string,
   ) => {
-    const arrayIndex = isFavorite ? slotIndex : slotIndex + 3;
     const currentPreferences = [...(interests?.subjectPreferences || [])];
+    const favs = currentPreferences.filter((p: any) => !!p?.isFavorite);
+    const least = currentPreferences.filter((p: any) => !p?.isFavorite);
 
-    while (currentPreferences.length <= arrayIndex) {
-      currentPreferences.push({
+    const targetList = isFavorite ? favs : least;
+
+    while (targetList.length <= slotIndex) {
+      targetList.push({
         subjectName: "",
-        isFavorite: currentPreferences.length < 3,
+        isFavorite: isFavorite,
       });
     }
 
-    currentPreferences[arrayIndex] = {
-      ...currentPreferences[arrayIndex],
+    targetList[slotIndex] = {
+      ...targetList[slotIndex],
       subjectName: name,
       isFavorite: isFavorite,
     };
 
-    handleInputChange("interests.subjectPreferences", currentPreferences);
+    const newPreferences = [...favs, ...least];
 
-    const duplicates = checkSubjectDuplicates(currentPreferences);
+    handleInputChange("interests.subjectPreferences", newPreferences);
+
+    const duplicates = checkSubjectDuplicates(newPreferences);
     setErrors((prev: FormErrors) => {
       const updated = { ...prev };
 
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < newPreferences.length; i++) {
         const path = `interests.subjectPreferences.${i}.subjectName`;
         delete updated[path];
 
         const fieldRules = interestsValidationSchema[path];
-        const val = currentPreferences[i]?.subjectName || "";
+        const val = newPreferences[i]?.subjectName || "";
         if (fieldRules && val) {
           const error = validateField(val, fieldRules, {
             interests: {
               ...interests,
-              subjectPreferences: currentPreferences,
+              subjectPreferences: newPreferences,
             },
           });
           if (error) updated[path] = error;
@@ -623,8 +629,23 @@ export const InterestsSection = forwardRef<
   };
 
   const getSubjectFieldError = (isFavorite: boolean, slotIndex: number) => {
-    const arrayIndex = isFavorite ? slotIndex : slotIndex + 3;
-    const path = `interests.subjectPreferences.${arrayIndex}.subjectName`;
+    const currentPreferences = interests?.subjectPreferences || [];
+    let count = 0;
+    let actualIndex = -1;
+
+    for (let i = 0; i < currentPreferences.length; i++) {
+      if (!!currentPreferences[i]?.isFavorite === isFavorite) {
+        if (count === slotIndex) {
+          actualIndex = i;
+          break;
+        }
+        count++;
+      }
+    }
+
+    if (actualIndex === -1) return undefined;
+
+    const path = `interests.subjectPreferences.${actualIndex}.subjectName`;
     const error = errors[path];
     if (!error) return undefined;
 
