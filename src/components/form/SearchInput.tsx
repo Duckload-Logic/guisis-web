@@ -95,8 +95,8 @@ export default function SearchInput({
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full p-1.5",
-              "text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors",
+              "absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full",
+              "text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors",
             )}
             aria-label="Clear search"
           >

@@ -133,10 +133,11 @@ export default function StudentRecords() {
     pageSize,
     search: debouncedSearch,
     programId:
-      selectedProgramId === "all" ? undefined : Number(selectedProgramId),
-    statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
+      selectedProgramId === "all" || selectedProgramId === "" ? undefined : Number(selectedProgramId),
+    statusId: 
+      selectedStatusId === "all" || selectedStatusId === "" ? undefined : Number(selectedStatusId),
     yearLevel:
-      selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+      selectedYearLevelId === "all" || selectedYearLevelId === "" ? undefined : Number(selectedYearLevelId),
     sortBy: String(
       ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
     ),
@@ -161,9 +162,12 @@ export default function StudentRecords() {
       API_ROUTES.iir.inventory.all,
       {
         search: debouncedSearch,
-        programId: selectedProgramId === "all" ? undefined : Number(selectedProgramId),
-        statusId: selectedStatusId === "all" ? undefined : Number(selectedStatusId),
-        yearLevel: selectedYearLevelId === "all" ? undefined : Number(selectedYearLevelId),
+        programId: 
+          selectedProgramId === "all" || selectedProgramId === "" ? undefined : Number(selectedProgramId),
+        statusId: 
+          selectedStatusId === "all" || selectedStatusId === "" ? undefined : Number(selectedStatusId),
+        yearLevel: 
+          selectedYearLevelId === "all" || selectedYearLevelId === "" ? undefined : Number(selectedYearLevelId),
         sortBy: String(
           ORDER_BY_OPTIONS[selectedSort as keyof typeof ORDER_BY_OPTIONS] || selectedSort,
         ),
