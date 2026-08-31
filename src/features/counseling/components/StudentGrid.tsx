@@ -58,17 +58,15 @@ function getStudentName(student: IIRProfileView) {
   const lastNameWithSuffix = `${student.lastName || ""}${
     student.suffixName ? ` ${student.suffixName}` : ""
   }`.trim();
-  
+
   if (lastNameWithSuffix) parts.push(lastNameWithSuffix);
-  
+
   const firstNameWithMI = `${student.firstName || ""}${
-    student.middleName
-      ? ` ${student.middleName.charAt(0).toUpperCase()}.`
-      : ""
+    student.middleName ? ` ${student.middleName.charAt(0).toUpperCase()}.` : ""
   }`.trim();
-  
+
   if (firstNameWithMI) parts.push(firstNameWithMI);
-  
+
   return parts.join(", ");
 }
 
@@ -161,7 +159,9 @@ export default function StudentGrid({
     ].map((program) => ({
       ...program,
       displayName:
-        program.id === "all" ? program.name : `${program.name} (${program.count})`,
+        program.id === "all"
+          ? program.name
+          : `${program.name} (${program.count})`,
       disabled: program.id !== "all" && program.count === 0,
     }));
   }, [filterCounts?.programs, totalMatchingStudents]);
@@ -212,7 +212,6 @@ export default function StudentGrid({
     );
   }
 
-
   const genderColors: Record<number, string> = {
     1: "bg-blue-500",
     2: "bg-pink-500",
@@ -240,24 +239,35 @@ export default function StudentGrid({
 
   const renderSortableHeader = (label: string, sortKey: StudentSortKey) => {
     const isActive = selectedSort === sortKey;
-    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
+    const Icon = isActive
+      ? selectedOrder === "desc"
+        ? ArrowDown
+        : ArrowUp
+      : ArrowUp;
 
     return (
       <button
         type="button"
         onClick={() => {
           setSelectedSort(sortKey);
-          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
+          setSelectedOrder(
+            isActive && selectedOrder === "asc" ? "desc" : "asc",
+          );
         }}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-xl px-2 py-1 whitespace-nowrap outline-none",
+          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2 py-1 outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
-          isActive ? "text-[#800000] dark:text-red-400" : "text-muted-foreground hover:text-foreground"
+          isActive
+            ? "text-[#800000] dark:text-red-400"
+            : "text-muted-foreground hover:text-foreground",
         )}
       >
         {label}
         <Icon
-          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")}
+          className={cn(
+            "h-3.5 w-3.5 shrink-0",
+            isActive ? "opacity-100" : "opacity-40",
+          )}
           strokeWidth={isActive ? 2.5 : 2}
         />
       </button>
@@ -322,7 +332,7 @@ export default function StudentGrid({
   const columns = [
     {
       header: (
-        <div className="w-full flex items-center justify-start pl-2">
+        <div className="flex w-full items-center justify-start pl-2">
           {renderSortableHeader("Student Name", "lastName")}
         </div>
       ),
@@ -333,7 +343,7 @@ export default function StudentGrid({
             className={cn(
               "relative flex h-10 w-10 shrink-0 items-center",
               "justify-center overflow-hidden rounded-xl",
-              "border border-primary/20 bg-glass-bg/50",
+              "bg-glass-bg/50 border border-primary/20",
             )}
           >
             {renderStudentAvatar(
@@ -349,7 +359,7 @@ export default function StudentGrid({
             {!student.isCompleted && (
               <span
                 className={cn(
-                  "inline-block mt-0.5 rounded bg-amber-500/10",
+                  "mt-0.5 inline-block rounded bg-amber-500/10",
                   "px-1.5 py-0.5 text-[9px] font-bold uppercase",
                   "text-amber-700 dark:text-amber-300",
                 )}
@@ -363,20 +373,20 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
+        <div className="flex w-full items-center justify-start">
           {renderSortableHeader("Student Number", "studentId")}
         </div>
       ),
       className: "w-[15%] min-w-[170px] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-xs font-bold uppercase text-primary/60 px-2">
+        <span className="px-2 text-xs font-bold uppercase text-primary/60">
           {student.studentNumber}
         </span>
       ),
     },
     {
       header: (
-        <div className="w-full flex items-center justify-start">
+        <div className="flex w-full items-center justify-start">
           <span className="px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Email Address
           </span>
@@ -384,7 +394,7 @@ export default function StudentGrid({
       ),
       className: "w-[22%] min-w-[240px] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-sm font-medium text-foreground/80 px-2 truncate block">
+        <span className="block truncate px-2 text-sm font-medium text-foreground/80">
           {student.email}
         </span>
       ),
@@ -401,14 +411,16 @@ export default function StudentGrid({
             buttonClassName={cn(
               "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedProgramId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+              selectedProgramId === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000] dark:text-red-400",
             )}
           />
         </div>
       ),
       className: "w-[14%] min-w-[180px] px-2 py-3",
       render: (student: IIRProfileView) => (
-        <span className="text-sm font-semibold text-primary/80 px-2">
+        <span className="px-2 text-sm font-semibold text-primary/80">
           {student.program.code}
         </span>
       ),
@@ -425,7 +437,9 @@ export default function StudentGrid({
             buttonClassName={cn(
               "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedYearLevelId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+              selectedYearLevelId === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000] dark:text-red-400",
             )}
           />
         </div>
@@ -433,9 +447,11 @@ export default function StudentGrid({
       className: "w-[12%] min-w-[160px] px-2 py-3",
       render: (student: IIRProfileView) => {
         const yrName =
-          yearLevels.find((level) => level.id === student.yearLevel)?.name.split(" ")[0] || "N/A";
+          yearLevels
+            .find((level) => level.id === student.yearLevel)
+            ?.name.split(" ")[0] || "N/A";
         return (
-          <span className="text-xs text-muted-foreground px-2">
+          <span className="px-2 text-xs text-muted-foreground">
             {yrName} Year
           </span>
         );
@@ -453,7 +469,9 @@ export default function StudentGrid({
             buttonClassName={cn(
               "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
               "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedStatusId === "all" ? "text-muted-foreground hover:text-foreground" : "text-[#800000] dark:text-red-400"
+              selectedStatusId === "all"
+                ? "text-muted-foreground hover:text-foreground"
+                : "text-[#800000] dark:text-red-400",
             )}
           />
         </div>
@@ -477,14 +495,16 @@ export default function StudentGrid({
 
   const renderMobileItem = (student: IIRProfileView) => {
     const yrName =
-      yearLevels.find((level) => level.id === student.yearLevel)?.name.split(" ")[0] || "N/A";
+      yearLevels
+        .find((level) => level.id === student.yearLevel)
+        ?.name.split(" ")[0] || "N/A";
 
     return (
       <div
         key={student.email}
         className={cn(
           "flex flex-col gap-3 pb-4 pt-4",
-          "border-b border-glass-border/20 last:border-b-0 last:pb-0",
+          "border-glass-border/20 border-b last:border-b-0 last:pb-0",
         )}
       >
         <div className="flex items-center justify-between gap-3">
@@ -493,7 +513,7 @@ export default function StudentGrid({
               className={cn(
                 "relative flex h-10 w-10 shrink-0 items-center",
                 "justify-center overflow-hidden rounded-xl",
-                "border border-primary/20 bg-glass-bg/50",
+                "bg-glass-bg/50 border border-primary/20",
               )}
             >
               {renderStudentAvatar(
@@ -512,7 +532,7 @@ export default function StudentGrid({
               {!student.isCompleted && (
                 <span
                   className={cn(
-                    "inline-block mt-0.5 rounded bg-amber-500/10 px-1.5",
+                    "mt-0.5 inline-block rounded bg-amber-500/10 px-1.5",
                     "py-0.5 text-[8px] font-bold uppercase",
                     "text-amber-700 dark:text-amber-300",
                   )}
@@ -563,25 +583,19 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-      
       {viewMode === "list" ? (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-3 shadow-md backdrop-blur-glass">
-          <div className="w-full sm:max-w-md">
-            {searchInput}
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
+        <div className="bg-glass-bg/50 flex flex-col items-center justify-between gap-4 rounded-xl border border-glass-border px-4 py-3 shadow-md backdrop-blur-glass sm:flex-row">
+          <div className="w-full sm:max-w-md">{searchInput}</div>
+          <div className="flex shrink-0 items-center gap-3">
             {exportButton}
             {viewToggle}
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 rounded-xl border border-glass-border bg-glass-bg/50 px-4 py-4 shadow-md backdrop-blur-glass">
-          <div className="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-4">
+        <div className="bg-glass-bg/50 flex flex-col gap-4 rounded-xl border border-glass-border px-4 py-4 shadow-md backdrop-blur-glass">
+          <div className="flex flex-col justify-between gap-4 2xl:flex-row 2xl:items-end">
             <div className="flex flex-1 flex-wrap items-end gap-3">
               <div className="w-full md:w-[260px] xl:w-[300px]">
-                <label className="mb-2 block text-sm font-medium text-foreground">
-                  Search
-                </label>
                 {searchInput}
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
@@ -619,7 +633,9 @@ export default function StudentGrid({
                   label="Sort By"
                   options={sortOptions}
                   value={selectedSort}
-                  onChange={(val) => setSelectedSort(String(val) as StudentSortKey)}
+                  onChange={(val) =>
+                    setSelectedSort(String(val) as StudentSortKey)
+                  }
                   labelKey="displayName"
                   enabled={!isStudentsLoading}
                 />
@@ -635,7 +651,7 @@ export default function StudentGrid({
                 />
               </div>
             </div>
-            <div className="flex w-full items-center justify-end gap-3 2xl:w-auto shrink-0 pb-[1px]">
+            <div className="flex w-full shrink-0 items-center justify-end gap-3 pb-[1px] 2xl:w-auto">
               {exportButton}
               {viewToggle}
             </div>
@@ -686,7 +702,7 @@ export default function StudentGrid({
             <div
               key={student.email}
               className={cn(
-                "group relative cursor-pointer overflow-hidden hover:bg-glass-bg/40",
+                "hover:bg-glass-bg/40 group relative cursor-pointer overflow-hidden",
                 "rounded-xl border border-glass-border bg-glass-bg p-3 md:p-6",
                 "shadow-md backdrop-blur-glass transition-all duration-500",
                 "hover:-translate-y-1.5 hover:border-primary/30",
@@ -727,7 +743,7 @@ export default function StudentGrid({
                       className={cn(
                         "relative flex h-16 w-16 items-center justify-center",
                         "overflow-hidden rounded-xl border-[3px] md:h-28 md:w-28",
-                        "border-primary/20 bg-glass-bg/50 shadow-md md:border-[6px]",
+                        "bg-glass-bg/50 border-primary/20 shadow-md md:border-[6px]",
                         "transition-transform duration-500",
                       )}
                     >
@@ -798,7 +814,7 @@ export default function StudentGrid({
 
                 <div
                   className={cn(
-                    "border-t border-glass-border/30 pt-2",
+                    "border-glass-border/30 border-t pt-2",
                     "flex flex-col gap-1.5 md:gap-3",
                   )}
                 >
@@ -880,7 +896,7 @@ export default function StudentGrid({
       ) : (
         <div
           className={cn(
-            "overflow-hidden rounded-xl border border-glass-border bg-glass-bg/20",
+            "bg-glass-bg/20 overflow-hidden rounded-xl border border-glass-border",
             "shadow-md backdrop-blur-glass",
           )}
         >

@@ -320,7 +320,7 @@ export default function AnalyticsPage() {
       />
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-12",
+          "mx-auto flex w-full flex-col space-y-8",
           "px-4 sm:px-6 md:px-8",
         )}
       >
