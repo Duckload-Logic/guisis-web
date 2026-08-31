@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+let currentParamsRef: URLSearchParams | null = null;
+let timeoutRef: ReturnType<typeof setTimeout> | null = null;
+
 /**
  * A hook that works like useState but syncs the state with the URL query parameters.
  * @param key The URL query parameter key
@@ -30,7 +33,8 @@ export function useUrlState<T>(
     (newValue: T | ((prev: T) => T)) => {
       setSearchParams(
         (prevParams) => {
-          const params = new URLSearchParams(prevParams);
+          const baseParams = currentParamsRef || prevParams;
+          const params = new URLSearchParams(baseParams);
           const valToSet =
             typeof newValue === 'function'
               ? (newValue as (prev: T) => T)(value)
@@ -55,6 +59,15 @@ export function useUrlState<T>(
                 : String(valToSet);
             params.set(key, stringVal);
           }
+
+          currentParamsRef = params;
+          if (!timeoutRef) {
+            timeoutRef = setTimeout(() => {
+              currentParamsRef = null;
+              timeoutRef = null;
+            }, 0);
+          }
+
           return params;
         },
         { replace: true }
