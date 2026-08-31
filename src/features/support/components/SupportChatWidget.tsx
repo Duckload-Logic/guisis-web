@@ -11,6 +11,7 @@ import {
   Accessibility,
   Sliders,
   AudioLines,
+  PersonStanding,
 } from "lucide-react";
 import { useSupportChat } from "../hooks/useSupportChat";
 import { useAuth } from "@/context";
@@ -651,7 +652,7 @@ export function SupportChatWidget() {
                 {menuExpanded ? (
                   <X className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
                 ) : (
-                  <Accessibility className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
+                  <PersonStanding className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
                 )}
               </button>
             </motion.div>
