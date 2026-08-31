@@ -274,12 +274,13 @@ export default function StudentGrid({
     );
   };
 
-  const searchInput = (
+  const renderSearchInput = (hasHeader: boolean) => (
     <SearchInput
       searchTerm={searchTerm}
       onSearchChange={handleSearchChange}
       placeholder="Search by name, email, or student number..."
-      className="h-11 border-border/70 bg-muted/50 dark:border-white/10 dark:bg-white/[0.04]"
+      hasHeader={hasHeader}
+      className="w-full"
     />
   );
 
@@ -585,7 +586,7 @@ export default function StudentGrid({
     <div className="min-w-0 max-w-full space-y-6">
       {viewMode === "list" ? (
         <div className="bg-glass-bg/50 flex flex-col items-center justify-between gap-4 rounded-xl border border-glass-border px-4 py-3 shadow-md backdrop-blur-glass sm:flex-row">
-          <div className="w-full sm:max-w-md">{searchInput}</div>
+          <div className="w-full sm:max-w-md">{renderSearchInput(false)}</div>
           <div className="flex shrink-0 items-center gap-3">
             {exportButton}
             {viewToggle}
@@ -596,7 +597,7 @@ export default function StudentGrid({
           <div className="flex flex-col justify-between gap-4 2xl:flex-row 2xl:items-end">
             <div className="flex flex-1 flex-wrap items-end gap-3">
               <div className="w-full md:w-[260px] xl:w-[300px]">
-                {searchInput}
+                {renderSearchInput(true)}
               </div>
               <div className="w-full sm:w-[150px] xl:flex-1">
                 <SelectField

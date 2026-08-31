@@ -60,9 +60,9 @@ export default function SearchInput({
   };
 
   return (
-    <div className={className}>
+    <div className={cn("relative min-w-0 space-y-2", className)}>
       {hasHeader && (
-        <label className="mb-2 block text-sm font-medium text-card-foreground">
+        <label className="block text-sm font-medium text-foreground">
           Search:
         </label>
       )}
