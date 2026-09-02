@@ -217,6 +217,42 @@ export default function SuperAdminDashboard() {
     });
   }, [systemHealthData]);
 
+  const healthSummary = useMemo(() => {
+    const unhealthy = services.filter(
+      (s) => !s.isHealthy && s.status !== "Checking...",
+    );
+    const secAlerts = logDistribution.secCount;
+
+    if (unhealthy.length > 0) {
+      return {
+        title: `${unhealthy.length} Subsystem Degraded`,
+        description: `${unhealthy.map((s) => s.name).join(", ")} issue.`,
+        statusClass: "border-red-500/20 bg-red-500/10 text-red-500",
+        icon: AlertTriangle,
+      };
+    }
+
+    if (secAlerts > 0) {
+      return {
+        title: `${secAlerts} Security Anomalies Flagged`,
+        description: `${secAlerts} access control events recorded in logs.`,
+        statusClass:
+          "border-amber-500/20 bg-amber-500/10 " +
+          "text-amber-600 dark:text-amber-400",
+        icon: ShieldAlert,
+      };
+    }
+
+    return {
+      title: "All Subsystems Operational",
+      description: `0 failures across ${services.length} core services with ${uptimeValue} uptime.`,
+      statusClass:
+        "border-emerald-500/20 bg-emerald-500/10 " +
+        "text-emerald-600 dark:text-emerald-400",
+      icon: TrendingUp,
+    };
+  }, [services, logDistribution, uptimeValue]);
+
   if (isLoading) {
     return (
       <div className="flex h-[400px] w-full items-center justify-center">
@@ -451,14 +487,18 @@ export default function SuperAdminDashboard() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border bg-muted/20 p-3.5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2 font-bold text-foreground">
-                <TrendingUp size={14} className="text-emerald-500" />
-                System Health Summary
+            <div
+              className={cn(
+                "mt-6 rounded-xl border p-3.5 text-xs transition-colors",
+                healthSummary.statusClass,
+              )}
+            >
+              <div className="flex items-center gap-2 font-bold">
+                <healthSummary.icon size={15} />
+                {healthSummary.title}
               </div>
-              <p className="mt-1 leading-relaxed">
-                All security policies and ownership middlewares are enforcing
-                access rules normally.
+              <p className="mt-1 leading-relaxed opacity-90">
+                {healthSummary.description}
               </p>
             </div>
           </CardContent>
