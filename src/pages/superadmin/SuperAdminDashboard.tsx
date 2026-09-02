@@ -243,11 +243,10 @@ export default function SuperAdminDashboard() {
       {/* Alert Banner for pending M2M approvals */}
       {pendingM2M.length > 0 && (
         <div
-          className={
-            "flex flex-col gap-4 rounded-2xl border border-amber-500/20 " +
-            "bg-amber-500/10 p-4 sm:flex-row sm:items-center" +
-            "sm:justify-between"
-          }
+          className={cn(
+            "flex flex-col gap-4 rounded-2xl border border-amber-500/20",
+            "bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between",
+          )}
         >
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 flex-shrink-0 text-amber-500" />
@@ -265,7 +264,7 @@ export default function SuperAdminDashboard() {
             size="sm"
             variant="ghost"
             className={cn(
-              "border-amber-500/20 text-amber-600",
+              "w-full border-amber-500/20 text-amber-600 shrink-0",
               "hover:bg-amber-500/20 hover:text-amber-700 sm:w-auto",
             )}
             onClick={() => navigate("/superadmin/m2m-management")}
@@ -279,7 +278,7 @@ export default function SuperAdminDashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric) => (
           <Card key={metric.label}>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div
                   className={cn("rounded-2xl border p-3", metric.colorClass)}
@@ -288,14 +287,10 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
               <div className="mt-4">
-                <p
-                  className={
-                    "text-xs font-bold uppercase " + "text-muted-foreground"
-                  }
-                >
+                <p className="text-xs font-bold uppercase text-muted-foreground">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-3xl font-bold">{metric.value}</p>
+                <p className="mt-1 text-2xl sm:text-3xl font-bold">{metric.value}</p>
                 <p className="mt-1 text-[10px] text-muted-foreground/60">
                   {metric.subtext}
                 </p>

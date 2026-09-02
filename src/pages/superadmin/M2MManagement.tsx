@@ -265,247 +265,385 @@ export default function M2MManagement() {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[1200px] text-sm">
-                <thead>
-                  <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
-                    <th className="w-[25%] px-5 py-4">
-                      {renderSortableHeader("Client", "clientName")}
-                    </th>
-                    <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Client ID
-                    </th>
-                    <th className="w-[20%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Status / Verification
-                    </th>
-                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Scopes
-                    </th>
-                    <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Last Activity
-                    </th>
-                    <th className="w-[10%] px-5 py-4">
-                      {renderSortableHeader("Created", "createdAt")}
-                    </th>
-                    <th className="w-[10%] whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-
-                  <tbody>
-                    {clients?.map((client) => (
-                      <tr
-                        key={client.id}
-                        className="border-b border-white/10 transition-colors duration-150 hover:bg-white/35 dark:hover:bg-white/[0.03]"
-                      >
-                      <td className="px-5 py-4 align-middle">
-                        <div className="flex min-w-0 flex-col space-y-0.5">
-                          <div className="truncate font-medium text-foreground" title={client.clientName}>
+              <>
+                {/* Mobile View Cards */}
+                <div className="grid gap-3 p-4 md:hidden">
+                  {clients?.map((client) => (
+                    <div
+                      key={client.id}
+                      className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-foreground" title={client.clientName}>
                             {client.clientName}
-                          </div>
-                          <div className="truncate text-[11px] text-muted-foreground" title={client.clientDescription}>
+                          </p>
+                          <p className="line-clamp-2 text-xs text-muted-foreground" title={client.clientDescription}>
                             {client.clientDescription}
-                          </div>
+                          </p>
                         </div>
-                      </td>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className={
+                              client.isActive
+                                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 text-[10px]"
+                                : "border-red-500/20 bg-red-500/10 text-red-700 text-[10px]"
+                            }
+                          >
+                            {client.isActive ? "Active" : "Revoked"}
+                          </Badge>
+                          {client.isVerified && (
+                            <Badge variant="outline" className="border-blue-500/20 bg-blue-500/10 text-blue-700 text-[10px]">
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
 
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <code className="rounded-lg border border-white/20 bg-white/55 px-2.5 py-1 font-mono text-[11px] text-foreground dark:border-white/10 dark:bg-white/[0.04]">
-                              {client.isVerified ? (
-                                client.clientId
-                              ) : (
-                                <span className="italic">••••••••••••</span>
-                              )}
-                            </code>
+                      <div className="flex items-center justify-between gap-2 rounded-xl border border-white/20 bg-muted/20 p-2.5">
+                        <span className="text-xs font-semibold text-muted-foreground">Client ID:</span>
+                        <div className="flex items-center gap-1">
+                          <code className="font-mono text-[11px]">
+                            {client.isVerified ? client.clientId : "••••••••••••"}
+                          </code>
+                          {client.isVerified && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 rounded-md"
-                              onClick={() => {
-                                navigator.clipboard.writeText(client.clientId);
-                              }}
-                              disabled={!client.isVerified}
+                              className="h-6 w-6"
+                              onClick={() => navigator.clipboard.writeText(client.clientId)}
                             >
                               <Copy size={12} />
                             </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                        {client.scopes && client.scopes.length > 0 ? (
+                          client.scopes.map((scope) => (
+                            <Badge key={scope} variant="outline" className="rounded-full px-2 py-0 text-[10px]">
+                              {scope}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground">admin:full</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-border/40 pt-3">
+                        <span className="text-[11px] text-muted-foreground">
+                          Created: {formatDate(client.createdAt)}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          {client.isActive && (
+                            !client.isVerified ? (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setVerifyTarget(client);
+                                    setVerifyPersonalInfo(client.hasPersonalInfoAccess);
+                                  }}
+                                  className="h-8 gap-1 rounded-xl text-xs text-blue-600 border-blue-500/20"
+                                >
+                                  <Check size={14} /> Verify
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleReject(client.id)}
+                                  className="h-8 gap-1 rounded-xl text-xs text-destructive border-red-500/20"
+                                >
+                                  <Ban size={14} /> Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setVerifyTarget(client);
+                                    setVerifyPersonalInfo(client.hasPersonalInfoAccess);
+                                  }}
+                                  className="h-8 w-8 rounded-xl p-0 text-purple-600"
+                                  title="Manage PII"
+                                >
+                                  <ShieldCheck size={14} />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setRotateTarget(client)}
+                                  className="h-8 w-8 rounded-xl p-0 text-muted-foreground"
+                                  title="Rotate Secret"
+                                >
+                                  <RefreshCw size={14} />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setRevokeTarget(client)}
+                                  className="h-8 w-8 rounded-xl p-0 text-destructive"
+                                  title="Revoke Client"
+                                >
+                                  <Trash2 size={14} />
+                                </Button>
+                              </>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full min-w-[1000px] text-sm">
+                  <thead>
+                    <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
+                      <th className="w-[25%] px-5 py-4">
+                        {renderSortableHeader("Client", "clientName")}
+                      </th>
+                      <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Client ID
+                      </th>
+                      <th className="w-[20%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Status / Verification
+                      </th>
+                      <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Scopes
+                      </th>
+                      <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Last Activity
+                      </th>
+                      <th className="w-[10%] px-5 py-4">
+                        {renderSortableHeader("Created", "createdAt")}
+                      </th>
+                      <th className="w-[10%] whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+
+                    <tbody>
+                      {clients?.map((client) => (
+                        <tr
+                          key={client.id}
+                          className="border-b border-white/10 transition-colors duration-150 hover:bg-white/35 dark:hover:bg-white/[0.03]"
+                        >
+                        <td className="px-5 py-4 align-middle">
+                          <div className="flex min-w-0 flex-col space-y-0.5">
+                            <div className="truncate font-medium text-foreground" title={client.clientName}>
+                              {client.clientName}
+                            </div>
+                            <div className="truncate text-[11px] text-muted-foreground" title={client.clientDescription}>
+                              {client.clientDescription}
+                            </div>
                           </div>
                         </td>
 
-                        <td className="px-5 py-4 align-middle">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <Badge
-                              variant="outline"
-                              className={
-                                client.isActive
-                                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                                  : "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400"
-                              }
-                            >
-                              {client.isActive ? "Active" : "Revoked"}
-                            </Badge>
-                            {client.isVerified && (
-                              <Badge
-                                variant="outline"
-                                className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              <code className="rounded-lg border border-white/20 bg-white/55 px-2.5 py-1 font-mono text-[11px] text-foreground dark:border-white/10 dark:bg-white/[0.04]">
+                                {client.isVerified ? (
+                                  client.clientId
+                                ) : (
+                                  <span className="italic">••••••••••••</span>
+                                )}
+                              </code>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-md"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(client.clientId);
+                                }}
+                                disabled={!client.isVerified}
                               >
-                                Verified
-                              </Badge>
-                            )}
-                            {client.isVerified && (
+                                <Copy size={12} />
+                              </Button>
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4 align-middle">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               <Badge
                                 variant="outline"
                                 className={
-                                  client.hasPersonalInfoAccess
-                                    ? "border-purple-500/20 " +
-                                      "bg-purple-500/10 text-purple-700" +
-                                      "dark:text-purple-400"
-                                    : "border-slate-500/20 " +
-                                      "bg-slate-500/10 text-slate-700" +
-                                      "dark:text-slate-400"
+                                  client.isActive
+                                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                    : "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400"
                                 }
                               >
-                                {client.hasPersonalInfoAccess
-                                  ? "PII: Allowed"
-                                  : "PII: Denied"}
+                                {client.isActive ? "Active" : "Revoked"}
                               </Badge>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="px-5 py-4">
-                          {client.scopes && client.scopes.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5">
-                              {client.scopes.map((scope) => (
+                              {client.isVerified && (
                                 <Badge
-                                  key={scope}
                                   variant="outline"
-                                  className="rounded-full border-muted-foreground/20 px-2 py-0 text-[10px]"
+                                  className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400"
                                 >
-                                  {scope}
+                                  Verified
                                 </Badge>
-                              ))}
+                              )}
+                              {client.isVerified && (
+                                <Badge
+                                  variant="outline"
+                                  className={
+                                    client.hasPersonalInfoAccess
+                                      ? "border-purple-500/20 " +
+                                        "bg-purple-500/10 text-purple-700" +
+                                        "dark:text-purple-400"
+                                      : "border-slate-500/20 " +
+                                        "bg-slate-500/10 text-slate-700" +
+                                        "dark:text-slate-400"
+                                  }
+                                >
+                                  {client.hasPersonalInfoAccess
+                                    ? "PII: Allowed"
+                                    : "PII: Denied"}
+                                </Badge>
+                              )}
                             </div>
-                          ) : (
-                            <span className="text-xs italic text-muted-foreground">
-                              admin:full
-                            </span>
-                          )}
-                        </td>
+                          </td>
 
-                        <td className="px-5 py-4 text-xs text-muted-foreground">
-                          {client.lastUsedAt
-                            ? formatDate(client.lastUsedAt)
-                            : "Never"}
-                        </td>
-
-                        <td className="px-5 py-4 text-xs text-muted-foreground">
-                          {formatDate(client.createdAt)}
-                        </td>
-
-                        <td className="px-5 py-4 text-right">
-                          <div className="flex justify-end gap-1">
-                            {client.isActive && (
-                              <>
-                                {!client.isVerified ? (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        setVerifyTarget(client);
-                                        setVerifyPersonalInfo(
-                                          client.hasPersonalInfoAccess,
-                                        );
-                                      }}
-                                      className={
-                                        "h-8 w-8 rounded-xl p-0 " +
-                                        "text-blue-600" +
-                                        "hover:bg-blue-600/10" +
-                                        "hover:text-blue-600"
-                                      }
-                                      title="Verify Client"
-                                      disabled={verifyMutation.isPending}
-                                    >
-                                      <Check
-                                        size={14}
-                                        strokeWidth={3}
-                                      />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleReject(client.id)}
-                                      className={
-                                        "h-8 w-8 rounded-xl p-0 " +
-                                        "text-destructive" +
-                                        "hover:bg-destructive/10" +
-                                        "hover:text-destructive"
-                                      }
-                                      title="Reject Client"
-                                      disabled={rejectMutation.isPending}
-                                    >
-                                      <Ban size={14} />
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        setVerifyTarget(client);
-                                        setVerifyPersonalInfo(
-                                          client.hasPersonalInfoAccess,
-                                        );
-                                      }}
-                                      className={
-                                        "h-8 w-8 rounded-xl p-0 " +
-                                        "text-purple-600" +
-                                        "hover:bg-purple-600/10"
-                                      }
-                                      title="Manage Personal Info Access"
-                                    >
-                                      <ShieldCheck size={14} />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setRotateTarget(client)}
-                                      className="h-8 w-8 rounded-xl p-0"
-                                      title="Rotate Client Secret"
-                                    >
-                                      <RefreshCw
-                                        size={14}
-                                        className={"text-muted-foreground"}
-                                      />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setRevokeTarget(client)}
-                                      className={
-                                        "h-8 w-8 rounded-xl p-0 " +
-                                        "text-destructive" +
-                                        "hover:bg-destructive/10" +
-                                        "hover:text-destructive"
-                                      }
-                                      title="Revoke Client"
-                                    >
-                                      <Trash2 size={14} />
-                                    </Button>
-                                  </>
-                                )}
-                              </>
+                          <td className="px-5 py-4">
+                            {client.scopes && client.scopes.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {client.scopes.map((scope) => (
+                                  <Badge
+                                    key={scope}
+                                    variant="outline"
+                                    className="rounded-full border-muted-foreground/20 px-2 py-0 text-[10px]"
+                                  >
+                                    {scope}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs italic text-muted-foreground">
+                                admin:full
+                              </span>
                             )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          </td>
+
+                          <td className="px-5 py-4 text-xs text-muted-foreground">
+                            {client.lastUsedAt
+                              ? formatDate(client.lastUsedAt)
+                              : "Never"}
+                          </td>
+
+                          <td className="px-5 py-4 text-xs text-muted-foreground">
+                            {formatDate(client.createdAt)}
+                          </td>
+
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex justify-end gap-1">
+                              {client.isActive && (
+                                <>
+                                  {!client.isVerified ? (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setVerifyTarget(client);
+                                          setVerifyPersonalInfo(
+                                            client.hasPersonalInfoAccess,
+                                          );
+                                        }}
+                                        className={
+                                          "h-8 w-8 rounded-xl p-0 " +
+                                          "text-blue-600" +
+                                          "hover:bg-blue-600/10" +
+                                          "hover:text-blue-600"
+                                        }
+                                        title="Verify Client"
+                                        disabled={verifyMutation.isPending}
+                                      >
+                                        <Check
+                                          size={14}
+                                          strokeWidth={3}
+                                        />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleReject(client.id)}
+                                        className={
+                                          "h-8 w-8 rounded-xl p-0 " +
+                                          "text-destructive" +
+                                          "hover:bg-destructive/10" +
+                                          "hover:text-destructive"
+                                        }
+                                        title="Reject Client"
+                                        disabled={rejectMutation.isPending}
+                                      >
+                                        <Ban size={14} />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setVerifyTarget(client);
+                                          setVerifyPersonalInfo(
+                                            client.hasPersonalInfoAccess,
+                                          );
+                                        }}
+                                        className={
+                                          "h-8 w-8 rounded-xl p-0 " +
+                                          "text-purple-600" +
+                                          "hover:bg-purple-600/10"
+                                        }
+                                        title="Manage Personal Info Access"
+                                      >
+                                        <ShieldCheck size={14} />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setRotateTarget(client)}
+                                        className="h-8 w-8 rounded-xl p-0"
+                                        title="Rotate Client Secret"
+                                      >
+                                        <RefreshCw
+                                          size={14}
+                                          className={"text-muted-foreground"}
+                                        />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setRevokeTarget(client)}
+                                        className={
+                                          "h-8 w-8 rounded-xl p-0 " +
+                                          "text-destructive" +
+                                          "hover:bg-destructive/10" +
+                                          "hover:text-destructive"
+                                        }
+                                        title="Revoke Client"
+                                      >
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

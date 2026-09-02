@@ -86,7 +86,7 @@ function getAppointmentUrgency(appointment?: any) {
     description: "Standard guidance priority for regular processing.",
     className:
       "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  };
+  };  
 }
 
 export default function AppointmentDetails() {

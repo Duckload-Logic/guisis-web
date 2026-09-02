@@ -173,7 +173,7 @@ export default function LogDetails() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Message
                 </span>
-                <div className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground">
+                <div className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
                   {log.message}
                 </div>
               </div>
@@ -190,7 +190,7 @@ export default function LogDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <pre className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground">
+                <pre className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
                   {JSON.stringify(log.metadata, null, 2)}
                 </pre>
               </CardContent>

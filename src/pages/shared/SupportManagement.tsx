@@ -8,6 +8,7 @@ import {
   Clock,
   User,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 import { Message, Ticket } from "../../features/support/types";
 import {
@@ -21,6 +22,7 @@ import { getProfilePictureUrl } from "../../lib/profilePicture";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TicketGroup {
@@ -325,10 +327,10 @@ export function SupportManagement() {
       >
         {/* Tickets List Sidebar */}
         <div
-          className={
-            "flex max-h-[42%] w-full shrink-0 flex-col border-b " +
-            "border-glass-border md:max-h-none md:w-96 md:border-b-0 md:border-r"
-          }
+          className={cn(
+            "flex w-full shrink-0 flex-col border-b border-glass-border md:w-96 md:border-b-0 md:border-r",
+            selectedGroupKey ? "hidden md:flex" : "flex flex-1",
+          )}
         >
           <div className="border-b border-glass-border p-4">
             <h2 className="flex items-center gap-2 text-sm font-bold">
@@ -504,7 +506,12 @@ export function SupportManagement() {
         </div>
 
         {/* Conversation Area */}
-        <div className="relative flex min-h-0 flex-1 flex-col bg-background/20">
+        <div
+          className={cn(
+            "relative min-h-0 flex-1 flex-col bg-background/20",
+            selectedGroup ? "flex h-full w-full" : "hidden md:flex",
+          )}
+        >
           {selectedGroup ? (
             <>
               {/* Conversation Header */}
@@ -514,6 +521,15 @@ export function SupportManagement() {
                 className="flex flex-wrap items-center justify-between gap-3 border-b border-glass-border bg-muted/20 p-4"
               >
                 <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg border border-glass-border md:hidden"
+                    onClick={() => setSelectedGroupKey(null)}
+                    title="Back to conversations"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
                   {(() => {
                     const latestTicket =
                       selectedGroup.tickets[selectedGroup.tickets.length - 1];

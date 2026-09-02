@@ -82,33 +82,35 @@ export default function UserSessions() {
   return (
     <div className="mx-auto w-full max-w-[1200px] space-y-6">
       {targetUser && (
-        <div className="flex items-center gap-4 rounded-[22px] border border-white/20 bg-white/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary">
-            {targetUser.firstName[0]}
-            {targetUser.lastName[0]}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold tracking-tight">
-              {targetUser.firstName} {targetUser.lastName}
-            </h2>
-            <div className="mt-0.5 flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {targetUser.email}
-              </span>
-              <div className="flex flex-wrap gap-1">
-                {targetUser.roles?.map((role) => (
-                  <Badge
-                    key={role.id}
-                    variant="outline"
-                    className="h-5 rounded-full text-[10px] uppercase"
-                  >
-                    {role.name}
-                  </Badge>
-                ))}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-[22px] border border-white/20 bg-white/40 p-4 sm:p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary">
+              {targetUser.firstName[0]}
+              {targetUser.lastName[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="truncate text-lg sm:text-xl font-bold tracking-tight">
+                {targetUser.firstName} {targetUser.lastName}
+              </h2>
+              <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                <span className="truncate text-xs sm:text-sm text-muted-foreground">
+                  {targetUser.email}
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {targetUser.roles?.map((role) => (
+                    <Badge
+                      key={role.id}
+                      variant="outline"
+                      className="h-5 rounded-full text-[10px] uppercase"
+                    >
+                      {role.name}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-          <div className="text-right">
+          <div className="shrink-0">
             <Badge
               variant="outline"
               className="rounded-lg border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-emerald-600"

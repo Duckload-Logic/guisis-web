@@ -236,7 +236,7 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {metrics.map((item) => (
           <Card key={item.label}>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div
                   className={
@@ -252,14 +252,10 @@ export default function AnalyticsOverview() {
                 </div>
               </div>
               <div className="mt-4">
-                <p
-                  className={
-                    "text-xs font-bold uppercase " + "text-muted-foreground"
-                  }
-                >
+                <p className="text-xs font-bold uppercase text-muted-foreground">
                   {item.label}
                 </p>
-                <p className="mt-1 text-4xl font-bold">{item.value}</p>
+                <p className="mt-1 text-2xl sm:text-4xl font-bold">{item.value}</p>
               </div>
             </CardContent>
           </Card>
@@ -270,40 +266,35 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="col-span-1 min-h-[450px] lg:col-span-3">
           <CardHeader
-            className={"flex flex-row items-center justify-between pb-8"}
+            className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between"
           >
-            <CardTitle className="flex items-center gap-4 text-2xl font-bold">
+            <CardTitle className="flex items-center gap-3 text-xl sm:text-2xl font-bold">
               <TrendingUp
                 size={24}
-                className="text-primary"
+                className="text-primary shrink-0"
               />
               System Traffic & Logins
-              <div
-                className={
-                  "backdrop-blur-l flex items-center gap-1 rounded-2xl " +
-                  "ml-10 p-1.5"
-                }
-              >
-                {(["daily", "weekly", "monthly", "yearly"] as const).map(
-                  (r) => (
-                    <Button
-                      key={r}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setRange(r)}
-                      className={cn(
-                        "h-9 rounded-xl px-6 font-medium capitalize transition-all duration-300",
-                        range === r
-                          ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-                      )}
-                    >
-                      {r}
-                    </Button>
-                  ),
-                )}
-              </div>
             </CardTitle>
+            <div className="flex flex-wrap items-center gap-1 rounded-2xl p-1 bg-muted/20">
+              {(["daily", "weekly", "monthly", "yearly"] as const).map(
+                (r) => (
+                  <Button
+                    key={r}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setRange(r)}
+                    className={cn(
+                      "h-8 sm:h-9 rounded-xl px-3 sm:px-6 text-xs sm:text-sm font-medium capitalize transition-all duration-300",
+                      range === r
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                    )}
+                  >
+                    {r}
+                  </Button>
+                ),
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="relative h-[320px] w-full">
