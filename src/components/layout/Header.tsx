@@ -1,19 +1,18 @@
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { IDPLoginButton } from "@/features/auth/components/IDPLoginButton";
 import ProfileMenu from "./ProfileMenu";
-import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useUI } from "@/context";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 
+import { User } from "@/features/users/types/user";
+
 const LOGO_SRC = "/logo.svg";
 
 interface HeaderProps {
-  title?: string;
-  user: any;
+  user: User | Record<string, any> | null;
   role: string;
   handleLogout: () => void;
   getRoleLabel: () => string;
@@ -23,7 +22,6 @@ interface HeaderProps {
 }
 
 export default function Header({
-  title,
   user,
   role,
   handleLogout,
@@ -33,7 +31,6 @@ export default function Header({
   isLoggedIn = true,
 }: HeaderProps) {
   const { darkMode, setDarkMode } = useUI();
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isLanding = location.pathname === "/";
@@ -51,43 +48,46 @@ export default function Header({
 
   if (isLoggedIn) {
     return (
-      <>
+      <header
+        className={cn(
+          "pointer-events-none fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between px-3",
+          "border-b border-border/70 bg-background/95 shadow-sm backdrop-blur-xl",
+          "supports-[backdrop-filter]:bg-background/85",
+          "dark:border-white/10 dark:bg-neutral-950/95",
+          "min-[1025px]:inset-x-4 min-[1025px]:top-4 min-[1025px]:h-auto min-[1025px]:border-0 min-[1025px]:bg-transparent min-[1025px]:px-0",
+          "min-[1025px]:shadow-none min-[1025px]:backdrop-blur-none min-[1025px]:supports-[backdrop-filter]:bg-transparent",
+          "min-[1025px]:dark:bg-transparent",
+        )}
+      >
+        <div className="pointer-events-auto flex items-center gap-2 xl:hidden">
+          <img
+            src={LOGO_SRC}
+            alt="Logo"
+            className={cn(
+              "h-10 w-10 shrink-0 rounded-full p-0.5 opacity-100",
+              "bg-background shadow-sm",
+              "min-[1025px]:bg-background/50 min-[1025px]:backdrop-blur-md",
+            )}
+          />
+          <div className="flex flex-col gap-0 text-[11px] leading-tight opacity-100">
+            <p className="font-bold text-foreground drop-shadow-sm">
+              PUP Taguig
+            </p>
+            <p className="font-semibold text-primary drop-shadow-sm min-[1025px]:text-primary/90">
+              GuiSIS
+            </p>
+          </div>
+        </div>
+
         <div
           className={cn(
-            "pointer-events-none fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between px-3",
-            "border-b border-border/70 bg-background/95 shadow-sm backdrop-blur-xl",
-            "supports-[backdrop-filter]:bg-background/85",
-            "dark:border-white/10 dark:bg-neutral-950/95",
-            "min-[1025px]:inset-x-4 min-[1025px]:top-4 min-[1025px]:h-auto min-[1025px]:border-0 min-[1025px]:bg-transparent min-[1025px]:px-0",
-            "min-[1025px]:shadow-none min-[1025px]:backdrop-blur-none min-[1025px]:supports-[backdrop-filter]:bg-transparent",
-            "min-[1025px]:dark:bg-transparent",
+            "pointer-events-auto ml-auto flex items-center gap-1 rounded-xl border",
+            "border-border/70 bg-background/85 p-1 shadow-md backdrop-blur-xl",
+            "supports-[backdrop-filter]:bg-background/70",
+            "dark:border-white/10 dark:bg-neutral-900/85",
           )}
+          aria-label="Account controls"
         >
-          <div className="pointer-events-auto flex items-center gap-2 xl:hidden">
-            <img
-              src={LOGO_SRC}
-              alt="Logo"
-              className={cn(
-                "h-10 w-10 shrink-0 rounded-full p-0.5 opacity-100",
-                "bg-background shadow-sm",
-                "min-[1025px]:bg-background/50 min-[1025px]:backdrop-blur-md",
-              )}
-            />
-            <div className="flex flex-col gap-0 text-[11px] leading-tight opacity-100">
-              <p className="font-bold text-foreground drop-shadow-sm">PUP Taguig</p>
-              <p className="font-semibold text-primary drop-shadow-sm min-[1025px]:text-primary/90">GuiSIS</p>
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "pointer-events-auto ml-auto flex items-center gap-1 rounded-xl border",
-              "border-border/70 bg-background/85 p-1 shadow-md backdrop-blur-xl",
-              "supports-[backdrop-filter]:bg-background/70",
-              "dark:border-white/10 dark:bg-neutral-900/85",
-            )}
-            aria-label="Account controls"
-          >
           <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
 
           <NotificationBell
@@ -104,14 +104,8 @@ export default function Header({
             profilePath={`/${role}/profile`}
             onLogout={handleLogout}
           />
-          </div>
         </div>
-
-        <UISettingsModal
-          isOpen={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-        />
-      </>
+      </header>
     );
   }
 
@@ -339,11 +333,6 @@ export default function Header({
           )}
         </div>
       )}
-
-      <UISettingsModal
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
     </header>
   );
 }

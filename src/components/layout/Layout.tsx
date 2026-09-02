@@ -291,7 +291,6 @@ export default function Layout({
           {showHeader && (
             <>
               <Header
-                title={title}
                 user={user}
                 role={currentRole || ""}
                 handleLogout={handleLogout}
