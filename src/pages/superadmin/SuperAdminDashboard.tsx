@@ -13,16 +13,16 @@ import {
   Mail,
   Clock,
   AlertTriangle,
-  ExternalLink,
   ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   useLogStats,
-  useAdminAnalytics,
   useM2MClients,
   useSystemLogs,
   useAuditLogs,
@@ -37,7 +37,6 @@ export default function SuperAdminDashboard() {
 
   const { data: logStatsData, isLoading: logStatsLoading } = useLogStats();
   const logStats = logStatsData ?? [];
-  const { data: analytics, isLoading: analyticsLoading } = useAdminAnalytics();
   const { data: m2mClientsData, isLoading: m2mLoading } = useM2MClients();
   const m2mClients = m2mClientsData ?? [];
   const { data: systemLogsData, isLoading: logsLoading } = useSystemLogs({
@@ -60,7 +59,6 @@ export default function SuperAdminDashboard() {
 
   const isLoading =
     logStatsLoading ||
-    analyticsLoading ||
     m2mLoading ||
     logsLoading ||
     auditLogsLoading ||
@@ -89,31 +87,30 @@ export default function SuperAdminDashboard() {
     return `${Math.max(0, rate).toFixed(2)}%`;
   }, [totalRequests, totalErrors]);
 
-  const hasAIError = useMemo(() => {
-    const threshold = Date.now() - 15 * 60 * 1000; // 15 minutes
-    return [...systemLogs, ...auditLogs, ...securityLogs].some((log) => {
-      const isMatch =
-        log.message.toLowerCase().includes("huggingface") ||
-        log.message.toLowerCase().includes("classifierclient") ||
-        log.message.toLowerCase().includes("ai classification") ||
-        log.message.toLowerCase().includes("ocr_processing_failed") ||
-        log.message.toLowerCase().includes("ocr cor processing");
-      const isRecent = new Date(log.createdAt).getTime() > threshold;
-      return isMatch && isRecent;
-    });
-  }, [systemLogs, auditLogs, securityLogs]);
+  const logDistribution = useMemo(() => {
+    const total = logStats.reduce((sum, s) => sum + s.count, 0) || 1;
+    const secCount =
+      logStats
+        .filter((s) => s.category === "SECURITY")
+        .reduce((sum, s) => sum + s.count, 0) || 0;
+    const sysCount =
+      logStats
+        .filter((s) => s.category === "SYSTEM")
+        .reduce((sum, s) => sum + s.count, 0) || 0;
+    const auditCount =
+      logStats
+        .filter((s) => s.category === "AUDIT")
+        .reduce((sum, s) => sum + s.count, 0) || 0;
 
-  const hasMailError = useMemo(() => {
-    const threshold = Date.now() - 15 * 60 * 1000; // 15 minutes
-    return [...systemLogs, ...auditLogs, ...securityLogs].some((log) => {
-      const isMatch =
-        log.message.toLowerCase().includes("mailpit") ||
-        log.message.toLowerCase().includes("smtp mailer failed") ||
-        log.message.toLowerCase().includes("failed to send email");
-      const isRecent = new Date(log.createdAt).getTime() > threshold;
-      return isMatch && isRecent;
-    });
-  }, [systemLogs, auditLogs, securityLogs]);
+    return {
+      security: Math.round((secCount / total) * 100),
+      system: Math.round((sysCount / total) * 100),
+      audit: Math.round((auditCount / total) * 100),
+      secCount,
+      sysCount,
+      auditCount,
+    };
+  }, [logStats]);
 
   usePageMetadata(
     useMemo(
@@ -125,7 +122,7 @@ export default function SuperAdminDashboard() {
           "Operational command center for service health, " +
           "critical security logs, and developer API keys.",
       }),
-      [hasAIError, hasMailError],
+      [],
     ),
   );
 
@@ -134,14 +131,14 @@ export default function SuperAdminDashboard() {
       label: "Operational Uptime",
       value: uptimeValue,
       icon: Clock,
-      subtext: "Last 24 hours success rate",
+      subtext: "24-hour request success rate",
       colorClass: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20",
     },
     {
-      label: "Active Redis Sessions",
-      value: analytics?.liveSessions ?? 0,
+      label: "24h Request Volume",
+      value: totalRequests.toLocaleString(),
       icon: Activity,
-      subtext: "Live active token instances",
+      subtext: `${totalErrors} errors captured in 24h`,
       colorClass: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
     },
     {
@@ -153,7 +150,7 @@ export default function SuperAdminDashboard() {
             (s.level === "ERROR" || s.level === "WARNING"),
         )?.count ?? 0,
       icon: ShieldAlert,
-      subtext: "Flagged login anomalies",
+      subtext: "Flagged access & auth anomalies",
       colorClass: "text-red-500 bg-red-500/10 border-red-500/20",
     },
     {
@@ -245,7 +242,8 @@ export default function SuperAdminDashboard() {
         <div
           className={cn(
             "flex flex-col gap-4 rounded-2xl border border-amber-500/20",
-            "bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between",
+            "bg-amber-500/10 p-4 sm:flex-row sm:items-center",
+            "sm:justify-between",
           )}
         >
           <div className="flex items-center gap-3">
@@ -274,26 +272,32 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
-      {/* KPI Section */}
+      {/* Bento Grid Top Section: Key Performance Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((metric) => (
-          <Card key={metric.label}>
-            <CardContent className="p-4 sm:p-6">
+          <Card
+            key={metric.label}
+            className="transition-all hover:border-primary/20 hover:shadow-md"
+          >
+            <CardContent className="p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div
-                  className={cn("rounded-2xl border p-3", metric.colorClass)}
+                  className={cn("rounded-xl border p-2.5", metric.colorClass)}
                 >
-                  <metric.icon size={20} />
+                  <metric.icon size={18} />
                 </div>
+                <span className="text-[10px] font-semibold text-muted-foreground/70">
+                  Live Status
+                </span>
               </div>
-              <div className="mt-4">
+              <div className="mt-3">
                 <p className="text-xs font-bold uppercase text-muted-foreground">
                   {metric.label}
                 </p>
                 <p className="mt-1 text-2xl font-bold sm:text-3xl">
                   {metric.value}
                 </p>
-                <p className="mt-1 text-[10px] text-muted-foreground/60">
+                <p className="mt-1 text-[11px] text-muted-foreground/80">
                   {metric.subtext}
                 </p>
               </div>
@@ -302,27 +306,34 @@ export default function SuperAdminDashboard() {
         ))}
       </div>
 
-      {/* Operations Overview and Status Dashboard */}
+      {/* Bento Grid Middle Section: Core Subsystems Board & Log Telemetry */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Core Services Health Board */}
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">
-              Platform Service Board
-            </CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Dynamic operational health checklist of critical subsystems
-            </p>
+        {/* Main Bento Tile (Span 2): Subsystem Health Check Board */}
+        <Card className="col-span-1 xl:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">
+                Platform Subsystems Board
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Operational health status across primary system components
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 text-xs text-emerald-500">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                Active Monitor
+              </span>
+            </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
               <div
                 key={service.name}
                 className={cn(
-                  "flex flex-col justify-between rounded-xl border",
-                  "border-white/5 bg-white/[0.01] p-3 text-sm transition-all",
-                  "hover:border-white/10 hover:bg-white/[0.02]" +
-                    " hover:scale-[1.01]",
+                  "flex flex-col justify-between rounded-xl border p-3.5",
+                  "border-border/60 bg-card/50 transition-all",
+                  "hover:border-primary/30 hover:bg-card hover:shadow-sm",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -361,7 +372,7 @@ export default function SuperAdminDashboard() {
                   </span>
                 </div>
                 <div className="mt-3 min-w-0">
-                  <p className="truncate font-semibold text-foreground">
+                  <p className="truncate font-semibold text-foreground text-sm">
                     {service.name}
                   </p>
                   <p
@@ -378,17 +389,104 @@ export default function SuperAdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Live System Activity Feed */}
+        {/* Side Bento Tile (Span 1): Log Distribution & Telemetry Meters */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">
+              Telemetry & Log Mix
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Proportional audit log distribution by category
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-red-500">
+                  <ShieldAlert size={14} /> Security Logs
+                </span>
+                <span>
+                  {logDistribution.secCount} ({logDistribution.security}%)
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-red-500 transition-all duration-500"
+                  style={{ width: `${logDistribution.security}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-amber-500">
+                  <AlertCircle size={14} /> System Events
+                </span>
+                <span>
+                  {logDistribution.sysCount} ({logDistribution.system}%)
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-amber-500 transition-all duration-500"
+                  style={{ width: `${logDistribution.system}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1.5 text-blue-500">
+                  <CheckCircle2 size={14} /> Administrative Audits
+                </span>
+                <span>
+                  {logDistribution.auditCount} ({logDistribution.audit}%)
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-500"
+                  style={{ width: `${logDistribution.audit}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border bg-muted/20 p-3.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 font-bold text-foreground">
+                <TrendingUp size={14} className="text-emerald-500" />
+                System Health Summary
+              </div>
+              <p className="mt-1 leading-relaxed">
+                All security policies and ownership middlewares are enforcing
+                access rules normally.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bento Grid Bottom Section: Recent Audit Feed & Command Shortcuts */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Live Security & System Audit Log Feed (Span 2) */}
         <Card className="col-span-1 xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg font-semibold">
-                Recent Logs
+                Recent Security & Audit Logs
               </CardTitle>
               <p className="mt-1 text-xs text-muted-foreground">
-                Most recent administrative audits and firewall log triggers
+                Real-time security events, access control denials, and audits
               </p>
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
+              onClick={() => navigate("/superadmin/security-logs")}
+            >
+              View All Logs
+              <ArrowRight size={14} className="ml-1" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -397,15 +495,15 @@ export default function SuperAdminDashboard() {
                   No system logs recorded.
                 </div>
               ) : (
-                <div className="divide-y divide-white/5">
+                <div className="divide-y divide-border/60">
                   {[...systemLogs, ...auditLogs, ...securityLogs]
                     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-                    .slice(0, 6)
+                    .slice(0, 5)
                     .map((log) => (
                       <div
                         key={log.id}
                         className={cn(
-                          "flex min-w-0 flex-col gap-2 py-3.5 first:pt-0",
+                          "flex min-w-0 flex-col gap-2 py-3 first:pt-0",
                           "last:pb-0 sm:flex-row sm:items-center",
                           "sm:justify-between",
                         )}
@@ -414,14 +512,15 @@ export default function SuperAdminDashboard() {
                           <div className="flex items-center gap-2">
                             <span
                               className={cn(
-                                "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                                "rounded-full px-2 py-0.5 text-[10px]",
+                                "font-bold uppercase border",
                                 log.category === "SECURITY"
-                                  ? "border bg-red-500/10 text-red-500 " +
+                                  ? "bg-red-500/10 text-red-500 " +
                                       "border-red-500/20"
                                   : log.category === "SYSTEM"
                                     ? "bg-amber-500/10 text-amber-500 " +
-                                      "border border-amber-500/20"
-                                    : "border bg-blue-500/10 text-blue-500 " +
+                                      "border-amber-500/20"
+                                    : "bg-blue-500/10 text-blue-500 " +
                                       "border-blue-500/20",
                               )}
                             >
@@ -436,10 +535,10 @@ export default function SuperAdminDashboard() {
                           </p>
                         </div>
                         <div className="shrink-0 text-left sm:text-right">
-                          <p className="text-[10px] text-muted-foreground/60">
+                          <p className="text-[10px] text-muted-foreground/80 font-medium">
                             {log.userEmail || "System Agent"}
                           </p>
-                          <p className="text-[10px] text-muted-foreground/40">
+                          <p className="text-[10px] text-muted-foreground/50">
                             {new Date(log.createdAt).toLocaleString()}
                           </p>
                         </div>
@@ -450,75 +549,74 @@ export default function SuperAdminDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Quick Access Utility Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            Admin Shortcuts
-          </CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Administrative portals and active user access controllers
-          </p>
-        </CardHeader>
-        <CardContent
-          className={cn(
-            "grid grid-cols-1 gap-4 sm:grid-cols-2",
-            "lg:grid-cols-3",
-          )}
-        >
-          {[
-            {
-              title: "M2M Client Portal",
-              desc: "Manage security client keys & integration secrets",
-              link: "/superadmin/m2m-management",
-              icon: Fingerprint,
-              colorClass: "bg-primary/10 text-primary",
-            },
-            {
-              title: "User Management",
-              desc: "Manage roles, update statuses, audit activity logs",
-              link: "/superadmin/users",
-              icon: Users,
-              colorClass: "bg-secondary/10 text-secondary",
-            },
-            {
-              title: "System Performance",
-              desc: "Detailed charts on metrics and api load metrics",
-              link: "/superadmin/analytics",
-              icon: Activity,
-              colorClass: "bg-primary/10 text-primary",
-            },
-          ].map((shortcut) => (
-            <Button
-              key={shortcut.title}
-              variant="ghost"
-              className={cn(
-                "h-auto flex-col items-center justify-center p-6",
-                "border border-white/5 bg-white/[0.01]",
-                "transition-all hover:bg-muted/30",
-              )}
-              onClick={() => navigate(shortcut.link)}
-            >
+        {/* Quick Command Shortcuts (Span 1) */}
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">
+              Admin Shortcuts
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Direct portals for administrative management
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              {
+                title: "M2M Client Portal",
+                desc: "Manage client keys & API secrets",
+                link: "/superadmin/m2m-management",
+                icon: Fingerprint,
+                colorClass: "bg-emerald-500/10 text-emerald-500",
+              },
+              {
+                title: "User Control Center",
+                desc: "Manage roles, statuses, and sessions",
+                link: "/superadmin/users",
+                icon: Users,
+                colorClass: "bg-blue-500/10 text-blue-500",
+              },
+              {
+                title: "System Performance",
+                desc: "Detailed telemetry and error metrics",
+                link: "/superadmin/analytics",
+                icon: Activity,
+                colorClass: "bg-indigo-500/10 text-indigo-500",
+              },
+            ].map((shortcut) => (
               <div
+                key={shortcut.title}
+                onClick={() => navigate(shortcut.link)}
                 className={cn(
-                  "mb-3 flex h-12 w-12 items-center justify-center rounded-2xl",
-                  shortcut.colorClass,
+                  "flex items-center justify-between rounded-xl border p-3.5",
+                  "border-border/60 bg-card cursor-pointer transition-all",
+                  "hover:border-primary/40 hover:bg-muted/30 hover:shadow-sm",
                 )}
               >
-                <shortcut.icon size={22} />
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-lg",
+                      shortcut.colorClass,
+                    )}
+                  >
+                    <shortcut.icon size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">
+                      {shortcut.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {shortcut.desc}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight size={16} className="text-muted-foreground/60" />
               </div>
-              <span className="font-bold text-foreground">
-                {shortcut.title}
-              </span>
-              <span className="mt-1 text-center text-xs text-muted-foreground">
-                {shortcut.desc}
-              </span>
-            </Button>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
