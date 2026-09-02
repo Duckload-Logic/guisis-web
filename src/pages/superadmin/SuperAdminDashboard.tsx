@@ -221,7 +221,12 @@ export default function SuperAdminDashboard() {
     const unhealthy = services.filter(
       (s) => !s.isHealthy && s.status !== "Checking...",
     );
-    const secAlerts = logDistribution.secCount;
+    const secAlerts =
+      logStats.find(
+        (s) =>
+          s.category === "SECURITY" &&
+          (s.level === "ERROR" || s.level === "WARNING"),
+      )?.count ?? 0;
 
     if (unhealthy.length > 0) {
       return {
@@ -235,7 +240,7 @@ export default function SuperAdminDashboard() {
     if (secAlerts > 0) {
       return {
         title: `${secAlerts} Security Anomalies Flagged`,
-        description: `${secAlerts} access control events recorded in logs.`,
+        description: `${secAlerts} access & auth anomalies in security logs.`,
         statusClass:
           "border-amber-500/20 bg-amber-500/10 " +
           "text-amber-600 dark:text-amber-400",
@@ -251,7 +256,7 @@ export default function SuperAdminDashboard() {
         "text-emerald-600 dark:text-emerald-400",
       icon: TrendingUp,
     };
-  }, [services, logDistribution, uptimeValue]);
+  }, [services, logStats, uptimeValue]);
 
   if (isLoading) {
     return (
