@@ -182,7 +182,7 @@ export default function UserSessions() {
                     </div>
                   </div>
 
-                  <div className="flex items-center bg-card sm:border-l sm:border-t-0 sm:px-8">
+                  <div className="flex items-center border-t border-border/40 p-4 sm:border-t-0 sm:border-l sm:p-0 sm:px-8">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button

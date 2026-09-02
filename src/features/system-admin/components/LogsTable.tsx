@@ -482,7 +482,7 @@ export default function LogsTable({
         </Card>
       )}
 
-      <Card className="overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none xl:border xl:border-border/70 xl:bg-white xl:shadow-sm dark:xl:border-white/10 dark:xl:bg-neutral-950/40">
         <CardContent className="p-0">
           <Table
             data={processedLogs}

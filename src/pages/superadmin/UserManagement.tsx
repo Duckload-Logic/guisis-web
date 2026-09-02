@@ -844,8 +844,8 @@ export default function UserManagement() {
       </div>
 
       {activeTab === "users" ? (
-        <Card className="overflow-hidden rounded-2xl border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10">
+        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
+          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10 px-0 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -906,8 +906,8 @@ export default function UserManagement() {
           )}
         </Card>
       ) : (
-        <Card className="overflow-hidden rounded-2xl border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10">
+        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
+          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10 px-0 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">

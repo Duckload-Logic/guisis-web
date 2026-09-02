@@ -214,8 +214,8 @@ export default function M2MManagement() {
           })}
         </section>
 
-        <Card className="overflow-hidden rounded-xl border-glass-border bg-glass-bg shadow-md">
-          <CardHeader className="border-b border-white/20 pb-4 dark:border-white/10">
+        <Card className="overflow-hidden rounded-xl border-0 bg-transparent shadow-none md:border md:border-glass-border md:bg-glass-bg md:shadow-md">
+          <CardHeader className="border-b border-white/20 pb-4 dark:border-white/10 px-0 md:px-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
@@ -267,7 +267,7 @@ export default function M2MManagement() {
             ) : (
               <>
                 {/* Mobile View Cards */}
-                <div className="grid gap-3 p-4 md:hidden">
+                <div className="grid gap-3 py-3 px-0 md:px-4 md:hidden">
                   {clients?.map((client) => (
                     <div
                       key={client.id}
