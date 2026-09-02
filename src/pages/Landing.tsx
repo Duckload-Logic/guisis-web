@@ -142,7 +142,7 @@ export default function Landing() {
         {/* About Section */}
         <section
           id="about"
-          className="py-12"
+          className="scroll-mt-24 py-12"
         >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -195,7 +195,7 @@ export default function Landing() {
         {/* Feature Bento Grid */}
         <section
           id="features"
-          className="py-12"
+          className="scroll-mt-24 py-12"
         >
           <div className="mb-10">
             <h2 className="text-3xl font-bold tracking-tight">Core Services</h2>
@@ -296,7 +296,10 @@ export default function Landing() {
           id="support"
           className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-2"
         >
-          <div className="space-y-6">
+          <div
+            id="faq"
+            className="scroll-mt-24 space-y-6"
+          >
             <div>
               <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -328,11 +331,15 @@ export default function Landing() {
           </div>
 
           <motion.div
+            id="contact"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col justify-between rounded-2xl border border-border bg-primary/5 p-8"
+            className={cn(
+              "scroll-mt-24 flex flex-col justify-between",
+              "rounded-2xl border border-border bg-primary/5 p-8",
+            )}
           >
             <div>
               <div className="mb-6 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
