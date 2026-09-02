@@ -36,6 +36,7 @@ export interface SelectFieldProps {
   formStyle?: boolean;
   labelKey?: string;
   buttonClassName?: string;
+  wrapSelectedText?: boolean;
 }
 
 export function SelectField({
@@ -56,6 +57,7 @@ export function SelectField({
   formStyle = false,
   labelKey,
   buttonClassName,
+  wrapSelectedText = false,
 }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const typeaheadBuffer = useRef("");
@@ -199,7 +201,10 @@ export function SelectField({
           >
             <span
               className={cn(
-                "min-w-0 flex-1 truncate whitespace-nowrap text-left",
+                "min-w-0 flex-1 text-left",
+                wrapSelectedText
+                  ? "whitespace-normal break-words leading-5"
+                  : "truncate whitespace-nowrap",
                 !filled && "font-normal italic text-muted-foreground/60",
               )}
               title={filled ? getLabel(selectedOption) : undefined}

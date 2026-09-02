@@ -948,6 +948,7 @@ export const PersonalSection = forwardRef<
                   "student.personalInfo.program",
                 )}
                 enabled={!isProgramsLoading}
+                wrapSelectedText
               />
             </div>
 
