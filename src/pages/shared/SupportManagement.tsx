@@ -314,15 +314,15 @@ export function SupportManagement() {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col px-4 pb-12 sm:px-6 md:px-8">
+    <div className="mx-auto flex w-full flex-col px-1 pb-4 sm:px-6 md:px-8">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
         className={
-          "flex h-[calc(100dvh-9rem)] min-h-[560px] flex-col overflow-hidden " +
-          "rounded-xl border border-glass-border bg-background/50 shadow-md" +
-          "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:flex-row"
+          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col overflow-hidden " +
+          "rounded-xl border border-glass-border bg-background/50 shadow-md " +
+          "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:min-h-[560px] md:flex-row"
         }
       >
         {/* Tickets List Sidebar */}
@@ -332,19 +332,19 @@ export function SupportManagement() {
             selectedGroupKey ? "hidden md:flex" : "flex flex-1",
           )}
         >
-          <div className="border-b border-glass-border p-4">
-            <h2 className="flex items-center gap-2 text-sm font-bold">
+          <div className="border-b border-glass-border p-2.5 sm:p-4">
+            <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold">
               <MessageSquare className="h-4 w-4 text-primary" />
               Active Conversations
             </h2>
-            <div className="mt-3 flex gap-1 rounded-lg bg-muted/30 p-0.5">
+            <div className="mt-2 sm:mt-3 flex gap-1 rounded-lg bg-muted/30 p-0.5">
               {(["all", "open", "closed"] as const).map((filter) => (
                 <button
                   key={filter}
                   type="button"
                   onClick={() => setStatusFilter(filter)}
                   className={
-                    `flex-1 rounded-md py-1 text-center text-[8px] ` +
+                    `flex-1 rounded-md py-1 text-center text-[9px] sm:text-[10px] ` +
                     `font-bold uppercase transition-colors ${
                       statusFilter === filter
                         ? "bg-primary text-primary-foreground shadow-sm"
@@ -358,11 +358,11 @@ export function SupportManagement() {
             </div>
             <div
               className={
-                "mt-2.5 flex items-center justify-between " +
-                "text-[11px] text-muted-foreground"
+                "mt-2 flex items-center justify-between " +
+                "text-[10px] sm:text-[11px] text-muted-foreground"
               }
             >
-              <span>Sort by activity:</span>
+              <span>Sort:</span>
               <SelectField
                 options={[
                   { id: "recent", label: "Recent" },
@@ -373,7 +373,7 @@ export function SupportManagement() {
                   if (val) setSortBy(val as any);
                 }}
                 buttonClassName={
-                  "h-7 w-28 px-2.5 py-1 text-xs border " +
+                  "h-6 sm:h-7 w-24 sm:w-28 px-2 py-0.5 text-[11px] sm:text-xs border " +
                   "border-glass-border bg-muted/20 shadow-sm"
                 }
               />
@@ -412,7 +412,7 @@ export function SupportManagement() {
                     animate={{ opacity: 1, x: 0 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={() => setSelectedGroupKey(g.key)}
-                    className={`w-full p-4 text-left transition-colors ${isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted/20"}`}
+                    className={`w-full p-2.5 sm:p-4 text-left transition-colors ${isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted/20"}`}
                   >
                     <div className="flex gap-3">
                       <div className="relative mt-0.5 flex-shrink-0">
@@ -518,13 +518,13 @@ export function SupportManagement() {
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap items-center justify-between gap-3 border-b border-glass-border bg-muted/20 p-4"
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-glass-border bg-muted/20 p-2.5 sm:p-4"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-lg border border-glass-border md:hidden"
+                    className="h-8 w-8 shrink-0 rounded-lg border border-glass-border md:hidden"
                     onClick={() => setSelectedGroupKey(null)}
                     title="Back to conversations"
                   >
@@ -544,7 +544,7 @@ export function SupportManagement() {
                       "";
                     return (
                       <>
-                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-glass-border bg-muted">
+                        <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-glass-border bg-muted">
                           {latestTicket?.profilePicture ? (
                             <img
                               src={getProfilePictureUrl(
@@ -559,10 +559,10 @@ export function SupportManagement() {
                             </span>
                           )}
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold">{headerName}</h3>
+                        <div className="min-w-0">
+                          <h3 className="truncate text-xs sm:text-sm font-bold">{headerName}</h3>
                           {headerEmail && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
                               {headerEmail}
                             </p>
                           )}
@@ -576,10 +576,10 @@ export function SupportManagement() {
                   <button
                     onClick={handleResolveTicket}
                     disabled={isResolving}
-                    className="flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+                    className="flex shrink-0 items-center gap-1 rounded-xl bg-primary px-2.5 py-1 text-[11px] sm:px-3 sm:py-1.5 sm:text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
-                    Mark as Resolved
+                    <span className="hidden sm:inline">Mark as </span>Resolved
                   </button>
                 )}
               </motion.div>
@@ -588,7 +588,7 @@ export function SupportManagement() {
               <div
                 ref={messagesContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 space-y-4 overflow-y-auto p-4"
+                className="flex-1 space-y-3 overflow-y-auto p-2.5 sm:p-4"
               >
                 {selectedGroup.tickets.map((t) => {
                   const msgs = groupMessages[t.id] || [];
@@ -665,7 +665,7 @@ export function SupportManagement() {
                               className={
                                 `${
                                   showSenderLabel ? "mt-1" : "mt-0"
-                                } max-w-[80%] rounded-2xl px-3 py-2 ` +
+                                } max-w-[88%] sm:max-w-[80%] rounded-2xl px-3 py-2 ` +
                                 `cursor-pointer select-none text-sm ${
                                   isStaff
                                     ? "bg-primary text-primary-foreground " +
@@ -713,7 +713,7 @@ export function SupportManagement() {
                   type="button"
                   onClick={scrollToBottom}
                   className={
-                    "absolute bottom-28 right-6 z-20 " +
+                    "absolute bottom-20 right-4 sm:bottom-28 sm:right-6 z-20 " +
                     "flex h-9 w-9 items-center justify-center p-0 " +
                     "rounded-full bg-primary text-primary-foreground " +
                     "shadow-lg hover:bg-primary/95 " +
@@ -728,7 +728,7 @@ export function SupportManagement() {
               {activeTicket ? (
                 <form
                   onSubmit={handleSendReply}
-                  className="space-y-2 border-t border-glass-border p-4"
+                  className="space-y-2 border-t border-glass-border p-2.5 sm:p-4"
                 >
                   <div className="flex items-start gap-2">
                     <FormField
