@@ -81,10 +81,11 @@ export default function Header({
 
         <div
           className={cn(
-            "pointer-events-auto ml-auto flex items-center gap-1 rounded-xl border",
-            "border-border/70 bg-background/85 p-1 shadow-md backdrop-blur-xl",
-            "supports-[backdrop-filter]:bg-background/70",
-            "dark:border-white/10 dark:bg-neutral-900/85",
+            "pointer-events-auto ml-auto flex items-center gap-1",
+            "min-[1025px]:rounded-xl min-[1025px]:border min-[1025px]:border-border/70",
+            "min-[1025px]:bg-background/85 min-[1025px]:p-1 min-[1025px]:shadow-md",
+            "min-[1025px]:backdrop-blur-xl min-[1025px]:supports-[backdrop-filter]:bg-background/70",
+            "min-[1025px]:dark:border-white/10 min-[1025px]:dark:bg-neutral-900/85",
           )}
           aria-label="Account controls"
         >
