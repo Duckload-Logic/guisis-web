@@ -5,7 +5,10 @@ import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useUI } from "@/context";
 import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { API_ROUTES } from "@/config/apiRoutes";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Menu, X } from "lucide-react";
 
 import { User } from "@/features/users/types/user";
 
@@ -34,6 +37,18 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isLanding = location.pathname === "/";
+  const navigate = useNavigate();
+
+  const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
+  const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
+
+  const handleLogin = () => {
+    setMobileMenuOpen(false);
+    if (isProd) window.open(loginUrl, "_self");
+    else navigate(loginUrl);
+  };
 
   const handleNavClick = (targetId: string) => {
     setMobileMenuOpen(false);
@@ -227,6 +242,17 @@ export default function Header({
 
         {!isLoggedIn ? (
           <>
+            <Button
+              size="sm"
+              className={cn(
+                "hidden font-semibold shadow-sm transition-transform",
+                "hover:-translate-y-0.5 sm:inline-flex gap-1.5",
+              )}
+              onClick={handleLogin}
+            >
+              Login <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
@@ -330,6 +356,13 @@ export default function Header({
               >
                 Contact
               </a>
+              <Button
+                size="sm"
+                className="mt-2 w-full gap-1.5 font-semibold shadow-sm"
+                onClick={handleLogin}
+              >
+                Login <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
             </nav>
           )}
         </div>

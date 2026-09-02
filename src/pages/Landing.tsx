@@ -91,7 +91,7 @@ export default function Landing() {
                 className="gap-2 font-semibold shadow-md transition-transform hover:-translate-y-0.5"
                 onClick={handleLogin}
               >
-                Login with IDP <ArrowRight className="h-4 w-4" />
+                Login <ArrowRight className="h-4 w-4" />
               </Button>
               <Button
                 size="lg"
@@ -337,7 +337,7 @@ export default function Landing() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
             className={cn(
-              "scroll-mt-24 flex flex-col justify-between",
+              "flex scroll-mt-24 flex-col justify-between",
               "rounded-2xl border border-border bg-primary/5 p-8",
             )}
           >
