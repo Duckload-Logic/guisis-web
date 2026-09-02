@@ -193,7 +193,10 @@ export function SelectField({
             type="button"
             disabled={disabled}
             title={!enabled ? lockedReason : undefined}
-            className={fieldStateClasses}
+            className={cn(
+              fieldStateClasses,
+              wrapSelectedText && "h-auto min-h-11 py-2",
+            )}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}

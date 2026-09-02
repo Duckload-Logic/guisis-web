@@ -7,10 +7,12 @@ import { useUI } from "@/context";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 
+import { User } from "@/features/users/types/user";
+
 const LOGO_SRC = "/logo.svg";
 
 interface HeaderProps {
-  user: any;
+  user: User | Record<string, any> | null;
   role: string;
   handleLogout: () => void;
   getRoleLabel: () => string;
