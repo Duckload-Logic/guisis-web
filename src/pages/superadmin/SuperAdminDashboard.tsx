@@ -264,7 +264,7 @@ export default function SuperAdminDashboard() {
             size="sm"
             variant="ghost"
             className={cn(
-              "w-full border-amber-500/20 text-amber-600 shrink-0",
+              "w-full shrink-0 border-amber-500/20 text-amber-600",
               "hover:bg-amber-500/20 hover:text-amber-700 sm:w-auto",
             )}
             onClick={() => navigate("/superadmin/m2m-management")}
@@ -290,7 +290,9 @@ export default function SuperAdminDashboard() {
                 <p className="text-xs font-bold uppercase text-muted-foreground">
                   {metric.label}
                 </p>
-                <p className="mt-1 text-2xl sm:text-3xl font-bold">{metric.value}</p>
+                <p className="mt-1 text-2xl font-bold sm:text-3xl">
+                  {metric.value}
+                </p>
                 <p className="mt-1 text-[10px] text-muted-foreground/60">
                   {metric.subtext}
                 </p>
@@ -365,7 +367,7 @@ export default function SuperAdminDashboard() {
                   <p
                     className={cn(
                       "mt-1 line-clamp-2 text-xs",
-                      "leading-relaxed text-muted-foreground",
+                      "text-wrap leading-relaxed text-muted-foreground",
                     )}
                   >
                     {service.desc}
