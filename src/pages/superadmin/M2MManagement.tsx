@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Trash2,
   Copy,
@@ -13,6 +14,10 @@ import {
   Fingerprint,
   ArrowDown,
   ArrowUp,
+  KeyRound,
+  Calendar,
+  Clock,
+  SlidersHorizontal,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +61,7 @@ export default function M2MManagement() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string>("createdAt");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
-  
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<M2MClient | null>(null);
   const [rotateTarget, setRotateTarget] = useState<M2MClient | null>(null);
@@ -72,7 +77,7 @@ export default function M2MManagement() {
     sort_by: selectedSort,
     sort_order: selectedOrder,
   });
-  
+
   const revokeMutation = useRevokeM2MClient();
   const rotateMutation = useRotateM2MSecret();
   const verifyMutation = useVerifyM2MClient();
@@ -99,7 +104,7 @@ export default function M2MManagement() {
     const result = await rotateMutation.mutateAsync(rotateTarget.id);
     setCreatedSecret(result.clientSecret);
     setRotateTarget(null);
-    setIsCreateOpen(true); // Re-use the "secret reveal" modal logic
+    setIsCreateOpen(true);
   };
 
   const handleVerify = async (id: number, hasPersonalInfoAccess: boolean) => {
@@ -127,7 +132,8 @@ export default function M2MManagement() {
       value: activeClients.length,
       icon: ShieldCheck,
       iconClass:
-        "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+        "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 " +
+        "border-emerald-500/20",
     },
     {
       label: "Revoked Clients",
@@ -154,46 +160,34 @@ export default function M2MManagement() {
       "automation, and infrastructure services.",
   });
 
-  const renderSortableHeader = (label: string, sortKey: string) => {
-    const isActive = selectedSort === sortKey;
-    const Icon = isActive ? (selectedOrder === "desc" ? ArrowDown : ArrowUp) : ArrowUp;
-
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setSelectedSort(sortKey);
-          setSelectedOrder(isActive && selectedOrder === "asc" ? "desc" : "asc");
-        }}
-        className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
-          "text-xs font-semibold uppercase tracking-[0.14em] transition-colors",
-          isActive ? "text-[#800000]" : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        {label}
-        <Icon 
-          className={cn("h-3.5 w-3.5 shrink-0", isActive ? "opacity-100" : "opacity-40")} 
-          strokeWidth={isActive ? 2.5 : 2} 
-        />
-      </button>
-    );
+  const toggleSort = (sortKey: string) => {
+    if (selectedSort === sortKey) {
+      setSelectedOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSelectedSort(sortKey);
+      setSelectedOrder("desc");
+    }
   };
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1700px] space-y-5">
+      <div className="mx-auto w-full max-w-[1700px] space-y-6">
+        {/* Telemetry Stat Cards */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {statCards.map((card) => {
             const Icon = card.icon;
             return (
               <Card
                 key={card.label}
-                className="rounded-xl border-glass-border bg-glass-bg shadow-md"
+                className={cn(
+                  "rounded-2xl border-glass-border bg-glass-bg shadow-sm",
+                  "backdrop-blur-xl transition-all duration-300",
+                  "hover:shadow-md hover:border-primary/30",
+                )}
               >
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         {card.label}
                       </p>
@@ -203,7 +197,11 @@ export default function M2MManagement() {
                     </div>
 
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl border backdrop-blur-md ${card.iconClass}`}
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center",
+                        "rounded-xl border backdrop-blur-md",
+                        card.iconClass,
+                      )}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
@@ -214,438 +212,364 @@ export default function M2MManagement() {
           })}
         </section>
 
-        <Card className="overflow-hidden rounded-xl border-0 bg-transparent shadow-none md:border md:border-glass-border md:bg-glass-bg md:shadow-md">
-          <CardHeader className="border-b border-white/20 pb-4 dark:border-white/10 px-0 md:px-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* M2M Management Control Header & Cards */}
+        <Card className="rounded-2xl border border-glass-border bg-glass-bg p-6 shadow-sm backdrop-blur-xl">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-sm">
+                <Fingerprint className="h-5 w-5" />
+              </span>
               <div>
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/30 bg-white/70 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-                    <Fingerprint className="h-5 w-5 text-primary" />
-                  </span>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
                   M2M Clients
-                </CardTitle>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  View and manage machine access to the platform.
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  View, verify, and manage machine integration identities.
                 </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Sort selector dropdown controls */}
+              <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-1.5">
+                <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Sort:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleSort("clientName")}
+                  className={cn(
+                    "text-xs font-semibold transition-colors",
+                    selectedSort === "clientName"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Name{" "}
+                  {selectedSort === "clientName" &&
+                    (selectedOrder === "asc" ? "↑" : "↓")}
+                </button>
+                <span className="text-muted-foreground/40">•</span>
+                <button
+                  type="button"
+                  onClick={() => toggleSort("createdAt")}
+                  className={cn(
+                    "text-xs font-semibold transition-colors",
+                    selectedSort === "createdAt"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  Created{" "}
+                  {selectedSort === "createdAt" &&
+                    (selectedOrder === "asc" ? "↑" : "↓")}
+                </button>
               </div>
 
               <Checkbox
-                id={"show-revoked"}
+                id="show-revoked"
                 label="Show revoked clients"
-                name={"show-revoked"}
+                name="show-revoked"
                 checked={includeRevoked}
                 onCheckedChange={() => setIncludeRevoked((prev) => !prev)}
               />
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-0">
-            {clients?.length === 0 ? (
-              <div
-                className={
-                  "flex flex-col items-center justify-center " +
-                  "px-6 py-14 text-center"
-                }
-              >
-                <div
-                  className={
-                    "mb-4 flex h-14 w-14 items-center justify-center " +
-                    "rounded-2xl border border-white/30 bg-white/60" +
-                    "backdrop-blur-md dark:border-white/10" +
-                    "dark:bg-white/[0.05]"
-                  }
-                >
-                  <Fingerprint className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <p className="text-lg font-semibold text-foreground">
-                  No M2M clients registered
-                </p>
-                <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                  No machine clients have been registered in the system yet.
-                </p>
+          {/* Cards Grid Section */}
+          {clients?.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary backdrop-blur-md">
+                <Fingerprint className="h-7 w-7" />
               </div>
-            ) : (
-              <>
-                {/* Mobile View Cards */}
-                <div className="grid gap-3 py-3 px-0 md:px-4 md:hidden">
-                  {clients?.map((client) => (
+              <p className="text-lg font-bold text-foreground">
+                No M2M Clients Registered
+              </p>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                No machine integration clients have been registered yet.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <AnimatePresence mode="popLayout">
+                {clients.map((client) => (
+                  <motion.div
+                    key={client.id}
+                    layout
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className={cn(
+                      "group relative flex flex-col justify-between overflow-hidden",
+                      "rounded-2xl border border-glass-border bg-glass-bg p-5 shadow-sm",
+                      "backdrop-blur-xl transition-all duration-300",
+                      "hover:border-primary/40 hover:shadow-xl dark:border-white/10",
+                      !client.isActive && "opacity-75 grayscale-[0.2]",
+                    )}
+                  >
+                    {/* Background glow accent on hover */}
                     <div
-                      key={client.id}
-                      className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
-                    >
+                      className={cn(
+                        "pointer-events-none absolute -right-10 -top-10 h-32 w-32",
+                        "rounded-full bg-primary/5 blur-2xl transition-all duration-500",
+                        "group-hover:bg-primary/15",
+                      )}
+                    />
+
+                    <div className="relative z-10 space-y-4">
+                      {/* Client Header Info */}
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-foreground" title={client.clientName}>
-                            {client.clientName}
-                          </p>
-                          <p className="line-clamp-2 text-xs text-muted-foreground" title={client.clientDescription}>
-                            {client.clientDescription}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              "flex h-11 w-11 shrink-0 items-center justify-center",
+                              "rounded-xl border backdrop-blur-md transition-transform",
+                              "group-hover:scale-105",
+                              client.isActive
+                                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                : "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
+                            )}
+                          >
+                            <Fingerprint className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3
+                              className="truncate text-base font-bold tracking-tight text-foreground"
+                              title={client.clientName}
+                            >
+                              {client.clientName}
+                            </h3>
+                            <p
+                              className="line-clamp-2 text-xs leading-relaxed text-muted-foreground"
+                              title={client.clientDescription}
+                            >
+                              {client.clientDescription ||
+                                "No description provided."}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-1">
+                      </div>
+
+                      {/* Status Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                            client.isActive
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                              : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
+                              client.isActive
+                                ? "bg-emerald-500 animate-pulse"
+                                : "bg-red-500",
+                            )}
+                          />
+                          {client.isActive ? "Active" : "Revoked"}
+                        </Badge>
+
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                            client.isVerified
+                              ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                          )}
+                        >
+                          {client.isVerified
+                            ? "Verified"
+                            : "Pending Verification"}
+                        </Badge>
+
+                        {client.isVerified && (
                           <Badge
                             variant="outline"
-                            className={
-                              client.isActive
-                                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 text-[10px]"
-                                : "border-red-500/20 bg-red-500/10 text-red-700 text-[10px]"
-                            }
+                            className={cn(
+                              "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                              client.hasPersonalInfoAccess
+                                ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
+                                : "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
+                            )}
                           >
-                            {client.isActive ? "Active" : "Revoked"}
+                            {client.hasPersonalInfoAccess
+                              ? "PII: Allowed"
+                              : "PII: Denied"}
                           </Badge>
-                          {client.isVerified && (
-                            <Badge variant="outline" className="border-blue-500/20 bg-blue-500/10 text-blue-700 text-[10px]">
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 rounded-xl border border-white/20 bg-muted/20 p-2.5">
-                        <span className="text-xs font-semibold text-muted-foreground">Client ID:</span>
-                        <div className="flex items-center gap-1">
-                          <code className="font-mono text-[11px]">
-                            {client.isVerified ? client.clientId : "••••••••••••"}
-                          </code>
-                          {client.isVerified && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => navigator.clipboard.writeText(client.clientId)}
-                            >
-                              <Copy size={12} />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                        {client.scopes && client.scopes.length > 0 ? (
-                          client.scopes.map((scope) => (
-                            <Badge key={scope} variant="outline" className="rounded-full px-2 py-0 text-[10px]">
-                              {scope}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-[10px] italic text-muted-foreground">admin:full</span>
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-border/40 pt-3">
-                        <span className="text-[11px] text-muted-foreground">
-                          Created: {formatDate(client.createdAt)}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          {client.isActive && (
-                            !client.isVerified ? (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setVerifyTarget(client);
-                                    setVerifyPersonalInfo(client.hasPersonalInfoAccess);
-                                  }}
-                                  className="h-8 gap-1 rounded-xl text-xs text-blue-600 border-blue-500/20"
-                                >
-                                  <Check size={14} /> Verify
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleReject(client.id)}
-                                  className="h-8 gap-1 rounded-xl text-xs text-destructive border-red-500/20"
-                                >
-                                  <Ban size={14} /> Reject
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setVerifyTarget(client);
-                                    setVerifyPersonalInfo(client.hasPersonalInfoAccess);
-                                  }}
-                                  className="h-8 w-8 rounded-xl p-0 text-purple-600"
-                                  title="Manage PII"
-                                >
-                                  <ShieldCheck size={14} />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setRotateTarget(client)}
-                                  className="h-8 w-8 rounded-xl p-0 text-muted-foreground"
-                                  title="Rotate Secret"
-                                >
-                                  <RefreshCw size={14} />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setRevokeTarget(client)}
-                                  className="h-8 w-8 rounded-xl p-0 text-destructive"
-                                  title="Revoke Client"
-                                >
-                                  <Trash2 size={14} />
-                                </Button>
-                              </>
-                            )
+                      {/* Client ID Code Snippet Box */}
+                      <div
+                        className={cn(
+                          "flex items-center justify-between gap-2 rounded-xl border",
+                          "border-border/60 bg-muted/30 p-2.5 backdrop-blur-md",
+                        )}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            Client ID:
+                          </span>
+                          <code className="truncate font-mono text-[11px] font-semibold text-foreground">
+                            {client.isVerified
+                              ? client.clientId
+                              : "••••••••••••••••"}
+                          </code>
+                        </div>
+                        {client.isVerified && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 shrink-0 rounded-lg hover:bg-primary/10"
+                            onClick={() => {
+                              navigator.clipboard.writeText(client.clientId);
+                            }}
+                            title="Copy Client ID"
+                          >
+                            <Copy size={12} />
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Scopes Tag Cloud */}
+                      <div className="space-y-1.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Granted Scopes
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {client.scopes && client.scopes.length > 0 ? (
+                            client.scopes.map((scope) => (
+                              <Badge
+                                key={scope}
+                                variant="outline"
+                                className="rounded-lg border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary"
+                              >
+                                {scope}
+                              </Badge>
+                            ))
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="rounded-lg border-muted/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                            >
+                              admin:full
+                            </Badge>
                           )}
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
 
-                {/* Desktop View Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full min-w-[1000px] text-sm">
-                  <thead>
-                    <tr className="border-b border-white/20 bg-white/55 text-left backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]">
-                      <th className="w-[25%] px-5 py-4">
-                        {renderSortableHeader("Client", "clientName")}
-                      </th>
-                      <th className="w-[15%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Client ID
-                      </th>
-                      <th className="w-[20%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Status / Verification
-                      </th>
-                      <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Scopes
-                      </th>
-                      <th className="w-[10%] px-5 py-4 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Last Activity
-                      </th>
-                      <th className="w-[10%] px-5 py-4">
-                        {renderSortableHeader("Created", "createdAt")}
-                      </th>
-                      <th className="w-[10%] whitespace-nowrap px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-
-                    <tbody>
-                      {clients?.map((client) => (
-                        <tr
-                          key={client.id}
-                          className="border-b border-white/10 transition-colors duration-150 hover:bg-white/35 dark:hover:bg-white/[0.03]"
-                        >
-                        <td className="px-5 py-4 align-middle">
-                          <div className="flex min-w-0 flex-col space-y-0.5">
-                            <div className="truncate font-medium text-foreground" title={client.clientName}>
-                              {client.clientName}
-                            </div>
-                            <div className="truncate text-[11px] text-muted-foreground" title={client.clientDescription}>
-                              {client.clientDescription}
-                            </div>
-                          </div>
-                        </td>
-
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <code className="rounded-lg border border-white/20 bg-white/55 px-2.5 py-1 font-mono text-[11px] text-foreground dark:border-white/10 dark:bg-white/[0.04]">
-                                {client.isVerified ? (
-                                  client.clientId
-                                ) : (
-                                  <span className="italic">••••••••••••</span>
-                                )}
-                              </code>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 rounded-md"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(client.clientId);
-                                }}
-                                disabled={!client.isVerified}
-                              >
-                                <Copy size={12} />
-                              </Button>
-                            </div>
-                          </td>
-
-                          <td className="px-5 py-4 align-middle">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <Badge
-                                variant="outline"
-                                className={
-                                  client.isActive
-                                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                                    : "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400"
-                                }
-                              >
-                                {client.isActive ? "Active" : "Revoked"}
-                              </Badge>
-                              {client.isVerified && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400"
-                                >
-                                  Verified
-                                </Badge>
-                              )}
-                              {client.isVerified && (
-                                <Badge
-                                  variant="outline"
-                                  className={
-                                    client.hasPersonalInfoAccess
-                                      ? "border-purple-500/20 " +
-                                        "bg-purple-500/10 text-purple-700" +
-                                        "dark:text-purple-400"
-                                      : "border-slate-500/20 " +
-                                        "bg-slate-500/10 text-slate-700" +
-                                        "dark:text-slate-400"
-                                  }
-                                >
-                                  {client.hasPersonalInfoAccess
-                                    ? "PII: Allowed"
-                                    : "PII: Denied"}
-                                </Badge>
-                              )}
-                            </div>
-                          </td>
-
-                          <td className="px-5 py-4">
-                            {client.scopes && client.scopes.length > 0 ? (
-                              <div className="flex flex-wrap gap-1.5">
-                                {client.scopes.map((scope) => (
-                                  <Badge
-                                    key={scope}
-                                    variant="outline"
-                                    className="rounded-full border-muted-foreground/20 px-2 py-0 text-[10px]"
-                                  >
-                                    {scope}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-xs italic text-muted-foreground">
-                                admin:full
-                              </span>
-                            )}
-                          </td>
-
-                          <td className="px-5 py-4 text-xs text-muted-foreground">
+                      {/* Timestamps Section */}
+                      <div className="grid grid-cols-2 gap-2 border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                          <span className="truncate">
+                            Created: {formatDate(client.createdAt)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                          <span className="truncate">
+                            Used:{" "}
                             {client.lastUsedAt
                               ? formatDate(client.lastUsedAt)
                               : "Never"}
-                          </td>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                          <td className="px-5 py-4 text-xs text-muted-foreground">
-                            {formatDate(client.createdAt)}
-                          </td>
-
-                          <td className="px-5 py-4 text-right">
-                            <div className="flex justify-end gap-1">
-                              {client.isActive && (
-                                <>
-                                  {!client.isVerified ? (
-                                    <>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          setVerifyTarget(client);
-                                          setVerifyPersonalInfo(
-                                            client.hasPersonalInfoAccess,
-                                          );
-                                        }}
-                                        className={
-                                          "h-8 w-8 rounded-xl p-0 " +
-                                          "text-blue-600" +
-                                          "hover:bg-blue-600/10" +
-                                          "hover:text-blue-600"
-                                        }
-                                        title="Verify Client"
-                                        disabled={verifyMutation.isPending}
-                                      >
-                                        <Check
-                                          size={14}
-                                          strokeWidth={3}
-                                        />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleReject(client.id)}
-                                        className={
-                                          "h-8 w-8 rounded-xl p-0 " +
-                                          "text-destructive" +
-                                          "hover:bg-destructive/10" +
-                                          "hover:text-destructive"
-                                        }
-                                        title="Reject Client"
-                                        disabled={rejectMutation.isPending}
-                                      >
-                                        <Ban size={14} />
-                                      </Button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          setVerifyTarget(client);
-                                          setVerifyPersonalInfo(
-                                            client.hasPersonalInfoAccess,
-                                          );
-                                        }}
-                                        className={
-                                          "h-8 w-8 rounded-xl p-0 " +
-                                          "text-purple-600" +
-                                          "hover:bg-purple-600/10"
-                                        }
-                                        title="Manage Personal Info Access"
-                                      >
-                                        <ShieldCheck size={14} />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setRotateTarget(client)}
-                                        className="h-8 w-8 rounded-xl p-0"
-                                        title="Rotate Client Secret"
-                                      >
-                                        <RefreshCw
-                                          size={14}
-                                          className={"text-muted-foreground"}
-                                        />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setRevokeTarget(client)}
-                                        className={
-                                          "h-8 w-8 rounded-xl p-0 " +
-                                          "text-destructive" +
-                                          "hover:bg-destructive/10" +
-                                          "hover:text-destructive"
-                                        }
-                                        title="Revoke Client"
-                                      >
-                                        <Trash2 size={14} />
-                                      </Button>
-                                    </>
-                                  )}
-                                </>
-                              )}
+                    {/* Card Actions Footer */}
+                    <div className="relative z-10 mt-4 flex items-center justify-end gap-2 border-t border-border/50 pt-3">
+                      {client.isActive && (
+                        <>
+                          {!client.isVerified ? (
+                            <div className="flex w-full items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReject(client.id)}
+                                className={cn(
+                                  "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                  "border-red-500/20 text-destructive hover:bg-destructive/10",
+                                )}
+                                disabled={rejectMutation.isPending}
+                              >
+                                <Ban size={13} /> Reject
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setVerifyTarget(client);
+                                  setVerifyPersonalInfo(
+                                    client.hasPersonalInfoAccess,
+                                  );
+                                }}
+                                className="h-8 gap-1.5 rounded-xl text-xs font-semibold shadow-sm"
+                                disabled={verifyMutation.isPending}
+                              >
+                                <Check size={13} /> Verify Client
+                              </Button>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
-          </CardContent>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setVerifyTarget(client);
+                                  setVerifyPersonalInfo(
+                                    client.hasPersonalInfoAccess,
+                                  );
+                                }}
+                                className={cn(
+                                  "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                  "border-purple-500/30 text-purple-700 hover:bg-purple-500/10 dark:text-purple-300",
+                                )}
+                                title="Manage PII Access"
+                              >
+                                <ShieldCheck size={13} /> PII
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRotateTarget(client)}
+                                className="h-8 gap-1.5 rounded-xl text-xs font-semibold"
+                                title="Rotate Client Secret"
+                              >
+                                <RefreshCw size={13} /> Rotate
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRevokeTarget(client)}
+                                className={cn(
+                                  "h-8 w-8 rounded-xl p-0 text-destructive",
+                                  "border-red-500/20 hover:bg-destructive/10",
+                                )}
+                                title="Revoke Client"
+                              >
+                                <Trash2 size={13} />
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
         </Card>
 
         {/* Secret Reveal Modal */}
@@ -702,8 +626,8 @@ export default function M2MManagement() {
                     <code
                       className={
                         "block overflow-x-auto whitespace-nowrap " +
-                        "rounded-xl border border-white/20" +
-                        "bg-white/60 p-3 font-mono text-xs" +
+                        "rounded-xl border border-white/20 " +
+                        "bg-white/60 p-3 font-mono text-xs " +
                         "dark:border-white/10 dark:bg-white/[0.04]"
                       }
                     >
@@ -775,7 +699,10 @@ export default function M2MManagement() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleRevoke}
-                className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className={cn(
+                  "rounded-xl bg-destructive text-destructive-foreground",
+                  "hover:bg-destructive/90",
+                )}
               >
                 {revokeMutation.isPending ? "Revoking..." : "Revoke Client"}
               </AlertDialogAction>
