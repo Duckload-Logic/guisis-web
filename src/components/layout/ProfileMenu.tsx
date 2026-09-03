@@ -21,6 +21,8 @@ const ROLE_ROUTES: Record<string, string> = {
   counselor: "/admin",
   superadmin: "/superadmin",
   developer: "/developer",
+  studentassistant: "/assistant",
+  assistant: "/assistant",
 };
 
 interface ProfileMenuProps {

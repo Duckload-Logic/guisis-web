@@ -86,6 +86,7 @@ export function getNotificationIconClass(color: NotificationIconTone) {
 export function getRolePath(roleName?: string) {
   const role = roleName?.toLowerCase().replace(/\s+/g, "") || "student";
   if (role === "admin" || role === "counselor") return "admin";
+  if (role === "studentassistant" || role === "assistant") return "assistant";
   if (role === "superadmin") return "superadmin";
   if (role === "developer") return "developer";
   return "student";
