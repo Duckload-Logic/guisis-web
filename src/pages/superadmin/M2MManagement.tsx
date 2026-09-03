@@ -203,7 +203,7 @@ export default function M2MManagement() {
                 className={cn(
                   "rounded-2xl border-glass-border bg-glass-bg shadow-sm",
                   "backdrop-blur-xl transition-all duration-300",
-                  "hover:shadow-md hover:border-primary/30",
+                  "hover:border-primary/30 hover:shadow-md",
                 )}
               >
                 <CardContent className="p-5">
@@ -407,7 +407,7 @@ export default function M2MManagement() {
                                 className={cn(
                                   "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
                                   client.isActive
-                                    ? "bg-emerald-500 animate-pulse"
+                                    ? "animate-pulse bg-emerald-500"
                                     : "bg-red-500",
                                 )}
                               />
@@ -467,7 +467,7 @@ export default function M2MManagement() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 min-h-0 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                                className="h-7 min-h-0 w-7 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     client.clientId,
@@ -542,7 +542,8 @@ export default function M2MManagement() {
                                       )}
                                       disabled={rejectMutation.isPending}
                                     >
-                                      <Ban className="h-3.5 w-3.5 shrink-0" /> Reject
+                                      <Ban className="h-3.5 w-3.5 shrink-0" />{" "}
+                                      Reject
                                     </Button>
                                     <Button
                                       size="sm"
@@ -555,7 +556,8 @@ export default function M2MManagement() {
                                       className="h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold shadow-sm"
                                       disabled={verifyMutation.isPending}
                                     >
-                                      <Check className="h-3.5 w-3.5 shrink-0" /> Verify Client
+                                      <Check className="h-3.5 w-3.5 shrink-0" />{" "}
+                                      Verify Client
                                     </Button>
                                   </div>
                                 ) : (
@@ -575,7 +577,8 @@ export default function M2MManagement() {
                                       )}
                                       title="Manage PII Access"
                                     >
-                                      <ShieldCheck className="h-3.5 w-3.5 shrink-0" /> PII
+                                      <ShieldCheck className="h-3.5 w-3.5 shrink-0" />{" "}
+                                      PII
                                     </Button>
 
                                     <Button
@@ -585,7 +588,8 @@ export default function M2MManagement() {
                                       className="h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold"
                                       title="Rotate Client Secret"
                                     >
-                                      <RefreshCw className="h-3.5 w-3.5 shrink-0" /> Rotate
+                                      <RefreshCw className="h-3.5 w-3.5 shrink-0" />{" "}
+                                      Rotate
                                     </Button>
 
                                     <Button
@@ -593,7 +597,7 @@ export default function M2MManagement() {
                                       size="icon"
                                       onClick={() => setRevokeTarget(client)}
                                       className={cn(
-                                        "h-8 w-8 min-h-0 rounded-xl p-0 text-destructive",
+                                        "h-8 min-h-0 w-8 rounded-xl p-0 text-destructive",
                                         "border-red-500/20 hover:bg-destructive/10",
                                       )}
                                       title="Revoke Client"
@@ -610,7 +614,7 @@ export default function M2MManagement() {
                         /* BACK FACE */
                         <div className="relative z-10 flex h-full flex-col justify-between space-y-4">
                           <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3">
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex min-w-0 items-center gap-2">
                               <FileText className="h-4 w-4 shrink-0 text-primary" />
                               <h4 className="truncate text-sm font-bold text-foreground">
                                 {client.clientName}
@@ -620,7 +624,7 @@ export default function M2MManagement() {
                               variant="ghost"
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
-                              className="h-8 w-8 min-h-0 shrink-0 rounded-xl text-primary hover:bg-primary/10"
+                              className="h-8 min-h-0 w-8 shrink-0 rounded-xl text-primary hover:bg-primary/10"
                               title="Flip back to front"
                             >
                               <RotateCcw className="h-4 w-4 text-primary" />
@@ -628,7 +632,7 @@ export default function M2MManagement() {
                           </div>
 
                           {/* Full Description Box */}
-                          <div className="flex-1 space-y-2 overflow-y-auto max-h-[160px] pr-1">
+                          <div className="max-h-[160px] flex-1 space-y-2 overflow-y-auto pr-1">
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                               Client Description & Purpose
                             </p>
@@ -670,7 +674,8 @@ export default function M2MManagement() {
                               onClick={() => toggleFlip(client.id)}
                               className="w-full gap-1.5 rounded-xl text-xs font-semibold"
                             >
-                              <RotateCcw className="h-3.5 w-3.5 shrink-0" /> Return to Front
+                              <RotateCcw className="h-3.5 w-3.5 shrink-0" />{" "}
+                              Return to Front
                             </Button>
                           </div>
                         </div>
@@ -737,8 +742,8 @@ export default function M2MManagement() {
                     <code
                       className={
                         "block overflow-x-auto whitespace-nowrap " +
-                        "rounded-xl border border-white/20 " +
-                        "bg-white/60 p-3 font-mono text-xs " +
+                        "rounded-xl border border-white/20" +
+                        "bg-white/60 p-3 font-mono text-xs" +
                         "dark:border-white/10 dark:bg-white/[0.04]"
                       }
                     >
@@ -749,7 +754,7 @@ export default function M2MManagement() {
                       variant="outline"
                       size="icon"
                       onClick={() => setShowSecret(!showSecret)}
-                      className="h-10 w-10 min-h-0 rounded-xl"
+                      className="h-10 min-h-0 w-10 rounded-xl"
                     >
                       {showSecret ? (
                         <EyeOff className="h-4 w-4" />
@@ -762,7 +767,7 @@ export default function M2MManagement() {
                       variant="outline"
                       size="icon"
                       onClick={handleCopySecret}
-                      className="h-10 w-10 min-h-0 rounded-xl"
+                      className="h-10 min-h-0 w-10 rounded-xl"
                     >
                       {copied ? (
                         <Check className="h-4 w-4 text-emerald-500" />

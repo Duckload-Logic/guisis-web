@@ -73,8 +73,7 @@ export default function SearchInput({
       )}
       <div className="relative w-full">
         <Search
-          size={ICON_SIZE}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-card-foreground opacity-50"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 shrink-0 text-muted-foreground opacity-70"
         />
         <Input
           ref={inputRef}
@@ -100,12 +99,12 @@ export default function SearchInput({
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full",
+              "absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 min-h-0 shrink-0 items-center justify-center rounded-full p-0",
               "text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors",
             )}
             aria-label="Clear search"
           >
-            <X className="h-4 w-4" strokeWidth={2.5} />
+            <X className="h-4 w-4 shrink-0 text-current" strokeWidth={2.5} />
           </button>
         )}
       </div>
