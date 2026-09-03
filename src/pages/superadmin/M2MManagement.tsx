@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trash2,
@@ -72,10 +72,8 @@ export default function M2MManagement() {
   const [copied, setCopied] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
 
-  const { data: clients = [], isLoading } = useM2MClients({
-    includeRevoked,
-    sort_by: selectedSort,
-    sort_order: selectedOrder,
+  const { data: rawClients = [], isLoading } = useM2MClients({
+    includeRevoked: true,
   });
 
   const revokeMutation = useRevokeM2MClient();
@@ -83,15 +81,32 @@ export default function M2MManagement() {
   const verifyMutation = useVerifyM2MClient();
   const rejectMutation = useRejectM2MClient();
 
-  const isPageLoading =
-    isLoading ||
-    revokeMutation.isPending ||
-    rotateMutation.isPending ||
-    verifyMutation.isPending ||
-    rejectMutation.isPending;
+  const clients = useMemo(() => {
+    let list = rawClients ? [...rawClients] : [];
+    if (!includeRevoked) {
+      list = list.filter((c) => c.isActive);
+    }
+    return list.sort((a, b) => {
+      let valA: any = a[selectedSort as keyof M2MClient] ?? "";
+      let valB: any = b[selectedSort as keyof M2MClient] ?? "";
+      if (typeof valA === "string") valA = valA.toLowerCase();
+      if (typeof valB === "string") valB = valB.toLowerCase();
+      if (valA < valB) return selectedOrder === "asc" ? -1 : 1;
+      if (valA > valB) return selectedOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [rawClients, includeRevoked, selectedSort, selectedOrder]);
 
-  const activeClients = clients?.filter((c) => c.isActive) || [];
-  const revokedClients = clients?.filter((c) => !c.isActive) || [];
+  const activeClients = useMemo(
+    () => rawClients.filter((c) => c.isActive),
+    [rawClients],
+  );
+  const revokedClients = useMemo(
+    () => rawClients.filter((c) => !c.isActive),
+    [rawClients],
+  );
+
+  const isInitialPageLoading = isLoading && rawClients.length === 0;
 
   const handleRevoke = async () => {
     if (!revokeTarget) return;
@@ -144,7 +159,7 @@ export default function M2MManagement() {
     },
     {
       label: "Total Clients",
-      value: clients?.length,
+      value: rawClients.length,
       icon: Fingerprint,
       iconClass: "bg-primary/10 text-primary border-primary/20",
     },
@@ -152,7 +167,7 @@ export default function M2MManagement() {
 
   usePageMetadata({
     title: "M2M Management",
-    isLoading: isPageLoading,
+    isLoading: isInitialPageLoading,
     badgeText: "Infrastructure Access Control",
     badgeIcon: <Sparkles className="h-3.5 w-3.5" />,
     description:
