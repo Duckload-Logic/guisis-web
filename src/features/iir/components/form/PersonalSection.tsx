@@ -695,10 +695,18 @@ export const PersonalSection = forwardRef<
       });
       clearError(fieldPath);
     } catch (error: any) {
+      console.error(
+        "[PersonalSection] {handlePhotoUpload}:",
+        error,
+      );
+      const msg =
+        error?.message || "Unable to process the selected 2x2 photo.";
+      if (triggerToast) {
+        triggerToast(msg);
+      }
       setErrors((prev: FormErrors) => ({
         ...prev,
-        [fieldPath]:
-          error?.message || "Unable to process the selected 2x2 photo.",
+        [fieldPath]: msg,
       }));
     }
   };

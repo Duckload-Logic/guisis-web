@@ -191,7 +191,8 @@ export function UploadIDGuidelines() {
         <div className="text-sm">
           <p className="font-semibold mb-1">Important requirements for ID upload:</p>
           <ul className="list-inside list-disc space-y-0.5 text-blue-800 dark:text-blue-300">
-            <li>Ensure the photo is clear and well-lit.</li>
+            <li>Must be a photocopy of the parent&apos;s valid ID with their signature.</li>
+            <li>Ensure the photo and text are clear and well-lit.</li>
             <li>All text, especially the name and ID number, must be readable.</li>
             <li>Avoid camera flash glare, shadows, or cropped edges.</li>
           </ul>
@@ -204,11 +205,17 @@ export function UploadIDGuidelines() {
 export function UploadGuidelines() {
   return (
     <div className="mb-6 space-y-4">
-      <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-[#FFF9E5] p-4 text-amber-900 shadow-sm">
-        <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
-        <p className="text-sm font-bold">
-          Please ensure the doctor's signature and PRC License Number are clearly visible.
-        </p>
+      <div className="flex flex-col gap-2 rounded-xl border border-amber-200 bg-[#FFF9E5] p-4 text-amber-900 shadow-sm">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+          <p className="text-sm font-bold">
+            Medical Certificate Requirements:
+          </p>
+        </div>
+        <ul className="ml-8 list-disc text-xs space-y-1 font-medium text-amber-800">
+          <li>Must be signed by the University nurse before submitting in the system.</li>
+          <li>Doctor&apos;s signature and PRC License Number must be clearly visible.</li>
+        </ul>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

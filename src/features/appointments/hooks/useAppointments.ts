@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   appointmentService,
   PostCancelAppointment,
+  PostStartAppointment,
 } from "@/features/appointments/services";
 import { QUERY_KEYS } from "@/config/queryKeys";
 import { CACHE_TIMING } from "@/config/constants";
@@ -105,6 +106,25 @@ export const useUpdateAppointment = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Appointment }) =>
       appointmentService.PatchAppointment(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.appointments.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.appointments.stats,
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.analytics.all,
+      });
+    },
+  });
+};
+
+export const useStartAppointment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => PostStartAppointment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.appointments.all,

@@ -4,6 +4,7 @@ import {
   useAppointment,
   useStatuses,
   useUpdateAppointment,
+  useStartAppointment,
 } from "@/features/appointments/hooks";
 import {
   User,
@@ -20,14 +21,19 @@ import {
   Fingerprint,
   MessageSquare,
   StickyNote,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { format12HourTime, formatDate } from "@/utils/dateTime";
-import { usePageMetadata } from "@/context";
+import {
+  format12HourTime,
+  formatDate,
+  formatProcessDuration,
+} from "@/utils/dateTime";
+import { usePageMetadata, useToast } from "@/context";
 import { parseAuditTrail } from "@/utils/auditTrail";
 import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
 import RescheduleModal from "@/features/appointments/components/RescheduleModal";
@@ -86,7 +92,7 @@ function getAppointmentUrgency(appointment?: any) {
     description: "Standard guidance priority for regular processing.",
     className:
       "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  };  
+  };
 }
 
 export default function AppointmentDetails() {
@@ -95,6 +101,18 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { data: appointmentStatuses } = useStatuses();
   const { mutateAsync: updateAppointment } = useUpdateAppointment();
+  const startAppointmentMutation = useStartAppointment();
+  const { triggerToast } = useToast();
+
+  const handleStartAppointment = async () => {
+    if (!id) return;
+    try {
+      await startAppointmentMutation.mutateAsync(id);
+      triggerToast("Appointment session started on-site!");
+    } catch {
+      triggerToast("Failed to start appointment session");
+    }
+  };
 
   const auditEntries = useMemo(() => {
     return parseAuditTrail(appointment?.adminNotes);
@@ -136,7 +154,8 @@ export default function AppointmentDetails() {
     : "";
 
   const initials = appointment?.user
-    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() || "ST"
+    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() ||
+      "ST"
     : "ST";
 
   const studentProfilePictureUrl = getProfilePictureUrl(
@@ -620,6 +639,17 @@ export default function AppointmentDetails() {
                   >
                     Urgency: {urgencyInfo.label}
                   </Badge>
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                  >
+                    <Clock3 className="mr-1 inline h-3 w-3" />
+                    Turnaround:{" "}
+                    {formatProcessDuration(
+                      appointment.startedAt?.time || appointment.createdAt,
+                      appointment.completedAt?.time,
+                    )}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-5 sm:p-6">
@@ -927,7 +957,45 @@ export default function AppointmentDetails() {
                   Administrative Controls
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-5">
+              <CardContent className="p-5 space-y-3">
+                {appointment &&
+                  !appointment.startedAt &&
+                  appointment.status?.name !== "Completed" &&
+                  appointment.status?.name !== "Cancelled" && (
+                    <Button
+                      onClick={handleStartAppointment}
+                      disabled={startAppointmentMutation.isPending}
+                      className={cn(
+                        "group/start h-11 w-full items-center justify-between",
+                        "rounded-xl border border-emerald-500/30 bg-emerald-600 text-white shadow-sm",
+                        "transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md",
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Play className="h-4 w-4 fill-white" />
+                        <span className="text-xs font-bold tracking-wider">
+                          Start Appointment (On-Site)
+                        </span>
+                      </div>
+                      <Clock3 className="h-4 w-4 opacity-80" />
+                    </Button>
+                  )}
+
+                {appointment?.startedAt && !appointment?.completedAt && (
+                  <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                      </span>
+                      <span>Session In Progress</span>
+                    </div>
+                    <span className="font-mono text-[11px]">
+                      Started: {format12HourTime(appointment.startedAt)}
+                    </span>
+                  </div>
+                )}
+
                 {allowedActions.length > 0 ? (
                   <div className="flex flex-col gap-3">
                     {allowedActions.map((action) => (
