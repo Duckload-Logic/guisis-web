@@ -605,7 +605,10 @@ export default function IIRForm() {
           );
           await UploadIIRTwoByTwoPhoto(fileToUpload);
         } catch (uploadErr) {
-          console.error("Failed to upload 2x2 photo to server:", uploadErr);
+          console.error(
+            "[IIRForm] {UploadIIRTwoByTwoPhoto}:",
+            uploadErr,
+          );
         }
       }
 

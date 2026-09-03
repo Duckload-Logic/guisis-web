@@ -54,13 +54,12 @@ export const ProtectedRoute = ({
    * Check role-based access if required
    */
   const userRoles =
-    user.roles?.map((role) => role.name.toLowerCase().replace(/\s+/g, "")) || [];
-  const normRequiredRole = requiredRole?.toLowerCase().replace(/\s+/g, "");
+    user.roles?.map((role) => role.name.toLowerCase().replace(/[\s_]+/g, "")) || [];
+  const normRequiredRole = requiredRole?.toLowerCase().replace(/[\s_]+/g, "");
 
   if (
     normRequiredRole &&
-    !userRoles.includes(normRequiredRole) &&
-    !userRoles.includes("superadmin")
+    !userRoles.includes(normRequiredRole)
   ) {
     return (
       <Navigate

@@ -53,6 +53,8 @@ export interface Slip {
   studentCorUrl?: string;
   ticket?: Ticket;
   hasSignificantNote?: boolean;
+  startedAt?: any;
+  completedAt?: any;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -159,4 +159,18 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
       icon: <FileText size={ICON_SIZE} />,
     },
   ],
+  studentassistant: [
+    {
+      label: "Admission Slips",
+      href: "/assistant/slips",
+      icon: <FileText size={ICON_SIZE} />,
+    },
+  ],
+  assistant: [
+    {
+      label: "Admission Slips",
+      href: "/assistant/slips",
+      icon: <FileText size={ICON_SIZE} />,
+    },
+  ],
 };

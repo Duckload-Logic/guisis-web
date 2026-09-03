@@ -253,6 +253,41 @@ export const routes: RouteObject[] = [
   },
 
   {
+    path: "/assistant",
+    element: (
+      <ProtectedRoute requiredRole="student assistant">
+        <Layout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <ReviewSlips />,
+      },
+      {
+        path: "slips",
+        element: <ReviewSlips />,
+      },
+      {
+        path: "slips/:id",
+        element: <SlipDetails />,
+      },
+      {
+        path: "slips/logs",
+        element: <SlipLogs />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
+      },
+      {
+        path: "notifications",
+        element: <NotificationsPage />,
+      },
+    ],
+  },
+
+  {
     path: "/superadmin",
     element: (
       <ProtectedRoute requiredRole="superadmin">

@@ -175,6 +175,8 @@ export default function Navigation({
     student: "/student",
     admin: "/admin",
     counselor: "/admin",
+    studentassistant: "/assistant",
+    assistant: "/assistant",
     superadmin: "/superadmin",
     developer: "/developer",
   };

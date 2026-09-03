@@ -44,6 +44,7 @@ import { usePageMetadata, useToast } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
 import { parseAuditTrail } from "@/utils/auditTrail";
+import { formatProcessDuration } from "@/utils/dateTime";
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
@@ -435,6 +436,13 @@ export default function SlipDetails() {
                     {slip.status.name}
                   </Badge>
                 )}
+                <Badge
+                  variant="outline"
+                  className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                >
+                  <Clock3 className="mr-1 inline h-3 w-3" />
+                  Turnaround: {formatProcessDuration(slip.startedAt?.time || slip.createdAt, slip.completedAt?.time)}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6 p-5 sm:p-6">

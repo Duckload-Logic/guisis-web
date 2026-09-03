@@ -302,6 +302,28 @@ export async function PostCancelAppointment(
 }
 
 /**
+ * Start an appointment session on-site (Admin/Counselor only)
+ * @param id - Appointment ID
+ * @param config - Axios config
+ * @returns Success message
+ */
+export async function PostStartAppointment(
+  id: string,
+  config?: AxiosConfigWithMeta,
+) {
+  try {
+    const response = await apiClient.post(
+      API_ROUTES.appointments.start(id),
+      {},
+      config,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+/**
  * Legacy service object for backward compatibility
  * Gradually migrate to direct function imports
  */
@@ -315,6 +337,7 @@ export const appointmentService = {
   GetAppointmentCategories,
   GetAppointmentStatuses,
   PostAppointment,
+  PostStartAppointment,
   PatchAppointmentStatus,
   PatchAppointment,
 };

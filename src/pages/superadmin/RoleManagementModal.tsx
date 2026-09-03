@@ -30,6 +30,7 @@ const AVAILABLE_ROLES = [
   { id: 2, name: "Counselor" },
   { id: 3, name: "Superadmin" },
   { id: 4, name: "Developer" },
+  { id: 5, name: "Student Assistant" },
 ];
 
 export function RoleManagementModal({

@@ -66,6 +66,8 @@ export interface Appointment {
   urgencyScore?: number;
   hasSignificantNote?: boolean;
   studentCorUrl?: string;
+  startedAt?: any;
+  completedAt?: any;
   createdAt?: string;
   updatedAt?: string;
   preferredDate1?: string;

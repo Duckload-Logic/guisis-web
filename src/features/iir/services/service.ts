@@ -362,7 +362,10 @@ export const UploadIIRTwoByTwoPhoto = async (
 
     return response.data?.data ?? response.data;
   } catch (error) {
-
+    console.error(
+      "[UploadIIRTwoByTwoPhoto] {UploadPhoto}:",
+      error,
+    );
     throw error;
   }
 };

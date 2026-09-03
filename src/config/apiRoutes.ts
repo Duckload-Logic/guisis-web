@@ -55,6 +55,7 @@ export const API_ROUTES = Object.freeze({
       slots: "/appointments/lookups/slots",
     }),
     cancel: (id: string) => `/appointments/id/${id}/cancel`,
+    start: (id: string) => `/appointments/id/${id}/start`,
     patch: (id: string) => `/appointments/id/${id}`,
   }),
 
