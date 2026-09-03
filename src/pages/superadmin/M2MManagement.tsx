@@ -382,13 +382,13 @@ export default function M2MManagement() {
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
                               className={cn(
-                                "h-8 w-8 shrink-0 rounded-xl",
+                                "h-8 w-8 min-h-0 shrink-0 rounded-xl",
                                 "text-muted-foreground transition-colors",
                                 "hover:bg-primary/10 hover:text-primary",
                               )}
                               title="Flip card for description & details"
                             >
-                              <Info className="h-4 w-4" />
+                              <Info className="h-4 w-4 text-muted-foreground hover:text-primary" />
                             </Button>
                           </div>
 
@@ -467,7 +467,7 @@ export default function M2MManagement() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 shrink-0 rounded-lg hover:bg-primary/10"
+                                className="h-7 w-7 min-h-0 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
                                     client.clientId,
@@ -475,7 +475,7 @@ export default function M2MManagement() {
                                 }}
                                 title="Copy Client ID"
                               >
-                                <Copy size={12} />
+                                <Copy className="h-3.5 w-3.5" />
                               </Button>
                             )}
                           </div>
@@ -537,12 +537,12 @@ export default function M2MManagement() {
                                       size="sm"
                                       onClick={() => handleReject(client.id)}
                                       className={cn(
-                                        "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                        "h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold",
                                         "border-red-500/20 text-destructive hover:bg-destructive/10",
                                       )}
                                       disabled={rejectMutation.isPending}
                                     >
-                                      <Ban size={13} /> Reject
+                                      <Ban className="h-3.5 w-3.5 shrink-0" /> Reject
                                     </Button>
                                     <Button
                                       size="sm"
@@ -552,10 +552,10 @@ export default function M2MManagement() {
                                           client.hasPersonalInfoAccess,
                                         );
                                       }}
-                                      className="h-8 gap-1.5 rounded-xl text-xs font-semibold shadow-sm"
+                                      className="h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold shadow-sm"
                                       disabled={verifyMutation.isPending}
                                     >
-                                      <Check size={13} /> Verify Client
+                                      <Check className="h-3.5 w-3.5 shrink-0" /> Verify Client
                                     </Button>
                                   </div>
                                 ) : (
@@ -570,35 +570,35 @@ export default function M2MManagement() {
                                         );
                                       }}
                                       className={cn(
-                                        "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                        "h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold",
                                         "border-purple-500/30 text-purple-700 hover:bg-purple-500/10 dark:text-purple-300",
                                       )}
                                       title="Manage PII Access"
                                     >
-                                      <ShieldCheck size={13} /> PII
+                                      <ShieldCheck className="h-3.5 w-3.5 shrink-0" /> PII
                                     </Button>
 
                                     <Button
                                       variant="outline"
                                       size="sm"
                                       onClick={() => setRotateTarget(client)}
-                                      className="h-8 gap-1.5 rounded-xl text-xs font-semibold"
+                                      className="h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold"
                                       title="Rotate Client Secret"
                                     >
-                                      <RefreshCw size={13} /> Rotate
+                                      <RefreshCw className="h-3.5 w-3.5 shrink-0" /> Rotate
                                     </Button>
 
                                     <Button
                                       variant="outline"
-                                      size="sm"
+                                      size="icon"
                                       onClick={() => setRevokeTarget(client)}
                                       className={cn(
-                                        "h-8 w-8 rounded-xl p-0 text-destructive",
+                                        "h-8 w-8 min-h-0 rounded-xl p-0 text-destructive",
                                         "border-red-500/20 hover:bg-destructive/10",
                                       )}
                                       title="Revoke Client"
                                     >
-                                      <Trash2 size={13} />
+                                      <Trash2 className="h-3.5 w-3.5 shrink-0" />
                                     </Button>
                                   </div>
                                 )}
@@ -620,10 +620,10 @@ export default function M2MManagement() {
                               variant="ghost"
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
-                              className="h-8 w-8 shrink-0 rounded-xl text-primary hover:bg-primary/10"
+                              className="h-8 w-8 min-h-0 shrink-0 rounded-xl text-primary hover:bg-primary/10"
                               title="Flip back to front"
                             >
-                              <RotateCcw className="h-4 w-4" />
+                              <RotateCcw className="h-4 w-4 text-primary" />
                             </Button>
                           </div>
 
@@ -670,7 +670,7 @@ export default function M2MManagement() {
                               onClick={() => toggleFlip(client.id)}
                               className="w-full gap-1.5 rounded-xl text-xs font-semibold"
                             >
-                              <RotateCcw className="h-3.5 w-3.5" /> Return to Front
+                              <RotateCcw className="h-3.5 w-3.5 shrink-0" /> Return to Front
                             </Button>
                           </div>
                         </div>
@@ -749,24 +749,25 @@ export default function M2MManagement() {
                       variant="outline"
                       size="icon"
                       onClick={() => setShowSecret(!showSecret)}
-                      className="rounded-xl"
+                      className="h-10 w-10 min-h-0 rounded-xl"
                     >
-                      {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {showSecret ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
 
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={handleCopySecret}
-                      className="rounded-xl"
+                      className="h-10 w-10 min-h-0 rounded-xl"
                     >
                       {copied ? (
-                        <Check
-                          size={14}
-                          className="text-emerald-500"
-                        />
+                        <Check className="h-4 w-4 text-emerald-500" />
                       ) : (
-                        <Copy size={14} />
+                        <Copy className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
@@ -829,10 +830,7 @@ export default function M2MManagement() {
           <AlertDialogContent className="backdrop-blur-2xl dark:border-white/10 sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
-                <RefreshCw
-                  size={18}
-                  className="text-amber-500"
-                />
+                <RefreshCw className="h-4 w-4 text-amber-500" />
                 Rotate Client Secret
               </AlertDialogTitle>
               <AlertDialogDescription>
