@@ -82,6 +82,24 @@ describe("iirValidationSchemas", () => {
       ).toContain("Format must be");
     });
 
+    it("should fail for student number with year exceeding max academic year", () => {
+      const futureYear = new Date().getFullYear() + 5;
+      const data = {
+        student: {
+          personalInfo: {
+            studentNumber: `${futureYear}-00001-TG-0`,
+          },
+        },
+      };
+      const errors = validateObject(
+        data,
+        personalInformationValidationSchema,
+      );
+      expect(
+        errors["student.personalInfo.studentNumber"],
+      ).toContain("Format must be");
+    });
+
     it("should fail for future birthdate", () => {
       const futureDate = new Date();
       futureDate.setFullYear(futureDate.getFullYear() + 5);
