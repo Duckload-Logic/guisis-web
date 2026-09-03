@@ -12,15 +12,16 @@ import {
   Ban,
   RefreshCw,
   Fingerprint,
-  ArrowDown,
-  ArrowUp,
   KeyRound,
   Calendar,
   Clock,
   SlidersHorizontal,
+  Info,
+  FileText,
+  RotateCcw,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -61,6 +62,7 @@ export default function M2MManagement() {
   const [includeRevoked, setIncludeRevoked] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string>("createdAt");
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("desc");
+  const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<M2MClient | null>(null);
@@ -80,6 +82,10 @@ export default function M2MManagement() {
   const rotateMutation = useRotateM2MSecret();
   const verifyMutation = useVerifyM2MClient();
   const rejectMutation = useRejectM2MClient();
+
+  const toggleFlip = (id: number) => {
+    setFlippedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const clients = useMemo(() => {
     let list = rawClients ? [...rawClients] : [];
@@ -308,280 +314,370 @@ export default function M2MManagement() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <AnimatePresence mode="popLayout">
-                {clients.map((client) => (
-                  <motion.div
-                    key={client.id}
-                    layout
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={cn(
-                      "group relative flex flex-col justify-between overflow-hidden",
-                      "rounded-2xl border border-glass-border bg-glass-bg p-5 shadow-sm",
-                      "backdrop-blur-xl transition-all duration-300",
-                      "hover:border-primary/40 hover:shadow-xl dark:border-white/10",
-                      !client.isActive && "opacity-75 grayscale-[0.2]",
-                    )}
-                  >
-                    {/* Background glow accent on hover */}
-                    <div
+                {clients.map((client) => {
+                  const isFlipped = !!flippedCards[client.id];
+                  return (
+                    <motion.div
+                      key={client.id}
+                      layout
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      whileHover={{ y: -4 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
                       className={cn(
-                        "pointer-events-none absolute -right-10 -top-10 h-32 w-32",
-                        "rounded-full bg-primary/5 blur-2xl transition-all duration-500",
-                        "group-hover:bg-primary/15",
+                        "group relative flex min-h-[300px] flex-col justify-between",
+                        "overflow-hidden rounded-2xl border border-glass-border",
+                        "bg-glass-bg p-5 shadow-sm backdrop-blur-xl",
+                        "transition-all duration-300 hover:border-primary/40",
+                        "hover:shadow-xl dark:border-white/10",
+                        !client.isActive && "opacity-75 grayscale-[0.2]",
                       )}
-                    />
-
-                    <div className="relative z-10 space-y-4">
-                      {/* Client Header Info */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              "flex h-11 w-11 shrink-0 items-center justify-center",
-                              "rounded-xl border backdrop-blur-md transition-transform",
-                              "group-hover:scale-105",
-                              client.isActive
-                                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                : "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
-                            )}
-                          >
-                            <Fingerprint className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3
-                              className="truncate text-base font-bold tracking-tight text-foreground"
-                              title={client.clientName}
-                            >
-                              {client.clientName}
-                            </h3>
-                            <p
-                              className="line-clamp-2 text-xs leading-relaxed text-muted-foreground"
-                              title={client.clientDescription}
-                            >
-                              {client.clientDescription ||
-                                "No description provided."}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status Badges */}
-                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                            client.isActive
-                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                              : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
-                              client.isActive
-                                ? "bg-emerald-500 animate-pulse"
-                                : "bg-red-500",
-                            )}
-                          />
-                          {client.isActive ? "Active" : "Revoked"}
-                        </Badge>
-
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                            client.isVerified
-                              ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                              : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-                          )}
-                        >
-                          {client.isVerified
-                            ? "Verified"
-                            : "Pending Verification"}
-                        </Badge>
-
-                        {client.isVerified && (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                              client.hasPersonalInfoAccess
-                                ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
-                                : "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
-                            )}
-                          >
-                            {client.hasPersonalInfoAccess
-                              ? "PII: Allowed"
-                              : "PII: Denied"}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Client ID Code Snippet Box */}
+                    >
+                      {/* Background glow accent on hover */}
                       <div
                         className={cn(
-                          "flex items-center justify-between gap-2 rounded-xl border",
-                          "border-border/60 bg-muted/30 p-2.5 backdrop-blur-md",
+                          "pointer-events-none absolute -right-10 -top-10",
+                          "h-32 w-32 rounded-full bg-primary/5 blur-2xl",
+                          "transition-all duration-500 group-hover:bg-primary/15",
                         )}
-                      >
-                        <div className="flex min-w-0 items-center gap-2">
-                          <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <span className="text-[11px] font-medium text-muted-foreground">
-                            Client ID:
-                          </span>
-                          <code className="truncate font-mono text-[11px] font-semibold text-foreground">
-                            {client.isVerified
-                              ? client.clientId
-                              : "••••••••••••••••"}
-                          </code>
-                        </div>
-                        {client.isVerified && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 shrink-0 rounded-lg hover:bg-primary/10"
-                            onClick={() => {
-                              navigator.clipboard.writeText(client.clientId);
-                            }}
-                            title="Copy Client ID"
-                          >
-                            <Copy size={12} />
-                          </Button>
-                        )}
-                      </div>
+                      />
 
-                      {/* Scopes Tag Cloud */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          Granted Scopes
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {client.scopes && client.scopes.length > 0 ? (
-                            client.scopes.map((scope) => (
-                              <Badge
-                                key={scope}
-                                variant="outline"
-                                className="rounded-lg border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary"
+                      {!isFlipped ? (
+                        /* FRONT FACE */
+                        <div className="relative z-10 flex h-full flex-col justify-between space-y-4">
+                          {/* Client Header Info */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div
+                                className={cn(
+                                  "flex h-11 w-11 shrink-0 items-center",
+                                  "justify-center rounded-xl border",
+                                  "backdrop-blur-md transition-transform",
+                                  "group-hover:scale-105",
+                                  client.isActive
+                                    ? "border-emerald-500/20 bg-emerald-500/10 " +
+                                        "text-emerald-600 dark:text-emerald-400"
+                                    : "border-red-500/20 bg-red-500/10 " +
+                                        "text-red-600 dark:text-red-400",
+                                )}
                               >
-                                {scope}
-                              </Badge>
-                            ))
-                          ) : (
+                                <Fingerprint className="h-5 w-5" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3
+                                  className="truncate text-base font-bold tracking-tight text-foreground"
+                                  title={client.clientName}
+                                >
+                                  {client.clientName}
+                                </h3>
+                                <span className="font-mono text-[11px] text-muted-foreground">
+                                  Client #{client.id}
+                                </span>
+                              </div>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleFlip(client.id)}
+                              className={cn(
+                                "h-8 w-8 shrink-0 rounded-xl",
+                                "text-muted-foreground transition-colors",
+                                "hover:bg-primary/10 hover:text-primary",
+                              )}
+                              title="Flip card for description & details"
+                            >
+                              <Info className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {/* Status Badges */}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
                             <Badge
                               variant="outline"
-                              className="rounded-lg border-muted/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                              className={cn(
+                                "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                                client.isActive
+                                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                  : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
+                              )}
                             >
-                              admin:full
+                              <span
+                                className={cn(
+                                  "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
+                                  client.isActive
+                                    ? "bg-emerald-500 animate-pulse"
+                                    : "bg-red-500",
+                                )}
+                              />
+                              {client.isActive ? "Active" : "Revoked"}
                             </Badge>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Timestamps Section */}
-                      <div className="grid grid-cols-2 gap-2 border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3 w-3 shrink-0 text-muted-foreground/70" />
-                          <span className="truncate">
-                            Created: {formatDate(client.createdAt)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />
-                          <span className="truncate">
-                            Used:{" "}
-                            {client.lastUsedAt
-                              ? formatDate(client.lastUsedAt)
-                              : "Never"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                                client.isVerified
+                                  ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                                  : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                              )}
+                            >
+                              {client.isVerified
+                                ? "Verified"
+                                : "Pending Verification"}
+                            </Badge>
 
-                    {/* Card Actions Footer */}
-                    <div className="relative z-10 mt-4 flex items-center justify-end gap-2 border-t border-border/50 pt-3">
-                      {client.isActive && (
-                        <>
-                          {!client.isVerified ? (
-                            <div className="flex w-full items-center justify-end gap-2">
-                              <Button
+                            {client.isVerified && (
+                              <Badge
                                 variant="outline"
-                                size="sm"
-                                onClick={() => handleReject(client.id)}
                                 className={cn(
-                                  "h-8 gap-1.5 rounded-xl text-xs font-semibold",
-                                  "border-red-500/20 text-destructive hover:bg-destructive/10",
+                                  "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                                  client.hasPersonalInfoAccess
+                                    ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
+                                    : "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
                                 )}
-                                disabled={rejectMutation.isPending}
                               >
-                                <Ban size={13} /> Reject
-                              </Button>
+                                {client.hasPersonalInfoAccess
+                                  ? "PII: Allowed"
+                                  : "PII: Denied"}
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Client ID Code Snippet Box */}
+                          <div
+                            className={cn(
+                              "flex items-center justify-between gap-2 rounded-xl border",
+                              "border-border/60 bg-muted/30 p-2.5 backdrop-blur-md",
+                            )}
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                              <span className="text-[11px] font-medium text-muted-foreground">
+                                Client ID:
+                              </span>
+                              <code className="truncate font-mono text-[11px] font-semibold text-foreground">
+                                {client.isVerified
+                                  ? client.clientId
+                                  : "••••••••••••••••"}
+                              </code>
+                            </div>
+                            {client.isVerified && (
                               <Button
-                                size="sm"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 shrink-0 rounded-lg hover:bg-primary/10"
                                 onClick={() => {
-                                  setVerifyTarget(client);
-                                  setVerifyPersonalInfo(
-                                    client.hasPersonalInfoAccess,
+                                  navigator.clipboard.writeText(
+                                    client.clientId,
                                   );
                                 }}
-                                className="h-8 gap-1.5 rounded-xl text-xs font-semibold shadow-sm"
-                                disabled={verifyMutation.isPending}
+                                title="Copy Client ID"
                               >
-                                <Check size={13} /> Verify Client
+                                <Copy size={12} />
                               </Button>
+                            )}
+                          </div>
+
+                          {/* Scopes Tag Cloud */}
+                          <div className="space-y-1.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Granted Scopes
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {client.scopes && client.scopes.length > 0 ? (
+                                client.scopes.map((scope) => (
+                                  <Badge
+                                    key={scope}
+                                    variant="outline"
+                                    className="rounded-lg border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary"
+                                  >
+                                    {scope}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="rounded-lg border-muted/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                                >
+                                  admin:full
+                                </Badge>
+                              )}
                             </div>
-                          ) : (
+                          </div>
+
+                          {/* Timestamps Section */}
+                          <div className="grid grid-cols-2 gap-2 border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
                             <div className="flex items-center gap-1.5">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setVerifyTarget(client);
-                                  setVerifyPersonalInfo(
-                                    client.hasPersonalInfoAccess,
-                                  );
-                                }}
-                                className={cn(
-                                  "h-8 gap-1.5 rounded-xl text-xs font-semibold",
-                                  "border-purple-500/30 text-purple-700 hover:bg-purple-500/10 dark:text-purple-300",
-                                )}
-                                title="Manage PII Access"
-                              >
-                                <ShieldCheck size={13} /> PII
-                              </Button>
-
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setRotateTarget(client)}
-                                className="h-8 gap-1.5 rounded-xl text-xs font-semibold"
-                                title="Rotate Client Secret"
-                              >
-                                <RefreshCw size={13} /> Rotate
-                              </Button>
-
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setRevokeTarget(client)}
-                                className={cn(
-                                  "h-8 w-8 rounded-xl p-0 text-destructive",
-                                  "border-red-500/20 hover:bg-destructive/10",
-                                )}
-                                title="Revoke Client"
-                              >
-                                <Trash2 size={13} />
-                              </Button>
+                              <Calendar className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                              <span className="truncate">
+                                Created: {formatDate(client.createdAt)}
+                              </span>
                             </div>
-                          )}
-                        </>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Clock className="h-3 w-3 shrink-0 text-muted-foreground/70" />
+                              <span className="truncate">
+                                Used:{" "}
+                                {client.lastUsedAt
+                                  ? formatDate(client.lastUsedAt)
+                                  : "Never"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Card Actions Footer */}
+                          <div className="relative z-10 mt-2 flex items-center justify-end gap-2 border-t border-border/50 pt-3">
+                            {client.isActive && (
+                              <>
+                                {!client.isVerified ? (
+                                  <div className="flex w-full items-center justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleReject(client.id)}
+                                      className={cn(
+                                        "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                        "border-red-500/20 text-destructive hover:bg-destructive/10",
+                                      )}
+                                      disabled={rejectMutation.isPending}
+                                    >
+                                      <Ban size={13} /> Reject
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
+                                      className="h-8 gap-1.5 rounded-xl text-xs font-semibold shadow-sm"
+                                      disabled={verifyMutation.isPending}
+                                    >
+                                      <Check size={13} /> Verify Client
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1.5">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setVerifyTarget(client);
+                                        setVerifyPersonalInfo(
+                                          client.hasPersonalInfoAccess,
+                                        );
+                                      }}
+                                      className={cn(
+                                        "h-8 gap-1.5 rounded-xl text-xs font-semibold",
+                                        "border-purple-500/30 text-purple-700 hover:bg-purple-500/10 dark:text-purple-300",
+                                      )}
+                                      title="Manage PII Access"
+                                    >
+                                      <ShieldCheck size={13} /> PII
+                                    </Button>
+
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setRotateTarget(client)}
+                                      className="h-8 gap-1.5 rounded-xl text-xs font-semibold"
+                                      title="Rotate Client Secret"
+                                    >
+                                      <RefreshCw size={13} /> Rotate
+                                    </Button>
+
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setRevokeTarget(client)}
+                                      className={cn(
+                                        "h-8 w-8 rounded-xl p-0 text-destructive",
+                                        "border-red-500/20 hover:bg-destructive/10",
+                                      )}
+                                      title="Revoke Client"
+                                    >
+                                      <Trash2 size={13} />
+                                    </Button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        /* BACK FACE */
+                        <div className="relative z-10 flex h-full flex-col justify-between space-y-4">
+                          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileText className="h-4 w-4 shrink-0 text-primary" />
+                              <h4 className="truncate text-sm font-bold text-foreground">
+                                {client.clientName}
+                              </h4>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleFlip(client.id)}
+                              className="h-8 w-8 shrink-0 rounded-xl text-primary hover:bg-primary/10"
+                              title="Flip back to front"
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {/* Full Description Box */}
+                          <div className="flex-1 space-y-2 overflow-y-auto max-h-[160px] pr-1">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              Client Description & Purpose
+                            </p>
+                            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-xs leading-relaxed text-foreground">
+                              {client.clientDescription ||
+                                "No description provided for this M2M client."}
+                            </div>
+                          </div>
+
+                          {/* Metadata Summary */}
+                          <div className="space-y-1.5 border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
+                            <div className="flex justify-between">
+                              <span>Owner User ID:</span>
+                              <code className="font-mono text-foreground">
+                                {client.userId || "System"}
+                              </code>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Created Date:</span>
+                              <span className="text-foreground">
+                                {formatDate(client.createdAt)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Last Activity:</span>
+                              <span className="text-foreground">
+                                {client.lastUsedAt
+                                  ? formatDate(client.lastUsedAt)
+                                  : "Never"}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Return Button */}
+                          <div className="border-t border-border/40 pt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleFlip(client.id)}
+                              className="w-full gap-1.5 rounded-xl text-xs font-semibold"
+                            >
+                              <RotateCcw className="h-3.5 w-3.5" /> Return to Front
+                            </Button>
+                          </div>
+                        </div>
                       )}
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
           )}

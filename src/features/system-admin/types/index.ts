@@ -1,6 +1,7 @@
 // M2M Client types
 export interface M2MClient {
   id: number;
+  userId?: string;
   clientName: string;
   clientId: string;
   clientDescription: string;
