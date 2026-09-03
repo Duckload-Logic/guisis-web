@@ -12,26 +12,22 @@ interface IIRGateProps {
 
 /**
  * IIRGate Component
- * Restricts access to student services until PDS form is completed
- * Only allows access to /student/form (PDS form page)
- * Redirects to /student if PDS is not yet filled
+ * Restricts access to student services until PDS form is completed.
+ * Renders an un-dismissible modal overlay on top of background content
+ * if student has not completed their IIR record.
  */
 export const IIRGate = ({
   children,
   allowOnGuidancePage = false,
 }: IIRGateProps) => {
   const { user, isLoading: isAuthLoading } = useAuth();
-  const {
-    data: statusData,
-    isPending: isIIRPending,
-  } = useIIRStatus();
+  const { data: statusData, isPending: isIIRPending } = useIIRStatus();
 
   // Multi-role users with 'student' role must still pass the gate
   const roles = user?.roles?.map((r) => r.name.toLowerCase()) || [];
   const isStudent = roles.includes("student");
 
   // While auth or IIR status is being determined, show loading
-  // For students, we MUST wait for the IIR check to complete
   if (isAuthLoading || (isStudent && isIIRPending)) {
     return (
       <Spinner
@@ -41,7 +37,7 @@ export const IIRGate = ({
     );
   }
 
-  // Non-students bypass the rest of the gate logic
+  // Non-students bypass the gate logic
   if (!isStudent) {
     return <>{children}</>;
   }
@@ -52,55 +48,77 @@ export const IIRGate = ({
 
   const isBlocked = !isSubmitted || (!isCompleted && !allowExpeditedIIR);
 
-  // If PDS is not completed and this is not the form page
+  // If student is blocked, render background content with overlay modal
   if (isBlocked && !allowOnGuidancePage) {
     return (
-      <div
-        className={cn(
-          "flex-1 flex flex-col items-center justify-center",
-          "w-full min-h-[60vh] p-4",
-        )}
-      >
+      <div className="relative min-h-screen w-full">
         <AnimationStyles />
+
+        {/* Disabled background content preview */}
         <div
+          aria-hidden="true"
           className={cn(
-            "animate-fade-in-scale w-full max-w-md rounded-xl border",
-            "border-border bg-card p-8 text-card-foreground shadow-xl",
+            "pointer-events-none select-none blur-sm opacity-40",
+            "transition-all duration-300",
+          )}
+        >
+          {children}
+        </div>
+
+        {/* Non-dismissible Modal Overlay */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="iir-gate-modal-title"
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center p-4",
+            "bg-background/80 backdrop-blur-md dark:bg-black/80",
           )}
         >
           <div
             className={cn(
-              "mx-auto mb-4 flex h-12 w-12 items-center justify-center",
-              "rounded-full bg-yellow-100 dark:bg-yellow-900/40",
+              "animate-fade-in-scale w-full max-w-md overflow-hidden",
+              "rounded-2xl border border-glass-border bg-glass-bg p-6",
+              "shadow-2xl backdrop-blur-2xl dark:border-white/10",
             )}
           >
-            <AlertTriangle
+            <div
               className={cn(
-                "h-6 w-6 text-yellow-600 dark:text-yellow-400",
+                "mx-auto mb-4 flex h-14 w-14 items-center justify-center",
+                "rounded-2xl border border-amber-500/20 bg-amber-500/10",
+                "text-amber-600 dark:text-amber-400 shadow-sm",
               )}
-            />
+            >
+              <AlertTriangle className="h-7 w-7" />
+            </div>
+
+            <h2
+              id="iir-gate-modal-title"
+              className={cn(
+                "mb-2 text-center text-xl font-bold tracking-tight",
+                "text-foreground",
+              )}
+            >
+              Access Restricted
+            </h2>
+
+            <p className="mb-6 text-center text-sm leading-relaxed text-muted-foreground">
+              You must complete your student Individual Inventory Record (IIR)
+              form first to access this service.
+            </p>
+
+            <a
+              href="/student/iir/form"
+              className={cn(
+                "block w-full rounded-xl bg-primary py-3 text-center",
+                "text-sm font-bold text-primary-foreground shadow-md",
+                "transition-all duration-200 hover:bg-primary/90",
+                "active:scale-95",
+              )}
+            >
+              Go to IIR Form
+            </a>
           </div>
-          <h2
-            className={cn(
-              "mb-2 text-center text-2xl font-bold text-foreground",
-            )}
-          >
-            Access Restricted
-          </h2>
-          <p className="mb-6 text-center text-muted-foreground">
-            You must complete your student Individual Inventory Record (IIR)
-            form first to access this service.
-          </p>
-          <a
-            href="/student/iir/form"
-            className={cn(
-              "block w-full rounded-lg bg-primary py-3 text-center",
-              "font-semibold text-primary-foreground transition-colors",
-              "hover:bg-primary/90",
-            )}
-          >
-            Go to IIR Form
-          </a>
         </div>
       </div>
     );
