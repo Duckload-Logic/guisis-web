@@ -15,6 +15,22 @@ export type FieldValidationSchema = {
 };
 
 /**
+ * Helper to validate student number format and maximum enrollment year.
+ * Student number format: YYYY-XXXXX-TG-0 or YYYY-XXXXX-TG-1
+ * Enrollment year YYYY must be >= 1900 and <= maxYear (defaults to current year).
+ */
+export const isValidStudentNumber = (
+  value: any,
+  maxYear: number = new Date().getFullYear(),
+): boolean => {
+  if (value === undefined || value === null || value === "") return false;
+  const match = /^(\d{4})-\d{5}-TG-[01]$/.exec(String(value));
+  if (!match) return false;
+  const year = parseInt(match[1], 10);
+  return year >= 1900 && year <= maxYear;
+};
+
+/**
  * Common validation rules that can be reused
  */
 export const commonRules = {
@@ -192,12 +208,17 @@ export const commonRules = {
       "Must contain only letters, spaces, hyphens, periods, or apostrophes",
   }),
 
-  studentNumber: (): ValidationRule => ({
-    validate: (value: any) => {
+  studentNumber: (maxYear?: number): ValidationRule => ({
+    validate: (value: any, rootData?: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^\d{4}-\d{5}-TG-[01]$/.test(String(value));
+      const limitYear =
+        maxYear ??
+        rootData?.academicSettings?.currentYearStart ??
+        new Date().getFullYear();
+      return isValidStudentNumber(value, limitYear);
     },
-    message: "Format must be YYYY-XXXXX-TG-0 or YYYY-XXXXX-TG-1",
+    message:
+      "Format must be YYYY-XXXXX-TG-0 or YYYY-XXXXX-TG-1 (Year cannot exceed academic year start)",
   }),
 
   suffixFormat: (): ValidationRule => ({

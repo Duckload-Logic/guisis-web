@@ -7,6 +7,8 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
 import { Checkbox } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
@@ -52,6 +54,7 @@ import {
   validateObject,
   commonRules,
   isFieldRequired,
+  isValidStudentNumber,
   FieldValidationSchema,
   validateField,
 } from "@/services/validationSchema";
@@ -123,6 +126,11 @@ export const PersonalSection = forwardRef<
   const { data: religions = [] } = useReligions();
   const { data: studentRelationshipTypes = [] } = useStudentRelationshipTypes();
   const { data: regions = [] } = useGetRegions();
+  const { data: academicSettings } = useQuery({
+    queryKey: ["counselor", "academicSettings"],
+    queryFn: GetAcademicSettings,
+    staleTime: 1000 * 60 * 5,
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [studentNumberStatus, setStudentNumberStatus] = useState<
     "idle" | "checking" | "taken" | "available"
@@ -189,7 +197,7 @@ export const PersonalSection = forwardRef<
       setStudentNumberStatus("idle");
       return;
     }
-    const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+    const isValidFormat = isValidStudentNumber(num);
     if (!isValidFormat) {
       setStudentNumberStatus("idle");
       return;
@@ -550,7 +558,7 @@ export const PersonalSection = forwardRef<
     // If no step specified or invalid, validate nothing (or all if that's desired)
     // For specific sub-step transitions, we only care about visible fields.
     const sectionErrors = validateObject(
-      { student: studentInfo },
+      { student: studentInfo, academicSettings },
       filteredSchema,
     );
 
@@ -559,7 +567,7 @@ export const PersonalSection = forwardRef<
       const isOriginal =
         isEditMode && num === initialStudentNumber.current;
       if (!isOriginal) {
-        const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+        const isValidFormat = isValidStudentNumber(num);
         if (isValidFormat) {
           if (studentNumberStatus === "taken") {
             sectionErrors["student.personalInfo.studentNumber"] =
@@ -608,7 +616,10 @@ export const PersonalSection = forwardRef<
     const runtimeSchema = getRuntimeSchema();
     const fieldRules = runtimeSchema[fieldPath];
     if (fieldRules) {
-      const error = validateField(value, fieldRules, { student: studentInfo });
+      const error = validateField(value, fieldRules, {
+        student: studentInfo,
+        academicSettings,
+      });
       setErrors((prev: FormErrors) => {
         const updated = { ...prev };
         if (error) updated[fieldPath] = error;
@@ -646,7 +657,7 @@ export const PersonalSection = forwardRef<
       if (isEditMode && num === initialStudentNumber.current) {
         return;
       }
-      const isValidFormat = /^\d{4}-\d{5}-TG-[01]$/.test(num);
+      const isValidFormat = isValidStudentNumber(num);
       if (isValidFormat && num !== checkedStudentNumber) {
         performUniquenessCheck(num);
       }

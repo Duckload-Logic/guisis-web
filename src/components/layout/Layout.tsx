@@ -19,6 +19,9 @@ import { UISettingsModal } from "../shared/UISettingsModal";
 import { AnimationStyles } from "../ui/animations";
 import ScrollToTop from "@/utils/componentUtils";
 import ConsentModal from "@/features/consents/components/ConsentModal";
+import ServiceDisclaimerModal from "@/components/shared/ServiceDisclaimerModal";
+import { getBlockedStudentService } from "@/config/serviceAvailability";
+import type { SafeguardedStudentService } from "@/config/serviceAvailability";
 import { cn } from "@/lib/utils";
 
 const ROLE_STUDENT = "student";
@@ -116,6 +119,11 @@ export default function Layout({
     !iirStatus?.isCompleted &&
     location.pathname !== STUDENT_IIR_FORM_PATH;
 
+  const blockedCurrentService =
+    currentRole === ROLE_STUDENT
+      ? getBlockedStudentService(location.pathname)
+      : null;
+
   const [sessionAccepted, setSessionAccepted] = useState(() => {
     // Check if they accepted during THIS specific browser session
     return sessionStorage.getItem("session_consent_accepted") === "true";
@@ -124,6 +132,9 @@ export default function Layout({
   const [uiSettingsOpen, setUiSettingsOpen] = useState(false);
   const { toasts, triggerToast } = useToast();
   const [termsOpen, setTermsOpen] = useState(false);
+  const [serviceDisclaimerOpen, setServiceDisclaimerOpen] = useState(false);
+  const [blockedService, setBlockedService] =
+    useState<SafeguardedStudentService | null>(null);
 
   useEffect(() => {
     const handleOpen = () => setUiSettingsOpen(true);
@@ -193,6 +204,54 @@ export default function Layout({
   }, [location.pathname, sidebarHovered, setSidebarHovered]);
 
   useEffect(() => {
+    if (currentRole !== ROLE_STUDENT || mustAcceptTerms || termsOpen) return;
+
+    const blocked = getBlockedStudentService(location.pathname);
+    if (!blocked) return;
+
+    setBlockedService(blocked);
+    setServiceDisclaimerOpen(true);
+    navigate("/student", { replace: true });
+  }, [currentRole, location.pathname, mustAcceptTerms, navigate, termsOpen]);
+
+  const handleServiceNavigationCapture = (
+    event: React.MouseEvent<HTMLDivElement>,
+  ) => {
+    if (currentRole !== ROLE_STUDENT) return;
+
+    const target = event.target as HTMLElement | null;
+    const anchor = target?.closest<HTMLAnchorElement>("a[href]");
+    if (!anchor) return;
+
+    const href = anchor.getAttribute("href");
+    if (!href) return;
+
+    let pathname: string;
+
+    try {
+      const url = new URL(href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      pathname = url.pathname;
+    } catch {
+      return;
+    }
+
+    const blocked = getBlockedStudentService(pathname);
+    if (!blocked) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    setSidebarHovered(false);
+    setBlockedService(blocked);
+    setServiceDisclaimerOpen(true);
+  };
+
+  const handleCloseServiceDisclaimer = () => {
+    setServiceDisclaimerOpen(false);
+    setBlockedService(null);
+  };
+
+  useEffect(() => {
     const node = contentRef.current;
     if (!node) return;
 
@@ -231,6 +290,7 @@ export default function Layout({
     <ErrorBoundary>
       <ScrollToTop targetRef={scrollRef as React.RefObject<HTMLDivElement>} />
       <div
+        onClickCapture={handleServiceNavigationCapture}
         className={`relative flex h-dvh min-w-0 max-w-full flex-col overflow-hidden bg-neutral-100 text-foreground dark:bg-neutral-950 ${
           grayscale ? "grayscale" : ""
         }`}
@@ -410,7 +470,7 @@ export default function Layout({
                       "h-full min-w-0 max-w-full",
                     )}
                   >
-                    {children || <Outlet />}
+                    {blockedCurrentService ? null : children || <Outlet />}
                   </div>
                 </main>
               </div>
@@ -434,6 +494,12 @@ export default function Layout({
           loading={false}
           onAccept={handleAcceptTerms}
           onCancel={handleDismissTerms}
+        />
+
+        <ServiceDisclaimerModal
+          open={serviceDisclaimerOpen}
+          service={blockedService}
+          onClose={handleCloseServiceDisclaimer}
         />
 
         <Toast toasts={toasts} />
