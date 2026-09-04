@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   useGetSlipById,
   useUpdateSlipStatus,
@@ -51,6 +51,9 @@ type ActionType = "approve" | "reject" | "revision" | null;
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAssistant = location.pathname.startsWith("/assistant");
+  const slipsBasePath = isAssistant ? "/assistant/slips" : "/admin/slips";
   const { data: slip, isLoading, isError, refetch } = useGetSlipById(id || "");
   const { data: attachments } = useGetSlipAttachments(id || "");
   const { mutate: updateSlipStatus, isPending: isUpdatingStatus } =
@@ -112,7 +115,7 @@ export default function SlipDetails() {
           Error loading admission slip
         </p>
         <Button
-          onClick={() => navigate("/admin/slips")}
+          onClick={() => navigate(slipsBasePath)}
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -127,7 +130,7 @@ export default function SlipDetails() {
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
         <p className="text-muted-foreground">Admission slip not found</p>
         <Button
-          onClick={() => navigate("/admin/slips")}
+          onClick={() => navigate(slipsBasePath)}
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -283,19 +286,21 @@ export default function SlipDetails() {
             </div>
 
             <div className="grid w-full grid-cols-1 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "group/btn w-full gap-2 rounded-xl border-primary/20",
-                  "bg-primary/5 font-bold text-primary transition-all",
-                  "duration-300 hover:bg-primary hover:text-white",
-                )}
-                onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
-              >
-                <User className="h-3.5 w-3.5" />
-                Access Record
-              </Button>
+              {!isAssistant && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "group/btn w-full gap-2 rounded-xl border-primary/20",
+                    "bg-primary/5 font-bold text-primary transition-all",
+                    "duration-300 hover:bg-primary hover:text-white",
+                  )}
+                  onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  Access Record
+                </Button>
+              )}
               {slip.studentCorUrl && (
                 <Button
                   variant="outline"
@@ -732,7 +737,7 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-5">
-              {auditEntries.map((entry, idx) => (
+              {auditEntries.map((entry: any, idx: number) => (
                 <div key={idx} className="group flex items-start gap-4">
                   <div className="relative mt-1">
                     <div

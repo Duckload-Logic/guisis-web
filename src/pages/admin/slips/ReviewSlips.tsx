@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useUrlState } from "@/hooks";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Archive,
   Clock3,
@@ -101,6 +101,10 @@ function getTicketSuffix(rawCode: string): string {
 
 export default function ReviewSlips() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const slipsBasePath = location.pathname.startsWith("/assistant")
+    ? "/assistant/slips"
+    : "/admin/slips";
   const { mutateAsync: claimTicket } = useClaimTicket();
 
   const [searchTerm, setSearchTerm] = useUrlState("q", "");
@@ -225,7 +229,7 @@ export default function ReviewSlips() {
       if (slip.ticket?.isVerified) {
         triggerToast("Ticket is already verified. Opening slip details.");
         setIsVerifyModalOpen(false);
-        navigate(`/admin/slips/${slip.id}`);
+        navigate(`${slipsBasePath}/${slip.id}`);
         return;
       }
 
@@ -244,7 +248,7 @@ export default function ReviewSlips() {
       }
 
       setIsVerifyModalOpen(false);
-      navigate(`/admin/slips/${slip.id}`);
+      navigate(`${slipsBasePath}/${slip.id}`);
     } catch (error: any) {
       if (error.response?.status === 404) {
         setIsVerifyModalOpen(false);
@@ -423,7 +427,7 @@ export default function ReviewSlips() {
   };
 
   const handleViewSlip = (slip: Slip) => {
-    navigate(`/admin/slips/${slip.id}`);
+    navigate(`${slipsBasePath}/${slip.id}`);
   };
 
   const isPageLoading = isStatusesLoading;
@@ -438,7 +442,7 @@ export default function ReviewSlips() {
       >
         <Button
           variant="outline"
-          onClick={() => navigate("/admin/slips/logs")}
+          onClick={() => navigate(`${slipsBasePath}/logs`)}
           className="h-10 gap-2 rounded-xl px-4 shadow-sm"
         >
           <Archive className="h-4 w-4" />

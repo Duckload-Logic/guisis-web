@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useUrlState } from "@/hooks";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   Card,
@@ -26,6 +26,9 @@ import { cn } from "@/lib/utils";
 
 export default function SlipLogs() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAssistant = location.pathname.startsWith("/assistant");
+  const slipsBasePath = isAssistant ? "/assistant/slips" : "/admin/slips";
 
   // Memoize year and month lists to keep them stable across renders
   const monthsList = useMemo(() => getMonthsList(), []);
@@ -140,7 +143,7 @@ export default function SlipLogs() {
 
   // Handle actions
   const handleViewSlip = (slip: Slip) => {
-    navigate(`/admin/slips/${slip.id}`);
+    navigate(`${slipsBasePath}/${slip.id}`);
   };
 
   const isPageLoading = isLoading || isStatsLoading;

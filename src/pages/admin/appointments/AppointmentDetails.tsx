@@ -982,17 +982,39 @@ export default function AppointmentDetails() {
                   )}
 
                 {appointment?.startedAt && !appointment?.completedAt && (
-                  <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    <div className="flex items-center gap-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-bold text-xs">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        </span>
+                        <span>Session In Progress</span>
+                      </div>
+                      <span className="font-mono text-[11px] opacity-90">
+                        Started: {format12HourTime(appointment.startedAt)}
                       </span>
-                      <span>Session In Progress</span>
                     </div>
-                    <span className="font-mono text-[11px]">
-                      Started: {format12HourTime(appointment.startedAt)}
-                    </span>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        onClick={() => handleActionClick("Complete")}
+                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
+                      >
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Complete Session
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleActionClick("Cancel")}
+                        className="h-9 gap-1.5 rounded-lg border-red-500/30 text-red-600 hover:bg-red-500/10 dark:text-red-400 font-bold text-xs transition-all"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        Cancel Session
+                      </Button>
+                    </div>
                   </div>
                 )}
 
