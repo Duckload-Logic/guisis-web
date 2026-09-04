@@ -27,6 +27,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import {
   format12HourTime,
@@ -104,13 +113,22 @@ export default function AppointmentDetails() {
   const startAppointmentMutation = useStartAppointment();
   const { triggerToast } = useToast();
 
-  const handleStartAppointment = async () => {
+  const [isStartConfirming, setIsStartConfirming] = useState(false);
+
+  const handleStartAppointment = () => {
+    if (!id) return;
+    setIsStartConfirming(true);
+  };
+
+  const handleConfirmStartAppointment = async () => {
     if (!id) return;
     try {
       await startAppointmentMutation.mutateAsync(id);
-      triggerToast("Appointment session started on-site!");
+      triggerToast("✓ On-site appointment session started!");
+      setIsStartConfirming(false);
     } catch {
       triggerToast("Failed to start appointment session");
+      setIsStartConfirming(false);
     }
   };
 
@@ -1187,6 +1205,37 @@ export default function AppointmentDetails() {
             currentTimeSlotId={appointment.timeSlot.id}
           />
         )}
+
+        <AlertDialog
+          open={isStartConfirming}
+          onOpenChange={setIsStartConfirming}
+        >
+          <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+            <AlertDialogHeader>
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Play className="h-5 w-5 fill-current" />
+              </div>
+              <AlertDialogTitle className="text-xl font-bold">
+                Start On-Site Counseling Session
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+                Confirm student <strong className="text-foreground">{fullName || "the student"}</strong> is present in the office to start the counseling session? This will begin tracking session duration.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
+              <AlertDialogCancel className="rounded-xl font-bold">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmStartAppointment}
+                disabled={startAppointmentMutation.isPending}
+                className="rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-md"
+              >
+                {startAppointmentMutation.isPending ? "Starting..." : "Start Session"}
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* COR Preview Modal */}
         <CORPreviewDialog
