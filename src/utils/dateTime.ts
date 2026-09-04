@@ -210,19 +210,30 @@ export function getYearsList(): Array<{ id: number; name: string }> {
  * @returns Human readable duration (e.g., "2d 4h", "1h 15m", "45m", "< 1m")
  */
 export const formatProcessDuration = (
-  startedAt?: string | Date | null,
-  completedAt?: string | Date | null,
+  startedAt?: any,
+  completedAt?: any,
 ): string => {
-  if (!startedAt) return "N/A";
-  const start = typeof startedAt === "string" ? new Date(startedAt) : startedAt;
-  if (isNaN(start.getTime())) return "N/A";
+  const startRaw =
+    typeof startedAt === "object" && startedAt !== null && "time" in startedAt
+      ? startedAt.time
+      : startedAt;
 
-  const end = completedAt
-    ? typeof completedAt === "string"
-      ? new Date(completedAt)
-      : completedAt
+  if (!startRaw) return "Not Started";
+  const start =
+    typeof startRaw === "string" ? new Date(startRaw) : (startRaw as Date);
+  if (!start || isNaN(start.getTime())) return "Not Started";
+
+  const endRaw =
+    typeof completedAt === "object" && completedAt !== null && "time" in completedAt
+      ? completedAt.time
+      : completedAt;
+
+  const end = endRaw
+    ? typeof endRaw === "string"
+      ? new Date(endRaw)
+      : (endRaw as Date)
     : new Date();
-  if (isNaN(end.getTime())) return "N/A";
+  if (!end || isNaN(end.getTime())) return "N/A";
 
   const diffMs = end.getTime() - start.getTime();
   if (diffMs <= 0) return "< 1m";

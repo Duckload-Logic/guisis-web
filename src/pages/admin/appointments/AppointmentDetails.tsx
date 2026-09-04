@@ -646,8 +646,8 @@ export default function AppointmentDetails() {
                     <Clock3 className="mr-1 inline h-3 w-3" />
                     Turnaround:{" "}
                     {formatProcessDuration(
-                      appointment.startedAt?.time || appointment.createdAt,
-                      appointment.completedAt?.time,
+                      appointment.startedAt,
+                      appointment.completedAt,
                     )}
                   </Badge>
                 </div>

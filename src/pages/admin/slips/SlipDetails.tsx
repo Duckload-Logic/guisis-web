@@ -446,7 +446,7 @@ export default function SlipDetails() {
                   className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
                 >
                   <Clock3 className="mr-1 inline h-3 w-3" />
-                  Turnaround: {formatProcessDuration(slip.startedAt?.time || slip.createdAt, slip.completedAt?.time)}
+                  Turnaround: {formatProcessDuration(slip.startedAt, slip.completedAt)}
                 </Badge>
               </div>
             </CardHeader>
