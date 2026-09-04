@@ -61,20 +61,28 @@ export default function SlipDetails() {
   const [actionType, setActionType] = useState<ActionType>(null);
   const [reason, setReason] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isVerifyConfirming, setIsVerifyConfirming] = useState(false);
   const [showCorPreview, setShowCorPreview] = useState(false);
 
   const claimTicketMutation = useClaimTicket();
   const isClaiming = claimTicketMutation.isPending;
   const { triggerToast } = useToast();
 
-  const handleVerifyTicket = async () => {
-    if (!slip.ticket?.ticketCode) return;
+  const handleVerifyTicket = () => {
+    if (!slip?.ticket?.ticketCode) return;
+    setIsVerifyConfirming(true);
+  };
+
+  const handleConfirmVerifyTicket = async () => {
+    if (!slip?.ticket?.ticketCode) return;
     try {
       await claimTicketMutation.mutateAsync(slip.ticket.ticketCode);
-      triggerToast("✓ Ticket verified successfully!");
+      triggerToast("✓ Process started & ticket verified successfully!");
+      setIsVerifyConfirming(false);
       refetch();
     } catch (error: any) {
       triggerToast(error.message || "Failed to verify ticket");
+      setIsVerifyConfirming(false);
     }
   };
 
@@ -882,6 +890,39 @@ export default function SlipDetails() {
               )}
             >
               {actionType === "approve" ? "Confirm Approval" : "Submit Action"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Verify & Start Process Dialog */}
+      <AlertDialog
+        open={isVerifyConfirming}
+        onOpenChange={setIsVerifyConfirming}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+          <AlertDialogHeader>
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold">
+              Start Admission Slip Process
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+              Confirm student <strong className="text-foreground">{fullName}</strong> is present in the office to claim ticket{" "}
+              <span className="font-mono font-bold text-foreground">SLIP-{slip?.ticket?.ticketCode}</span>? This will start tracking process duration.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
+            <AlertDialogCancel className="rounded-xl font-bold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmVerifyTicket}
+              disabled={isClaiming}
+              className="rounded-xl bg-green-600 font-bold text-white hover:bg-green-700 shadow-md"
+            >
+              {isClaiming ? "Starting..." : "Start Process & Verify"}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

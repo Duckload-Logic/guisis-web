@@ -16,6 +16,7 @@ import { Html5Qrcode } from "html5-qrcode";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/context";
 
 import {
@@ -120,6 +121,11 @@ export default function ReviewSlips() {
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [showNotFound, setShowNotFound] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState<{
+    slip: Slip;
+    code: string;
+  } | null>(null);
+  const [isClaimingPending, setIsClaimingPending] = useState(false);
   const { triggerToast } = useToast();
 
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
@@ -233,22 +239,7 @@ export default function ReviewSlips() {
         return;
       }
 
-      try {
-        await claimTicket(finalCode);
-        triggerToast("Ticket successfully verified!");
-      } catch (claimError: any) {
-        const claimMessage =
-          claimError.response?.data?.error || claimError.message || "";
-
-        if (claimMessage.toLowerCase().includes("already verified")) {
-          triggerToast("Ticket is already verified. Opening slip details.");
-        } else {
-          throw claimError;
-        }
-      }
-
-      setIsVerifyModalOpen(false);
-      navigate(`${slipsBasePath}/${slip.id}`);
+      setPendingVerification({ slip, code: finalCode });
     } catch (error: any) {
       if (error.response?.status === 404) {
         setIsVerifyModalOpen(false);
@@ -263,6 +254,34 @@ export default function ReviewSlips() {
     } finally {
       verificationInFlightRef.current = false;
       setIsVerifying(false);
+    }
+  };
+
+  const handleConfirmClaimPending = async () => {
+    if (!pendingVerification) return;
+    setIsClaimingPending(true);
+    try {
+      await claimTicket(pendingVerification.code);
+      triggerToast("✓ Process started & ticket verified!");
+      setIsVerifyModalOpen(false);
+      const targetId = pendingVerification.slip.id;
+      setPendingVerification(null);
+      navigate(`${slipsBasePath}/${targetId}`);
+    } catch (error: any) {
+      const claimMessage =
+        error.response?.data?.error || error.message || "";
+
+      if (claimMessage.toLowerCase().includes("already verified")) {
+        triggerToast("Ticket is already verified. Opening slip details.");
+        setIsVerifyModalOpen(false);
+        const targetId = pendingVerification.slip.id;
+        setPendingVerification(null);
+        navigate(`${slipsBasePath}/${targetId}`);
+      } else {
+        triggerToast(claimMessage || "Failed to start process");
+      }
+    } finally {
+      setIsClaimingPending(false);
     }
   };
 
@@ -423,6 +442,7 @@ export default function ReviewSlips() {
 
     if (!open) {
       void stopScanner();
+      setPendingVerification(null);
     }
   };
 
@@ -672,7 +692,65 @@ export default function ReviewSlips() {
           </AlertDialogHeader>
 
           <div className="p-5">
-            {activeTab === "qr" ? (
+            {pendingVerification ? (
+              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-green-700 dark:text-green-300 flex items-center gap-1.5">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      Ticket Match Found
+                    </span>
+                    <Badge variant="outline" className="font-mono text-xs font-bold border-green-500/30 bg-background text-green-700 dark:text-green-300">
+                      SLIP-{pendingVerification.code}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-base font-bold text-foreground">
+                      {[
+                        pendingVerification.slip.user?.firstName,
+                        pendingVerification.slip.user?.lastName,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Student No: <span className="font-mono font-semibold text-foreground">{pendingVerification.slip.studentNumber || pendingVerification.slip.user?.studentNumber || "N/A"}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Slip Category: <strong className="text-foreground">{pendingVerification.slip.category?.name || "Admission Slip"}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed px-1">
+                  Is the student physically present in the office? Click below to start duration tracking and open the details.
+                </p>
+
+                <div className="flex flex-col gap-2.5 pt-2">
+                  <Button
+                    type="button"
+                    onClick={handleConfirmClaimPending}
+                    disabled={isClaimingPending}
+                    className="h-11 w-full gap-2 rounded-xl bg-green-600 font-bold text-white shadow-md hover:bg-green-700 transition-all hover:scale-[1.01]"
+                  >
+                    {isClaimingPending ? (
+                      <Clock3 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4" />
+                    )}
+                    {isClaimingPending ? "Starting Process..." : "Start Process & Open Details"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setPendingVerification(null)}
+                    className="h-10 w-full rounded-xl text-xs font-semibold"
+                  >
+                    Cancel / Scan Another
+                  </Button>
+                </div>
+              </div>
+            ) : activeTab === "qr" ? (
               <div className="space-y-4">
                 <div
                   className={cn(
