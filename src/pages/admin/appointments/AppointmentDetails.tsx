@@ -960,8 +960,8 @@ export default function AppointmentDetails() {
               <CardContent className="p-5 space-y-3">
                 {appointment &&
                   !appointment.startedAt &&
-                  appointment.status?.name !== "Completed" &&
-                  appointment.status?.name !== "Cancelled" && (
+                  (appointment.status?.name === "Scheduled" ||
+                    appointment.status?.name === "Rescheduled") && (
                     <Button
                       onClick={handleStartAppointment}
                       disabled={startAppointmentMutation.isPending}
