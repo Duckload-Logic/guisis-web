@@ -30,6 +30,7 @@ import {
   RefreshCw,
   Info,
   X,
+  MapPin,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -625,22 +626,35 @@ export default function SubmitSlip() {
 
                 <Card
                   className={cn(
-                    "border-amber-200/60 bg-amber-50/50",
-                    "dark:border-amber-900/30 dark:bg-amber-950/10",
+                    "border-amber-300 bg-amber-50/80 shadow-sm",
+                    "dark:border-amber-900/50 dark:bg-amber-950/20",
                   )}
                 >
-                  <CardContent className="px-4 py-3">
-                    <div className="flex items-start gap-2.5">
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <p
-                        className={cn(
-                          "text-xs text-amber-700",
-                          "dark:text-amber-200",
-                        )}
-                      >
-                        Accepted: PDF, JPG, PNG (Max 5MB per file).
-                      </p>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-sm">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Important Document Submission Guidelines</span>
                     </div>
+                    <ul className="ml-6 list-disc space-y-1.5 text-xs text-amber-800 dark:text-amber-300 font-medium">
+                      <li>
+                        <strong>Excuse Letter:</strong> Must be signed by your parent or legal guardian.
+                      </li>
+                      <li>
+                        <strong>Parent / Guardian ID:</strong> Must be a photocopy of the parent&apos;s valid ID with their signature.
+                      </li>
+                      <li>
+                        <strong>Medical Certificate (for medical cases):</strong> Must be signed by the University nurse before submitting in the system.
+                      </li>
+                      <li className="text-amber-950 dark:text-amber-100 font-bold pt-0.5 flex items-start gap-1.5">
+                        <MapPin className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                        <span>
+                          <strong>On-Site Requirement:</strong> All documents submitted in the system should be provided on-site when claiming your admission slip at the Guidance Office.
+                        </span>
+                      </li>
+                    </ul>
+                    <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 pt-2 border-t border-amber-200/80 dark:border-amber-900/40">
+                      Accepted File Formats: PDF, JPG, PNG (Max 5MB per document category).
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -1239,6 +1253,40 @@ export default function SubmitSlip() {
                             )}
                           >
                             <div className="space-y-4">
+                              <div
+                                className={cn(
+                                  "flex items-start gap-3 rounded-xl border",
+                                  "border-blue-200 bg-blue-50 p-4",
+                                  "text-blue-900 shadow-sm",
+                                  "dark:border-blue-900/50",
+                                  "dark:bg-blue-950/20 dark:text-blue-200",
+                                )}
+                              >
+                                <Info
+                                  className={cn(
+                                    "mt-0.5 h-5 w-5 shrink-0",
+                                    "text-blue-600 dark:text-blue-400",
+                                  )}
+                                />
+                                <div className="text-sm">
+                                  <p className="mb-1 font-semibold">
+                                    University Nurse Sign-off Requirement:
+                                  </p>
+                                  <p
+                                    className={cn(
+                                      "text-blue-800",
+                                      "dark:text-blue-300",
+                                    )}
+                                  >
+                                    For all medical cases, the medical certificate{" "}
+                                    <strong>
+                                      must be signed by the University nurse
+                                    </strong>{" "}
+                                    before submitting in the system.
+                                  </p>
+                                </div>
+                              </div>
+
                               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="flex flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
                                   <h4 className="mb-3 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">

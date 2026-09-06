@@ -193,6 +193,7 @@ export default function Layout({
     if (roleName === "admin") return "Admin Account";
     if (roleName === "superadmin") return "Super Admin Account";
     if (roleName === "developer") return "Developer Account";
+    if (roleName.includes("assistant")) return "Student Assistant Account";
     return "Student Account";
   };
 

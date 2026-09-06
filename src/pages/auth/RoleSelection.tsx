@@ -11,6 +11,8 @@ const ROLE_ICONS: Record<string, React.ReactNode> = {
   admin: <Users className="h-8 w-8" />,
   superadmin: <Shield className="h-8 w-8" />,
   developer: <Code className="h-8 w-8" />,
+  studentassistant: <Users className="h-8 w-8" />,
+  assistant: <Users className="h-8 w-8" />,
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -25,6 +27,12 @@ const ROLE_COLORS: Record<string, string> = {
   developer:
     "from-amber-500/20 to-orange-500/20 " +
     "text-amber-500 border-amber-500/20",
+  studentassistant:
+    "from-amber-500/20 to-orange-500/20 " +
+    "text-amber-500 border-amber-500/20",
+  assistant:
+    "from-amber-500/20 to-orange-500/20 " +
+    "text-amber-500 border-amber-500/20",
 };
 
 const ROLE_ROUTES: Record<string, string> = {
@@ -33,6 +41,8 @@ const ROLE_ROUTES: Record<string, string> = {
   counselor: "/admin",
   superadmin: "/superadmin",
   developer: "/developer",
+  studentassistant: "/assistant",
+  assistant: "/assistant",
 };
 
 export default function RoleSelection() {

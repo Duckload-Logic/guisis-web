@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   useGetSlipById,
   useUpdateSlipStatus,
@@ -44,12 +44,16 @@ import { usePageMetadata, useToast } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { cn } from "@/lib/utils";
 import { parseAuditTrail } from "@/utils/auditTrail";
+import { formatProcessDuration } from "@/utils/dateTime";
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAssistant = location.pathname.startsWith("/assistant");
+  const slipsBasePath = isAssistant ? "/assistant/slips" : "/admin/slips";
   const { data: slip, isLoading, isError, refetch } = useGetSlipById(id || "");
   const { data: attachments } = useGetSlipAttachments(id || "");
   const { mutate: updateSlipStatus, isPending: isUpdatingStatus } =
@@ -57,20 +61,28 @@ export default function SlipDetails() {
   const [actionType, setActionType] = useState<ActionType>(null);
   const [reason, setReason] = useState("");
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isVerifyConfirming, setIsVerifyConfirming] = useState(false);
   const [showCorPreview, setShowCorPreview] = useState(false);
 
   const claimTicketMutation = useClaimTicket();
   const isClaiming = claimTicketMutation.isPending;
   const { triggerToast } = useToast();
 
-  const handleVerifyTicket = async () => {
-    if (!slip.ticket?.ticketCode) return;
+  const handleVerifyTicket = () => {
+    if (!slip?.ticket?.ticketCode) return;
+    setIsVerifyConfirming(true);
+  };
+
+  const handleConfirmVerifyTicket = async () => {
+    if (!slip?.ticket?.ticketCode) return;
     try {
       await claimTicketMutation.mutateAsync(slip.ticket.ticketCode);
-      triggerToast("✓ Ticket verified successfully!");
+      triggerToast("✓ Process started & ticket verified successfully!");
+      setIsVerifyConfirming(false);
       refetch();
     } catch (error: any) {
       triggerToast(error.message || "Failed to verify ticket");
+      setIsVerifyConfirming(false);
     }
   };
 
@@ -111,7 +123,7 @@ export default function SlipDetails() {
           Error loading admission slip
         </p>
         <Button
-          onClick={() => navigate("/admin/slips")}
+          onClick={() => navigate(slipsBasePath)}
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -126,7 +138,7 @@ export default function SlipDetails() {
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
         <p className="text-muted-foreground">Admission slip not found</p>
         <Button
-          onClick={() => navigate("/admin/slips")}
+          onClick={() => navigate(slipsBasePath)}
           variant="outline"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -282,19 +294,21 @@ export default function SlipDetails() {
             </div>
 
             <div className="grid w-full grid-cols-1 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "group/btn w-full gap-2 rounded-xl border-primary/20",
-                  "bg-primary/5 font-bold text-primary transition-all",
-                  "duration-300 hover:bg-primary hover:text-white",
-                )}
-                onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
-              >
-                <User className="h-3.5 w-3.5" />
-                Access Record
-              </Button>
+              {!isAssistant && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "group/btn w-full gap-2 rounded-xl border-primary/20",
+                    "bg-primary/5 font-bold text-primary transition-all",
+                    "duration-300 hover:bg-primary hover:text-white",
+                  )}
+                  onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  Access Record
+                </Button>
+              )}
               {slip.studentCorUrl && (
                 <Button
                   variant="outline"
@@ -435,6 +449,13 @@ export default function SlipDetails() {
                     {slip.status.name}
                   </Badge>
                 )}
+                <Badge
+                  variant="outline"
+                  className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                >
+                  <Clock3 className="mr-1 inline h-3 w-3" />
+                  Turnaround: {formatProcessDuration(slip.startedAt, slip.completedAt)}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6 p-5 sm:p-6">
@@ -724,7 +745,7 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-5">
-              {auditEntries.map((entry, idx) => (
+              {auditEntries.map((entry: any, idx: number) => (
                 <div key={idx} className="group flex items-start gap-4">
                   <div className="relative mt-1">
                     <div
@@ -869,6 +890,39 @@ export default function SlipDetails() {
               )}
             >
               {actionType === "approve" ? "Confirm Approval" : "Submit Action"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Verify & Start Process Dialog */}
+      <AlertDialog
+        open={isVerifyConfirming}
+        onOpenChange={setIsVerifyConfirming}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+          <AlertDialogHeader>
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold">
+              Start Admission Slip Process
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+              Confirm student <strong className="text-foreground">{fullName}</strong> is present in the office to claim ticket{" "}
+              <span className="font-mono font-bold text-foreground">SLIP-{slip?.ticket?.ticketCode}</span>? This will start tracking process duration.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
+            <AlertDialogCancel className="rounded-xl font-bold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmVerifyTicket}
+              disabled={isClaiming}
+              className="rounded-xl bg-green-600 font-bold text-white hover:bg-green-700 shadow-md"
+            >
+              {isClaiming ? "Starting..." : "Start Process & Verify"}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

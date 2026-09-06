@@ -4,6 +4,7 @@ import {
   useAppointment,
   useStatuses,
   useUpdateAppointment,
+  useStartAppointment,
 } from "@/features/appointments/hooks";
 import {
   User,
@@ -20,14 +21,28 @@ import {
   Fingerprint,
   MessageSquare,
   StickyNote,
+  Play,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-import { format12HourTime, formatDate } from "@/utils/dateTime";
-import { usePageMetadata } from "@/context";
+import {
+  format12HourTime,
+  formatDate,
+  formatProcessDuration,
+} from "@/utils/dateTime";
+import { usePageMetadata, useToast } from "@/context";
 import { parseAuditTrail } from "@/utils/auditTrail";
 import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
 import RescheduleModal from "@/features/appointments/components/RescheduleModal";
@@ -86,7 +101,7 @@ function getAppointmentUrgency(appointment?: any) {
     description: "Standard guidance priority for regular processing.",
     className:
       "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  };  
+  };
 }
 
 export default function AppointmentDetails() {
@@ -95,6 +110,27 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { data: appointmentStatuses } = useStatuses();
   const { mutateAsync: updateAppointment } = useUpdateAppointment();
+  const startAppointmentMutation = useStartAppointment();
+  const { triggerToast } = useToast();
+
+  const [isStartConfirming, setIsStartConfirming] = useState(false);
+
+  const handleStartAppointment = () => {
+    if (!id) return;
+    setIsStartConfirming(true);
+  };
+
+  const handleConfirmStartAppointment = async () => {
+    if (!id) return;
+    try {
+      await startAppointmentMutation.mutateAsync(id);
+      triggerToast("✓ On-site appointment session started!");
+      setIsStartConfirming(false);
+    } catch {
+      triggerToast("Failed to start appointment session");
+      setIsStartConfirming(false);
+    }
+  };
 
   const auditEntries = useMemo(() => {
     return parseAuditTrail(appointment?.adminNotes);
@@ -136,7 +172,8 @@ export default function AppointmentDetails() {
     : "";
 
   const initials = appointment?.user
-    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() || "ST"
+    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() ||
+      "ST"
     : "ST";
 
   const studentProfilePictureUrl = getProfilePictureUrl(
@@ -620,6 +657,17 @@ export default function AppointmentDetails() {
                   >
                     Urgency: {urgencyInfo.label}
                   </Badge>
+                  <Badge
+                    variant="outline"
+                    className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                  >
+                    <Clock3 className="mr-1 inline h-3 w-3" />
+                    Turnaround:{" "}
+                    {formatProcessDuration(
+                      appointment.startedAt,
+                      appointment.completedAt,
+                    )}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-5 sm:p-6">
@@ -927,7 +975,67 @@ export default function AppointmentDetails() {
                   Administrative Controls
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-5">
+              <CardContent className="p-5 space-y-3">
+                {appointment &&
+                  !appointment.startedAt &&
+                  (appointment.status?.name === "Scheduled" ||
+                    appointment.status?.name === "Rescheduled") && (
+                    <Button
+                      onClick={handleStartAppointment}
+                      disabled={startAppointmentMutation.isPending}
+                      className={cn(
+                        "group/start h-11 w-full items-center justify-between",
+                        "rounded-xl border border-emerald-500/30 bg-emerald-600 text-white shadow-sm",
+                        "transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md",
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Play className="h-4 w-4 fill-white" />
+                        <span className="text-xs font-bold tracking-wider">
+                          Start Appointment (On-Site)
+                        </span>
+                      </div>
+                      <Clock3 className="h-4 w-4 opacity-80" />
+                    </Button>
+                  )}
+
+                {appointment?.startedAt && !appointment?.completedAt && (
+                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-bold text-xs">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        </span>
+                        <span>Session In Progress</span>
+                      </div>
+                      <span className="font-mono text-[11px] opacity-90">
+                        Started: {format12HourTime(appointment.startedAt)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        onClick={() => handleActionClick("Complete")}
+                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
+                      >
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Complete Session
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleActionClick("Cancel")}
+                        className="h-9 gap-1.5 rounded-lg border-red-500/30 text-red-600 hover:bg-red-500/10 dark:text-red-400 font-bold text-xs transition-all"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        Cancel Session
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {allowedActions.length > 0 ? (
                   <div className="flex flex-col gap-3">
                     {allowedActions.map((action) => (
@@ -1097,6 +1205,37 @@ export default function AppointmentDetails() {
             currentTimeSlotId={appointment.timeSlot.id}
           />
         )}
+
+        <AlertDialog
+          open={isStartConfirming}
+          onOpenChange={setIsStartConfirming}
+        >
+          <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+            <AlertDialogHeader>
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Play className="h-5 w-5 fill-current" />
+              </div>
+              <AlertDialogTitle className="text-xl font-bold">
+                Start On-Site Counseling Session
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
+                Confirm student <strong className="text-foreground">{fullName || "the student"}</strong> is present in the office to start the counseling session? This will begin tracking session duration.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
+              <AlertDialogCancel className="rounded-xl font-bold">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmStartAppointment}
+                disabled={startAppointmentMutation.isPending}
+                className="rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-md"
+              >
+                {startAppointmentMutation.isPending ? "Starting..." : "Start Session"}
+              </AlertDialogAction>
+            </div>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* COR Preview Modal */}
         <CORPreviewDialog

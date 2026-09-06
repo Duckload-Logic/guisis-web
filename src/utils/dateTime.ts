@@ -202,3 +202,51 @@ export function getYearsList(): Array<{ id: number; name: string }> {
     name: year.toString(),
   }));
 }
+
+/**
+ * Calculates process duration between startedAt and completedAt
+ * @param startedAt - Start ISO string or Date
+ * @param completedAt - Optional Completion ISO string or Date
+ * @returns Human readable duration (e.g., "2d 4h", "1h 15m", "45m", "< 1m")
+ */
+export const formatProcessDuration = (
+  startedAt?: any,
+  completedAt?: any,
+): string => {
+  const startRaw =
+    typeof startedAt === "object" && startedAt !== null && "time" in startedAt
+      ? startedAt.time
+      : startedAt;
+
+  if (!startRaw) return "Not Started";
+  const start =
+    typeof startRaw === "string" ? new Date(startRaw) : (startRaw as Date);
+  if (!start || isNaN(start.getTime())) return "Not Started";
+
+  const endRaw =
+    typeof completedAt === "object" && completedAt !== null && "time" in completedAt
+      ? completedAt.time
+      : completedAt;
+
+  const end = endRaw
+    ? typeof endRaw === "string"
+      ? new Date(endRaw)
+      : (endRaw as Date)
+    : new Date();
+  if (!end || isNaN(end.getTime())) return "N/A";
+
+  const diffMs = end.getTime() - start.getTime();
+  if (diffMs <= 0) return "< 1m";
+
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const days = Math.floor(diffMins / (60 * 24));
+  const hours = Math.floor((diffMins % (60 * 24)) / 60);
+  const mins = diffMins % 60;
+
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins > 0 || parts.length === 0) parts.push(`${mins}m`);
+
+  return parts.join(" ");
+};

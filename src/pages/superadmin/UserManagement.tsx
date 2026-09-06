@@ -131,6 +131,7 @@ export default function UserManagement() {
     { id: 2, displayName: "Admin" },
     { id: 3, displayName: "Superadmin" },
     { id: 4, displayName: "Developer" },
+    { id: 5, displayName: "Student Assistant" },
   ];
 
   const statusOptions = [
@@ -237,6 +238,9 @@ export default function UserManagement() {
       case "admin":
       case "counselor":
         return "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
+      case "student assistant":
+      case "studentassistant":
+        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       case "student":
         return "bg-secondary/10 text-secondary border-secondary/20";
       default:

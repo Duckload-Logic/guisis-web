@@ -24,6 +24,8 @@ export const ROLE_ROUTES_INTERNAL = Object.freeze({
   admin: "/admin",
   superadmin: "/superadmin",
   developer: "/developer",
+  studentassistant: "/assistant",
+  assistant: "/assistant",
 } as const);
 
 /**
