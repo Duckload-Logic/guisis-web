@@ -240,11 +240,6 @@ export default function LogsTable({
 
   const renderSortableHeader = (label: string, sortKey: string) => {
     const isActive = selectedSort === sortKey;
-    const Icon = isActive
-      ? selectedOrder === "desc"
-        ? ArrowDown
-        : ArrowUp
-      : ArrowUp;
 
     return (
       <button
@@ -257,21 +252,26 @@ export default function LogsTable({
           setCurrentPage(1);
         }}
         className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2 py-1 outline-none",
+          "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
           isActive
-            ? "text-[#800000]"
+            ? "text-[#800000] dark:text-red-400"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
-        {label}
-        <Icon
-          className={cn(
-            "h-3.5 w-3.5 shrink-0",
-            isActive ? "opacity-100" : "opacity-40",
-          )}
-          strokeWidth={isActive ? 2.5 : 2}
-        />
+        <span>{label}</span>
+        {isActive &&
+          (selectedOrder === "desc" ? (
+            <ArrowDown
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ) : (
+            <ArrowUp
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ))}
       </button>
     );
   };
