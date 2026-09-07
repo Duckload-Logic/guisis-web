@@ -12,10 +12,11 @@ import {
 } from "lucide-react";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUI, useAuth } from "@/context";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 const HOME_HREF = "/";
 const SETTINGS_HREF = "/settings";
@@ -619,6 +620,7 @@ function MobileSettingsContent({
         )}
       >
         <Avatar className="h-12 w-12">
+          <AvatarImage src={getProfilePictureUrl(user?.profilePicture)} />
           <AvatarFallback className="bg-primary text-primary-foreground">
             {user?.firstName?.charAt(0)}
             {user?.lastName?.charAt(0)}
@@ -735,8 +737,8 @@ function MobileSettingsContent({
         }}
         className={cn(
           "flex w-full items-center justify-center gap-3 rounded-xl",
-          "bg-red-500/10 p-4 font-bold text-red-500 transition",
-          "hover:bg-red-500/20",
+          "bg-destructive/10 p-4 font-bold text-destructive transition",
+          "hover:bg-destructive/20",
         )}
       >
         <LogOut size={20} />

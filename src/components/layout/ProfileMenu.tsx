@@ -250,8 +250,9 @@ export default function ProfileMenu({
               disabled={isLoggingOut}
               className={cn(
                 "flex w-full items-center gap-3 border-t border-border px-4",
-                "py-3 text-sm text-red-500 transition hover:bg-red-500/10",
-                "disabled:pointer-events-none disabled:opacity-50",
+                "py-3 text-sm text-destructive transition",
+                "hover:bg-destructive/10 disabled:pointer-events-none",
+                "disabled:opacity-50",
               )}
             >
               <LogOut size={16} />

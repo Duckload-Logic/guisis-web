@@ -122,7 +122,10 @@ export default function RoleSelection() {
           <Button
             variant="ghost"
             onClick={logout}
-            className="rounded-full text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+            className={cn(
+              "rounded-full text-muted-foreground",
+              "hover:bg-destructive/10 hover:text-destructive",
+            )}
           >
             <LogOut className="mr-2 h-4 w-4" /> Not your account? Logout
           </Button>

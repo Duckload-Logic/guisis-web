@@ -26,8 +26,6 @@ export default function ConsentModal({
 
   if (!open) return null;
 
-  const accentClass = role === "admin" ? "bg-[#8f1113]" : "bg-[#c62828]";
-
   return (
     <Dialog
       open={open}
@@ -41,7 +39,11 @@ export default function ConsentModal({
         )}
         hasCloseButton={false}
       >
-        <div className={`mb-6 rounded-xl px-6 py-4 text-white ${accentClass}`}>
+        <div
+          className={cn(
+            "mb-6 rounded-xl bg-primary px-6 py-4 text-primary-foreground",
+          )}
+        >
           <DialogTitle asChild>
             <h2
               id="terms-title"
@@ -104,7 +106,7 @@ export default function ConsentModal({
               className={cn(
                 "mt-1 flex h-6 w-6 shrink-0 items-center justify-center",
                 "rounded-md border border-slate-400 bg-glass-bg transition",
-                "peer-checked:border-[#8f1113] peer-checked:bg-[#8f1113]",
+                "peer-checked:border-primary peer-checked:bg-primary",
               )}
             >
               {agreed && (
@@ -159,10 +161,11 @@ export default function ConsentModal({
             disabled={!agreed || loading}
             onClick={onAccept}
             className={cn(
-              "min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold transition-all",
-              (!agreed || loading)
-                ? "border-0 border-transparent bg-slate-300 text-slate-500 outline-none ring-0 hover:bg-slate-300"
-                : `text-white ${accentClass}`
+              "min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold",
+              "transition-all",
+              !agreed || loading
+                ? "border-0 border-transparent bg-muted text-muted-foreground"
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
             {loading ? "Saving..." : "Continue"}

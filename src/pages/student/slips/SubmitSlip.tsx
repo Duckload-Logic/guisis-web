@@ -1594,7 +1594,7 @@ export default function SubmitSlip() {
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-300",
-                      "bg-gradient-to-r from-[#8f1113] to-red-500",
+                      "bg-gradient-to-r from-primary to-primary/80",
                     )}
                     style={{ width: `${uploadProgress}%` }}
                   />

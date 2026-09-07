@@ -89,8 +89,9 @@ export default function LoginForm({
             type="submit"
             disabled={isLoading}
             className={cn(
-              "h-12 w-full rounded-2xl bg-[#8f1113] text-sm font-semibold",
-              "text-white shadow-lg transition hover:bg-[#6a0d0d] sm:text-base",
+              "h-12 w-full rounded-2xl bg-primary text-sm font-semibold",
+              "text-primary-foreground shadow-lg transition",
+              "hover:bg-primary/90 sm:text-base",
             )}
           >
             {isLoading ? (
@@ -133,7 +134,7 @@ export default function LoginForm({
               "font-semibold transition-colors",
               "hover:bg-yellow-500 sm:text-base",
               "shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
-                "transition-all duration-200",
+              "transition-all duration-200",
             )}
           />
         </div>
