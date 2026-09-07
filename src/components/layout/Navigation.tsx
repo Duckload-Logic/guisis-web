@@ -8,6 +8,7 @@ import {
   Gavel,
   ChevronRight,
   LayoutDashboard,
+  MoreHorizontal,
 } from "lucide-react";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 const HOME_HREF = "/";
 const SETTINGS_HREF = "/settings";
 const LOGO_SRC = "/logo.svg";
+const MAX_PRIMARY_MOBILE_ITEMS = 4;
 
 /*
  * Desktop sidebar sizing.
@@ -68,13 +70,30 @@ function NavItem({
       <Link
         to={item.href}
         onClick={onClick}
-        className={`group flex min-h-11 min-w-11 flex-col items-center justify-center rounded-xl p-2 ${
-          active ? "text-primary" : "text-muted-foreground"
-        }`}
+        className={cn(
+          "group flex flex-1 flex-col items-center justify-center",
+          "min-w-0 max-w-[72px] rounded-xl py-1.5 px-0.5",
+          "transition-all duration-150 active:scale-95",
+          active
+            ? "font-semibold text-primary"
+            : "text-muted-foreground hover:text-foreground",
+        )}
       >
-        <div className="flex h-6 w-6 items-center justify-center transition-transform group-hover:scale-110">
+        <div
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-lg",
+            "transition-colors",
+            active && "bg-primary/10",
+          )}
+        >
           {item.icon}
         </div>
+        <span
+          className="mt-0.5 w-full truncate text-center text-[10px] leading-tight"
+          title={item.label}
+        >
+          {item.label}
+        </span>
       </Link>
     );
   }
@@ -84,16 +103,26 @@ function NavItem({
       <Link
         to={item.href}
         onClick={onClick}
-        className={`flex items-center gap-3 rounded-xl p-4 transition-colors ${
+        className={cn(
+          "flex items-center justify-between rounded-xl p-3.5",
+          "transition-colors active:scale-[0.99]",
           active
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted/50 hover:bg-muted"
-        }`}
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "bg-muted/50 text-foreground hover:bg-muted",
+        )}
       >
-        <div className="flex h-6 w-6 items-center justify-center">
-          {item.icon}
+        <div className="flex items-center gap-3">
+          <div className="flex h-6 w-6 items-center justify-center">
+            {item.icon}
+          </div>
+          <span className="text-sm font-medium">{item.label}</span>
         </div>
-        <span className="font-medium">{item.label}</span>
+        <ChevronRight
+          className={cn(
+            "h-4 w-4 opacity-50",
+            active && "text-primary-foreground opacity-90",
+          )}
+        />
       </Link>
     );
   }
@@ -243,7 +272,6 @@ export default function Navigation({
   const isMobile = useIsMobile();
 
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [drawerMode, setDrawerMode] = useState<"menu" | "settings">("menu");
   const [uiSettingsOpen, setUiSettingsOpen] = useState(false);
 
   const isActive = (item: any) => {
@@ -270,48 +298,69 @@ export default function Navigation({
   };
 
   if (isMobile) {
-    const overflowItems = navigationItems.filter(
-      (item) => item.href !== HOME_HREF && item.href !== SETTINGS_HREF,
+    const filteredNavItems = navigationItems.filter(
+      (item) => item.href !== SETTINGS_HREF,
     );
+    const primaryItems = filteredNavItems.slice(
+      0,
+      MAX_PRIMARY_MOBILE_ITEMS,
+    );
+    const overflowItems = filteredNavItems.slice(
+      MAX_PRIMARY_MOBILE_ITEMS,
+    );
+    const isMoreActive =
+      overflowItems.some((item) => isActive(item)) ||
+      location.pathname.includes(SETTINGS_HREF);
 
     return (
       <>
-        <div className="fixed inset-x-0 bottom-4 z-40 flex w-full justify-center px-4 xl:hidden">
+        <div
+          className={cn(
+            "fixed inset-x-0 bottom-4 z-40 flex w-full justify-center px-4",
+            "xl:hidden",
+          )}
+        >
           <div
             className={cn(
-              "flex h-16 w-full max-w-sm items-center rounded-2xl border",
-              "border-border bg-background/10 px-2 shadow-lg backdrop-blur-xl",
+              "flex h-16 w-full max-w-md items-center justify-around",
+              "rounded-2xl border border-border bg-background/90 px-2 py-1",
+              "shadow-lg backdrop-blur-xl",
             )}
           >
-            <nav className="no-scrollbar flex flex-1 items-center gap-2 overflow-x-auto px-2 [mask-image:linear-gradient(to_right,black_85%,transparent_100%)]">
-              {navigationItems
-                .filter((item) => item.href !== SETTINGS_HREF)
-                .map((item) => (
-                  <NavItem
-                    key={item.href}
-                    item={item}
-                    active={isActive(item)}
-                    variant="mobile-bottom"
-                  />
-                ))}
-            </nav>
-
-            <div className="mx-1 h-8 w-px shrink-0 bg-border" />
+            {primaryItems.map((item) => (
+              <NavItem
+                key={item.href}
+                item={item}
+                active={isActive(item)}
+                variant="mobile-bottom"
+              />
+            ))}
 
             <button
               type="button"
-              onClick={() => {
-                setDrawerMode("settings");
-                setOpenDrawer(true);
-              }}
-              className={`group flex min-h-11 min-w-11 shrink-0 flex-col items-center justify-center rounded-xl p-2 ${
-                location.pathname.includes(SETTINGS_HREF)
-                  ? "text-primary"
-                  : "text-muted-foreground"
-              }`}
-              aria-label="Open settings"
+              onClick={() => setOpenDrawer(true)}
+              className={cn(
+                "group flex flex-1 flex-col items-center justify-center",
+                "min-w-0 max-w-[72px] rounded-xl py-1.5 px-0.5",
+                "transition-all duration-150 active:scale-95",
+                isMoreActive
+                  ? "font-semibold text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-label="Open more navigation and settings"
             >
-              <Settings className="h-6 w-6 transition-transform group-hover:rotate-45" />
+              <div
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-lg",
+                  "transition-colors",
+                  isMoreActive && "bg-primary/10",
+                )}
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </div>
+              <span className="mt-0.5 w-full truncate text-center text-[10px] leading-tight">
+                More
+              </span>
             </button>
           </div>
         </div>
@@ -325,25 +374,40 @@ export default function Navigation({
         >
           <DrawerContent
             className="max-h-[85dvh] overflow-hidden"
-            scrollClassName="space-y-8 pb-[calc(env(safe-area-inset-bottom)+2rem)]"
+            scrollClassName={cn(
+              "space-y-6 p-4",
+              "pb-[calc(env(safe-area-inset-bottom)+2rem)]",
+            )}
           >
-            {drawerMode === "menu" ? (
-              <div className="space-y-3">
-                <p className="px-2 text-xs font-bold text-muted-foreground">
-                  NAVIGATION
+            {overflowItems.length > 0 && (
+              <div className="space-y-2">
+                <p
+                  className={cn(
+                    "px-2 text-xs font-bold uppercase tracking-wider",
+                    "text-muted-foreground",
+                  )}
+                >
+                  Additional Features
                 </p>
-
-                {overflowItems.slice(2).map((item) => (
-                  <NavItem
-                    key={item.href}
-                    item={item}
-                    active={isActive(item)}
-                    variant="mobile-drawer"
-                    onClick={() => setOpenDrawer(false)}
-                  />
-                ))}
+                <div className="flex flex-col gap-1.5">
+                  {overflowItems.map((item) => (
+                    <NavItem
+                      key={item.href}
+                      item={item}
+                      active={isActive(item)}
+                      variant="mobile-drawer"
+                      onClick={() => setOpenDrawer(false)}
+                    />
+                  ))}
+                </div>
               </div>
-            ) : (
+            )}
+
+            <div
+              className={cn(
+                overflowItems.length > 0 && "border-t border-border pt-4",
+              )}
+            >
               <MobileSettingsContent
                 user={user}
                 role={role}
@@ -357,7 +421,7 @@ export default function Navigation({
                 activeRole={activeRole}
                 onRoleSwitch={handleRoleSwitch}
               />
-            )}
+            </div>
           </DrawerContent>
         </Drawer>
 
