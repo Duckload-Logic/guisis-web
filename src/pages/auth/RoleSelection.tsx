@@ -95,13 +95,16 @@ export default function RoleSelection() {
                 <CardContent className="flex flex-col items-center p-8">
                   <div
                     className={cn(
-                      "mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br shadow-inner",
+                      "mb-6 flex h-16 w-16 items-center justify-center",
+                      "rounded-2xl bg-gradient-to-br shadow-inner",
                       colors,
                     )}
                   >
                     {icon}
                   </div>
-                  <h3 className="mb-2 text-xl font-bold">{role.name}</h3>
+                  <h3 className="mb-2 text-xl font-bold">
+                    {role.name.toUpperCase()}
+                  </h3>
                   <p className="mb-6 text-sm text-muted-foreground">
                     Access {role.name.toLowerCase()} tools and management.
                   </p>
