@@ -22,7 +22,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Edit2,
-  AlertCircle,
   Layers,
   Folder,
   Plus,
@@ -609,62 +608,119 @@ export default function SubmitSlip() {
 
             {currentStep === 3 && (
               <div className="animate-in fade-in space-y-4 duration-200">
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="border-b border-border/60 bg-muted/30 py-3">
-                    <div className="flex items-center gap-2">
-                      <FileUp className="h-4 w-4 text-red-500" />
-                      <CardTitle className="text-base">
-                        Upload Documents
-                      </CardTitle>
+                <Card
+                  className={cn(
+                    "overflow-hidden rounded-xl border border-border/60",
+                    "bg-card shadow-md",
+                  )}
+                >
+                  <CardHeader
+                    className={cn(
+                      "border-b border-border/60 bg-muted/20",
+                      "px-4 py-4 sm:px-5",
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center",
+                          "rounded-lg bg-primary/10 text-primary",
+                        )}
+                      >
+                        <FileUp className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="text-base text-foreground">
+                          Upload Documents
+                        </CardTitle>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          Review the requirements, then upload each document below.
+                        </p>
+                      </div>
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Upload all required documents to complete your admission
-                      slip request
-                    </p>
                   </CardHeader>
+
+                  <CardContent className="space-y-4 p-4 sm:p-5">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Info className="h-4 w-4 shrink-0 text-primary" />
+                        <h3 className="text-sm font-semibold text-foreground">
+                          Before you upload
+                        </h3>
+                      </div>
+
+                      <div className="mt-3 divide-y divide-border/50">
+                        <div className="grid gap-1 py-2.5 first:pt-0 sm:grid-cols-[10rem_1fr] sm:gap-3">
+                          <span className="text-xs font-semibold text-foreground">
+                            Excuse Letter
+                          </span>
+                          <span className="text-xs leading-5 text-muted-foreground">
+                            Parent or legal guardian signature required.
+                          </span>
+                        </div>
+
+                        <div className="grid gap-1 py-2.5 sm:grid-cols-[10rem_1fr] sm:gap-3">
+                          <span className="text-xs font-semibold text-foreground">
+                            Parent / Guardian ID
+                          </span>
+                          <span className="text-xs leading-5 text-muted-foreground">
+                            <strong className="font-semibold text-foreground">
+                              1-page photocopy
+                            </strong>{" "}
+                            of the parent&apos;s valid ID with the parent&apos;s signature.
+                          </span>
+                        </div>
+
+                        <div className="grid gap-1 py-2.5 last:pb-0 sm:grid-cols-[10rem_1fr] sm:gap-3">
+                          <span className="text-xs font-semibold text-foreground">
+                            Medical Certificate
+                          </span>
+                          <span className="text-xs leading-5 text-muted-foreground">
+                            For medical cases, University nurse signature required.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex flex-wrap items-center gap-x-2 gap-y-1",
+                        "border-t border-border/60 pt-3",
+                        "text-[11px] text-muted-foreground",
+                      )}
+                    >
+                      <FileText className="h-3.5 w-3.5 shrink-0" />
+                      <span>PDF, JPG, or PNG</span>
+                      <span aria-hidden="true">•</span>
+                      <span>Maximum 5MB per document category</span>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex items-start gap-2.5 rounded-lg border",
+                        "border-primary/15 bg-primary/[0.04] px-3 py-2.5",
+                        "dark:bg-primary/[0.07]",
+                      )}
+                    >
+                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <p className="text-xs font-medium leading-5 text-foreground">
+                        Please bring all hardcopy documents to the Guidance Office upon claiming your admission slip.
+                      </p>
+                    </div>
+                  </CardContent>
                 </Card>
 
                 <Card
                   className={cn(
-                    "border-amber-300 bg-amber-50/80 shadow-sm",
-                    "dark:border-amber-900/50 dark:bg-amber-950/20",
+                    "overflow-hidden rounded-xl border border-border/60",
+                    "bg-card shadow-md",
                   )}
                 >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-sm">
-                      <AlertCircle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span>Important Document Submission Guidelines</span>
-                    </div>
-                    <ul className="ml-6 list-disc space-y-1.5 text-xs text-amber-800 dark:text-amber-300 font-medium">
-                      <li>
-                        <strong>Excuse Letter:</strong> Must be signed by your parent or legal guardian.
-                      </li>
-                      <li>
-                        <strong>Parent / Guardian ID:</strong> Must be a photocopy of the parent&apos;s valid ID with their signature.
-                      </li>
-                      <li>
-                        <strong>Medical Certificate (for medical cases):</strong> Must be signed by the University nurse before submitting in the system.
-                      </li>
-                      <li className="text-amber-950 dark:text-amber-100 font-bold pt-0.5 flex items-start gap-1.5">
-                        <MapPin className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
-                        <span>
-                          <strong>On-Site Requirement:</strong> All documents submitted in the system should be provided on-site when claiming your admission slip at the Guidance Office.
-                        </span>
-                      </li>
-                    </ul>
-                    <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 pt-2 border-t border-amber-200/80 dark:border-amber-900/40">
-                      Accepted File Formats: PDF, JPG, PNG (Max 5MB per document category).
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-sm">
                   <CardContent className="p-0">
                     <Accordion
                       type="single"
                       collapsible
                       className="w-full"
-                      defaultValue="excuse-letter"
                     >
                       <AccordionItem
                         value="excuse-letter"
@@ -959,7 +1015,7 @@ export default function SubmitSlip() {
                                   The parent&apos;s valid ID must be submitted
                                   as a{" "}
                                   <strong>
-                                    photocopy containing the parent&apos;s
+                                    1-page photocopy containing the parent&apos;s
                                     actual signature
                                   </strong>
                                   .
