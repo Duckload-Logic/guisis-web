@@ -33,7 +33,7 @@ const faqCategories: FAQCategory[] = [
     icon: CalendarDays,
     gradient: "from-blue-500/15 via-sky-500/5 to-transparent",
     iconStyle:
-      "border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      "border-info-foreground/30 bg-info-background text-info-foreground",
     questions: [
       {
         question: "How do I schedule an appointment?",
@@ -63,7 +63,7 @@ const faqCategories: FAQCategory[] = [
     icon: FileText,
     gradient: "from-emerald-500/15 via-green-500/5 to-transparent",
     iconStyle:
-      "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      "border-success-foreground/30 bg-success-background text-success-foreground",
     questions: [
       {
         question: "How do I submit an admission slip?",
@@ -98,7 +98,7 @@ const faqCategories: FAQCategory[] = [
     icon: ClipboardList,
     gradient: "from-rose-500/15 via-red-500/5 to-transparent",
     iconStyle:
-      "border-rose-500/20 bg-rose-500/10 text-rose-600 dark:text-rose-400",
+      "border-destructive/30 bg-destructive/10 text-destructive",
     questions: [
       {
         question: "Why do I need to complete my IIR first?",
@@ -139,9 +139,8 @@ export default function FAQ() {
         <div className="hidden grid-cols-2 gap-3 sm:grid">
           <div
             className={cn(
-              "border-glass rounded-xl border border-glass-border px-4 py-3",
-              "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up",
+              "rounded-xl border border-border bg-card/60 px-4 py-3",
+              "backdrop-blur-md animate-fade-in-up",
             )}
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
@@ -160,9 +159,8 @@ export default function FAQ() {
 
           <div
             className={cn(
-              "border-glass rounded-xl border border-glass-border px-4 py-3",
-              "backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]",
-              "animate-fade-in-up",
+              "rounded-xl border border-border bg-card/60 px-4 py-3",
+              "backdrop-blur-md animate-fade-in-up",
             )}
             style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
@@ -205,11 +203,9 @@ export default function FAQ() {
               key={category.title}
               className={cn(
                 "h-fit w-full overflow-hidden rounded-[28px]",
-                "border border-white/30 bg-white/60",
-                "shadow-[0_18px_42px_rgba(15,23,42,0.08)] backdrop-blur-xl",
+                "border border-border bg-card/60 shadow-lg backdrop-blur-xl",
                 "transition-all duration-300 hover:-translate-y-0.5",
-                "hover:shadow-[0_20px_46px_rgba(15,23,42,0.10)]",
-                "animate-fade-in-up dark:border-white/10 dark:bg-white/[0.04]",
+                "hover:shadow-xl animate-fade-in-up",
               )}
               style={{
                 animationDelay: `${0.05 * (categoryIndex + 1)}s`,
@@ -244,9 +240,9 @@ export default function FAQ() {
 
                         <span
                           className={cn(
-                            "rounded-full border border-white/40 bg-white/65 px-3 py-1",
-                            "text-xs font-medium text-muted-foreground",
-                            "shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.06]",
+                            "rounded-full border border-border bg-card/70 px-3",
+                            "py-1 text-xs font-medium text-muted-foreground",
+                            "shadow-sm backdrop-blur-md",
                           )}
                         >
                           {category.questions.length} questions
@@ -271,8 +267,7 @@ export default function FAQ() {
                           "rounded-2xl border transition-all duration-200",
                           isOpen
                             ? "border-primary/20 bg-primary/[0.045] shadow-sm"
-                            : "border-transparent bg-transparent hover:border-white/50 hover:bg-white/60",
-                          "dark:hover:border-white/10 dark:hover:bg-white/[0.035]",
+                            : "border-transparent bg-transparent hover:border-border hover:bg-muted/50",
                         )}
                       >
                         <button

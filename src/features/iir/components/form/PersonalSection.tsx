@@ -819,14 +819,19 @@ export const PersonalSection = forwardRef<
               </div>
 
               {/* PROFILE PICTURE GUIDELINES */}
-              <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+              <div
+                className={cn(
+                  "mt-6 rounded-xl border border-info-foreground/30",
+                  "bg-info-background p-4 text-info-foreground",
+                )}
+              >
                 <div className="mb-3 flex items-center gap-2">
-                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200">
+                  <Info className="h-5 w-5 text-info-foreground" />
+                  <h4 className="font-semibold text-info-foreground">
                     Profile Picture Requirements
                   </h4>
                 </div>
-                <p className="mb-4 text-sm text-blue-800 dark:text-blue-300">
+                <p className="mb-4 text-sm text-info-foreground">
                   Please upload a <strong>formal 2x2 picture</strong>. Ensure
                   you are wearing appropriate professional or school attire
                   against a plain background. Avoid selfies, heavy filters, or
@@ -834,28 +839,58 @@ export const PersonalSection = forwardRef<
                 </p>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="flex flex-col items-center rounded-lg border border-emerald-200 bg-white/60 p-3 shadow-sm dark:border-emerald-800/50 dark:bg-emerald-950/40">
-                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center rounded-lg border",
+                      "border-success-foreground/30 bg-card/60 p-3 shadow-sm",
+                    )}
+                  >
+                    <h5
+                      className={cn(
+                        "mb-2 flex items-center gap-2 text-sm font-semibold",
+                        "text-success-foreground",
+                      )}
+                    >
                       <CheckCircle2 className="h-4 w-4 shrink-0" /> Upload this
                     </h5>
-                    <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                    <div
+                      className={cn(
+                        "overflow-hidden rounded border",
+                        "border-success-foreground/30 shadow-sm",
+                      )}
+                    >
                       <img
                         src={formalImage}
                         alt="Formal 2x2 Example"
-                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                        className="h-32 w-32 object-cover"
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center rounded-lg border border-destructive/20 bg-destructive/5 p-3 shadow-sm">
-                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-destructive">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center rounded-lg border",
+                      "border-destructive/20 bg-destructive/5 p-3 shadow-sm",
+                    )}
+                  >
+                    <h5
+                      className={cn(
+                        "mb-2 flex items-center gap-2 text-sm font-semibold",
+                        "text-destructive",
+                      )}
+                    >
                       <X className="h-4 w-4 shrink-0" /> Do Not Upload
                     </h5>
-                    <div className="overflow-hidden rounded border border-destructive/20 shadow-sm">
+                    <div
+                      className={cn(
+                        "overflow-hidden rounded border",
+                        "border-destructive/20 shadow-sm",
+                      )}
+                    >
                       <img
                         src={notFormalImage}
                         alt="Non-Formal Example"
-                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                        className="h-32 w-32 object-cover"
                       />
                     </div>
                   </div>

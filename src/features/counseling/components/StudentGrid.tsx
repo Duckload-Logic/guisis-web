@@ -361,9 +361,9 @@ export default function StudentGrid({
             {!student.isCompleted && (
               <span
                 className={cn(
-                  "mt-0.5 inline-block rounded bg-amber-500/10",
+                  "mt-0.5 inline-block rounded bg-warning-background",
                   "px-1.5 py-0.5 text-[9px] font-bold uppercase",
-                  "text-amber-700 dark:text-amber-300",
+                  "text-warning-foreground",
                 )}
               >
                 Expedited
@@ -513,9 +513,9 @@ export default function StudentGrid({
               {!student.isCompleted && (
                 <span
                   className={cn(
-                    "mt-0.5 inline-block rounded bg-amber-500/10 px-1.5",
-                    "py-0.5 text-[8px] font-bold uppercase",
-                    "text-amber-700 dark:text-amber-300",
+                    "mt-0.5 inline-block rounded bg-warning-background",
+                    "px-1.5 py-0.5 text-[8px] font-bold uppercase",
+                    "text-warning-foreground",
                   )}
                 >
                   Expedited
@@ -780,9 +780,8 @@ export default function StudentGrid({
                       <div className="mt-1 flex justify-center">
                         <span
                           className={cn(
-                            "rounded bg-amber-500/10 px-1.5 py-0.5",
-                            "text-[8px] font-bold uppercase",
-                            "text-amber-700 dark:text-amber-300",
+                            "rounded bg-warning-background px-1.5 py-0.5",
+                            "text-[8px] font-bold uppercase text-warning-foreground",
                           )}
                         >
                           Expedited

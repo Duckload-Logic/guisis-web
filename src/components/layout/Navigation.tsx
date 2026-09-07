@@ -470,13 +470,13 @@ export default function Navigation({
         <aside
           ref={sidebarRef}
           className={cn(
-            "relative z-50 flex h-full w-full flex-col overflow-visible rounded-3xl border",
-            "border-glass-border bg-background/95 shadow-md backdrop-blur-xl",
-            "dark:border-white/10 dark:bg-neutral-900/95",
+            "relative z-50 flex h-full w-full flex-col overflow-visible",
+            "rounded-3xl border border-border bg-background/95 shadow-md",
+            "backdrop-blur-xl",
           )}
         >
           <div
-            className="relative shrink-0 overflow-visible border-b border-border/60 dark:border-white/10"
+            className="relative shrink-0 overflow-visible border-b border-border/60"
             style={{
               height: brandingHeight,
               transition: `height ${SHELL_DURATION}ms ${SHELL_EASING}`,
@@ -543,9 +543,8 @@ export default function Navigation({
             <div
               className={cn(
                 "absolute -right-[18px] bottom-0 z-[60]",
-                "flex h-9 w-9 translate-y-1/2 items-center justify-center rounded-full",
-                "border border-border/70 bg-background shadow-md",
-                "dark:border-white/10 dark:bg-neutral-900",
+                "flex h-9 w-9 translate-y-1/2 items-center justify-center",
+                "rounded-full border border-border/70 bg-background shadow-md",
               )}
             >
               <button

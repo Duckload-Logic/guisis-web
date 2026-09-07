@@ -24,17 +24,17 @@ export function SlipStatusTracker({
       label: "Pending Review",
       value: stats.pending,
       icon: Clock,
-      color: "text-amber-500",
-      bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
+      color: "text-warning-foreground",
+      bgColor: "bg-warning-background",
+      borderColor: "border-warning-foreground/30",
     },
     {
       label: "Approved Today",
       value: stats.approvedToday,
       icon: CheckCircle2,
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
+      color: "text-success-foreground",
+      bgColor: "bg-success-background",
+      borderColor: "border-success-foreground/30",
     },
   ];
 
@@ -56,7 +56,8 @@ export function SlipStatusTracker({
             <div
               key={index}
               className={cn(
-                "flex items-center justify-between rounded-2xl border p-4 transition-all duration-300 hover:shadow-md",
+                "flex items-center justify-between rounded-2xl border p-4",
+                "transition-all duration-300 hover:shadow-md",
                 item.bgColor,
                 item.borderColor,
               )}
@@ -65,7 +66,7 @@ export function SlipStatusTracker({
                 <div className={cn("rounded-xl shadow-sm", item.color)}>
                   <item.icon size={20} />
                 </div>
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <span className="text-sm font-semibold text-foreground">
                   {item.label}
                 </span>
               </div>
@@ -75,7 +76,7 @@ export function SlipStatusTracker({
           ))}
         </div>
 
-        <div className="mt-6 border-t border-slate-200/50 pt-4 dark:border-white/5">
+        <div className="mt-6 border-t border-border/50 pt-4">
           <button
             className={cn(
               "w-full rounded-xl bg-primary py-3 text-sm font-bold text-white transition-all hover:bg-primary/90",

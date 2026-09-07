@@ -227,38 +227,42 @@ export default function Dashboard() {
         <div
           className={cn(
             "animate-fade-in-up relative",
-            "overflow-hidden rounded-3xl border border-red-500/20",
-            "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
+            "overflow-hidden rounded-3xl border border-primary/20",
+            "bg-gradient-to-r from-primary/10 to-secondary/10 p-6",
             "backdrop-blur-md",
           )}
           style={{ animationDelay: "0.5s", animationFillMode: "both" }}
         >
           <div className="flex items-start gap-5">
-            <div className="rounded-2xl bg-teal-500 p-3 text-white shadow-lg shadow-teal-500/20">
+            <div
+              className={cn(
+                "rounded-2xl bg-primary p-3 text-primary-foreground",
+                "shadow-lg shadow-primary/20",
+              )}
+            >
               <Sparkles size={24} />
             </div>
             <div className="flex-1 pr-10">
-              <h4 className="mb-1 flex items-center gap-2 text-sm font-bold text-teal-900 dark:text-teal-100">
+              <h4 className="mb-1 flex items-center gap-2 text-sm font-bold text-foreground">
                 Daily Counseling Insight
               </h4>
-              <p className="text-sm font-medium leading-relaxed text-teal-800/80 dark:text-teal-200/80">
+              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
                 "{dailyTip}"
               </p>
             </div>
             <button
               onClick={() => setShowDailyTip(false)}
               className={cn(
-                "absolute right-4 top-4 rounded-xl p-2 text-teal-900/40",
-                "opacity-0 transition-all hover:bg-teal-500/10",
-                "hover:text-teal-900 group-hover:opacity-100",
-                "dark:text-teal-100/40 dark:hover:text-teal-100",
+                "absolute right-4 top-4 rounded-xl p-2 text-muted-foreground/60",
+                "opacity-0 transition-all hover:bg-muted/50",
+                "hover:text-foreground group-hover:opacity-100",
               )}
             >
               <MoreHorizontal size={20} />
             </button>
           </div>
           {/* Subtle background decoration */}
-          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-teal-500/5 blur-2xl" />
+          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
         </div>
       )}
 
@@ -347,8 +351,8 @@ export default function Dashboard() {
                 <table className="w-full text-left">
                   <thead
                     className={cn(
-                      "bg-slate-50/50 text-[10px] font-bold uppercase",
-                      "tracking-widest text-slate-400 dark:bg-black/20",
+                      "bg-muted/40 text-[10px] font-bold uppercase",
+                      "tracking-widest text-muted-foreground",
                     )}
                   >
                     <tr>
@@ -358,7 +362,7 @@ export default function Dashboard() {
                       <th className="px-6 py-4">Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                  <tbody className="divide-y divide-border">
                     {appointments
                       .slice(0, 5)
                       .sort((a, b) =>
@@ -387,22 +391,22 @@ export default function Dashboard() {
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                <p className="text-sm font-bold text-foreground">
                                   {getUserFullName(apt.user)}
                                 </p>
-                                <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
+                                <p className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">
                                   {apt.user?.studentNumber}
                                 </p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-500">
+                          <td className="px-6 py-4 text-sm font-medium text-muted-foreground">
                             {apt.appointmentCategory.name}
                           </td>
-                          <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-500">
+                          <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-muted-foreground">
                             {new Date(apt.whenDate).toLocaleDateString()}
                           </td>
-                          <td className="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">
+                          <td className="px-6 py-4 text-sm font-bold text-foreground">
                             {format12HourTime(apt.timeSlot.time)}
                           </td>
                         </tr>

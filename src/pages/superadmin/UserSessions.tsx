@@ -82,7 +82,13 @@ export default function UserSessions() {
   return (
     <div className="mx-auto w-full max-w-[1200px] space-y-6">
       {targetUser && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-[22px] border border-white/20 bg-white/40 p-4 sm:p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
+        <div
+          className={cn(
+            "flex flex-col gap-4 rounded-[22px] border border-border",
+            "bg-card/60 p-4 backdrop-blur-xl sm:flex-row sm:items-center",
+            "sm:justify-between sm:p-5",
+          )}
+        >
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary">
               {targetUser.firstName[0]}
@@ -139,12 +145,21 @@ export default function UserSessions() {
           sessions?.map((session: any) => (
             <Card
               key={session.jti}
-              className="group overflow-hidden rounded-[22px] border border-white/20 bg-white/45 transition-all hover:bg-white/60 dark:border-white/10 dark:bg-white/[0.04]"
+              className={cn(
+                "group overflow-hidden rounded-[22px] border border-border",
+                "bg-card/60 transition-all hover:bg-card/80",
+              )}
             >
               <CardContent className="p-0">
                 <div className="flex flex-col sm:flex-row sm:items-center">
                   <div className="flex flex-1 items-center gap-5 p-6">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-[18px] border border-white/30 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
+                    <div
+                      className={cn(
+                        "flex h-14 w-14 items-center justify-center",
+                        "rounded-[18px] border border-border bg-card",
+                        "shadow-sm backdrop-blur-md",
+                      )}
+                    >
                       <Monitor className="h-6 w-6 text-primary" />
                     </div>
                     <div className="space-y-1.5">

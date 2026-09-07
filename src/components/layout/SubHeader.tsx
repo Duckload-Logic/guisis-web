@@ -41,7 +41,6 @@ export default function SubHeader({
                 "inline-flex h-7 items-center gap-2 rounded-full border",
                 "border-border/70 bg-muted/40 px-3 text-[11px] font-semibold",
                 "leading-none text-muted-foreground shadow-sm backdrop-blur-md",
-                "dark:border-white/10 dark:bg-white/[0.05]",
               )}
             >
               {badgeIcon}

@@ -232,13 +232,13 @@ export default function AnalyticsPage() {
             generatePreview(parseInt(selectedYear), parseInt(selectedProgram))
           }
           className={cn(
-            "border-glass-border/40 hover:border-glass-border/60",
-            "dark:focus:bg-glass-bg/40 flex h-11 w-full items-center",
-            "justify-between rounded-xl border bg-muted/20 px-4",
-            "py-2.5 text-left text-sm font-medium tracking-tight",
-            "text-foreground shadow-sm outline-none transition-all",
-            "duration-200 focus:border-primary/50 focus:bg-glass-bg",
-            "focus:ring-2 focus:ring-primary/5 sm:w-auto sm:min-w-[12.5rem]",
+            "flex h-11 w-full items-center justify-between rounded-xl",
+            "border border-glass-border/40 bg-muted/20 px-4 py-2.5",
+            "text-left text-sm font-medium tracking-tight text-foreground",
+            "shadow-sm outline-none transition-all duration-200",
+            "hover:border-glass-border/60 focus:border-primary/50",
+            "focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
+            "sm:w-auto sm:min-w-[12.5rem]",
           )}
         >
           <FileDown className="h-4 w-4 shrink-0" />

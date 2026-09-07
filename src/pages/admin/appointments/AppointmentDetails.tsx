@@ -57,8 +57,7 @@ function getAppointmentUrgency(appointment?: any) {
     return {
       label: "Medium",
       description: "Default priority when no urgency level is provided.",
-      className:
-        "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+      className: STATUS_COLORS.warning,
     };
   }
 
@@ -82,7 +81,7 @@ function getAppointmentUrgency(appointment?: any) {
       label: "High",
       description:
         "Prioritize this student concern during review and scheduling.",
-      className: "border-destructive/20 bg-destructive/10 text-destructive",
+      className: STATUS_COLORS.danger,
     };
   }
 
@@ -90,16 +89,14 @@ function getAppointmentUrgency(appointment?: any) {
     return {
       label: "Low",
       description: "Can be handled through the regular appointment queue.",
-      className:
-        "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+      className: STATUS_COLORS.success,
     };
   }
 
   return {
     label: "Medium",
     description: "Standard guidance priority for regular processing.",
-    className:
-      "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    className: STATUS_COLORS.warning,
   };
 }
 
@@ -658,7 +655,11 @@ export default function AppointmentDetails() {
                   </Badge>
                   <Badge
                     variant="outline"
-                    className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                    className={cn(
+                      "rounded-full border border-info-foreground/30",
+                      "bg-info-background px-3 py-1 text-[10px] font-bold",
+                      "text-info-foreground",
+                    )}
                   >
                     <Clock3 className="mr-1 inline h-3 w-3" />
                     Turnaround:{" "}
@@ -999,12 +1000,12 @@ export default function AppointmentDetails() {
                   )}
 
                 {appointment?.startedAt && !appointment?.completedAt && (
-                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 shadow-sm dark:text-emerald-300">
+                  <div className="flex flex-col gap-3 rounded-xl border border-success-foreground/30 bg-success-background p-4 text-success-foreground shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-xs font-bold">
                         <span className="relative flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-foreground opacity-75"></span>
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success-foreground"></span>
                         </span>
                         <span>Session In Progress</span>
                       </div>
@@ -1148,12 +1149,7 @@ export default function AppointmentDetails() {
                         </p>
                       )}
                       {entry.details && (
-                        <p
-                          className={cn(
-                            "text-[11px] font-medium",
-                            "text-amber-600 dark:text-amber-400",
-                          )}
-                        >
+                        <p className="text-[11px] font-medium text-warning-foreground">
                           {entry.details}
                         </p>
                       )}
@@ -1215,7 +1211,7 @@ export default function AppointmentDetails() {
         >
           <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
             <AlertDialogHeader>
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-success-background text-success-foreground">
                 <Play className="h-5 w-5 fill-current" />
               </div>
               <AlertDialogTitle className="text-xl font-bold">

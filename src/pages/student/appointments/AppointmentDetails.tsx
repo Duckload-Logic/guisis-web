@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/context";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -44,8 +45,7 @@ function getAppointmentUrgency(appointment?: any) {
     return {
       label: "Medium",
       description: "Default priority when no urgency level is provided.",
-      className:
-        "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+      className: STATUS_COLORS.warning,
     };
   }
 
@@ -78,16 +78,14 @@ function getAppointmentUrgency(appointment?: any) {
     return {
       label: "Low",
       description: "This appointment can be handled through the regular queue.",
-      className:
-        "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+      className: STATUS_COLORS.success,
     };
   }
 
   return {
     label: "Medium",
     description: "This appointment has a standard guidance priority.",
-    className:
-      "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    className: STATUS_COLORS.warning,
   };
 }
 
@@ -165,7 +163,7 @@ export default function AppointmentDetails() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-6 py-6">
+      <div className="space-y-6 py-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Left Column Skeleton */}
           <div className="space-y-6 md:col-span-2">
@@ -173,90 +171,37 @@ export default function AppointmentDetails() {
               <CardHeader className="border-b border-border/60 pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-9 w-9 rounded-lg bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
-                    <div
-                      className={cn(
-                        "h-6 w-48 rounded bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <Skeleton className="h-6 w-48 rounded" />
                   </div>
-                  <div
-                    className={cn(
-                      "h-6 w-20 rounded-full bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
+                  <Skeleton className="h-6 w-20 rounded-full" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="space-y-2"
-                    >
-                      <div
-                        className={cn(
-                          "h-3 w-16 rounded bg-slate-200/50",
-                          "dark:bg-slate-700/50",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "h-5 w-32 rounded bg-slate-200/50",
-                          "dark:bg-slate-700/50",
-                        )}
-                      />
+                    <div key={idx} className="space-y-2">
+                      <Skeleton className="h-3 w-16 rounded" />
+                      <Skeleton className="h-5 w-32 rounded" />
                     </div>
                   ))}
                 </div>
                 <div className="space-y-2 border-t border-border/40 pt-4">
-                  <div
-                    className={cn(
-                      "h-3 w-28 rounded bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "h-16 w-full rounded-lg bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
+                  <Skeleton className="h-3 w-28 rounded" />
+                  <Skeleton className="h-16 w-full rounded-lg" />
                 </div>
               </CardContent>
             </Card>
           </div>
           {/* Right Column Skeleton */}
           <div className="space-y-6">
-            <Card className="border-0 bg-glass-bg shadow-md">
+            <Card className="border-0 bg-card/60 shadow-md">
               <CardHeader className="border-b border-border/40 pb-3">
-                <div
-                  className={cn(
-                    "h-4 w-24 rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
+                <Skeleton className="h-4 w-24 rounded" />
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
-                <div
-                  className={cn(
-                    "h-16 w-full rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
-                <div
-                  className={cn(
-                    "h-8 w-full rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
+                <Skeleton className="h-16 w-full rounded" />
+                <Skeleton className="h-8 w-full rounded" />
               </CardContent>
             </Card>
           </div>
@@ -511,12 +456,14 @@ export default function AppointmentDetails() {
                   ) : (
                     <div
                       className={cn(
-                        "flex items-start gap-2 rounded-lg border border-blue-100/50",
-                        "bg-blue-50/50 p-3 dark:border-blue-900/30 dark:bg-blue-950/10",
+                        "flex items-start gap-2 rounded-lg border",
+                        "border-info-foreground/20 bg-info-background/40 p-3",
                       )}
                     >
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
-                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                      <AlertCircle
+                        className="mt-0.5 h-4 w-4 shrink-0 text-info-foreground"
+                      />
+                      <p className="text-xs text-info-foreground">
                         This appointment is already{" "}
                         {appointment?.status?.name?.toLowerCase()} and cannot be
                         modified.

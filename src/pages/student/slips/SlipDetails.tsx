@@ -5,6 +5,7 @@ import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Calendar,
   FileText,
@@ -76,7 +77,7 @@ export default function SlipDetails() {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-6 py-6">
+      <div className="space-y-6 py-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Left Column Skeleton */}
           <div className="space-y-6 md:col-span-2">
@@ -84,104 +85,41 @@ export default function SlipDetails() {
               <CardHeader className="border-b border-border/60 pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-9 w-9 rounded-lg bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
-                    <div
-                      className={cn(
-                        "h-6 w-48 rounded bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
+                    <Skeleton className="h-9 w-9 rounded-lg" />
+                    <Skeleton className="h-6 w-48 rounded" />
                   </div>
-                  <div
-                    className={cn(
-                      "h-6 w-20 rounded-full bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
+                  <Skeleton className="h-6 w-20 rounded-full" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {Array.from({ length: 2 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="space-y-2"
-                    >
-                      <div
-                        className={cn(
-                          "h-3 w-24 rounded bg-slate-200/50",
-                          "dark:bg-slate-700/50",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "h-5 w-32 rounded bg-slate-200/50",
-                          "dark:bg-slate-700/50",
-                        )}
-                      />
+                    <div key={idx} className="space-y-2">
+                      <Skeleton className="h-3 w-24 rounded" />
+                      <Skeleton className="h-5 w-32 rounded" />
                     </div>
                   ))}
                   <div className="space-y-2 sm:col-span-2">
-                    <div
-                      className={cn(
-                        "h-3 w-16 rounded bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
-                    <div
-                      className={cn(
-                        "h-5 w-24 rounded bg-slate-200/50",
-                        "dark:bg-slate-700/50",
-                      )}
-                    />
+                    <Skeleton className="h-3 w-16 rounded" />
+                    <Skeleton className="h-5 w-24 rounded" />
                   </div>
                 </div>
                 <div className="space-y-2 border-t border-border/40 pt-4">
-                  <div
-                    className={cn(
-                      "h-3 w-28 rounded bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "h-16 w-full rounded-lg bg-slate-200/50",
-                      "dark:bg-slate-700/50",
-                    )}
-                  />
+                  <Skeleton className="h-3 w-28 rounded" />
+                  <Skeleton className="h-16 w-full rounded-lg" />
                 </div>
               </CardContent>
             </Card>
           </div>
           {/* Right Column Skeleton */}
           <div className="space-y-6">
-            <Card className="border-0 bg-glass-bg shadow-md">
+            <Card className="border-0 bg-card/60 shadow-md">
               <CardHeader className="border-b border-border/40 pb-3">
-                <div
-                  className={cn(
-                    "h-4 w-24 rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
+                <Skeleton className="h-4 w-24 rounded" />
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
-                <div
-                  className={cn(
-                    "h-16 w-full rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
-                <div
-                  className={cn(
-                    "h-20 w-full rounded bg-slate-200/50",
-                    "dark:bg-slate-700/50",
-                  )}
-                />
+                <Skeleton className="h-16 w-full rounded" />
+                <Skeleton className="h-20 w-full rounded" />
               </CardContent>
             </Card>
           </div>
@@ -214,9 +152,8 @@ export default function SlipDetails() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "border-white/45 bg-white/40 px-3 py-1",
-                            "backdrop-blur-xl dark:border-white/10",
-                            "dark:bg-white/[0.05]",
+                            "border-border bg-muted/60 px-3 py-1",
+                            "text-foreground",
                           )}
                         >
                           {slip.category.name}
@@ -402,8 +339,8 @@ export default function SlipDetails() {
                         className={cn(
                           "rounded-xl px-2.5 py-1 text-[9px] font-bold uppercase",
                           slip.ticket.isVerified
-                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                            : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                            ? STATUS_COLORS.success
+                            : STATUS_COLORS.warning,
                         )}
                       >
                         {slip.ticket.isVerified ? (
@@ -438,13 +375,15 @@ export default function SlipDetails() {
                     {slip.ticket.isVerified ? (
                       <div
                         className={cn(
-                          "rounded-xl border border-emerald-500/25 bg-emerald-500/5",
-                          "p-3 text-[11px] leading-relaxed text-emerald-800",
-                          "dark:text-emerald-200",
+                          "rounded-xl border border-success-foreground/20",
+                          "bg-success-background/50 p-3 text-[11px]",
+                          "leading-relaxed text-success-foreground",
                         )}
                       >
                         <div className="flex items-start gap-2">
-                          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          <ShieldCheck
+                            className="mt-0.5 h-4 w-4 shrink-0 text-success-foreground"
+                          />
                           <div>
                             <p className="font-bold">Ticket verified</p>
                             <p className="mt-0.5">
@@ -463,13 +402,15 @@ export default function SlipDetails() {
                       <>
                         <div
                           className={cn(
-                            "rounded-xl border border-amber-500/25 bg-amber-500/5",
-                            "p-3 text-[11px] leading-relaxed text-amber-800",
-                            "dark:text-amber-200",
+                            "rounded-xl border border-warning-foreground/20",
+                            "bg-warning-background/50 p-3 text-[11px]",
+                            "leading-relaxed text-warning-foreground",
                           )}
                         >
                           <div className="flex items-start gap-2">
-                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <AlertCircle
+                              className="mt-0.5 h-4 w-4 shrink-0 text-warning-foreground"
+                            />
                             <div>
                               <p className="font-bold">Bring your hardcopies</p>
                               <p className="mt-0.5">

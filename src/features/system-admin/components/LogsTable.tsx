@@ -559,7 +559,11 @@ export default function LogsTable({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCSV}
-                className="h-10 rounded-xl border-red-800/30 bg-white/50 text-red-800 shadow-sm transition-colors hover:bg-red-800/10 dark:bg-transparent"
+                className={cn(
+                  "h-10 rounded-xl border-destructive/30 bg-card/50",
+                  "text-destructive shadow-sm transition-colors",
+                  "hover:bg-destructive/10",
+                )}
               >
                 <svg
                   className="mr-2 h-4 w-4"
@@ -582,7 +586,7 @@ export default function LogsTable({
       </div>
 
       {showFilters && (
-        <Card className="rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm">
           <CardContent className="flex flex-wrap items-end gap-4 p-5">
             <div className="min-w-[200px] max-w-[300px] flex-1 space-y-2">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -594,6 +598,7 @@ export default function LogsTable({
                   setStartDate(val);
                   setCurrentPage(1);
                 }}
+                placeholder="From date"
               />
             </div>
             <div className="min-w-[200px] max-w-[300px] flex-1 space-y-2">
@@ -606,13 +611,29 @@ export default function LogsTable({
                   setEndDate(val);
                   setCurrentPage(1);
                 }}
+                placeholder="To date"
               />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="h-10 rounded-xl"
+              >
+                Reset
+              </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none xl:border xl:border-border/70 xl:bg-white xl:shadow-sm dark:xl:border-white/10 dark:xl:bg-neutral-950/40">
+      <Card
+        className={cn(
+          "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
+          "xl:border xl:border-border xl:bg-card xl:shadow-sm",
+        )}
+      >
         <CardContent className="p-0">
           <Table
             data={processedLogs}
@@ -649,7 +670,7 @@ export default function LogsTable({
           />
 
           {totalPages > 1 && (
-            <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+            <div className="border-t border-border/50 bg-muted/20">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

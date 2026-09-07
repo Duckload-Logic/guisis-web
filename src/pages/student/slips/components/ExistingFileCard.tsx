@@ -64,13 +64,8 @@ export function ExistingFileCard({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-blue-100 p-3 shadow-sm",
-                  "dark:bg-blue-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-info-background p-3 shadow-sm">
+                <FileText className="h-8 w-8 text-info-foreground" />
               </div>
             </div>
           )}

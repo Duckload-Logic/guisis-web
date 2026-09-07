@@ -39,7 +39,7 @@ export function MetricCard({
             <div className="flex min-w-0 items-center gap-3">
               <div
                 className={cn(
-                  "shrink-0 rounded-xl bg-white/50 p-2 shadow-inner dark:bg-black/30",
+                  "shrink-0 rounded-xl bg-muted/50 p-2 shadow-inner",
                   iconColor,
                 )}
               >

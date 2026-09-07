@@ -30,7 +30,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
           "focus-visible:ring-ring focus-visible:ring-offset-2",
           "focus-visible:ring-offset-background",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          checked ? "bg-primary" : "bg-slate-300 dark:bg-white/20",
+          checked ? "bg-primary" : "bg-muted",
           className,
         )}
         {...props}
@@ -38,7 +38,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         <span
           data-state={checked ? "checked" : "unchecked"}
           className={cn(
-            "pointer-events-none block h-5 w-5 rounded-full bg-white",
+            "pointer-events-none block h-5 w-5 rounded-full bg-background",
             "shadow-md transition-transform duration-200",
             checked ? "translate-x-5" : "translate-x-0",
           )}

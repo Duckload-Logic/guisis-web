@@ -89,13 +89,15 @@ export default function LoginForm({
             type="submit"
             disabled={isLoading}
             className={cn(
-              "h-12 w-full rounded-2xl bg-[#8f1113] text-sm font-semibold text-white shadow-lg transition hover:bg-[#6a0d0d] dark:hover:bg-[#6a0d0d] sm:text-base",
+              "h-12 w-full rounded-2xl bg-[#8f1113] text-sm font-semibold",
+              "text-white shadow-lg transition hover:bg-[#6a0d0d] sm:text-base",
             )}
           >
             {isLoading ? (
               <div
                 className={cn(
-                  "h-4 w-4 animate-spin rounded-full border-2 border-t-0 border-primary-foreground",
+                  "h-4 w-4 animate-spin rounded-full border-2",
+                  "border-t-0 border-primary-foreground",
                 )}
               />
             ) : (
@@ -129,8 +131,7 @@ export default function LoginForm({
               "h-12 w-full rounded-2xl",
               "bg-yellow-400 text-slate-900",
               "font-semibold transition-colors",
-              "hover:bg-yellow-500 dark:hover:bg-yellow-500",
-              "sm:text-base",
+              "hover:bg-yellow-500 sm:text-base",
               "transition-all duration-200 shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
             )}
           />

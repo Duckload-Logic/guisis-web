@@ -523,16 +523,13 @@ export default function ReviewSlips() {
         <div
           className={cn(
             "flex items-center gap-3 rounded-xl border",
-            "border-amber-300/40 bg-amber-500/10 p-4",
-            "text-amber-800 dark:text-amber-200",
+            "border-warning-foreground/30 bg-warning-background p-4",
+            "text-warning-foreground",
             "animate-in fade-in slide-in-from-top-4 duration-500",
           )}
         >
           <Calendar
-            className={cn(
-              "h-5 w-5 shrink-0",
-              "text-amber-600 dark:text-amber-400",
-            )}
+            className="h-5 w-5 shrink-0 text-warning-foreground"
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold">
@@ -694,13 +691,13 @@ export default function ReviewSlips() {
           <div className="p-5">
             {pendingVerification ? (
               <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-5 space-y-3">
+                <div className="rounded-2xl border border-success-foreground/30 bg-success-background p-5 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-green-700 dark:text-green-300 flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-success-foreground flex items-center gap-1.5">
                       <ShieldCheck className="h-3.5 w-3.5" />
                       Ticket Match Found
                     </span>
-                    <Badge variant="outline" className="font-mono text-xs font-bold border-green-500/30 bg-background text-green-700 dark:text-green-300">
+                    <Badge variant="outline" className="font-mono text-xs font-bold border-success-foreground/30 bg-background text-success-foreground">
                       SLIP-{pendingVerification.code}
                     </Badge>
                   </div>
@@ -881,7 +878,6 @@ export default function ReviewSlips() {
                             "text-center font-mono text-base font-bold uppercase",
                             "outline-none transition-all sm:w-9",
                             "focus:border-primary focus:ring-2 focus:ring-primary/20",
-                            "dark:bg-white/5",
                           )}
                         />
                       ))}

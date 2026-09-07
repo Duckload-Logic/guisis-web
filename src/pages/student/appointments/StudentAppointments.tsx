@@ -16,7 +16,11 @@ import {
   Tag,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
+import {
+  LAYOUT_STYLES,
+  STATUS_COLORS,
+  getStatusColorKey,
+} from "@/config/constants";
 import {
   Appointment,
   AppointmentStatus,
@@ -155,23 +159,9 @@ export default function StudentAppointments() {
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
-
-    switch (key) {
-      case "warning":
-        return "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
-      case "info":
-        return "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
-      case "success":
-        return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
-      case "danger":
-        return "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
-      case "notice":
-        return "border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200";
-      case "stale":
-        return "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200";
-      default:
-        return "border-border bg-muted/40 text-muted-foreground";
-    }
+    return (
+      STATUS_COLORS[key] || "border-border bg-muted/40 text-muted-foreground"
+    );
   };
 
   const formatCompactDate = (value?: string) => {
@@ -285,7 +275,7 @@ export default function StudentAppointments() {
             You need to upload your COR before you can book appointments.{" "}
             <Link
               to="/student/cor-management"
-              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+              className="font-semibold underline hover:opacity-80"
             >
               Go to COR Management
             </Link>
@@ -305,7 +295,7 @@ export default function StudentAppointments() {
             upload your updated COR to proceed.{" "}
             <Link
               to="/student/cor-management"
-              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+              className="font-semibold underline hover:opacity-80"
             >
               Go to COR Management
             </Link>
@@ -370,17 +360,21 @@ export default function StudentAppointments() {
                   type="button"
                   onClick={() => navigate(`/student/appointments/${appointment.id}`)}
                   className={cn(
-                    "w-full rounded-2xl border border-slate-300 bg-white p-5 text-left shadow-md",
-                    "transition-all hover:-translate-y-1 hover:shadow-lg hover:border-slate-400",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    "dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:hover:border-white/20",
+                    "w-full rounded-2xl border border-border bg-card p-5",
+                    "text-left shadow-md transition-all hover:-translate-y-1",
+                    "hover:border-primary/50 hover:shadow-lg",
+                    "focus-visible:outline-none focus-visible:ring-2",
+                    "focus-visible:ring-primary",
                   )}
                   aria-label={`View appointment: ${appointment.appointmentCategory?.name || "Uncategorized"}`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <Badge
                       variant="outline"
-                      className="border-slate-300 bg-slate-200/60 text-[11px] font-bold text-slate-800 dark:border-white/20 dark:bg-white/10 dark:text-slate-200"
+                      className={cn(
+                        "border-border bg-muted/60 text-[11px] font-bold",
+                        "text-foreground",
+                      )}
                     >
                       <Tag className="mr-1.5 h-3 w-3 shrink-0" />
                       {appointment.appointmentCategory?.name || "Uncategorized"}
@@ -400,7 +394,12 @@ export default function StudentAppointments() {
                     {appointment.reason}
                   </p>
                   
-                  <div className="mt-5 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                  <div
+                    className={cn(
+                      "mt-5 flex flex-col gap-4 border-t border-border pt-4",
+                      "sm:flex-row sm:items-center sm:justify-between",
+                    )}
+                  >
                     <div className="flex flex-col gap-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                         Requested On

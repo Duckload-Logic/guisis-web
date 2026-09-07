@@ -383,8 +383,8 @@ function CalendarContent({
                 "bg-transparent text-muted-foreground/35",
               isDisabled &&
                 isHolidayDate &&
-                "border border-dashed border-amber-500/40 bg-amber-500/5 " +
-                "text-amber-600/40 dark:text-amber-400/40",
+                "border border-dashed border-warning-foreground/40 " +
+                "bg-warning-background text-warning-foreground/40",
               !isDisabled &&
                 isSelected &&
                 `${occupiedDayColor} text-primary-foreground shadow`,
@@ -396,8 +396,9 @@ function CalendarContent({
                 !isSelected &&
                 !isToday &&
                 (isHolidayDate
-                  ? "border border-dashed border-amber-500 bg-amber-500/5 " +
-                    "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  ? "border border-dashed border-warning-foreground " +
+                    "bg-warning-background text-warning-foreground " +
+                    "hover:bg-warning-foreground/10"
                   : "bg-transparent text-foreground hover:bg-muted/80"),
             );
 

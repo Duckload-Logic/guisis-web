@@ -8,7 +8,6 @@ import {
   Brain,
   User,
   Users,
-  Check,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -126,8 +125,7 @@ export const HealthSection = forwardRef<
           dynamicSchema[`_consultations.${type}.${idx}.whenDate`] = [
             {
               type: "required",
-              validate: (val: any) =>
-                val && String(val).trim().length > 0,
+              validate: (val: any) => val && String(val).trim().length > 0,
               message: `Please specify when`,
             },
             commonRules.pattern(
@@ -139,8 +137,7 @@ export const HealthSection = forwardRef<
           dynamicSchema[`_consultations.${type}.${idx}.forWhat`] = [
             {
               type: "required",
-              validate: (val: any) =>
-                val && String(val).trim().length > 0,
+              validate: (val: any) => val && String(val).trim().length > 0,
               message: `Please specify reason`,
             },
             commonRules.noSpecialChars(`Reason for consultation`),
@@ -312,16 +309,13 @@ export const HealthSection = forwardRef<
       const errorField = `_consultations.${type}.${relativeIndex}.${field}`;
       const fieldRules = getDynamicRule(field);
       if (fieldRules) {
-        const _consultationsMap = consultations.reduce(
-          (acc: any, c: any) => {
-            if (!acc[c.professionalType]) {
-              acc[c.professionalType] = [];
-            }
-            acc[c.professionalType].push(c);
-            return acc;
-          },
-          {} as any,
-        );
+        const _consultationsMap = consultations.reduce((acc: any, c: any) => {
+          if (!acc[c.professionalType]) {
+            acc[c.professionalType] = [];
+          }
+          acc[c.professionalType].push(c);
+          return acc;
+        }, {} as any);
 
         const error = validateField(value, fieldRules, {
           health,
@@ -624,25 +618,23 @@ export const HealthSection = forwardRef<
                 {type.consulted === true && (
                   <div
                     className={cn(
-                      "pl-0 duration-300 sm:pl-8 space-y-6",
+                      "space-y-6 pl-0 duration-300 sm:pl-8",
                       "animate-in fade-in slide-in-from-top-2",
                     )}
                   >
                     {type.sessions.map((session: any, sIdx: number) => {
                       const whenDateKey =
-                        `_consultations.${type.type}.` +
-                        `${sIdx}.whenDate`;
+                        `_consultations.${type.type}.` + `${sIdx}.whenDate`;
                       const forWhatKey =
-                        `_consultations.${type.type}.` +
-                        `${sIdx}.forWhat`;
+                        `_consultations.${type.type}.` + `${sIdx}.forWhat`;
 
                       return (
                         <div
                           key={sIdx}
                           className={cn(
-                            "p-4 rounded-xl border",
+                            "rounded-xl border p-4",
                             "border-glass-border/10 bg-glass-bg/5",
-                            "space-y-4 relative",
+                            "relative space-y-4",
                           )}
                         >
                           <div className="flex items-center justify-between">
@@ -676,10 +668,12 @@ export const HealthSection = forwardRef<
                             )}
                           </div>
 
-                          <div className={cn(
-                            "grid grid-cols-1 gap-4",
-                            "sm:grid-cols-2"
-                          )}>
+                          <div
+                            className={cn(
+                              "grid grid-cols-1 gap-4",
+                              "sm:grid-cols-2",
+                            )}
+                          >
                             <DatePicker
                               label="When"
                               value={session.when}
@@ -718,8 +712,8 @@ export const HealthSection = forwardRef<
                       onClick={() => addSession(type.type)}
                       className={cn(
                         "inline-flex items-center gap-2 px-4 py-2",
-                        "text-xs font-bold text-primary bg-primary/5",
-                        "hover:bg-primary/10 rounded-lg border",
+                        "bg-primary/5 text-xs font-bold text-primary",
+                        "rounded-lg border hover:bg-primary/10",
                         "border-primary/15 transition-all",
                       )}
                     >
@@ -728,9 +722,7 @@ export const HealthSection = forwardRef<
                     </button>
                   </div>
                 )}
-                {getFieldError(
-                  `_consultations.${type.type}.hasConsulted`,
-                ) && (
+                {getFieldError(`_consultations.${type.type}.hasConsulted`) && (
                   <p
                     className={cn(
                       "mt-2 flex items-center gap-1 pl-0 sm:pl-8",
@@ -738,9 +730,7 @@ export const HealthSection = forwardRef<
                     )}
                   >
                     <span className="h-1 w-1 rounded-full bg-primary" />
-                    {getFieldError(
-                      `_consultations.${type.type}.hasConsulted`,
-                    )}
+                    {getFieldError(`_consultations.${type.type}.hasConsulted`)}
                   </p>
                 )}
               </div>

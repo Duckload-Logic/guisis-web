@@ -20,11 +20,7 @@ export function IIRProgressPill({ completion }: IIRProgressPillProps) {
             "shadow-[0_0_10px_rgba(var(--primary),0.6)]",
           )}
         />
-        <span
-          className={cn(
-            "text-[11px] uppercase text-foreground",
-          )}
-        >
+        <span className={cn("text-[11px] uppercase text-foreground")}>
           {completion}% Form Progress
         </span>
       </div>

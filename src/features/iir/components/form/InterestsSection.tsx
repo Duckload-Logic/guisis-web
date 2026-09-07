@@ -5,12 +5,10 @@ import {
   Users,
   Heart,
   Palette,
-  Briefcase,
   Sparkles,
 } from "lucide-react";
 import { Checkbox, Radio } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
-import { SelectField } from "@/components/ui/select-field";
 import { SectionContainer } from "./SectionContainer";
 import { validateObject, validateField } from "@/services/validationSchema";
 import { interestsValidationSchema } from "@/features/iir/config/interestsValidationSchema";
@@ -53,7 +51,6 @@ const EXTRA_CURRICULAR_ORGS = [
   "Chess Club",
   "Scouting",
 ];
-
 
 const checkSubjectDuplicates = (preferences: any[]): FormErrors => {
   const localErrors: FormErrors = {};
@@ -111,7 +108,6 @@ const checkHobbySequence = (hobbies: any[]): FormErrors => {
   return localErrors;
 };
 
-
 const isAcademicActivity = (a: any): boolean => {
   if (!a || !a.activityOption) return false;
   if (!a.activityOption.name || a.activityOption.id === 0) {
@@ -162,9 +158,8 @@ const checkActivitiesAndRoles = (interests: any): FormErrors => {
       } else if (parseSharedRoles(role).includes("Other")) {
         const roleSpec = (a.roleSpecification || "").trim();
         if (!roleSpec) {
-          localErrors[
-            `interests.activities.${index}.roleSpecification`
-          ] = "Please specify your role.";
+          localErrors[`interests.activities.${index}.roleSpecification`] =
+            "Please specify your role.";
         }
       }
     }
@@ -267,8 +262,6 @@ export const InterestsSection = forwardRef<
       }
     }
   }, [interests?.activities, onChange]);
-
-
 
   const validate = (
     step?: number,
@@ -512,7 +505,6 @@ export const InterestsSection = forwardRef<
     });
   };
 
-
   const getHobby = (rank: number) =>
     interests?.hobbies?.find((h: Hobby) => h.priorityRank === rank)
       ?.hobbyName || "";
@@ -737,7 +729,7 @@ export const InterestsSection = forwardRef<
             ).length > 0 && (
               <div
                 className={cn(
-                  "mt-8 space-y-4 border-t border-glass-border/20 pt-6",
+                  "border-glass-border/20 mt-8 space-y-4 border-t pt-6",
                   "animate-in fade-in duration-300",
                 )}
               >
@@ -795,7 +787,7 @@ export const InterestsSection = forwardRef<
               <h4
                 className={cn(
                   "mb-6 flex items-center gap-2 text-xs uppercase",
-                  "tracking-widest text-neutral-400 dark:text-neutral-500",
+                  "tracking-widest text-muted-foreground",
                 )}
               >
                 <Star
@@ -829,7 +821,7 @@ export const InterestsSection = forwardRef<
               <h4
                 className={cn(
                   "mb-6 flex items-center gap-2 text-xs uppercase",
-                  "tracking-widest text-neutral-400 dark:text-neutral-500",
+                  "tracking-widest text-muted-foreground",
                 )}
               >
                 <Heart
@@ -944,19 +936,19 @@ export const InterestsSection = forwardRef<
                 />
               </div>
 
-              {interests?.activities?.filter((a: Activity) =>
-                !isAcademicActivity(a),
+              {interests?.activities?.filter(
+                (a: Activity) => !isAcademicActivity(a),
               ).length > 0 && (
                 <div
                   className={cn(
-                    "mt-8 space-y-6 border-t border-glass-border/20 pt-6",
+                    "border-glass-border/20 mt-8 space-y-6 border-t pt-6",
                     "animate-in fade-in duration-300",
                   )}
                 >
                   <h5
                     className={cn(
                       "text-xs font-bold uppercase tracking-wider",
-                      "text-neutral-400 dark:text-neutral-500",
+                      "text-muted-foreground",
                     )}
                   >
                     Organization Details & Roles:
@@ -966,23 +958,18 @@ export const InterestsSection = forwardRef<
                     {extraActivities.map((activity: Activity) => {
                       const origIdx = (interests.activities || []).findIndex(
                         (a: Activity) =>
-                          a.activityOption.id ===
-                            activity.activityOption.id &&
+                          a.activityOption.id === activity.activityOption.id &&
                           !isAcademicActivity(a),
                       );
-                      const isOther = isOtherName(
-                        activity.activityOption.name,
-                      );
-                      const currentRoles = parseSharedRoles(
-                        activity.role,
-                      );
+                      const isOther = isOtherName(activity.activityOption.name);
+                      const currentRoles = parseSharedRoles(activity.role);
 
                       return (
                         <div
                           key={activity.activityOption.id}
                           className={cn(
-                            "rounded-xl border border-glass-border/40",
-                            "bg-glass-bg/25 p-5 space-y-4",
+                            "border-glass-border/40 rounded-xl border",
+                            "bg-glass-bg/25 space-y-4 p-5",
                           )}
                         >
                           <div
@@ -991,12 +978,7 @@ export const InterestsSection = forwardRef<
                               "sm:items-center sm:justify-between",
                             )}
                           >
-                            <span
-                              className={cn(
-                                "font-bold text-neutral-800",
-                                "dark:text-neutral-200",
-                              )}
-                            >
+                            <span className="font-bold text-foreground">
                               {activity.activityOption.name}
                             </span>
                           </div>
@@ -1051,8 +1033,7 @@ export const InterestsSection = forwardRef<
 
                             {origIdx !== -1 &&
                               getFieldError(
-                                "interests.activities." +
-                                  `${origIdx}.role`,
+                                "interests.activities." + `${origIdx}.role`,
                               ) && (
                                 <p
                                   className={cn(
@@ -1060,8 +1041,7 @@ export const InterestsSection = forwardRef<
                                   )}
                                 >
                                   {getFieldError(
-                                    "interests.activities." +
-                                      `${origIdx}.role`,
+                                    "interests.activities." + `${origIdx}.role`,
                                   )}
                                 </p>
                               )}

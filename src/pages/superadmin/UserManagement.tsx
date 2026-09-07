@@ -940,8 +940,13 @@ export default function UserManagement() {
       </div>
 
       {activeTab === "users" ? (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 px-0 pb-4 dark:border-white/10 sm:px-6">
+        <Card
+          className={cn(
+            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
+            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+          )}
+        >
+          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -991,7 +996,7 @@ export default function UserManagement() {
           </CardContent>
 
           {data && data.meta.totalPages > 1 && (
-            <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+            <div className="border-t border-border/50 bg-muted/20">
               <Pagination
                 currentPage={page}
                 totalPages={data.meta.totalPages}
@@ -1002,8 +1007,13 @@ export default function UserManagement() {
           )}
         </Card>
       ) : (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 px-0 pb-4 dark:border-white/10 sm:px-6">
+        <Card
+          className={cn(
+            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
+            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+          )}
+        >
+          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">

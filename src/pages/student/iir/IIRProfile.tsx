@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Download, FileText } from "lucide-react";
 
 const ICON_SIZE = 20;
@@ -271,7 +272,12 @@ export default function IIRProfile() {
         className={cn(
           "iir-print-indicator",
           isPreparingPrint &&
-            "fixed right-4 top-4 z-50 items-center gap-2 rounded-full border border-emerald-500/30 bg-white/90 px-3 py-2 text-[10px] font-bold uppercase text-emerald-700 shadow-lg backdrop-blur-md dark:bg-neutral-900/90 dark:text-emerald-300",
+            cn(
+              "fixed right-4 top-4 z-50 items-center gap-2 rounded-full",
+              "border border-success-foreground/30 bg-card/90 px-3 py-2",
+              "text-[10px] font-bold uppercase text-success-foreground",
+              "shadow-lg backdrop-blur-md",
+            ),
         )}
         style={{ display: isPreparingPrint ? "flex" : undefined }}
       >
@@ -359,7 +365,7 @@ export default function IIRProfile() {
 
 function IIRProfileSkeleton() {
   return (
-    <div className={cn("mt-4 flex w-full animate-pulse flex-col gap-8")}>
+    <div className="mt-4 flex w-full flex-col gap-8">
       <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
         {/* Left Side: BioCard Skeleton */}
         <div
@@ -368,25 +374,10 @@ function IIRProfileSkeleton() {
             "flex flex-col items-center gap-6 p-6",
           )}
         >
-          <div
-            className={cn(
-              "h-24 w-24 rounded-full bg-neutral-200",
-              "dark:bg-neutral-800",
-            )}
-          />
+          <Skeleton className="h-24 w-24 rounded-full" />
           <div className="flex w-full flex-col items-center gap-2">
-            <div
-              className={cn(
-                "h-6 w-3/4 rounded bg-neutral-200",
-                "dark:bg-neutral-800",
-              )}
-            />
-            <div
-              className={cn(
-                "h-4 w-1/2 rounded bg-neutral-200",
-                "dark:bg-neutral-800",
-              )}
-            />
+            <Skeleton className="h-6 w-3/4 rounded" />
+            <Skeleton className="h-4 w-1/2 rounded" />
           </div>
           <div
             className={cn(
@@ -395,22 +386,9 @@ function IIRProfileSkeleton() {
             )}
           >
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col gap-1.5"
-              >
-                <div
-                  className={cn(
-                    "h-3 w-1/3 rounded bg-neutral-200",
-                    "dark:bg-neutral-800",
-                  )}
-                />
-                <div
-                  className={cn(
-                    "h-4 w-2/3 rounded bg-neutral-200",
-                    "dark:bg-neutral-800",
-                  )}
-                />
+              <div key={i} className="flex flex-col gap-1.5">
+                <Skeleton className="h-3 w-1/3 rounded" />
+                <Skeleton className="h-4 w-2/3 rounded" />
               </div>
             ))}
           </div>
@@ -421,13 +399,7 @@ function IIRProfileSkeleton() {
           {/* Tabs Navigation Skeleton */}
           <div className="flex gap-2 overflow-x-auto pb-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-10 w-28 rounded-xl bg-neutral-200",
-                  "shrink-0 dark:bg-neutral-800",
-                )}
-              />
+              <Skeleton key={i} className="h-10 w-28 shrink-0 rounded-xl" />
             ))}
           </div>
 
@@ -438,30 +410,12 @@ function IIRProfileSkeleton() {
               "flex flex-col gap-6 bg-glass-bg p-6 sm:p-8",
             )}
           >
-            <div
-              className={cn(
-                "h-6 w-1/4 rounded bg-neutral-200",
-                "dark:bg-neutral-800",
-              )}
-            />
+            <Skeleton className="h-6 w-1/4 rounded" />
             <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col gap-2"
-                >
-                  <div
-                    className={cn(
-                      "h-3 w-1/4 rounded bg-neutral-200",
-                      "dark:bg-neutral-800",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "h-10 w-full rounded bg-neutral-200",
-                      "dark:bg-neutral-800",
-                    )}
-                  />
+                <div key={i} className="flex flex-col gap-2">
+                  <Skeleton className="h-3 w-1/4 rounded" />
+                  <Skeleton className="h-10 w-full rounded" />
                 </div>
               ))}
             </div>

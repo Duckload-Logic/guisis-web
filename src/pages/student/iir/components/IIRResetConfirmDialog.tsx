@@ -31,7 +31,7 @@ export function IIRResetConfirmDialog({
             Reset this section?
           </AlertDialogTitle>
           <AlertDialogDescription
-            className={cn("font-medium text-neutral-500", "dark:text-neutral-400")}
+            className="font-medium text-muted-foreground"
           >
             This will clear all answers in the current section. This action
             cannot be undone.
@@ -45,10 +45,9 @@ export function IIRResetConfirmDialog({
         >
           <AlertDialogCancel
             className={cn(
-              "mt-0 flex-1 rounded-xl border border-neutral-200",
+              "mt-0 flex-1 rounded-xl border border-border",
               "bg-transparent font-bold text-foreground",
               "hover:bg-accent hover:text-accent-foreground",
-              "dark:border-neutral-800",
             )}
           >
             Cancel

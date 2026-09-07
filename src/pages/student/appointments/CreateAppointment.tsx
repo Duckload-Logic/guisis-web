@@ -507,19 +507,15 @@ export default function CreateAppointment() {
                   <div
                     className={cn(
                       "flex items-start gap-3 rounded-2xl border " +
-                        "border-amber-200/60 bg-amber-50/50 p-4",
-                      "text-amber-800 dark:border-amber-500/20 " +
-                        "dark:bg-amber-500/5 dark:text-amber-400",
+                        "border-warning-foreground/30 bg-warning-background p-4 " +
+                        "text-warning-foreground",
                     )}
                   >
                     <div
                       className={cn(
-                        "flex h-5 w-5 shrink-0 " +
-                          "items-center justify-center " +
-                          "rounded-full bg-amber-100 " +
-                          "text-amber-800 " +
-                          "dark:bg-amber-900/35 " +
-                          "dark:text-amber-400 text-xs",
+                        "flex h-5 w-5 shrink-0 items-center justify-center " +
+                          "rounded-full bg-warning-foreground/20 " +
+                          "text-warning-foreground text-xs",
                       )}
                     >
                       ⚠️
@@ -870,22 +866,17 @@ export default function CreateAppointment() {
                                     <div
                                       className={cn(
                                         "flex items-start gap-3 rounded-2xl " +
-                                          "border border-amber-200/60 " +
-                                          "bg-amber-50/50 p-4",
-                                        "text-amber-800 " +
-                                          "dark:border-amber-500/20 " +
-                                          "dark:bg-amber-500/5 " +
-                                          "dark:text-amber-400",
+                                          "border border-warning-foreground/30 " +
+                                          "bg-warning-background p-4 " +
+                                          "text-warning-foreground",
                                       )}
                                     >
                                       <div
                                         className={cn(
                                           "flex h-5 w-5 shrink-0 " +
                                             "items-center justify-center " +
-                                            "rounded-full bg-amber-100 " +
-                                            "text-amber-800 " +
-                                            "dark:bg-amber-900/35 " +
-                                            "dark:text-amber-400 text-xs",
+                                            "rounded-full bg-warning-foreground/20 " +
+                                            "text-warning-foreground text-xs",
                                         )}
                                       >
                                         ⚠️
@@ -936,9 +927,9 @@ export default function CreateAppointment() {
                               activePreferredOption.time && (
                                 <div
                                   className={cn(
-                                    "rounded-2xl border border-emerald-500/20",
-                                    "bg-emerald-500/10 px-4 py-3",
-                                    "text-emerald-700 dark:text-emerald-300",
+                                    "rounded-2xl border border-success-foreground/30",
+                                    "bg-success-background px-4 py-3",
+                                    "text-success-foreground",
                                   )}
                                 >
                                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -968,9 +959,9 @@ export default function CreateAppointment() {
                                           )
                                         }
                                         className={cn(
-                                          "h-7 rounded-lg border-emerald-500/20 bg-white/60",
-                                          "px-2.5 text-[10px] font-semibold text-emerald-700",
-                                          "hover:bg-white dark:bg-white/[0.06] dark:text-emerald-300",
+                                          "h-7 rounded-lg border-success-foreground/30",
+                                          "bg-card/60 px-2.5 text-[10px] font-semibold",
+                                          "text-success-foreground hover:bg-muted/60",
                                         )}
                                       >
                                         Change Date
@@ -986,9 +977,9 @@ export default function CreateAppointment() {
                                           )
                                         }
                                         className={cn(
-                                          "h-7 rounded-lg border-emerald-500/20 bg-white/60",
-                                          "px-2.5 text-[10px] font-semibold text-emerald-700",
-                                          "hover:bg-white dark:bg-white/[0.06] dark:text-emerald-300",
+                                          "h-7 rounded-lg border-success-foreground/30",
+                                          "bg-card/60 px-2.5 text-[10px] font-semibold",
+                                          "text-success-foreground hover:bg-muted/60",
                                         )}
                                       >
                                         Change Time
@@ -1002,8 +993,8 @@ export default function CreateAppointment() {
                               className={cn(
                                 "rounded-2xl border px-4 py-3 text-sm leading-6",
                                 requiredPreferredComplete
-                                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                                  : "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                                  ? "border-success-foreground/30 bg-success-background text-success-foreground"
+                                  : "border-warning-foreground/30 bg-warning-background text-warning-foreground",
                               )}
                             >
                               {requiredPreferredComplete

@@ -136,7 +136,7 @@ export default function ServiceDisclaimerModal({
             <div
               className={cn(
                 "mt-4 overflow-hidden rounded-xl border border-border",
-                "bg-muted/30 dark:bg-muted/20",
+                "bg-muted/30",
               )}
             >
               <section

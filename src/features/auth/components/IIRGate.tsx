@@ -72,21 +72,21 @@ export const IIRGate = ({
           aria-labelledby="iir-gate-modal-title"
           className={cn(
             "fixed inset-0 z-50 flex items-center justify-center p-4",
-            "bg-background/80 backdrop-blur-md dark:bg-black/80",
+            "bg-background/80 backdrop-blur-md",
           )}
         >
           <div
             className={cn(
               "animate-fade-in-scale w-full max-w-md overflow-hidden",
               "rounded-2xl border border-glass-border bg-glass-bg p-6",
-              "shadow-2xl backdrop-blur-2xl dark:border-white/10",
+              "shadow-2xl backdrop-blur-2xl",
             )}
           >
             <div
               className={cn(
                 "mx-auto mb-4 flex h-14 w-14 items-center justify-center",
-                "rounded-2xl border border-amber-500/20 bg-amber-500/10",
-                "text-amber-600 dark:text-amber-400 shadow-sm",
+                "rounded-2xl border border-warning-foreground/30",
+                "bg-warning-background text-warning-foreground shadow-sm",
               )}
             >
               <AlertTriangle className="h-7 w-7" />

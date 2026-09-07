@@ -20,8 +20,8 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_COMPLETED")
   ) {
     return (
-      "border-emerald-500/20 bg-emerald-500/10 text-emerald-700" +
-      " dark:text-emerald-400"
+      "border-success-foreground/20 bg-success-background " +
+      "text-success-foreground"
     );
   }
 
@@ -30,9 +30,7 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_CHANGED") ||
     upper.endsWith("_STATUS_UPDATED")
   ) {
-    return (
-      "border-blue-500/20 bg-blue-500/10 text-blue-700" + " dark:text-blue-400"
-    );
+    return "border-info-foreground/20 bg-info-background text-info-foreground";
   }
 
   if (
@@ -41,8 +39,8 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_EXCEEDED")
   ) {
     return (
-      "border-amber-500/20 bg-amber-500/10 text-amber-700" +
-      " dark:text-amber-400"
+      "border-warning-foreground/20 bg-warning-background " +
+      "text-warning-foreground"
     );
   }
 
@@ -53,14 +51,12 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_VERIFIED") ||
     upper.endsWith("_ACCESS")
   ) {
-    return (
-      "border-blue-500/20 bg-blue-500/10 text-blue-700" + " dark:text-blue-400"
-    );
+    return "border-info-foreground/20 bg-info-background text-info-foreground";
   }
 
   return (
-    "border-slate-500/20 bg-slate-500/10 text-slate-700" +
-    " dark:text-slate-300"
+    "border-stale-foreground/20 bg-stale-background " +
+    "text-stale-foreground"
   );
 };
 

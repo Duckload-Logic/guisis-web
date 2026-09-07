@@ -430,8 +430,7 @@ export default function SlipDetails() {
                     variant="outline"
                     className={cn(
                       "rounded-full border px-3 py-1 text-[10px] font-bold",
-                      "shadow-sm border-white/45 bg-white/40",
-                      "dark:border-white/10 dark:bg-white/[0.05]",
+                      "shadow-sm border-border bg-muted/60",
                     )}
                   >
                     {slip.category.name}
@@ -451,7 +450,11 @@ export default function SlipDetails() {
                 )}
                 <Badge
                   variant="outline"
-                  className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
+                  className={cn(
+                    "rounded-full border border-info-foreground/30",
+                    "bg-info-background px-3 py-1 text-[10px] font-bold",
+                    "text-info-foreground",
+                  )}
                 >
                   <Clock3 className="mr-1 inline h-3 w-3" />
                   Turnaround: {formatProcessDuration(slip.startedAt, slip.completedAt)}
@@ -902,7 +905,7 @@ export default function SlipDetails() {
       >
         <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
           <AlertDialogHeader>
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-success-background text-success-foreground">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <AlertDialogTitle className="text-xl font-bold">

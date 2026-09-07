@@ -14,8 +14,7 @@ export function IIRDraftPrompt({ onDiscard, onRestore }: IIRDraftPromptProps) {
       <div
         className={cn(
           "rounded-3xl border border-primary/20 bg-primary/5 p-5",
-          "backdrop-blur-md dark:border-primary/20",
-          "dark:bg-primary/10 sm:flex-row",
+          "backdrop-blur-md sm:flex-row",
         )}
       >
         <div className="mb-4 flex items-center gap-3">
@@ -43,7 +42,7 @@ export function IIRDraftPrompt({ onDiscard, onRestore }: IIRDraftPromptProps) {
             onClick={onDiscard}
             className={cn(
               "flex-1 rounded-xl font-bold text-muted-foreground",
-              "hover:bg-neutral-100 dark:hover:bg-neutral-800 sm:flex-none",
+              "hover:bg-muted sm:flex-none",
             )}
           >
             Discard

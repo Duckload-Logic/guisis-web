@@ -9,7 +9,7 @@ interface AuthHeaderProps {
 export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
   return (
     <div className="flex w-full flex-col text-left">
-      {/* Removed the outer backgrounds, absolute gradients, and padding 
+      {/* Removed the outer backgrounds, absolute gradients, and padding
         so it blends perfectly into the parent grid panel in Login.tsx
       */}
       <div className="relative z-10 flex h-full flex-col justify-center">

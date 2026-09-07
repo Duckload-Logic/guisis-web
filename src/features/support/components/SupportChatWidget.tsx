@@ -579,8 +579,8 @@ export function SupportChatWidget() {
                       className={cn(
                         "flex h-12 w-12 items-center justify-center",
                         "rounded-full border border-glass-border bg-background",
-                        "p-0 text-slate-700 shadow-md transition-transform",
-                        "duration-200 hover:scale-110 dark:text-neutral-200",
+                        "p-0 text-foreground shadow-md transition-transform",
+                        "duration-200 hover:scale-110",
                       )}
                       aria-label="Accessibility Settings"
                     >
@@ -603,8 +603,8 @@ export function SupportChatWidget() {
                       className={cn(
                         "flex h-12 w-12 items-center justify-center",
                         "rounded-full border border-glass-border bg-background",
-                        "p-0 text-slate-700 shadow-md transition-transform",
-                        "duration-200 hover:scale-110 dark:text-neutral-200",
+                        "p-0 text-foreground shadow-md transition-transform",
+                        "duration-200 hover:scale-110",
                       )}
                       aria-label="Toggle Text-to-Speech"
                     >
@@ -626,8 +626,8 @@ export function SupportChatWidget() {
                         className={cn(
                           "flex h-12 w-12 items-center justify-center",
                           "rounded-full border border-glass-border bg-background",
-                          "p-0 text-slate-700 shadow-md transition-transform",
-                          "duration-200 hover:scale-110 dark:text-neutral-200",
+                          "p-0 text-foreground shadow-md transition-transform",
+                          "duration-200 hover:scale-110",
                         )}
                         aria-label="Open Support Chat"
                       >

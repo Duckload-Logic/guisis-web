@@ -72,9 +72,9 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
     : level.includes("high") || level.includes("urgent")
       ? "border-destructive/20 bg-destructive/10 text-destructive"
       : level.includes("medium") || level.includes("moderate")
-        ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+        ? STATUS_COLORS.warning
         : level.includes("low")
-          ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+          ? STATUS_COLORS.success
           : "border-primary/20 bg-primary/10 text-primary";
 
   return (
@@ -734,7 +734,7 @@ export default function AppointmentList({
   const renderDesktopSkeleton = () => (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+        <tr className="border-b border-border/70 text-muted-foreground">
           {columns.map((column, index) => (
             <th
               key={index}
@@ -753,7 +753,7 @@ export default function AppointmentList({
         {Array.from({ length: 5 }).map((_, rowIndex) => (
           <tr
             key={rowIndex}
-            className="animate-pulse border-b border-border/60 dark:border-white/10"
+            className="animate-pulse border-b border-border/60"
           >
             {columns.map((_, columnIndex) => (
               <td
@@ -794,7 +794,7 @@ export default function AppointmentList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-      <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col gap-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -985,7 +985,7 @@ export default function AppointmentList({
         </div>
       </div>
 
-      <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <Table
           data={visibleAppointments}
           columns={columns}
@@ -997,7 +997,7 @@ export default function AppointmentList({
           containerClassName="px-3 py-3"
           onRowClick={onViewClick}
         />
-        <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+        <div className="border-t border-border/50 bg-muted/20">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

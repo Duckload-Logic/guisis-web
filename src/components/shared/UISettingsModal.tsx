@@ -226,18 +226,24 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
               onClick={() => setDraftGrayscale(!draftGrayscale)}
               className={cn(
                 "flex w-full items-center justify-between rounded-2xl border",
-                "border-slate-200 bg-white px-5 py-4 transition",
-                "hover:border-primary/50 dark:border-white/10 dark:bg-white/5",
+                "border-border bg-card px-5 py-4 transition",
+                "hover:border-primary/50",
               )}
             >
               <span className="font-medium">
                 {draftGrayscale ? "On" : "Off"}
               </span>
               <div
-                className={`relative h-6 w-11 rounded-full p-1 transition-colors ${draftGrayscale ? "bg-primary" : "bg-slate-300 dark:bg-white/20"}`}
+                className={cn(
+                  "relative h-6 w-11 rounded-full p-1 transition-colors",
+                  draftGrayscale ? "bg-primary" : "bg-muted",
+                )}
               >
                 <div
-                  className={`h-4 w-4 rounded-full bg-white transition-transform ${draftGrayscale ? "translate-x-5" : "translate-x-0"}`}
+                  className={cn(
+                    "h-4 w-4 rounded-full bg-background transition-transform",
+                    draftGrayscale ? "translate-x-5" : "translate-x-0",
+                  )}
                 />
               </div>
             </button>
@@ -323,9 +329,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                 size={18}
                 className="text-primary"
               />
-              <p className="text-lg font-medium text-foreground">
-                Font Size
-              </p>
+              <p className="text-lg font-medium text-foreground">Font Size</p>
             </div>
 
             <div
@@ -487,7 +491,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
             className={cn(
               "w-full rounded-2xl px-8 py-3.5 text-sm font-bold shadow-lg transition sm:w-auto sm:py-2.5",
               hasPendingChanges
-                ? "bg-primary text-primary-foreground hover:bg-primary-dark"
+                ? "hover:bg-primary-dark bg-primary text-primary-foreground"
                 : "cursor-not-allowed bg-muted text-muted-foreground",
             )}
           >

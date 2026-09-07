@@ -46,8 +46,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           stateClasses,
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",
           "file:text-foreground placeholder:text-muted-foreground/70",
-          "focus-visible:bg-glass-bg dark:focus-visible:bg-glass-bg/40",
-          "md:text-sm",
+          "focus-visible:bg-glass-bg md:text-sm",
           className,
         )}
         ref={ref}

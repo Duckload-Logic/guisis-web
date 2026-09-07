@@ -16,11 +16,7 @@ export function FormSectionHeader({
   if (!title) return null;
 
   return (
-    <div
-      className={cn(
-        "relative mb-8 flex items-center gap-4",
-      )}
-    >
+    <div className={cn("relative mb-8 flex items-center gap-4")}>
       {Icon && (
         <div
           className={cn(
@@ -30,7 +26,10 @@ export function FormSectionHeader({
             "sm:h-12 sm:w-12",
           )}
         >
-          <Icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2.5} />
+          <Icon
+            className="h-5 w-5 sm:h-6 sm:w-6"
+            strokeWidth={2.5}
+          />
         </div>
       )}
 

@@ -82,11 +82,10 @@ export default function SearchInput({
           value={localValue}
           onChange={(e) => handleChange(e.target.value)}
           className={cn(
-            "hover:border-glass-border/60 h-11 bg-muted/60 py-2.5 pl-10 pr-11",
-            "text-sm font-medium text-foreground shadow-md outline-none",
-            "transition-all duration-200 placeholder:text-muted-foreground/70",
+            "h-11 bg-muted/40 py-2.5 pl-10 pr-11 text-sm font-medium",
+            "text-foreground shadow-md outline-none transition-all duration-200",
+            "placeholder:text-muted-foreground/70 hover:border-glass-border/60",
             "focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
-            "dark:focus:bg-glass-bg/40 dark:bg-muted/20",
             error ? "border-destructive/50 ring-destructive/5" : "",
           )}
         />

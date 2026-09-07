@@ -75,10 +75,8 @@ export default function Dashboard() {
         value: totalAppointments,
         subtitle: "scheduled sessions",
         icon: Clock,
-        iconWrap: cn(
-          "bg-slate-500/10 border-slate-500/20",
-          "text-slate-600 dark:text-slate-400",
-        ),
+        iconWrap:
+          "border-stale-foreground/30 bg-stale-background text-stale-foreground",
         href: "/student/appointments",
       },
       {
@@ -86,10 +84,8 @@ export default function Dashboard() {
         value: totalSlips,
         subtitle: "submitted excuses",
         icon: ClipboardCheck,
-        iconWrap: cn(
-          "bg-emerald-500/10 border-emerald-500/20",
-          "text-emerald-600 dark:text-emerald-400",
-        ),
+        iconWrap:
+          "border-success-foreground/30 bg-success-background text-success-foreground",
         href: "/student/slips",
       },
       {
@@ -97,12 +93,9 @@ export default function Dashboard() {
         value: iirProfileStatus,
         subtitle: iir?.isSubmitted ? "record completed" : "record pending",
         icon: ClipboardList,
-        iconWrap: cn(
-          iir?.isSubmitted
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-            : "bg-rose-500/10 border-rose-500/20 text-rose-600",
-          iir?.isSubmitted ? "dark:text-emerald-400" : "dark:text-rose-400",
-        ),
+        iconWrap: iir?.isSubmitted
+          ? "border-success-foreground/30 bg-success-background text-success-foreground"
+          : "border-destructive/30 bg-destructive/10 text-destructive",
         href: "/student/iir",
       },
       {
@@ -114,18 +107,11 @@ export default function Dashboard() {
             : "needs update"
           : "no cor uploaded",
         icon: FileText,
-        iconWrap: cn(
-          me?.studentCorUrl
-            ? me?.isStudentCorValid
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-              : "bg-amber-500/10 border-amber-500/20 text-amber-600"
-            : "bg-slate-500/10 border-slate-500/20 text-slate-600",
-          me?.studentCorUrl
-            ? me?.isStudentCorValid
-              ? "dark:text-emerald-400"
-              : "dark:text-amber-400"
-            : "dark:text-slate-400",
-        ),
+        iconWrap: me?.studentCorUrl
+          ? me?.isStudentCorValid
+            ? "border-success-foreground/30 bg-success-background text-success-foreground"
+            : "border-warning-foreground/30 bg-warning-background text-warning-foreground"
+          : "border-stale-foreground/30 bg-stale-background text-stale-foreground",
         href: "/student/cor-management",
       },
     ],

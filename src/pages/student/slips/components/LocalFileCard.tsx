@@ -77,13 +77,8 @@ export function LocalFileCard({
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-blue-100 p-3 shadow-sm",
-                  "dark:bg-blue-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="rounded-lg bg-info-background p-3 shadow-sm">
+                <FileText className="h-8 w-8 text-info-foreground" />
               </div>
             </div>
           )}
@@ -95,12 +90,7 @@ export function LocalFileCard({
               "transition-opacity duration-300 group-hover:opacity-100",
             )}
           >
-            <div
-              className={cn(
-                "rounded-full bg-white/90 p-2 shadow-lg",
-                "dark:bg-black/90",
-              )}
-            >
+            <div className="rounded-full bg-card/90 p-2 shadow-lg">
               <Eye className="h-4 w-4 text-primary" />
             </div>
           </div>

@@ -50,7 +50,7 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
               <div
                 className={cn(
                   "pointer-events-none absolute inset-x-0 top-0 h-16",
-                  "bg-gradient-to-br opacity-20 blur-2xl dark:opacity-10",
+                  "bg-gradient-to-br opacity-15 blur-2xl",
                   action.accent,
                 )}
               />

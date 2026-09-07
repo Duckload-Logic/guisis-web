@@ -173,15 +173,15 @@ export default function CORManagement() {
         className={cn(
           "flex min-h-[620px] flex-col overflow-hidden rounded-xl",
           "border-border bg-card shadow-md backdrop-blur-md",
-          "dark:bg-card/45 sm:h-[750px] sm:min-h-0",
-          "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
+          "sm:h-[750px] sm:min-h-0 animate-fade-in-up transition-all",
+          "duration-300 hover:-translate-y-0.5",
+          "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
         )}
         style={{ animationDelay: "0.05s", animationFillMode: "both" }}
       >
         <CardHeader
           className={cn(
-            "shrink-0 border-b border-border/10 bg-muted/30 p-5",
-            "dark:bg-muted/10 sm:p-8",
+            "shrink-0 border-b border-border/10 bg-muted/20 p-5 sm:p-8",
           )}
         >
           <div

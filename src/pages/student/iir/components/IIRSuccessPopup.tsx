@@ -34,14 +34,15 @@ export function IIRSuccessPopup({
                 "shadow-green-500/30",
               )}
             >
-              <Check className="h-10 w-10 text-white" strokeWidth={4} />
+              <Check
+                className="h-10 w-10 text-white"
+                strokeWidth={4}
+              />
             </div>
           </div>
         </div>
 
-        <h3 className="text-3xl font-[900] text-foreground">
-          All Done!
-        </h3>
+        <h3 className="text-3xl font-[900] text-foreground">All Done!</h3>
 
         <p className="px-4 font-medium text-muted-foreground">
           {isEditMode

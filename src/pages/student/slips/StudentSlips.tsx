@@ -296,7 +296,7 @@ export default function StudentSlips() {
               You need to upload your COR before you can submit admission slips.{" "}
               <Link
                 to="/student/cor-management"
-                className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+                className="font-semibold underline hover:opacity-80"
               >
                 Go to COR Management
               </Link>
@@ -316,7 +316,7 @@ export default function StudentSlips() {
               Please upload your updated COR to proceed.{" "}
               <Link
                 to="/student/cor-management"
-                className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+                className="font-semibold underline hover:opacity-80"
               >
                 Go to COR Management
               </Link>
@@ -386,17 +386,21 @@ export default function StudentSlips() {
                     type="button"
                     onClick={() => navigate(`/student/slips/${slip.id}`)}
                     className={cn(
-                      "w-full rounded-2xl border border-slate-300 bg-white p-5 text-left shadow-md",
-                      "transition-all hover:-translate-y-1 hover:shadow-lg hover:border-slate-400",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      "dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:hover:border-white/20",
+                      "w-full rounded-2xl border border-border bg-card p-5",
+                      "text-left shadow-md transition-all hover:-translate-y-1",
+                      "hover:border-primary/50 hover:shadow-lg",
+                      "focus-visible:outline-none focus-visible:ring-2",
+                      "focus-visible:ring-primary",
                     )}
                     aria-label={`View admission slip: ${slip.category?.name || "Uncategorized"}`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <Badge
                         variant="outline"
-                        className="border-slate-300 bg-slate-200/60 text-[11px] font-bold text-slate-800 dark:border-white/20 dark:bg-white/10 dark:text-slate-200"
+                        className={cn(
+                          "border-border bg-muted/60 text-[11px] font-bold",
+                          "text-foreground",
+                        )}
                       >
                         <Tag className="mr-1.5 h-3 w-3 shrink-0" />
                         {slip.category?.name || "Uncategorized"}
@@ -416,7 +420,12 @@ export default function StudentSlips() {
                       {slip.reason}
                     </p>
                     
-                    <div className="mt-5 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+                    <div
+                      className={cn(
+                        "mt-5 flex flex-col gap-4 border-t border-border pt-4",
+                        "sm:flex-row sm:items-center sm:justify-between",
+                      )}
+                    >
                       <div className="flex flex-col gap-1.5">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                           Absence Date

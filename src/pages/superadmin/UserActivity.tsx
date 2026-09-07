@@ -41,7 +41,12 @@ export default function UserActivity() {
   return (
     <div className="space-y-6">
       {targetUser && (
-        <div className="flex items-center gap-4 rounded-[22px] border border-white/20 bg-white/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]">
+        <div
+          className={cn(
+            "flex items-center gap-4 rounded-[22px] border border-border",
+            "bg-card/60 p-5 backdrop-blur-xl",
+          )}
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary">
             {targetUser.firstName[0]}
             {targetUser.lastName[0]}

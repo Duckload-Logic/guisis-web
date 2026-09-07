@@ -94,9 +94,8 @@ export function SectionProgress({
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={cn(
-              "flex w-full min-w-0 items-center justify-between rounded-2xl border",
-              "border-neutral-200 bg-neutral-100 p-4 shadow-sm",
-              "dark:border-neutral-800 dark:bg-neutral-900",
+              "flex w-full min-w-0 items-center justify-between rounded-2xl",
+              "border border-border bg-card p-4 shadow-sm",
             )}
           >
             <div className="flex flex-col text-left">
@@ -123,8 +122,7 @@ export function SectionProgress({
                 "animate-in fade-in slide-in-from-top-2 absolute left-0",
                 "right-0 top-full z-50 mt-2 max-h-[min(70vh,32rem)]",
                 "overflow-y-auto overscroll-contain rounded-2xl border",
-                "border-neutral-200 bg-white shadow-xl dark:border-neutral-800",
-                "dark:bg-neutral-900",
+                "border-border bg-popover shadow-xl",
               )}
             >
               {sections.map((section, idx) => {
@@ -141,10 +139,7 @@ export function SectionProgress({
                       "text-left transition-colors",
                       active
                         ? "bg-primary/5 font-bold text-primary"
-                        : cn(
-                            "text-muted-foreground hover:bg-neutral-50",
-                            "dark:hover:bg-white/5",
-                          ),
+                        : "text-muted-foreground hover:bg-muted/50",
                       !navigable && !active && "cursor-not-allowed opacity-30",
                     )}
                   >
@@ -168,8 +163,7 @@ export function SectionProgress({
           <div
             className={cn(
               "sticky top-24 flex flex-col gap-6 rounded-2xl border",
-              "border-white/20 bg-white/40 p-6 shadow-xl backdrop-blur-2xl",
-              "dark:border-white/10 dark:bg-white/[0.04]",
+              "border-border bg-card/60 p-6 shadow-xl backdrop-blur-2xl",
             )}
           >
             <div className="flex flex-col gap-1 px-1">
@@ -210,11 +204,8 @@ export function SectionProgress({
                       "group relative flex min-h-[52px] items-start gap-4 rounded-xl p-3",
                       "text-left transition-all duration-300",
                       active
-                        ? "bg-white shadow-xl shadow-primary/5 dark:bg-white/10"
-                        : cn(
-                            "hover:bg-white/50 dark:hover:bg-white/5",
-                            "opacity-80 hover:opacity-100",
-                          ),
+                        ? "bg-card shadow-xl shadow-primary/5"
+                        : "hover:bg-muted/50 opacity-80 hover:opacity-100",
                       !navigable && !active && "cursor-not-allowed grayscale",
                       isShaking && "animate-subtle-shake",
                     )}
@@ -224,9 +215,7 @@ export function SectionProgress({
                       <div
                         className={cn(
                           "absolute left-[25px] top-[40px] h-[calc(100%-4px)] w-[2px]",
-                          finished
-                            ? "bg-green-500/30"
-                            : "bg-neutral-200 dark:bg-neutral-800",
+                          finished ? "bg-green-500/30" : "bg-border",
                         )}
                       />
                     )}
@@ -241,7 +230,7 @@ export function SectionProgress({
                           ? "scale-110 border-primary bg-primary text-white shadow-lg shadow-primary/30"
                           : finished
                             ? "border-green-500 bg-green-500 text-white"
-                            : "border-neutral-200 bg-neutral-100 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900",
+                            : "border-border bg-muted/60 text-muted-foreground",
                         !navigable && !active && "opacity-40",
                       )}
                     >
@@ -264,7 +253,7 @@ export function SectionProgress({
                           active
                             ? "text-foreground"
                             : finished
-                              ? "text-green-600 dark:text-green-500"
+                              ? "text-emerald-600"
                               : "text-muted-foreground",
                           !navigable && !active && "opacity-50",
                         )}

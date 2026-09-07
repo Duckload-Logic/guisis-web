@@ -84,9 +84,9 @@ export default function BioCard({
             <div className="mt-2">
               <span
                 className={cn(
-                  "inline-block rounded-lg border border-amber-500/20",
-                  "bg-amber-500/10 px-3 py-1 text-[10px] font-bold",
-                  "uppercase text-amber-700 dark:text-amber-300",
+                  "inline-block rounded-lg border border-warning-foreground/30",
+                  "bg-warning-background px-3 py-1 text-[10px] font-bold",
+                  "uppercase text-warning-foreground",
                 )}
               >
                 Expedited Profile

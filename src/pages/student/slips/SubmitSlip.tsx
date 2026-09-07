@@ -700,8 +700,7 @@ export default function SubmitSlip() {
                     <div
                       className={cn(
                         "flex items-start gap-2.5 rounded-lg border",
-                        "border-primary/15 bg-primary/[0.04] px-3 py-2.5",
-                        "dark:bg-primary/[0.07]",
+                        "border-primary/15 bg-primary/5 px-3 py-2.5",
                       )}
                     >
                       <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -724,85 +723,72 @@ export default function SubmitSlip() {
                       type="single"
                       collapsible
                       className="w-full"
+                      value={activeAccordion}
+                      onValueChange={setActiveAccordion}
                     >
+                      {/* 1. EXCUSE LETTER */}
                       <AccordionItem
                         value="excuse-letter"
-                        className="border-b last:border-b-0"
+                        className="border-b border-border/40"
                       >
                         <AccordionTrigger
                           className={cn(
-                            "px-4 py-3 hover:bg-muted/30",
-                            "hover:no-underline",
+                            "px-5 py-4 transition-all duration-200",
+                            "hover:bg-muted/30 hover:no-underline sm:px-6",
                           )}
                         >
-                          <div className="flex flex-1 items-center gap-3">
-                            <div
-                              className={cn(
-                                "flex h-6 w-6 items-center justify-center",
-                                "rounded-full bg-muted text-xs font-semibold",
-                                "text-foreground",
-                              )}
-                            >
-                              1
-                            </div>
-                            <div className="text-left">
-                              <div className="flex items-center gap-2">
-                                <h3
-                                  className={cn(
-                                    "text-sm font-medium",
-                                    "text-foreground",
-                                  )}
-                                >
-                                  Excuse Letter
-                                </h3>
-                                <Badge
-                                  variant="destructive"
-                                  className="text-xs"
-                                >
-                                  Required
-                                </Badge>
+                          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 pr-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                                <FileText className="h-4 w-4" />
                               </div>
-                              <p className="mt-0.5 text-xs text-muted-foreground">
-                                Upload your excuse letter
-                              </p>
+                              <div className="text-left">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-foreground">
+                                    Excuse Letter
+                                  </span>
+                                  {isFieldRequired("excuseLetter") && (
+                                    <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
+                                      Required
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {excuseLetterCount > 0
+                                    ? `${excuseLetterCount} file(s) attached`
+                                    : "Signed letter explaining reason"}
+                                </p>
+                              </div>
                             </div>
+                            <span className="text-xs font-semibold text-primary">
+                              {excuseLetterCount > 0
+                                ? "Update Files"
+                                : "Upload"}
+                            </span>
                           </div>
-                          {excuseLetterProvided && (
-                            <CheckCircle2 className="mr-2 h-4 w-4 shrink-0 text-green-500" />
-                          )}
                         </AccordionTrigger>
                         <AccordionContent
                           className={cn(
                             "border-t border-border/40 bg-muted/20",
-                            "px-4 py-3",
+                            "px-5 pb-6 pt-4 sm:px-6",
                           )}
                         >
                           <div className="space-y-4">
                             <div
                               className={cn(
                                 "flex items-start gap-3 rounded-xl border",
-                                "border-violet-200 bg-violet-50 p-4",
-                                "text-violet-900 shadow-sm",
-                                "dark:border-violet-900/50",
-                                "dark:bg-violet-950/20 dark:text-violet-200",
+                                "border-notice-foreground/30 bg-notice-background",
+                                "p-4 text-notice-foreground shadow-sm",
                               )}
                             >
                               <Info
-                                className={cn(
-                                  "mt-0.5 h-5 w-5 shrink-0",
-                                  "text-violet-600 dark:text-violet-400",
-                                )}
+                                className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground"
                               />
                               <div className="text-sm">
                                 <p className="mb-1 font-semibold">
                                   Excuse Letter Format Requirement:
                                 </p>
-                                <p
-                                  className={cn(
-                                    "text-violet-800",
-                                    "dark:text-violet-300",
-                                  )}
-                                >
+                                <p className="text-notice-foreground">
                                   Please ensure the letter is{" "}
                                   <strong>clearly readable and legible</strong>,
                                   and includes the{" "}
@@ -993,28 +979,18 @@ export default function SubmitSlip() {
                             <div
                               className={cn(
                                 "flex items-start gap-3 rounded-xl border",
-                                "border-violet-200 bg-violet-50 p-4",
-                                "text-violet-900 shadow-sm",
-                                "dark:border-violet-900/50",
-                                "dark:bg-violet-950/20 dark:text-violet-200",
+                                "border-notice-foreground/30 bg-notice-background",
+                                "p-4 text-notice-foreground shadow-sm",
                               )}
                             >
                               <Info
-                                className={cn(
-                                  "mt-0.5 h-5 w-5 shrink-0",
-                                  "text-violet-600 dark:text-violet-400",
-                                )}
+                                className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground"
                               />
                               <div className="text-sm">
                                 <p className="mb-1 font-semibold">
                                   Parent ID Xerox Copy Requirement:
                                 </p>
-                                <p
-                                  className={cn(
-                                    "text-violet-800",
-                                    "dark:text-violet-300",
-                                  )}
-                                >
+                                <p className="text-notice-foreground">
                                   The parent&apos;s valid ID must be submitted
                                   as a{" "}
                                   <strong>
@@ -1035,32 +1011,25 @@ export default function SubmitSlip() {
                               {/* Valid Requirements */}
                               <div
                                 className={cn(
-                                  "rounded-xl border border-emerald-200",
-                                  "bg-emerald-50 p-4 shadow-sm",
-                                  "dark:border-emerald-900/50",
-                                  "dark:bg-emerald-950/20",
+                                  "rounded-xl border border-success-foreground/30",
+                                  "bg-success-background p-4 shadow-sm",
                                 )}
                               >
                                 <h4
                                   className={cn(
                                     "mb-2 flex items-center gap-2",
-                                    "font-semibold text-emerald-900",
-                                    "dark:text-emerald-200",
+                                    "font-semibold text-success-foreground",
                                   )}
                                 >
                                   <CheckCircle2
-                                    className={cn(
-                                      "h-4 w-4 shrink-0",
-                                      "text-emerald-600 dark:text-emerald-400",
-                                    )}
+                                    className="h-4 w-4 shrink-0 text-success-foreground"
                                   />
                                   Valid ID Requirements
                                 </h4>
                                 <ul
                                   className={cn(
                                     "ml-6 list-outside list-disc",
-                                    "space-y-1 text-xs text-emerald-800",
-                                    "dark:text-emerald-300",
+                                    "space-y-1 text-xs text-success-foreground",
                                   )}
                                 >
                                   <li>
@@ -1301,28 +1270,18 @@ export default function SubmitSlip() {
                               <div
                                 className={cn(
                                   "flex items-start gap-3 rounded-xl border",
-                                  "border-blue-200 bg-blue-50 p-4",
-                                  "text-blue-900 shadow-sm",
-                                  "dark:border-blue-900/50",
-                                  "dark:bg-blue-950/20 dark:text-blue-200",
+                                  "border-info-foreground/30 bg-info-background p-4",
+                                  "text-info-foreground shadow-sm",
                                 )}
                               >
                                 <Info
-                                  className={cn(
-                                    "mt-0.5 h-5 w-5 shrink-0",
-                                    "text-blue-600 dark:text-blue-400",
-                                  )}
+                                  className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground"
                                 />
                                 <div className="text-sm">
                                   <p className="mb-1 font-semibold">
                                     University Nurse Sign-off Requirement:
                                   </p>
-                                  <p
-                                    className={cn(
-                                      "text-blue-800",
-                                      "dark:text-blue-300",
-                                    )}
-                                  >
+                                  <p className="text-info-foreground">
                                     For all medical cases, the medical
                                     certificate{" "}
                                     <strong>
@@ -1334,16 +1293,34 @@ export default function SubmitSlip() {
                               </div>
 
                               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="flex flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
-                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-emerald-900 dark:text-emerald-200">
-                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <div
+                                  className={cn(
+                                    "flex flex-col items-center rounded-xl border",
+                                    "border-success-foreground/30 bg-success-background",
+                                    "p-4 shadow-sm",
+                                  )}
+                                >
+                                  <h4
+                                    className={cn(
+                                      "mb-3 flex items-center gap-2 font-semibold",
+                                      "text-success-foreground",
+                                    )}
+                                  >
+                                    <CheckCircle2
+                                      className="h-4 w-4 shrink-0 text-success-foreground"
+                                    />
                                     Upload this
                                   </h4>
-                                  <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                                  <div
+                                    className={cn(
+                                      "overflow-hidden rounded border",
+                                      "border-success-foreground/30 shadow-sm",
+                                    )}
+                                  >
                                     <img
                                       src={goodCertImage}
                                       alt="Example of a valid medical certificate"
-                                      className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
+                                      className="h-auto w-full max-w-[220px] object-contain"
                                     />
                                   </div>
                                 </div>
@@ -1357,7 +1334,7 @@ export default function SubmitSlip() {
                                     <img
                                       src={badCertImage}
                                       alt="Example of an invalid medical certificate"
-                                      className="h-auto w-full max-w-[220px] object-contain mix-blend-multiply dark:mix-blend-normal"
+                                      className="h-auto w-full max-w-[220px] object-contain"
                                     />
                                   </div>
                                 </div>

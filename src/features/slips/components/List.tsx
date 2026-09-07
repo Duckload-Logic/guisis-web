@@ -615,7 +615,7 @@ export function SlipList({
   const renderDesktopSkeleton = () => (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+        <tr className="border-b border-border/70 text-muted-foreground">
           {columns.map((column, index) => (
             <th
               key={index}
@@ -634,7 +634,7 @@ export function SlipList({
         {Array.from({ length: 5 }).map((_, rowIndex) => (
           <tr
             key={rowIndex}
-            className="animate-pulse border-b border-border/60 dark:border-white/10"
+            className="animate-pulse border-b border-border/60"
           >
             {columns.map((_, columnIndex) => (
               <td
@@ -675,7 +675,7 @@ export function SlipList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-      <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col gap-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -851,7 +851,7 @@ export function SlipList({
         </div>
       </div>
 
-      <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <Table
           data={visibleSlips}
           columns={columns}
@@ -864,7 +864,7 @@ export function SlipList({
           tableClassName="w-full table-fixed"
           onRowClick={onViewClick}
         />
-        <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+        <div className="border-t border-border/50 bg-muted/20">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

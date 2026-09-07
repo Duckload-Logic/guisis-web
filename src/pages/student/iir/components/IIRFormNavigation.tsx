@@ -64,8 +64,8 @@ export function IIRFormNavigation({
           <div
             className={cn(
               "inline-flex max-w-xl items-start gap-2 rounded-xl border px-3 py-2",
-              "border-amber-500/25 bg-amber-500/10 text-xs font-medium text-amber-700",
-              "shadow-sm dark:text-amber-200",
+              "border-warning-foreground/30 bg-warning-background text-xs",
+              "font-medium text-warning-foreground shadow-sm",
             )}
             role="alert"
             aria-live="polite"
@@ -83,10 +83,8 @@ export function IIRFormNavigation({
           disabled={currentSection === 1 || isSaving}
           className={cn(
             "flex h-12 min-w-0 items-center gap-2 rounded-2xl",
-            "border-neutral-200/50 bg-white/30 px-5 font-bold",
-            "text-neutral-700 shadow-sm transition-all duration-300",
-            "hover:bg-white/60 dark:border-white/10 dark:bg-white/5",
-            "dark:text-neutral-200 dark:hover:bg-white/10 sm:px-7",
+            "border-border bg-card/60 px-5 font-bold text-foreground",
+            "shadow-sm transition-all duration-300 hover:bg-muted/60 sm:px-7",
           )}
         >
           <ChevronLeft className="h-5 w-5" />

@@ -87,9 +87,10 @@ export default function RoleSelection() {
                 key={role.id}
                 onClick={() => handleRoleSelect(role)}
                 className={cn(
-                  "group cursor-pointer overflow-hidden rounded-xl border-white/20 bg-white/40",
-                  "backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/50",
-                  "hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:border-white/10 dark:bg-white/[0.02]",
+                  "group cursor-pointer overflow-hidden rounded-xl",
+                  "border border-border bg-card/60 backdrop-blur-xl",
+                  "transition-all duration-300 hover:-translate-y-1",
+                  "hover:border-primary/50 hover:shadow-lg",
                 )}
               >
                 <CardContent className="flex flex-col items-center p-8">

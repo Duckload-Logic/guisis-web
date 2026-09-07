@@ -57,14 +57,42 @@ export default function Landing() {
       >
         {/* Ambient Background Accents */}
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -left-[10%] top-[10%] h-[50rem] w-[50rem] rounded-full bg-primary/10 blur-[100px] dark:bg-primary/5" />
-          <div className="absolute -right-[10%] top-[40%] h-[40rem] w-[40rem] rounded-full bg-secondary/20 blur-[100px] dark:bg-secondary/5" />
-          <div className="absolute left-[20%] top-[80%] h-[45rem] w-[45rem] rounded-full bg-primary/5 blur-[100px]" />
+          <div
+            className={cn(
+              "absolute -left-[10%] top-[10%] h-[50rem] w-[50rem]",
+              "rounded-full bg-primary/10 blur-[100px]",
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -right-[10%] top-[40%] h-[40rem] w-[40rem]",
+              "rounded-full bg-secondary/15 blur-[100px]",
+            )}
+          />
+          <div
+            className={cn(
+              "absolute left-[20%] top-[80%] h-[45rem] w-[45rem]",
+              "rounded-full bg-primary/5 blur-[100px]",
+            )}
+          />
         </div>
         {/* Asymmetric Hero Section */}
-        <section className="relative flex min-h-[80vh] flex-col items-center overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:flex-row">
-          <div className="bg-grid pointer-events-none absolute inset-0 opacity-100 dark:opacity-50" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-background/60 via-background/10 to-transparent dark:from-background/80" />
+        <section
+          className={cn(
+            "relative flex min-h-[80vh] flex-col items-center",
+            "overflow-hidden rounded-2xl border border-border bg-card",
+            "shadow-sm lg:flex-row",
+          )}
+        >
+          <div
+            className="bg-grid pointer-events-none absolute inset-0 opacity-60"
+          />
+          <div
+            className={cn(
+              "pointer-events-none absolute inset-0 bg-gradient-to-br",
+              "from-background/70 via-background/10 to-transparent",
+            )}
+          />
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}

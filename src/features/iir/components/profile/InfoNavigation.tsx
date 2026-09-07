@@ -72,7 +72,7 @@ export default function InfoNavigation({
                       "bg-muted/80 text-muted-foreground hover:bg-muted sm:border-transparent sm:bg-muted sm:opacity-70",
                     ),
                 isTabDisabled &&
-                  "pointer-events-none cursor-not-allowed bg-neutral-200/50 opacity-30 dark:bg-neutral-800/50",
+                  "pointer-events-none cursor-not-allowed bg-muted/50 opacity-30",
               )}
             >
               <div

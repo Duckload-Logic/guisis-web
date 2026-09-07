@@ -292,9 +292,11 @@ export default function Layout({
       <ScrollToTop targetRef={scrollRef as React.RefObject<HTMLDivElement>} />
       <div
         onClickCapture={handleServiceNavigationCapture}
-        className={`relative flex h-dvh min-w-0 max-w-full flex-col overflow-hidden bg-neutral-100 text-foreground dark:bg-neutral-950 ${
-          grayscale ? "grayscale" : ""
-        }`}
+        className={cn(
+          "relative flex h-dvh min-w-0 max-w-full flex-col overflow-hidden",
+          "bg-background text-foreground",
+          grayscale && "grayscale",
+        )}
       >
         {/* Background Fallback / Graphics Quality Layers */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -312,13 +314,13 @@ export default function Layout({
               <div
                 className={cn(
                   "absolute -left-[10%] top-[5%] h-[40rem] w-[40rem] animate-pulse",
-                  "rounded-full bg-primary/20 blur-[100px] dark:bg-primary/5",
+                  "rounded-full bg-primary/10 blur-[100px]",
                 )}
               />
               <div
                 className={cn(
                   "absolute -bottom-[5%] -right-[10%] h-[40rem] w-[40rem]",
-                  "animate-pulse rounded-full bg-secondary/20 blur-[100px] dark:bg-secondary/5",
+                  "animate-pulse rounded-full bg-secondary/10 blur-[100px]",
                   "[animation-delay:3s]",
                 )}
               />
@@ -326,7 +328,7 @@ export default function Layout({
                 className={cn(
                   "absolute left-1/2 top-1/2 h-[30rem] w-[30rem]",
                   "-translate-x-1/2 -translate-y-1/2 rounded-full",
-                  "bg-primary/15 blur-[100px] dark:bg-primary/5",
+                  "bg-primary/10 blur-[100px]",
                 )}
               />
             </div>
@@ -335,8 +337,7 @@ export default function Layout({
           <div
             className={cn(
               "absolute inset-0",
-              "bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.08))]",
-              "dark:bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.01))]",
+              "bg-[linear-gradient(to_bottom,transparent,rgba(255,255,255,0.03))]",
             )}
           />
         </div>
@@ -369,13 +370,6 @@ export default function Layout({
           )}
 
           <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col-reverse xl:flex-row">
-            {/* <div
-              className={cn(
-    "absolute inset-0 z-0 bg-[url('/src/assets/images/bg.gif')]",
-    "bg-cover bg-center bg-no-repeat opacity-[0.15]",
-    "dark:opacity-10 transform-gpu"
-  )}
-            /> */}
             {isLoggedIn && (
               <Navigation
                 navigationItems={navigationItems}
@@ -414,17 +408,13 @@ export default function Layout({
                       className={cn(
                         "mb-6 flex flex-col sm:flex-row",
                         "gap-4 sm:items-center sm:justify-between",
-                        "rounded-xl border border-yellow-500/20",
-                        "bg-yellow-500/10 p-4 text-yellow-800",
-                        "dark:text-yellow-200",
+                        "rounded-xl border border-warning-foreground/30",
+                        "bg-warning-background p-4 text-warning-foreground",
                       )}
                     >
                       <div className="flex items-center gap-3">
                         <AlertTriangle
-                          className={cn(
-                            "h-5 w-5 shrink-0",
-                            "text-yellow-600 dark:text-yellow-400",
-                          )}
+                          className="h-5 w-5 shrink-0 text-warning-foreground"
                         />
                         <div className="text-sm font-medium">
                           You are currently using an expedited profile. Please

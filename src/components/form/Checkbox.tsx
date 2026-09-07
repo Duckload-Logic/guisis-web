@@ -53,7 +53,6 @@ export default function Checkbox({
               } border border-border bg-muted transition-all duration-200`,
               "peer-checked:border-primary peer-checked:bg-primary",
               "peer-hover:border-primary",
-              "dark:border-white/10 dark:border-white/30 dark:bg-white/[0.04]",
               disabled && "opacity-50",
             )}
           />

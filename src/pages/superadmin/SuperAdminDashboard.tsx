@@ -242,18 +242,20 @@ export default function SuperAdminDashboard() {
         title: `${secAlerts} Security Anomalies Flagged`,
         description: `${secAlerts} access & auth anomalies in security logs.`,
         statusClass:
-          "border-amber-500/20 bg-amber-500/10 " +
-          "text-amber-600 dark:text-amber-400",
+          "border-warning-foreground/30 bg-warning-background " +
+          "text-warning-foreground",
         icon: ShieldAlert,
       };
     }
 
     return {
       title: "All Subsystems Operational",
-      description: `0 failures across ${services.length} core services with ${uptimeValue} uptime.`,
+      description:
+        `0 failures across ${services.length} core services with ` +
+        `${uptimeValue} uptime.`,
       statusClass:
-        "border-emerald-500/20 bg-emerald-500/10 " +
-        "text-emerald-600 dark:text-emerald-400",
+        "border-success-foreground/30 bg-success-background " +
+        "text-success-foreground",
       icon: TrendingUp,
     };
   }, [services, logStats, uptimeValue]);

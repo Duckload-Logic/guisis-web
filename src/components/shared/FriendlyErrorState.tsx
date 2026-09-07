@@ -22,8 +22,7 @@ function ErrorSticker() {
       <div
         className={cn(
           "relative flex h-20 w-20 items-center justify-center rounded-3xl",
-          "border border-white/60 bg-white/85 shadow-md backdrop-blur-md",
-          "dark:border-white/10 dark:bg-neutral-950/85",
+          "border border-border bg-card/85 shadow-md backdrop-blur-md",
         )}
       >
         <div className="absolute -right-2 -top-2 rounded-full bg-primary p-1.5 text-primary-foreground shadow-md">

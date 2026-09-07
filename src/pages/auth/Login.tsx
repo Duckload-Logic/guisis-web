@@ -134,10 +134,7 @@ export default function Login() {
         <div
           className={cn(
             "relative w-full max-w-[1150px] overflow-hidden rounded-[32px]",
-            "border border-neutral-200/70 bg-white shadow-2xl",
-            "shadow-neutral-900/10 dark:border-white/10",
-            "dark:bg-neutral-950/95 dark:shadow-black/40",
-            "transition-all dark:backdrop-blur-lg",
+            "border border-border bg-card shadow-2xl transition-all",
             "grid min-h-[650px] grid-cols-1 md:grid-cols-[4.5fr_5.5fr]",
           )}
         >
@@ -162,7 +159,7 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="flex flex-col justify-center bg-white p-10 dark:bg-neutral-950/40 sm:p-14 lg:p-16">
+          <div className="flex flex-col justify-center bg-card p-10 sm:p-14 lg:p-16">
             <div className="mb-8 text-left">
               <span
                 className={cn(
@@ -220,7 +217,7 @@ export default function Login() {
                         className={cn(
                           "h-12 w-full rounded-2xl bg-primary text-sm",
                           "font-semibold text-primary-foreground shadow-lg",
-                          "transition hover:bg-primary-dark sm:text-base",
+                          "hover:bg-primary-dark transition sm:text-base",
                         )}
                       >
                         {isLoading ? (
@@ -278,7 +275,7 @@ export default function Login() {
                         className={cn(
                           "h-12 w-full rounded-2xl bg-primary text-sm",
                           "font-semibold text-primary-foreground shadow-lg",
-                          "transition hover:bg-primary-dark sm:text-base",
+                          "hover:bg-primary-dark transition sm:text-base",
                         )}
                       >
                         {isLoading ? (
@@ -321,9 +318,9 @@ export default function Login() {
                     disabled={isLoading}
                     className={cn(
                       "h-12 w-full rounded-2xl bg-secondary",
-                      "text-secondary-foreground font-semibold",
+                      "font-semibold text-secondary-foreground",
                       "transition-all duration-200 hover:bg-secondary/90",
-                      "active:scale-[0.98] sm:text-base shadow-sm",
+                      "shadow-sm active:scale-[0.98] sm:text-base",
                     )}
                   />
                 </div>
