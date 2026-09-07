@@ -385,25 +385,14 @@ export function SlipList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={categoryOptions}
-            value={currentCategory}
-            onChange={(val) => {
-              const v = String(val);
-              handleCategoryChange(
-                !val || v === "" || v === "undefined" ? "all" : v,
-              );
-            }}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              currentCategory === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Category
+          </span>
         ),
         className: "w-[18%] px-3 py-3",
         render: (slip) => (
@@ -414,41 +403,14 @@ export function SlipList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              const v = String(val);
-              if (
-                !val ||
-                v === "" ||
-                v === "undefined" ||
-                v === "0" ||
-                v === "all"
-              ) {
-                const allStatus = statuses.find(
-                  (s) => String(s.id) === "0",
-                ) || ({ id: 0, name: "All Statuses" } as unknown as SlipStatus);
-                onStatusChange(allStatus);
-                onPageChange(1);
-                return;
-              }
-              const status = statuses.find((s) => String(s.id) === v);
-              if (status) {
-                onStatusChange(status);
-                onPageChange(1);
-              }
-            }}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              String(selectedStatus?.id) === "0"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Status
+          </span>
         ),
         className: "w-[18%] px-3 py-3",
         render: (slip) => (
@@ -457,7 +419,7 @@ export function SlipList({
               "inline-block rounded-xl border px-2.5 py-0.5",
               "text-[10px] font-bold uppercase shadow-md",
               STATUS_COLORS[getStatusColorKey(slip.status?.name)] ||
-                "bg-gray-200 text-gray-700 border-gray-300",
+                "border-gray-300 bg-gray-200 text-gray-700",
             )}
           >
             {slip.status?.name || "-"}
@@ -730,27 +692,135 @@ export function SlipList({
           )}
         </div>
 
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-1 flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
-            <label className={cn("text-sm font-medium", "text-neutral-700 dark:text-neutral-300")}>
-              Search
-            </label>
-            <SearchInput
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              placeholder="Search by name, email, or student number..."
-              hasHeader={false}
-            />
+        <div
+          className={cn(
+            "flex flex-col gap-3 xl:flex-row xl:items-center",
+            "xl:justify-between",
+          )}
+        >
+          <div className="flex flex-1 flex-wrap items-center gap-3">
+            <div className="w-full sm:w-64">
+              <SearchInput
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+                placeholder="Search name, email, or ID..."
+                hasHeader={false}
+              />
+            </div>
+
+            <div className="w-full sm:w-44">
+              <SelectField
+                label=""
+                options={categoryOptions}
+                value={currentCategory}
+                onChange={(val) => {
+                  const v = String(val);
+                  handleCategoryChange(
+                    !val || v === "" || v === "undefined" ? "all" : v,
+                  );
+                }}
+                labelKey="displayName"
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs",
+                  "font-semibold shadow-sm",
+                  currentCategory !== "all" && "border-primary text-primary",
+                )}
+              />
+            </div>
+
+            <div className="w-full sm:w-40">
+              <SelectField
+                label=""
+                options={dropdownOptions}
+                value={selectedStatus?.id}
+                onChange={(val) => {
+                  const v = String(val);
+                  if (
+                    !val ||
+                    v === "" ||
+                    v === "undefined" ||
+                    v === "0" ||
+                    v === "all"
+                  ) {
+                    const allStatus = statuses.find(
+                      (s) => String(s.id) === "0",
+                    ) || ({
+                      id: 0,
+                      name: "All Statuses",
+                    } as unknown as SlipStatus);
+                    onStatusChange(allStatus);
+                    onPageChange(1);
+                    return;
+                  }
+                  const status = statuses.find((s) => String(s.id) === v);
+                  if (status) {
+                    onStatusChange(status);
+                    onPageChange(1);
+                  }
+                }}
+                labelKey="displayName"
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs",
+                  "font-semibold shadow-sm",
+                  String(selectedStatus?.id) !== "0" &&
+                    "border-primary text-primary",
+                )}
+              />
+            </div>
+
+            {(currentCategory !== "all" ||
+              String(selectedStatus?.id) !== "0") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  handleCategoryChange("all");
+                  const allStatus = statuses.find(
+                    (s) => String(s.id) === "0",
+                  ) || ({
+                    id: 0,
+                    name: "All Statuses",
+                  } as unknown as SlipStatus);
+                  onStatusChange(allStatus);
+                  onPageChange(1);
+                }}
+                className={cn(
+                  "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
+                  "hover:text-foreground",
+                )}
+              >
+                Clear
+              </Button>
+            )}
           </div>
 
           {!isLoading && slips.length > 0 && (
             <button
-              onClick={() => exportToCSV(visibleSlips, slipExportColumns, "admission-slips")}
+              onClick={() =>
+                exportToCSV(visibleSlips, slipExportColumns, "admission-slips")
+              }
               disabled={visibleSlips.length === 0}
-              className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
+              className={cn(
+                "flex h-10 items-center self-start rounded-xl border",
+                "border-red-800/30 bg-white/50 px-3 text-xs font-semibold",
+                "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
+                "disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto",
+              )}
             >
-              <svg className="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              <svg
+                className="mr-1.5 h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
               </svg>
               Export CSV
             </button>

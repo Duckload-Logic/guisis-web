@@ -475,34 +475,23 @@ export default function AppointmentList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={categoryOptions}
-            value={currentCategory}
-            onChange={(val) =>
-              handleCategoryChange(val ? String(val) : "all")
-            }
-            labelKey="displayName"
-            enabled={!isLoading}
-            buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent",
-              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
-              "focus:border-0 focus:ring-0",
+          <span
+            className={cn(
               "text-[11px] font-bold uppercase tracking-[0.14em]",
-              "transition-colors",
-              currentCategory === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Category
+          </span>
         ),
-        className: "min-w-[160px]",
+        className: "min-w-[160px] px-3 py-3",
         render: (apt) => (
           <span
             className={cn(
               "inline-flex max-w-[170px] items-center rounded-xl border",
               "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
-              "text-foreground backdrop-blur-md dark:border-white/10 dark:bg-white/[0.04]",
+              "text-foreground backdrop-blur-md dark:border-white/10",
+              "dark:bg-white/[0.04]",
             )}
           >
             <span className="truncate">{apt.appointmentCategory?.name}</span>
@@ -511,43 +500,16 @@ export default function AppointmentList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              if (!val || String(val) === "all" || String(val) === "0") {
-                const allStatus = statuses.find((s) => s.id === 0) || {
-                  id: 0,
-                  name: "All Statuses",
-                };
-                onStatusChange(allStatus as AppointmentStatus);
-                onPageChange(1);
-                return;
-              }
-              const status = statuses.find(
-                (s) => String(s.id) === String(val),
-              );
-              if (status) {
-                onStatusChange(status);
-                onPageChange(1);
-              }
-            }}
-            labelKey="displayName"
-            enabled={!isLoading}
-            buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent",
-              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
-              "focus:border-0 focus:ring-0",
+          <span
+            className={cn(
               "text-[11px] font-bold uppercase tracking-[0.14em]",
-              "transition-colors",
-              selectedStatus?.id === 0
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Status
+          </span>
         ),
-        className: "min-w-[130px]",
+        className: "min-w-[130px] px-3 py-3",
         render: (apt) => (
           <span
             className={cn(
@@ -562,28 +524,16 @@ export default function AppointmentList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={urgencyOptions}
-            value={currentUrgency}
-            onChange={(val) =>
-              handleUrgencyChange(val ? String(val) : "all")
-            }
-            labelKey="displayName"
-            enabled={!isLoading}
-            buttonClassName={cn(
-              "h-auto w-full justify-between border-0 bg-transparent",
-              "px-0 py-0 shadow-none outline-none hover:bg-transparent",
-              "focus:border-0 focus:ring-0",
+          <span
+            className={cn(
               "text-[11px] font-bold uppercase tracking-[0.14em]",
-              "transition-colors",
-              currentUrgency === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Urgency
+          </span>
         ),
-        className: "min-w-[110px]",
+        className: "min-w-[110px] px-3 py-3",
         render: (apt) => <UrgencyCapsule appointment={apt} />,
       },
     ],
@@ -844,32 +794,149 @@ export default function AppointmentList({
           )}
         </div>
 
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-1 flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
-            <label
-              className={cn(
-                "text-sm font-medium",
-                "text-neutral-700 dark:text-neutral-300",
-              )}
-            >
-              Search
-            </label>
-            <SearchInput
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              placeholder="Search by name, email, or student number..."
-              hasHeader={false}
-            />
+        <div
+          className={cn(
+            "flex flex-col gap-3 xl:flex-row xl:items-center",
+            "xl:justify-between",
+          )}
+        >
+          <div className="flex flex-1 flex-wrap items-center gap-3">
+            <div className="w-full sm:w-60">
+              <SearchInput
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+                placeholder="Search name, email, or ID..."
+                hasHeader={false}
+              />
+            </div>
+
+            <div className="w-full sm:w-40">
+              <SelectField
+                label=""
+                options={categoryOptions}
+                value={currentCategory}
+                onChange={(val) =>
+                  handleCategoryChange(val ? String(val) : "all")
+                }
+                labelKey="displayName"
+                enabled={!isLoading}
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs",
+                  "font-semibold shadow-sm",
+                  currentCategory !== "all" && "border-primary text-primary",
+                )}
+              />
+            </div>
+
+            <div className="w-full sm:w-36">
+              <SelectField
+                label=""
+                options={dropdownOptions}
+                value={selectedStatus?.id}
+                onChange={(val) => {
+                  if (!val || String(val) === "all" || String(val) === "0") {
+                    const allStatus = statuses.find((s) => s.id === 0) || {
+                      id: 0,
+                      name: "All Statuses",
+                    };
+                    onStatusChange(allStatus as AppointmentStatus);
+                    onPageChange(1);
+                    return;
+                  }
+                  const status = statuses.find(
+                    (s) => String(s.id) === String(val),
+                  );
+                  if (status) {
+                    onStatusChange(status);
+                    onPageChange(1);
+                  }
+                }}
+                labelKey="displayName"
+                enabled={!isLoading}
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs",
+                  "font-semibold shadow-sm",
+                  selectedStatus?.id !== 0 && "border-primary text-primary",
+                )}
+              />
+            </div>
+
+            <div className="w-full sm:w-32">
+              <SelectField
+                label=""
+                options={urgencyOptions}
+                value={currentUrgency}
+                onChange={(val) =>
+                  handleUrgencyChange(val ? String(val) : "all")
+                }
+                labelKey="displayName"
+                enabled={!isLoading}
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs",
+                  "font-semibold shadow-sm",
+                  currentUrgency !== "all" && "border-primary text-primary",
+                )}
+              />
+            </div>
+
+            {(currentCategory !== "all" ||
+              selectedStatus?.id !== 0 ||
+              currentUrgency !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  handleCategoryChange("all");
+                  const allStatus = statuses.find((s) => s.id === 0) || {
+                    id: 0,
+                    name: "All Statuses",
+                  };
+                  onStatusChange(allStatus as AppointmentStatus);
+                  handleUrgencyChange("all");
+                  onPageChange(1);
+                }}
+                className={cn(
+                  "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
+                  "hover:text-foreground",
+                )}
+              >
+                Clear
+              </Button>
+            )}
           </div>
 
           {!isLoading && appointments.length > 0 && (
             <button
-              onClick={() => exportToCSV(visibleAppointments, appointmentExportColumns, "appointments")}
+              onClick={() =>
+                exportToCSV(
+                  visibleAppointments,
+                  appointmentExportColumns,
+                  "appointments",
+                )
+              }
               disabled={visibleAppointments.length === 0}
-              className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
+              className={cn(
+                "flex h-10 items-center self-start rounded-xl border",
+                "border-red-800/30 bg-white/50 px-3 text-xs font-semibold",
+                "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
+                "disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto",
+              )}
             >
-              <svg className="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              <svg
+                className="mr-1.5 h-3.5 w-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
               </svg>
               Export CSV
             </button>

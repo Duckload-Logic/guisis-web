@@ -230,73 +230,15 @@ export default function LogsTable({
       },
       {
         header: (
-          <div
-            className={cn(
-              "flex w-full items-center justify-start px-3 py-3"
-            )}
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-xl",
-                    "px-2 py-1 whitespace-nowrap outline-none",
-                    "text-[11px] font-bold uppercase tracking-[0.14em]",
-                    "transition-colors",
-                    selectedAction !== "all"
-                      ? "text-[#800000]"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <span>
-                    Action{" "}
-                    {selectedAction !== "all" &&
-                      `(${formatAction(selectedAction)})`}
-                  </span>
-                  <ChevronDown
-                    className="h-3.5 w-3.5 shrink-0 opacity-60"
-                  />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="max-h-[300px] w-56 overflow-y-auto"
-              >
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedAction("all");
-                    setCurrentPage(1);
-                  }}
-                  className={cn(
-                    "flex items-center justify-between rounded-lg",
-                    "px-3 py-2 text-xs font-semibold cursor-pointer",
-                    selectedAction === "all"
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground"
-                  )}
-                >
-                  All Actions
-                </DropdownMenuItem>
-                {actionOptions.map((action) => (
-                  <DropdownMenuItem
-                    key={action}
-                    onClick={() => {
-                      setSelectedAction(action);
-                      setCurrentPage(1);
-                    }}
-                    className={cn(
-                      "flex items-center justify-between rounded-lg",
-                      "px-3 py-2 text-xs font-semibold cursor-pointer",
-                      selectedAction === action
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground"
-                    )}
-                  >
-                    {formatAction(action)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
+              )}
+            >
+              Action
+            </span>
           </div>
         ),
         className: "w-[18%] p-0",
@@ -421,6 +363,66 @@ export default function LogsTable({
             />
           </div>
 
+          <div className="w-full sm:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "inline-flex h-10 items-center justify-between gap-2",
+                    "rounded-xl border border-border/70 bg-background/50 px-3",
+                    "text-xs font-semibold shadow-sm transition-colors",
+                    selectedAction !== "all" && "border-primary text-primary",
+                  )}
+                >
+                  <span>
+                    Action:{" "}
+                    {selectedAction === "all"
+                      ? "All"
+                      : formatAction(selectedAction)}
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="max-h-[300px] w-56 overflow-y-auto"
+              >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedAction("all");
+                    setCurrentPage(1);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg px-3 py-2",
+                    "cursor-pointer text-xs font-semibold",
+                    selectedAction === "all"
+                      ? "bg-primary/10 text-primary"
+                      : "text-foreground",
+                  )}
+                >
+                  All Actions
+                </DropdownMenuItem>
+                {actionOptions.map((action) => (
+                  <DropdownMenuItem
+                    key={action}
+                    onClick={() => {
+                      setSelectedAction(action);
+                      setCurrentPage(1);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between rounded-lg px-3 py-2",
+                      "cursor-pointer text-xs font-medium",
+                      selectedAction === action
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground",
+                    )}
+                  >
+                    {formatAction(action)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button

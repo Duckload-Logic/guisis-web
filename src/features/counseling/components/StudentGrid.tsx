@@ -405,22 +405,14 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-1">
-          <SelectField
-            label=""
-            options={programOptions}
-            value={selectedProgramId}
-            onChange={(val) => setSelectedProgramId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedProgramId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Program
+        </span>
       ),
       className: "w-[14%] min-w-[180px] px-2 py-3",
       render: (student: IIRProfileView) => (
@@ -431,22 +423,14 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-1">
-          <SelectField
-            label=""
-            options={yearLevelOptions}
-            value={selectedYearLevelId}
-            onChange={(val) => setSelectedYearLevelId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedYearLevelId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Year Level
+        </span>
       ),
       className: "w-[12%] min-w-[160px] px-2 py-3",
       render: (student: IIRProfileView) => {
@@ -463,22 +447,14 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-4">
-          <SelectField
-            label=""
-            options={statusOptions}
-            value={selectedStatusId}
-            onChange={(val) => setSelectedStatusId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedStatusId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Status
+        </span>
       ),
       className: "w-[12%] min-w-[170px] px-2 py-3",
       render: (student: IIRProfileView) => (

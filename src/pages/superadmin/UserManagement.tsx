@@ -379,24 +379,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={roleOptions}
-              value={roleFilter === undefined ? "all" : roleFilter}
-              onChange={(val) => {
-                setRoleFilter(val === "all" ? undefined : Number(val));
-                setPage(1);
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Role
+            </span>
           </div>
         ),
         className: "w-[25%] p-0",
@@ -419,25 +410,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={statusOptions}
-              value={statusFilter}
-              onChange={(val) => {
-                const v = String(val);
-                setStatusFilter(!val || v === "undefined" ? "all" : v);
-                setPage(1);
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                statusFilter === "all"
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Status
+            </span>
           </div>
         ),
         className: "w-[15%] p-0",
@@ -555,23 +536,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={roleOptions}
-              value={roleFilter === undefined ? "all" : roleFilter}
-              onChange={(val) =>
-                setRoleFilter(val === "all" ? undefined : Number(val))
-              }
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Roles
+            </span>
           </div>
         ),
         className: "w-[30%] p-0",
@@ -819,26 +792,94 @@ export default function UserManagement() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="w-full sm:max-w-md">
-          <SearchInput
-            hasHeader={false}
-            placeholder="Search by name or email..."
-            className="h-10 rounded-xl"
-            searchTerm={search}
-            onSearchChange={(e) => {
-              setSearch(e);
-              setPage(1);
-            }}
-          />
+      <div
+        className={cn(
+          "flex flex-col gap-3 xl:flex-row xl:items-center",
+          "xl:justify-between",
+        )}
+      >
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="w-full sm:w-64">
+            <SearchInput
+              hasHeader={false}
+              placeholder="Search by name or email..."
+              className="h-10 rounded-xl"
+              searchTerm={search}
+              onSearchChange={(e) => {
+                setSearch(e);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div className="w-full sm:w-44">
+            <SelectField
+              label=""
+              options={roleOptions}
+              value={roleFilter === undefined ? "all" : roleFilter}
+              onChange={(val) => {
+                setRoleFilter(val === "all" ? undefined : Number(val));
+                setPage(1);
+              }}
+              labelKey="displayName"
+              buttonClassName={cn(
+                "h-10 w-full justify-between rounded-xl border",
+                "border-border/70 bg-background/50 px-3 text-xs font-semibold",
+                "shadow-sm",
+                roleFilter !== undefined && "border-primary text-primary",
+              )}
+            />
+          </div>
+
+          {activeTab === "users" && (
+            <div className="w-full sm:w-36">
+              <SelectField
+                label=""
+                options={statusOptions}
+                value={statusFilter}
+                onChange={(val) => {
+                  const v = String(val);
+                  setStatusFilter(!val || v === "undefined" ? "all" : v);
+                  setPage(1);
+                }}
+                labelKey="displayName"
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs font-semibold",
+                  "shadow-sm",
+                  statusFilter !== "all" && "border-primary text-primary",
+                )}
+              />
+            </div>
+          )}
+
+          {(roleFilter !== undefined ||
+            (activeTab === "users" && statusFilter !== "all")) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setRoleFilter(undefined);
+                setStatusFilter("all");
+                setPage(1);
+              }}
+              className={cn(
+                "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
+                "hover:text-foreground",
+              )}
+            >
+              Clear
+            </Button>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center">
           <Button
             onClick={() => setIsWhitelistOpen(true)}
             className={cn(
-              "h-10 w-full sm:w-auto rounded-xl bg-primary text-primary-foreground",
-              "hover:brightness-115 flex items-center justify-center gap-2 shadow-sm",
+              "flex h-10 w-full items-center justify-center gap-2 rounded-xl",
+              "bg-primary text-primary-foreground shadow-sm hover:brightness-115",
+              "sm:w-auto",
             )}
           >
             <UserPlus size={16} />
