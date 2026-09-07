@@ -72,8 +72,8 @@ function getAppointmentUrgency(appointment?: any) {
       description:
         "Immediate attention required due to critical nature of concern.",
       className:
-        "border-red-700/25 bg-red-700/10 text-red-700 " +
-        "dark:text-red-400 font-extrabold animate-pulse",
+        "border-destructive/30 bg-destructive/15 text-destructive " +
+        "font-extrabold animate-pulse",
     };
   }
 
@@ -83,7 +83,7 @@ function getAppointmentUrgency(appointment?: any) {
       description:
         "Prioritize this student concern during review and scheduling.",
       className:
-        "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
+        "border-destructive/20 bg-destructive/10 text-destructive",
     };
   }
 
@@ -975,7 +975,7 @@ export default function AppointmentDetails() {
                   Administrative Controls
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-5 space-y-3">
+              <CardContent className="space-y-3 p-5">
                 {appointment &&
                   !appointment.startedAt &&
                   (appointment.status?.name === "Scheduled" ||
@@ -1000,9 +1000,9 @@ export default function AppointmentDetails() {
                   )}
 
                 {appointment?.startedAt && !appointment?.completedAt && (
-                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300 shadow-sm">
+                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 shadow-sm dark:text-emerald-300">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-bold text-xs">
+                      <div className="flex items-center gap-2 text-xs font-bold">
                         <span className="relative flex h-2.5 w-2.5">
                           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
@@ -1018,7 +1018,7 @@ export default function AppointmentDetails() {
                       <Button
                         size="sm"
                         onClick={() => handleActionClick("Complete")}
-                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
+                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-700"
                       >
                         <CheckCircle className="h-3.5 w-3.5" />
                         Complete Session
@@ -1223,7 +1223,12 @@ export default function AppointmentDetails() {
                 Start On-Site Counseling Session
               </AlertDialogTitle>
               <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
-                Confirm student <strong className="text-foreground">{fullName || "the student"}</strong> is present in the office to start the counseling session? This will begin tracking session duration.
+                Confirm student{" "}
+                <strong className="text-foreground">
+                  {fullName || "the student"}
+                </strong>{" "}
+                is present in the office to start the counseling session? This
+                will begin tracking session duration.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
@@ -1233,9 +1238,11 @@ export default function AppointmentDetails() {
               <AlertDialogAction
                 onClick={handleConfirmStartAppointment}
                 disabled={startAppointmentMutation.isPending}
-                className="rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-md"
+                className="rounded-xl bg-emerald-600 font-bold text-white shadow-md hover:bg-emerald-700"
               >
-                {startAppointmentMutation.isPending ? "Starting..." : "Start Session"}
+                {startAppointmentMutation.isPending
+                  ? "Starting..."
+                  : "Start Session"}
               </AlertDialogAction>
             </div>
           </AlertDialogContent>

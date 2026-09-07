@@ -183,9 +183,8 @@ export default function Dashboard() {
       {isSettingsOutdated && (
         <div
           className={cn(
-            "animate-fade-in-up relative",
-            "overflow-hidden rounded-3xl border border-red-500/20",
-            "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
+            "animate-fade-in-up relative overflow-hidden rounded-3xl",
+            "border border-destructive/20 bg-destructive/10 p-6",
             "backdrop-blur-md",
           )}
           style={{ animationDelay: "0.5s", animationFillMode: "both" }}
@@ -193,27 +192,17 @@ export default function Dashboard() {
           <div className="flex items-start gap-5">
             <div
               className={cn(
-                "rounded-2xl bg-red-500 p-3 text-white shadow-lg",
-                "shadow-red-500/20",
+                "rounded-2xl bg-destructive p-3 text-destructive-foreground",
+                "shadow-lg shadow-destructive/20",
               )}
             >
               <AlertTriangle size={24} />
             </div>
             <div className="flex-1 pr-10">
-              <h4
-                className={cn(
-                  "mb-1 flex items-center gap-2 text-sm font-bold",
-                  "text-red-950 dark:text-red-100",
-                )}
-              >
+              <h4 className="mb-1 flex items-center gap-2 text-sm font-bold text-destructive">
                 Academic Year Out of Date
               </h4>
-              <p
-                className={cn(
-                  "text-sm font-medium leading-relaxed",
-                  "text-red-900/80 dark:text-red-200/80",
-                )}
-              >
+              <p className="text-sm font-medium leading-relaxed text-foreground/85">
                 The active academic year ({settings?.currentYearStart}–
                 {settings?.currentYearEnd}) appears to be outdated. Please
                 update the active term and school year configuration.
@@ -221,9 +210,9 @@ export default function Dashboard() {
               <button
                 onClick={() => navigate("/admin/academic-settings")}
                 className={cn(
-                  "mt-3 rounded-xl bg-red-500 px-4 py-2 text-xs font-bold",
-                  "text-white transition-all hover:bg-red-600",
-                  "active:scale-[.98]",
+                  "mt-3 rounded-xl bg-destructive px-4 py-2 text-xs font-bold",
+                  "text-destructive-foreground transition-all",
+                  "hover:bg-destructive/90 active:scale-[.98]",
                 )}
               >
                 Configure Settings

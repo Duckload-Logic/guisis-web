@@ -160,8 +160,7 @@ export default function M2MManagement() {
       label: "Revoked Clients",
       value: revokedClients.length,
       icon: Ban,
-      iconClass:
-        "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+      iconClass: "bg-destructive/10 text-destructive border-destructive/20",
     },
     {
       label: "Total Clients",
@@ -358,8 +357,8 @@ export default function M2MManagement() {
                                   client.isActive
                                     ? "border-emerald-500/20 bg-emerald-500/10 " +
                                         "text-emerald-600 dark:text-emerald-400"
-                                    : "border-red-500/20 bg-red-500/10 " +
-                                        "text-red-600 dark:text-red-400",
+                                    : "border-destructive/20 bg-destructive/10 " +
+                                        "text-destructive",
                                 )}
                               >
                                 <Fingerprint className="h-5 w-5" />
@@ -400,7 +399,7 @@ export default function M2MManagement() {
                                 "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                                 client.isActive
                                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                                  : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
+                                  : "border-destructive/30 bg-destructive/10 text-destructive",
                               )}
                             >
                               <span

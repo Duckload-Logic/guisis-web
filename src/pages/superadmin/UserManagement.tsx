@@ -669,7 +669,7 @@ export default function UserManagement() {
   const renderMobileUserItem = (user: UserAccount) => (
     <div
       key={user.id}
-      className="block w-full rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -731,7 +731,7 @@ export default function UserManagement() {
         <span>
           Status:{" "}
           <strong
-            className={user.isActive ? "text-emerald-500" : "text-red-500"}
+            className={user.isActive ? "text-emerald-500" : "text-destructive"}
           >
             {user.isActive ? "Active" : "Blocked"}
           </strong>
@@ -744,7 +744,7 @@ export default function UserManagement() {
   const renderMobileWhitelistItem = (entry: WhitelistEntry) => (
     <div
       key={entry.email}
-      className="block w-full rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

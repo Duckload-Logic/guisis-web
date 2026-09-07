@@ -59,7 +59,7 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -left-[10%] top-[10%] h-[50rem] w-[50rem] rounded-full bg-primary/10 blur-[100px] dark:bg-primary/5" />
           <div className="absolute -right-[10%] top-[40%] h-[40rem] w-[40rem] rounded-full bg-secondary/20 blur-[100px] dark:bg-secondary/5" />
-          <div className="absolute left-[20%] top-[80%] h-[45rem] w-[45rem] rounded-full bg-primary/5 blur-[100px] dark:bg-primary/5" />
+          <div className="absolute left-[20%] top-[80%] h-[45rem] w-[45rem] rounded-full bg-primary/5 blur-[100px]" />
         </div>
         {/* Asymmetric Hero Section */}
         <section className="relative flex min-h-[80vh] flex-col items-center overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:flex-row">

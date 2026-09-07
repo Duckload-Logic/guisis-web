@@ -63,19 +63,13 @@ export function LocalFileCard({
             />
           ) : isPdf ? (
             <div className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "rounded-lg bg-red-100 p-3 shadow-sm",
-                  "dark:bg-red-900/30",
-                )}
-              >
-                <FileText className="h-8 w-8 text-red-600 dark:text-red-400" />
+              <div className="rounded-lg bg-destructive/10 p-3 shadow-sm">
+                <FileText className="h-8 w-8 text-destructive" />
               </div>
               <span
                 className={cn(
-                  "rounded-full bg-red-100/50 px-2 py-0.5",
-                  "text-[8px] font-bold text-red-700",
-                  "dark:bg-red-900/40 dark:text-red-300",
+                  "rounded-full bg-destructive/10 px-2 py-0.5",
+                  "text-[8px] font-bold text-destructive",
                 )}
               >
                 PDF
@@ -138,8 +132,8 @@ export function LocalFileCard({
             onClick={onRemove}
             className={cn(
               "rounded-full p-1 text-muted-foreground",
-              "transition-colors hover:bg-red-100",
-              "hover:text-red-500 dark:hover:bg-red-950/30",
+              "transition-colors hover:bg-destructive/10",
+              "hover:text-destructive",
             )}
           >
             <X size={14} />
@@ -170,7 +164,7 @@ export function LocalFileCard({
                 className="h-full w-full object-cover"
               />
             ) : isPdf ? (
-              <FileText className="h-5 w-5 text-red-500" />
+              <FileText className="h-5 w-5 text-destructive" />
             ) : (
               <FileText className="h-5 w-5 text-blue-500" />
             )}
@@ -196,8 +190,8 @@ export function LocalFileCard({
           onClick={onRemove}
           className={cn(
             "rounded-full p-1.5 text-muted-foreground",
-            "transition-colors hover:bg-red-50",
-            "hover:text-red-500 dark:hover:bg-red-950/30",
+            "transition-colors hover:bg-destructive/10",
+            "hover:text-destructive",
           )}
         >
           <X size={16} />

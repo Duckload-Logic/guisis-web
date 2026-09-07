@@ -68,9 +68,9 @@ function UrgencyCapsule({ appointment }: { appointment: Appointment }) {
 
   const level = urgency.key.toLowerCase();
   const tone = level.includes("critical")
-    ? "border-red-700/25 bg-red-700/10 text-red-700 dark:text-red-300"
+    ? "border-destructive/30 bg-destructive/15 text-destructive font-bold"
     : level.includes("high") || level.includes("urgent")
-      ? "border-red-500/25 bg-red-500/10 text-red-600 dark:text-red-300"
+      ? "border-destructive/20 bg-destructive/10 text-destructive"
       : level.includes("medium") || level.includes("moderate")
         ? "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300"
         : level.includes("low")

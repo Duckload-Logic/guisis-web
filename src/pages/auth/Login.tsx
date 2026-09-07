@@ -144,12 +144,12 @@ export default function Login() {
           <div
             className={cn(
               "relative flex flex-col justify-center overflow-hidden p-10 sm:p-14 lg:p-16",
-              "bg-white dark:bg-neutral-950", 
-              "border-b border-neutral-200/50 md:border-b-0 md:border-r dark:border-white/10"
+              "bg-card", 
+              "border-b border-border/50 md:border-b-0 md:border-r",
             )}
           >
-            <div className="pointer-events-none absolute -left-16 -top-16 h-96 w-96 rounded-full bg-red-400/15 blur-[80px] dark:bg-red-900/20" />
-            <div className="pointer-events-none absolute -left-8 -top-8 h-64 w-64 rounded-full bg-[#8f1113]/10 blur-[60px] dark:bg-[#8f1113]/20" />
+            <div className="pointer-events-none absolute -left-16 -top-16 h-96 w-96 rounded-full bg-primary/10 blur-[80px]" />
+            <div className="pointer-events-none absolute -left-8 -top-8 h-64 w-64 rounded-full bg-primary/5 blur-[60px]" />
 
             <div className="relative z-10">
               <AuthHeader

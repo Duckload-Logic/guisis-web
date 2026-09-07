@@ -26,10 +26,8 @@ export default function AuthMessages({ error, success }: AuthMessagesProps) {
       {error && (
         <div
           className={cn(
-            "mb-4 flex gap-3 rounded-2xl border border-red-200/70",
-            "bg-white/65 p-3 text-red-700 shadow-sm backdrop-blur",
-            "dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-300",
-            "dark:shadow-none",
+            "mb-4 flex gap-3 rounded-2xl border border-destructive/20",
+            "bg-destructive/10 p-3 text-destructive shadow-sm backdrop-blur",
           )}
         >
           <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />

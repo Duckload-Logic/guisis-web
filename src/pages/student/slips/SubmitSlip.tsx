@@ -26,7 +26,6 @@ import {
   Folder,
   Plus,
   FileText,
-  RefreshCw,
   Info,
   X,
   MapPin,
@@ -634,7 +633,8 @@ export default function SubmitSlip() {
                           Upload Documents
                         </CardTitle>
                         <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          Review the requirements, then upload each document below.
+                          Review the requirements, then upload each document
+                          below.
                         </p>
                       </div>
                     </div>
@@ -667,7 +667,8 @@ export default function SubmitSlip() {
                             <strong className="font-semibold text-foreground">
                               1-page photocopy
                             </strong>{" "}
-                            of the parent&apos;s valid ID with the parent&apos;s signature.
+                            of the parent&apos;s valid ID with the parent&apos;s
+                            signature.
                           </span>
                         </div>
 
@@ -676,7 +677,8 @@ export default function SubmitSlip() {
                             Medical Certificate
                           </span>
                           <span className="text-xs leading-5 text-muted-foreground">
-                            For medical cases, University nurse signature required.
+                            For medical cases, University nurse signature
+                            required.
                           </span>
                         </div>
                       </div>
@@ -704,7 +706,8 @@ export default function SubmitSlip() {
                     >
                       <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <p className="text-xs font-medium leading-5 text-foreground">
-                        Please bring all hardcopy documents to the Guidance Office upon claiming your admission slip.
+                        Please bring all hardcopy documents to the Guidance
+                        Office upon claiming your admission slip.
                       </p>
                     </div>
                   </CardContent>
@@ -1015,8 +1018,8 @@ export default function SubmitSlip() {
                                   The parent&apos;s valid ID must be submitted
                                   as a{" "}
                                   <strong>
-                                    1-page photocopy containing the parent&apos;s
-                                    actual signature
+                                    1-page photocopy containing the
+                                    parent&apos;s actual signature
                                   </strong>
                                   .
                                 </p>
@@ -1093,27 +1096,18 @@ export default function SubmitSlip() {
 
                               <div
                                 className={cn(
-                                  "rounded-xl border border-red-200",
-                                  "bg-red-50 p-4 shadow-sm",
-                                  "dark:border-red-900/50",
-                                  "dark:bg-red-950/20",
+                                  "rounded-xl border border-destructive/20",
+                                  "bg-destructive/5 p-4 shadow-sm",
                                 )}
                               >
-                                <h4
-                                  className={cn(
-                                    "mb-2 flex items-center gap-2",
-                                    "font-semibold text-red-900",
-                                    "dark:text-red-200",
-                                  )}
-                                >
+                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-destructive">
                                   <X className="h-4 w-4 shrink-0 text-destructive" />
                                   Do Not Upload
                                 </h4>
                                 <ul
                                   className={cn(
-                                    "ml-6 list-outside list-disc",
-                                    "space-y-1 text-xs text-red-800",
-                                    "dark:text-red-300",
+                                    "ml-6 list-outside list-disc space-y-1 text-xs",
+                                    "text-foreground/80",
                                   )}
                                 >
                                   <li>Expired IDs.</li>
@@ -1329,7 +1323,8 @@ export default function SubmitSlip() {
                                       "dark:text-blue-300",
                                     )}
                                   >
-                                    For all medical cases, the medical certificate{" "}
+                                    For all medical cases, the medical
+                                    certificate{" "}
                                     <strong>
                                       must be signed by the University nurse
                                     </strong>{" "}
@@ -1353,12 +1348,12 @@ export default function SubmitSlip() {
                                   </div>
                                 </div>
 
-                                <div className="flex flex-col items-center rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
-                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-red-900 dark:text-red-200">
+                                <div className="flex flex-col items-center rounded-xl border border-destructive/20 bg-destructive/5 p-4 shadow-sm">
+                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-destructive">
                                     <X className="h-4 w-4 shrink-0 text-destructive" />
                                     Do Not Upload
                                   </h4>
-                                  <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                                  <div className="overflow-hidden rounded border border-destructive/20 shadow-sm">
                                     <img
                                       src={badCertImage}
                                       alt="Example of an invalid medical certificate"
@@ -1628,7 +1623,7 @@ export default function SubmitSlip() {
                       "text-[10px] font-bold",
                       uploadProgress === 100
                         ? "bg-emerald-500/20 text-emerald-500"
-                        : "bg-primary/20 text-primary animate-pulse",
+                        : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     {uploadProgress === 100 ? (
@@ -1658,7 +1653,7 @@ export default function SubmitSlip() {
                       "text-[10px] font-bold",
                       uploadProgress < 100
                         ? "bg-muted-foreground/10 text-muted-foreground/50"
-                        : "bg-primary/20 text-primary animate-pulse",
+                        : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     2

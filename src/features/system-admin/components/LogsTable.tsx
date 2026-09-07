@@ -26,11 +26,7 @@ import { cn } from "@/lib/utils";
 import { truncateText } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useTraceTracks } from "../hooks";
-import type {
-  SystemLog,
-  SystemLogsParams,
-  SystemLogsResponse,
-} from "../types";
+import type { SystemLog, SystemLogsParams, SystemLogsResponse } from "../types";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
 

@@ -61,8 +61,8 @@ function getAppointmentUrgency(appointment?: any) {
         "This appointment has a critical priority and " +
         "requires immediate attention.",
       className:
-        "border-red-700/25 bg-red-700/10 text-red-700 " +
-        "dark:text-red-400 font-extrabold animate-pulse",
+        "border-destructive/30 bg-destructive/15 text-destructive " +
+        "font-extrabold animate-pulse",
     };
   }
 
@@ -72,7 +72,7 @@ function getAppointmentUrgency(appointment?: any) {
       description:
         "This appointment should be prioritized by the Guidance Office.",
       className:
-        "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
+        "border-destructive/20 bg-destructive/10 text-destructive",
     };
   }
 

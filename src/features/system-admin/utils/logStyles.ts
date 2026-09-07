@@ -10,9 +10,7 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_INVALID") ||
     upper.endsWith("_FAIL")
   ) {
-    return (
-      "border-red-500/20 bg-red-500/10 text-red-700" + " dark:text-red-400"
-    );
+    return "border-destructive/20 bg-destructive/10 text-destructive";
   }
 
   if (

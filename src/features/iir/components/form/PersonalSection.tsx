@@ -855,11 +855,11 @@ export const PersonalSection = forwardRef<
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center rounded-lg border border-red-200 bg-white/60 p-3 shadow-sm dark:border-red-800/50 dark:bg-red-950/40">
-                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                  <div className="flex flex-col items-center rounded-lg border border-destructive/20 bg-destructive/5 p-3 shadow-sm">
+                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-destructive">
                       <X className="h-4 w-4 shrink-0" /> Do Not Upload
                     </h5>
-                    <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                    <div className="overflow-hidden rounded border border-destructive/20 shadow-sm">
                       <img
                         src={notFormalImage}
                         alt="Non-Formal Example"
