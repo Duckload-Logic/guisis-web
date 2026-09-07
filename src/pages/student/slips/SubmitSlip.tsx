@@ -762,17 +762,13 @@ export default function SubmitSlip() {
                                   Required
                                 </Badge>
                               </div>
-                              <p
-                                className="mt-0.5 text-xs text-muted-foreground"
-                              >
+                              <p className="mt-0.5 text-xs text-muted-foreground">
                                 Upload your excuse letter
                               </p>
                             </div>
                           </div>
                           {excuseLetterProvided && (
-                            <CheckCircle2
-                              className="mr-2 h-4 w-4 shrink-0 text-green-500"
-                            />
+                            <CheckCircle2 className="mr-2 h-4 w-4 shrink-0 text-green-500" />
                           )}
                         </AccordionTrigger>
                         <AccordionContent
@@ -789,9 +785,7 @@ export default function SubmitSlip() {
                                 "p-4 text-notice-foreground shadow-sm",
                               )}
                             >
-                              <Info
-                                className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground"
-                              />
+                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground" />
                               <div className="text-sm">
                                 <p className="mb-1 font-semibold">
                                   Excuse Letter Format Requirement:
@@ -968,9 +962,7 @@ export default function SubmitSlip() {
                                   Required
                                 </Badge>
                               </div>
-                              <p
-                                className="mt-0.5 text-xs text-muted-foreground"
-                              >
+                              <p className="mt-0.5 text-xs text-muted-foreground">
                                 Upload copy of parent/guardian ID
                               </p>
                             </div>
@@ -993,9 +985,7 @@ export default function SubmitSlip() {
                                 "p-4 text-notice-foreground shadow-sm",
                               )}
                             >
-                              <Info
-                                className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground"
-                              />
+                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground" />
                               <div className="text-sm">
                                 <p className="mb-1 font-semibold">
                                   Parent ID Xerox Copy Requirement:
@@ -1031,9 +1021,7 @@ export default function SubmitSlip() {
                                     "font-semibold text-success-foreground",
                                   )}
                                 >
-                                  <CheckCircle2
-                    className="h-4 w-4 shrink-0 text-success-foreground"
-                  />
+                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-success-foreground" />
                                   Valid ID Requirements
                                 </h4>
                                 <ul
@@ -1254,9 +1242,7 @@ export default function SubmitSlip() {
                                     Required
                                   </Badge>
                                 </div>
-                                <p
-                                className="mt-0.5 text-xs text-muted-foreground"
-                              >
+                                <p className="mt-0.5 text-xs text-muted-foreground">
                                   Upload medical certificate
                                 </p>
                               </div>
@@ -1286,9 +1272,7 @@ export default function SubmitSlip() {
                                   "text-info-foreground shadow-sm",
                                 )}
                               >
-                                <Info
-                                  className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground"
-                                />
+                                <Info className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground" />
                                 <div className="text-sm">
                                   <p className="mb-1 font-semibold">
                                     University Nurse Sign-off Requirement:
@@ -1318,9 +1302,7 @@ export default function SubmitSlip() {
                                       "text-success-foreground",
                                     )}
                                   >
-                                    <CheckCircle2
-                    className="h-4 w-4 shrink-0 text-success-foreground"
-                  />
+                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-success-foreground" />
                                     Upload this
                                   </h4>
                                   <div
