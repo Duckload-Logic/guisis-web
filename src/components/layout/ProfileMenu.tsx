@@ -52,7 +52,8 @@ export default function ProfileMenu({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { user, isStudent, activeRole, setActiveRole } = useAuth();
+  const { user, isStudent, activeRole, setActiveRole, isLoggingOut } =
+    useAuth();
 
   const handleRoleSwitch = (r: UserRole) => {
     setActiveRole(r);
@@ -119,7 +120,9 @@ export default function ProfileMenu({
             >
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={getProfilePictureUrl(user?.profilePicture)} />
+                  <AvatarImage
+                    src={getProfilePictureUrl(user?.profilePicture)}
+                  />
                   <AvatarFallback className="font-semibold">
                     {firstName?.charAt(0)}
                     {lastName?.charAt(0)}
@@ -158,7 +161,6 @@ export default function ProfileMenu({
               </button>
             )}
 
-
             {user && user.roles && user.roles.length > 1 && (
               <div className="border-b border-border py-2">
                 <p
@@ -171,8 +173,7 @@ export default function ProfileMenu({
                 </p>
                 <div
                   className={
-                    "max-h-[160px] overflow-y-auto " +
-                    "px-2 py-1 space-y-1"
+                    "max-h-[160px] overflow-y-auto " + "space-y-1 px-2 py-1"
                   }
                 >
                   {user.roles.map((r) => {
@@ -183,12 +184,11 @@ export default function ProfileMenu({
                         onClick={() => handleRoleSwitch(r)}
                         className={cn(
                           "flex w-full items-center gap-2.5 " +
-                            "rounded-lg px-3 py-2 text-left " +
+                            "rounded-lg px-3 py-2 text-left" +
                             "text-xs transition-all",
                           isActive
-                            ? "bg-primary/10 font-semibold " +
-                                "text-primary"
-                            : "hover:bg-muted text-muted-foreground " +
+                            ? "bg-primary/10 font-semibold " + "text-primary"
+                            : "text-muted-foreground hover:bg-muted " +
                                 "hover:text-foreground",
                         )}
                       >
@@ -197,8 +197,7 @@ export default function ProfileMenu({
                         {isActive && (
                           <div
                             className={
-                              "h-1.5 w-1.5 rounded-full " +
-                              "bg-primary"
+                              "h-1.5 w-1.5 rounded-full " + "bg-primary"
                             }
                           />
                         )}
@@ -244,14 +243,19 @@ export default function ProfileMenu({
             </a>
 
             <button
-              onClick={onLogout}
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
+              disabled={isLoggingOut}
               className={cn(
                 "flex w-full items-center gap-3 border-t border-border px-4",
                 "py-3 text-sm text-red-500 transition hover:bg-red-500/10",
+                "disabled:pointer-events-none disabled:opacity-50",
               )}
             >
               <LogOut size={16} />
-              Logout
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </button>
           </div>
         )}

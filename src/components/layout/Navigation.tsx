@@ -729,7 +729,10 @@ function MobileSettingsContent({
 
       <button
         type="button"
-        onClick={onLogout}
+        onClick={() => {
+          closeDrawer();
+          onLogout();
+        }}
         className={cn(
           "flex w-full items-center justify-center gap-3 rounded-xl",
           "bg-red-500/10 p-4 font-bold text-red-500 transition",
