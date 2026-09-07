@@ -396,7 +396,7 @@ export default function AppointmentList({
             "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
             "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
             isActive
-              ? "text-[#800000] dark:text-red-400"
+              ? "text-primary"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

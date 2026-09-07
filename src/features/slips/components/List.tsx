@@ -297,7 +297,7 @@ export function SlipList({
             "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
             "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
             isActive
-              ? "text-[#800000] dark:text-red-400"
+              ? "text-primary"
               : "text-muted-foreground hover:text-foreground",
           )}
         >
@@ -385,7 +385,7 @@ export function SlipList({
         ),
         className: "w-[18%] px-3 py-3",
         render: (slip) => (
-          <span className="text-sm font-semibold text-[#800000]">
+          <span className="text-sm font-semibold text-primary">
             {slip.category?.name || "-"}
           </span>
         ),

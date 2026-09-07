@@ -26,7 +26,11 @@ import { cn } from "@/lib/utils";
 import { truncateText } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useTraceTracks } from "../hooks";
-import type { SystemLog, SystemLogsParams, SystemLogsParams, SystemLogsResponse } from "../types";
+import type {
+  SystemLog,
+  SystemLogsParams,
+  SystemLogsResponse,
+} from "../types";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -255,7 +259,7 @@ export default function LogsTable({
           "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
           isActive
-            ? "text-[#800000] dark:text-red-400"
+            ? "text-primary"
             : "text-muted-foreground hover:text-foreground",
         )}
       >

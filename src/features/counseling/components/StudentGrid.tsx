@@ -1,11 +1,5 @@
 import { useCallback, useMemo, type MouseEvent } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  Eye,
-  LayoutGrid,
-  List,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, LayoutGrid, List } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
 import {

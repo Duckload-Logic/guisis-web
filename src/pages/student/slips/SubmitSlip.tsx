@@ -1106,12 +1106,7 @@ export default function SubmitSlip() {
                                     "dark:text-red-200",
                                   )}
                                 >
-                                  <X
-                                    className={cn(
-                                      "h-4 w-4 shrink-0",
-                                      "text-red-600 dark:text-red-400",
-                                    )}
-                                  />
+                                  <X className="h-4 w-4 shrink-0 text-destructive" />
                                   Do Not Upload
                                 </h4>
                                 <ul
@@ -1360,7 +1355,7 @@ export default function SubmitSlip() {
 
                                 <div className="flex flex-col items-center rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/20">
                                   <h4 className="mb-3 flex items-center gap-2 font-semibold text-red-900 dark:text-red-200">
-                                    <X className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+                                    <X className="h-4 w-4 shrink-0 text-destructive" />
                                     Do Not Upload
                                   </h4>
                                   <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">

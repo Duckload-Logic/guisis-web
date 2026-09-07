@@ -1027,7 +1027,11 @@ export default function AppointmentDetails() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleActionClick("Cancel")}
-                        className="h-9 gap-1.5 rounded-lg border-red-500/30 text-red-600 hover:bg-red-500/10 dark:text-red-400 font-bold text-xs transition-all"
+                        className={cn(
+                          "h-9 gap-1.5 rounded-lg border-destructive/30",
+                          "text-destructive hover:bg-destructive/10",
+                          "text-xs font-bold transition-all",
+                        )}
                       >
                         <XCircle className="h-3.5 w-3.5" />
                         Cancel Session
