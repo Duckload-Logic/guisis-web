@@ -381,7 +381,7 @@ export default function M2MManagement() {
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
                               className={cn(
-                                "h-8 w-8 min-h-0 shrink-0 rounded-xl",
+                                "h-8 min-h-0 w-8 shrink-0 rounded-xl",
                                 "text-muted-foreground transition-colors",
                                 "hover:bg-primary/10 hover:text-primary",
                               )}

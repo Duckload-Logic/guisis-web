@@ -390,9 +390,9 @@ export default function LogsTable({
         )
       }
       className={cn(
-        "block w-full rounded-2xl border border-border/70 bg-card p-4",
-        "text-left shadow-md backdrop-blur-xl transition-all active:scale-[0.98]",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "block w-full rounded-2xl border border-border bg-card p-4",
+        "text-left shadow-md backdrop-blur-xl transition-all",
+        "active:scale-[0.98]",
       )}
     >
       <div className="flex items-start justify-between gap-3">

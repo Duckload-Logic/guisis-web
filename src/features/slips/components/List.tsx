@@ -471,9 +471,9 @@ export function SlipList({
     <div
       key={slip.id || `${slip.studentNumber}-${slip.dateOfAbsence}`}
       className={cn(
-        "space-y-3 rounded-xl border border-border/70 bg-card p-4",
-        "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "space-y-3 rounded-xl border border-border bg-card p-4",
+        "shadow-md backdrop-blur-xl transition-all duration-200",
+        "active:scale-[0.98]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -502,7 +502,7 @@ export function SlipList({
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Absence Date
           </p>
@@ -511,7 +511,7 @@ export function SlipList({
           </p>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Date Needed
           </p>
@@ -656,9 +656,8 @@ export function SlipList({
         <div
           key={index}
           className={cn(
-            "animate-pulse rounded-xl border border-border/70",
+            "animate-pulse rounded-xl border border-border",
             "bg-card p-4 shadow-md backdrop-blur-xl",
-            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
           <div className="flex items-center justify-between gap-3">

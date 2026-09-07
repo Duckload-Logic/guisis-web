@@ -40,11 +40,11 @@ export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
           User Portal
         </div>
 
-        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-foreground">
           {title}
         </h1>
 
-        <p className="mt-4 max-w-md text-base leading-7 text-slate-600 dark:text-slate-300">
+        <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
           {subtitle}
         </p>
 

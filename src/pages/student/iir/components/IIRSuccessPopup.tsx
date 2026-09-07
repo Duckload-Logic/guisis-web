@@ -39,11 +39,11 @@ export function IIRSuccessPopup({
           </div>
         </div>
 
-        <h3 className="text-3xl font-[900] text-neutral-900 dark:text-white">
+        <h3 className="text-3xl font-[900] text-foreground">
           All Done!
         </h3>
 
-        <p className="px-4 font-medium text-neutral-500 dark:text-neutral-400">
+        <p className="px-4 font-medium text-muted-foreground">
           {isEditMode
             ? "Your Individual Inventory Record has been successfully updated and saved."
             : "Your Individual Inventory Record has been successfully submitted and saved to our secure database."}

@@ -454,7 +454,7 @@ export const HealthSection = forwardRef<
         <section>
           <div className="mb-6 flex items-center gap-3">
             <div className="h-8 w-1.5 rounded-full bg-primary" />
-            <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+            <h3 className="text-xl font-bold text-foreground">
               A. Physical Health
             </h3>
           </div>
@@ -565,10 +565,7 @@ export const HealthSection = forwardRef<
         <section>
           <div className="mb-6 flex items-center gap-3">
             <div className="h-8 w-1.5 rounded-full bg-primary" />
-            <h3 className={cn(
-              "text-xl font-bold",
-              "text-neutral-900 dark:text-white"
-            )}>
+            <h3 className="text-xl font-bold text-foreground">
               B. Psychological Consultations
             </h3>
           </div>

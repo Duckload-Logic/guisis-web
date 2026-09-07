@@ -181,25 +181,23 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
       <ResponsiveModalContent
         className={cn(
           "flex h-[95dvh] w-full flex-col overflow-hidden border-t",
-          "border-slate-300/90 bg-[rgb(246,247,249)] p-0 text-slate-800",
-          "shadow-2xl dark:border-white/10 dark:bg-[#1a1c1e]",
-          "dark:text-white sm:h-auto sm:max-h-[80vh] sm:max-w-2xl",
-          "sm:border",
+          "border-border bg-card p-0 text-card-foreground",
+          "shadow-2xl sm:h-auto sm:max-h-[80vh] sm:max-w-2xl sm:border",
         )}
       >
         {/* Header */}
         <div
           className={cn(
-            "shrink-0 border-b border-slate-300/90 bg-white/50 px-5 py-4",
-            "dark:border-white/10 dark:bg-white/5 sm:px-7 sm:py-6",
+            "shrink-0 border-b border-border bg-muted/20 px-5 py-4",
+            "sm:px-7 sm:py-6",
           )}
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
+              <h2 className="text-xl font-bold text-foreground sm:text-2xl">
                 Display & Accessibility
               </h2>
-              <p className="mt-1 text-xs text-slate-600 dark:text-white/60 sm:text-sm">
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                 Customize your viewing and reading experience
               </p>
             </div>
@@ -214,18 +212,13 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           )}
         >
           {/* Grayscale */}
-          <div
-            className={cn(
-              "rounded-3xl border border-slate-200 bg-white/40 p-5",
-              "dark:border-white/5 dark:bg-white/[0.02]",
-            )}
-          >
+          <div className="rounded-3xl border border-border bg-muted/10 p-5">
             <div className="mb-4 flex items-center gap-2">
               <Palette
                 size={18}
                 className="text-primary"
               />
-              <p className="text-lg font-thin text-slate-900 dark:text-white">
+              <p className="text-lg font-medium text-foreground">
                 Grayscale Mode
               </p>
             </div>
@@ -251,18 +244,13 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           </div>
 
           {/* Dyslexia Friendly */}
-          <div
-            className={cn(
-              "rounded-3xl border border-slate-200 bg-white/40 p-5",
-              "dark:border-white/5 dark:bg-white/[0.02]",
-            )}
-          >
+          <div className="rounded-3xl border border-border bg-muted/10 p-5">
             <div className="mb-4 flex items-center gap-2">
               <Type
                 size={18}
                 className="text-primary"
               />
-              <p className="text-lg font-thin text-slate-900 dark:text-white">
+              <p className="text-lg font-medium text-foreground">
                 Dyslexia Friendly Font
               </p>
             </div>
@@ -270,30 +258,25 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
               onClick={() => setDraftDyslexic(!draftDyslexic)}
               className={cn(
                 "flex w-full items-center justify-between rounded-2xl border",
-                "border-slate-200 bg-white px-5 py-4 transition",
-                "hover:border-primary/50 dark:border-white/10 dark:bg-white/5",
+                "border-border bg-card px-5 py-4 text-foreground transition",
+                "hover:border-primary/50",
               )}
             >
               <span className="font-medium">
                 {draftDyslexic ? "On" : "Off"}
               </span>
               <div
-                className={`relative h-6 w-11 rounded-full p-1 transition-colors ${draftDyslexic ? "bg-primary" : "bg-slate-300 dark:bg-white/20"}`}
+                className={`relative h-6 w-11 rounded-full p-1 transition-colors ${draftDyslexic ? "bg-primary" : "bg-muted"}`}
               >
                 <div
-                  className={`h-4 w-4 rounded-full bg-white transition-transform ${draftDyslexic ? "translate-x-5" : "translate-x-0"}`}
+                  className={`h-4 w-4 rounded-full bg-background transition-transform ${draftDyslexic ? "translate-x-5" : "translate-x-0"}`}
                 />
               </div>
             </button>
           </div>
 
           {/* Performance Mode */}
-          <div
-            className={cn(
-              "rounded-3xl border border-slate-200 bg-white/40 p-5",
-              "dark:border-white/5 dark:bg-white/[0.02]",
-            )}
-          >
+          <div className="rounded-3xl border border-border bg-muted/10 p-5">
             <div className="mb-4 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {draftPerformanceMode ? (
@@ -307,14 +290,18 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                     className="shrink-0 text-amber-500"
                   />
                 )}
-                <p className="text-[17px] font-thin leading-tight text-slate-900 dark:text-white sm:text-lg">
+                <p className="text-[17px] font-medium leading-tight text-foreground sm:text-lg">
                   Graphics Quality
                 </p>
               </div>
             </div>
             <button
               onClick={() => setDraftPerformanceMode(!draftPerformanceMode)}
-              className={`flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-amber-500/50 dark:border-white/10 dark:bg-white/5 ${draftPerformanceMode ? "hover:border-emerald-500/50" : "hover:border-amber-500/50"}`}
+              className={cn(
+                "flex w-full items-center justify-between rounded-2xl border",
+                "border-border bg-card px-5 py-4 text-foreground transition",
+                "hover:border-primary/50",
+              )}
             >
               <span className="font-medium">
                 {draftPerformanceMode ? "Performance" : "High Quality"}
@@ -323,27 +310,20 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                 className={`relative h-6 w-11 rounded-full p-1 transition-colors ${draftPerformanceMode ? "bg-emerald-500" : "bg-amber-500"}`}
               >
                 <div
-                  className={`h-4 w-4 rounded-full bg-white transition-transform ${draftPerformanceMode ? "translate-x-5" : "translate-x-0"}`}
+                  className={`h-4 w-4 rounded-full bg-background transition-transform ${draftPerformanceMode ? "translate-x-5" : "translate-x-0"}`}
                 />
               </div>
             </button>
           </div>
 
           {/* Font Size Section */}
-          <div
-            className={cn(
-              "rounded-3xl border border-slate-300 bg-[rgb(241,243,246)]",
-              "p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
-              "dark:border-white/10 dark:bg-white/[0.045]",
-              "dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-            )}
-          >
+          <div className="rounded-3xl border border-border bg-muted/10 p-5">
             <div className="mb-4 flex items-center gap-2">
               <Type
                 size={18}
                 className="text-primary"
               />
-              <p className="text-lg font-medium text-slate-900 dark:text-white">
+              <p className="text-lg font-medium text-foreground">
                 Font Size
               </p>
             </div>
@@ -355,7 +335,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
               )}
             >
               {/* Desktop Font Scale Slider */}
-              <span className="hidden shrink-0 text-xl font-medium text-slate-900 dark:text-white md:block">
+              <span className="hidden shrink-0 text-xl font-medium text-foreground md:block">
                 A
               </span>
 
@@ -369,12 +349,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                       className="relative flex flex-1 items-center justify-center"
                     >
                       {index < fontSteps.length - 1 && (
-                        <span
-                          className={cn(
-                            "dark:bg-white/12 absolute left-1/2 top-1/2 h-1 w-full",
-                            "-translate-y-1/2 bg-slate-300",
-                          )}
-                        />
+                        <span className="absolute left-1/2 top-1/2 h-1 w-full -translate-y-1/2 bg-border" />
                       )}
 
                       <button
@@ -386,8 +361,8 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                         <span
                           className={`relative h-2 w-2 rounded-full border transition ${
                             isActive
-                              ? "scale-125 border-primary bg-primary shadow-[0_0_0_6px_rgba(128,0,0,0.18)]"
-                              : "border-slate-300 bg-white hover:scale-110 hover:border-primary/50 hover:bg-primary/15 dark:border-white/15 dark:bg-white/80"
+                              ? "scale-125 border-primary bg-primary shadow-[0_0_0_6px_rgba(var(--primary),0.18)]"
+                              : "border-border bg-card hover:scale-110 hover:border-primary/50 hover:bg-primary/15"
                           }`}
                         />
                       </button>
@@ -399,7 +374,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
               <span
                 className={cn(
                   "hidden shrink-0 text-5xl font-medium leading-none",
-                  "text-slate-900 dark:text-white md:block",
+                  "text-foreground md:block",
                 )}
               >
                 A
@@ -409,12 +384,11 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
               <div
                 className={cn(
                   "flex h-16 w-full items-center justify-center rounded-2xl",
-                  "border border-slate-200 bg-white/50 shadow-inner",
-                  "dark:border-white/10 dark:bg-black/20 md:hidden",
+                  "border border-border bg-muted/20 shadow-inner md:hidden",
                 )}
               >
                 <span
-                  className="font-medium text-slate-900 transition-all duration-300 dark:text-white"
+                  className="font-medium text-foreground transition-all duration-300"
                   style={{ fontSize: `${(draftFontScale / 100) * 1.5}rem` }}
                 >
                   Aa
@@ -427,19 +401,16 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                 onClick={decreaseFont}
                 disabled={draftFontScale <= 80}
                 className={cn(
-                  "rounded-xl border border-slate-300 bg-[rgb(249,250,251)]",
-                  "px-3 py-1.5 text-sm font-medium text-slate-900 shadow-sm",
-                  "transition hover:scale-105 hover:border-primary/25",
-                  "hover:bg-white hover:text-primary hover:shadow-md",
-                  "active:scale-95 disabled:cursor-not-allowed",
-                  "disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05]",
-                  "dark:text-white dark:hover:bg-white/[0.08]",
+                  "rounded-xl border border-border bg-card px-3 py-1.5",
+                  "text-sm font-medium text-foreground shadow-sm transition",
+                  "hover:scale-105 hover:border-primary/25 hover:text-primary",
+                  "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
                 )}
               >
                 −
               </button>
 
-              <p className="min-w-[72px] text-center text-sm font-medium text-slate-600 dark:text-white/60">
+              <p className="min-w-[72px] text-center text-sm font-medium text-muted-foreground">
                 {draftFontScale}%
               </p>
 
@@ -447,13 +418,10 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                 onClick={increaseFont}
                 disabled={draftFontScale >= 120}
                 className={cn(
-                  "rounded-xl border border-slate-300 bg-[rgb(249,250,251)]",
-                  "px-3 py-1.5 text-sm font-medium text-slate-900 shadow-sm",
-                  "transition hover:scale-105 hover:border-primary/25",
-                  "hover:bg-white hover:text-primary hover:shadow-md",
-                  "active:scale-95 disabled:cursor-not-allowed",
-                  "disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.05]",
-                  "dark:text-white dark:hover:bg-white/[0.08]",
+                  "rounded-xl border border-border bg-card px-3 py-1.5",
+                  "text-sm font-medium text-foreground shadow-sm transition",
+                  "hover:scale-105 hover:border-primary/25 hover:text-primary",
+                  "active:scale-95 disabled:cursor-not-allowed disabled:opacity-50",
                 )}
               >
                 +
@@ -462,19 +430,14 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           </div>
 
           {/* Voice Speed */}
-          <div
-            className={cn(
-              "rounded-3xl border border-slate-200 bg-white/40 p-5",
-              "dark:border-white/5 dark:bg-white/[0.02]",
-            )}
-          >
+          <div className="rounded-3xl border border-border bg-muted/10 p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Volume2
                   size={18}
                   className="text-primary"
                 />
-                <p className="text-lg font-thin text-slate-900 dark:text-white">
+                <p className="text-lg font-medium text-foreground">
                   Reading Speed
                 </p>
               </div>
@@ -499,22 +462,21 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
         <div
           className={cn(
             "flex shrink-0 flex-col-reverse items-stretch justify-end",
-            "gap-3 border-t border-slate-300/90 bg-white/50 p-4 pb-6",
-            "dark:border-white/10 dark:bg-white/5 sm:flex-row",
-            "sm:items-center sm:px-7 sm:py-5 sm:pb-5",
+            "gap-3 border-t border-border bg-muted/20 p-4 pb-6",
+            "sm:flex-row sm:items-center sm:px-7 sm:py-5 sm:pb-5",
           )}
         >
           {!hasPendingChanges && (
-            <p className="mr-auto hidden text-xs font-medium text-slate-500 dark:text-white/40 sm:block">
+            <p className="mr-auto hidden text-xs font-medium text-muted-foreground sm:block">
               Settings are up to date
             </p>
           )}
           <button
             onClick={handleCancelSettings}
             className={cn(
-              "w-full rounded-2xl border border-slate-300 bg-white px-6",
-              "py-3.5 text-sm font-medium transition hover:bg-slate-50",
-              "dark:border-white/10 dark:bg-white/5 sm:w-auto sm:py-2.5",
+              "w-full rounded-2xl border border-border bg-card px-6",
+              "py-3.5 text-sm font-medium text-foreground transition",
+              "hover:bg-muted sm:w-auto sm:py-2.5",
             )}
           >
             Cancel
@@ -522,11 +484,12 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           <button
             onClick={handleApplySettings}
             disabled={!hasPendingChanges}
-            className={`w-full rounded-2xl px-8 py-3.5 text-sm font-bold shadow-lg transition sm:w-auto sm:py-2.5 ${
+            className={cn(
+              "w-full rounded-2xl px-8 py-3.5 text-sm font-bold shadow-lg transition sm:w-auto sm:py-2.5",
               hasPendingChanges
-                ? "bg-primary text-white hover:bg-primary/90"
-                : "cursor-not-allowed bg-slate-200 text-slate-400 dark:bg-white/5 dark:text-white/20"
-            }`}
+                ? "bg-primary text-primary-foreground hover:bg-primary-dark"
+                : "cursor-not-allowed bg-muted text-muted-foreground",
+            )}
           >
             Apply Changes
           </button>

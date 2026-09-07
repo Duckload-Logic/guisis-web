@@ -134,9 +134,8 @@ export function Table<T>({
                   <div
                     key={idx}
                     className={cn(
-                      "animate-pulse rounded-xl border border-border/70",
+                      "animate-pulse rounded-xl border border-border",
                       "bg-card p-4 shadow-md backdrop-blur-xl",
-                      "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
                     <div className="flex min-w-0 items-center justify-between gap-3">
@@ -276,10 +275,9 @@ export function Table<T>({
                   <tr
                     key={idx}
                     className={cn(
-                      "border-b border-border/60 bg-background/70 last:border-0",
-                      "transition-colors duration-200 dark:border-white/10 dark:bg-white/[0.025]",
-                      clickable &&
-                        "cursor-pointer hover:bg-muted/50 dark:hover:bg-white/[0.06]",
+                      "border-b border-border/60 bg-card last:border-0",
+                      "transition-colors duration-200",
+                      clickable && "cursor-pointer hover:bg-muted/50",
                       typeof rowClassName === "function"
                         ? rowClassName(item, idx)
                         : rowClassName,

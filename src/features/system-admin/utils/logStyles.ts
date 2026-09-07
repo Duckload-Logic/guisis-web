@@ -54,8 +54,7 @@ export const getActionBadgeColor = (action: string): string => {
     upper.endsWith("_ACCESS")
   ) {
     return (
-      "border-blue-500/20 bg-blue-500/10 text-blue-700" +
-      " dark:text-blue-400"
+      "border-blue-500/20 bg-blue-500/10 text-blue-700" + " dark:text-blue-400"
     );
   }
 

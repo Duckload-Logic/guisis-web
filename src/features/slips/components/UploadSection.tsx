@@ -167,12 +167,12 @@ export function UploadSection({
                 <button
                   onClick={() => onFileRemove(index)}
                   className={cn(
-                    "shrink-0 rounded p-0.5 transition-colors hover:bg-red-100/50",
-                    "dark:hover:bg-red-950/30",
+                    "shrink-0 rounded p-0.5 text-destructive",
+                    "transition-colors hover:bg-destructive/10",
                   )}
                   aria-label="Remove file"
                 >
-                  <X className="h-3.5 w-3.5 text-red-500" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}

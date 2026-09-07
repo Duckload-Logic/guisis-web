@@ -38,7 +38,7 @@ export function FormSectionHeader({
         <h3
           className={cn(
             "text-xl font-bold leading-tight tracking-tight",
-            "text-neutral-900 dark:text-white sm:text-2xl",
+            "text-foreground sm:text-2xl",
           )}
         >
           {title}
@@ -48,7 +48,7 @@ export function FormSectionHeader({
           <p
             className={cn(
               "mt-1 text-sm font-medium leading-snug",
-              "text-neutral-500/80 dark:text-neutral-400/80",
+              "text-muted-foreground",
             )}
           >
             {description}

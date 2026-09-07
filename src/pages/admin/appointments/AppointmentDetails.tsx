@@ -82,8 +82,7 @@ function getAppointmentUrgency(appointment?: any) {
       label: "High",
       description:
         "Prioritize this student concern during review and scheduling.",
-      className:
-        "border-destructive/20 bg-destructive/10 text-destructive",
+      className: "border-destructive/20 bg-destructive/10 text-destructive",
     };
   }
 

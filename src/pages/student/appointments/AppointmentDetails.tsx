@@ -33,7 +33,6 @@ import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { parseAuditTrail } from "@/utils/auditTrail";
 
-
 const APPOINTMENT_PILL_CLASS =
   "inline-flex h-7 items-center rounded-full border px-3 text-[11px] " +
   "font-semibold leading-none";
@@ -71,8 +70,7 @@ function getAppointmentUrgency(appointment?: any) {
       label: "High",
       description:
         "This appointment should be prioritized by the Guidance Office.",
-      className:
-        "border-destructive/20 bg-destructive/10 text-destructive",
+      className: "border-destructive/20 bg-destructive/10 text-destructive",
     };
   }
 
@@ -302,7 +300,10 @@ export default function AppointmentDetails() {
                       </Badge>
                       <Badge
                         variant="outline"
-                        className={cn(APPOINTMENT_PILL_CLASS, urgencyInfo.className)}
+                        className={cn(
+                          APPOINTMENT_PILL_CLASS,
+                          urgencyInfo.className,
+                        )}
                       >
                         Urgency: {urgencyInfo.label}
                       </Badge>
@@ -362,7 +363,10 @@ export default function AppointmentDetails() {
                         <AlertCircle className="h-4 w-4 text-muted-foreground" />
                         <Badge
                           variant="outline"
-                          className={cn(APPOINTMENT_PILL_CLASS, urgencyInfo.className)}
+                          className={cn(
+                            APPOINTMENT_PILL_CLASS,
+                            urgencyInfo.className,
+                          )}
                         >
                           {urgencyInfo.label}
                         </Badge>

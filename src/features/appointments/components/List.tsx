@@ -492,8 +492,7 @@ export default function AppointmentList({
             className={cn(
               "inline-flex max-w-[170px] items-center rounded-xl border",
               "border-border/70 bg-muted/30 px-2.5 py-1 text-xs font-medium",
-              "text-foreground backdrop-blur-md dark:border-white/10",
-              "dark:bg-white/[0.04]",
+              "text-foreground backdrop-blur-md",
             )}
           >
             <span className="truncate">{apt.appointmentCategory?.name}</span>
@@ -598,9 +597,9 @@ export default function AppointmentList({
     <div
       key={apt.id}
       className={cn(
-        "space-y-3 rounded-xl border border-border/70 bg-card p-4",
-        "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "space-y-3 rounded-xl border border-border bg-card p-4",
+        "shadow-md backdrop-blur-xl transition-all duration-200",
+        "active:scale-[0.98]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -629,7 +628,7 @@ export default function AppointmentList({
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Date Requested
           </p>
@@ -638,7 +637,7 @@ export default function AppointmentList({
           </p>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Appointment Date
           </p>
@@ -689,8 +688,8 @@ export default function AppointmentList({
     >
       <div
         className={cn(
-          "rounded-xl border border-dashed border-border/70",
-          "bg-muted/40 p-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]",
+          "rounded-xl border border-dashed border-border",
+          "bg-muted/40 p-5 backdrop-blur-xl",
         )}
       >
         <CalendarX className="h-9 w-9 text-muted-foreground/50" />
@@ -776,9 +775,8 @@ export default function AppointmentList({
         <div
           key={index}
           className={cn(
-            "animate-pulse rounded-xl border border-border/70",
+            "animate-pulse rounded-xl border border-border",
             "bg-card p-4 shadow-md backdrop-blur-xl",
-            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
           <div className="flex items-center justify-between gap-3">

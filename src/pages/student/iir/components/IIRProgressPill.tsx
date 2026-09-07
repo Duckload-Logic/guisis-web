@@ -22,8 +22,7 @@ export function IIRProgressPill({ completion }: IIRProgressPillProps) {
         />
         <span
           className={cn(
-            "text-[11px] uppercase",
-            "text-neutral-700 dark:text-white",
+            "text-[11px] uppercase text-foreground",
           )}
         >
           {completion}% Form Progress

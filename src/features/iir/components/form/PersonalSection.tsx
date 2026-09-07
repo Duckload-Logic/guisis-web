@@ -141,8 +141,7 @@ export const PersonalSection = forwardRef<
     initialStudentNumber.current === null &&
     studentInfo?.personalInfo?.studentNumber
   ) {
-    initialStudentNumber.current =
-      studentInfo.personalInfo.studentNumber;
+    initialStudentNumber.current = studentInfo.personalInfo.studentNumber;
   }
 
   const performUniquenessCheck = useCallback(
@@ -547,8 +546,6 @@ export const PersonalSection = forwardRef<
     const filteredSchema: FieldValidationSchema = {};
     let targetFields = PERSONAL_SUBSTEP_FIELDS[activeStep] || [];
 
-
-
     targetFields.forEach((field) => {
       if (runtimeSchema[field]) {
         filteredSchema[field] = runtimeSchema[field];
@@ -564,8 +561,7 @@ export const PersonalSection = forwardRef<
 
     if (activeStep === 1) {
       const num = studentInfo?.personalInfo?.studentNumber || "";
-      const isOriginal =
-        isEditMode && num === initialStudentNumber.current;
+      const isOriginal = isEditMode && num === initialStudentNumber.current;
       if (!isOriginal) {
         const isValidFormat = isValidStudentNumber(num);
         if (isValidFormat) {
@@ -695,12 +691,8 @@ export const PersonalSection = forwardRef<
       });
       clearError(fieldPath);
     } catch (error: any) {
-      console.error(
-        "[PersonalSection] {handlePhotoUpload}:",
-        error,
-      );
-      const msg =
-        error?.message || "Unable to process the selected 2x2 photo.";
+      console.error("[PersonalSection] {handlePhotoUpload}:", error);
+      const msg = error?.message || "Unable to process the selected 2x2 photo.";
       if (triggerToast) {
         triggerToast(msg);
       }
@@ -949,7 +941,6 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.studentNumber",
                 )}
-
               />
             </div>
             <div className="md:col-span-3">
@@ -1055,7 +1046,6 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.gender",
                 )}
-
               />
             </div>
             <div className="md:col-span-2">
@@ -1144,133 +1134,129 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.dateOfBirth",
                 )}
-
                 maxDate={new Date()}
               />
             </div>
-              <>
-                <div className="md:col-span-3">
-                  <FormField
-                    label="Place of Birth"
-                    value={studentInfo?.personalInfo?.placeOfBirth || ""}
-                    onChange={(val: any) =>
-                      handleInputChange(
-                        "student.personalInfo.placeOfBirth",
-                        val,
-                      )
-                    }
-                    error={errors["student.personalInfo.placeOfBirth"]}
-                    placeholder="City/Municipality, Province"
-                    noSpecialCharacters={true}
-                    required={isFieldRequired(
-                      runtimeSchema,
-                      "student.personalInfo.placeOfBirth",
-                    )}
-                  />
-                </div>
+            <>
+              <div className="md:col-span-3">
+                <FormField
+                  label="Place of Birth"
+                  value={studentInfo?.personalInfo?.placeOfBirth || ""}
+                  onChange={(val: any) =>
+                    handleInputChange("student.personalInfo.placeOfBirth", val)
+                  }
+                  error={errors["student.personalInfo.placeOfBirth"]}
+                  placeholder="City/Municipality, Province"
+                  noSpecialCharacters={true}
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.placeOfBirth",
+                  )}
+                />
+              </div>
 
-                <div className="md:col-span-2">
-                  <FormField
-                    label="High School GWA"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.highSchoolGWA || ""}
-                    onChange={(val: any) =>
-                      handleInputChange(
-                        "student.personalInfo.highSchoolGWA",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      )
-                    }
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.highSchoolGWA;
-                      handleInputChange(
-                        "student.personalInfo.highSchoolGWA",
-                        val === "" || val == null ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.highSchoolGWA");
-                    }}
-                    error={errors["student.personalInfo.highSchoolGWA"]}
-                    placeholder="90.5"
-                    required={isFieldRequired(
-                      runtimeSchema,
+              <div className="md:col-span-2">
+                <FormField
+                  label="High School GWA"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.highSchoolGWA || ""}
+                  onChange={(val: any) =>
+                    handleInputChange(
                       "student.personalInfo.highSchoolGWA",
-                    )}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <FormField
-                    label="Height (m)"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.heightM || ""}
-                    onChange={(val: any) => {
-                      handleInputChange(
-                        "student.personalInfo.heightM",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      );
-                    }}
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.heightM;
-                      handleInputChange(
-                        "student.personalInfo.heightM",
-                        val === "" ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.heightM");
-                    }}
-                    error={errors["student.personalInfo.heightM"]}
-                    placeholder="1.5"
-                    required={isFieldRequired(
-                      runtimeSchema,
+                      String(val).replace(/[^0-9.]/g, ""),
+                    )
+                  }
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.highSchoolGWA;
+                    handleInputChange(
+                      "student.personalInfo.highSchoolGWA",
+                      val === "" || val == null ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.highSchoolGWA");
+                  }}
+                  error={errors["student.personalInfo.highSchoolGWA"]}
+                  placeholder="90.5"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.highSchoolGWA",
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  label="Height (m)"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.heightM || ""}
+                  onChange={(val: any) => {
+                    handleInputChange(
                       "student.personalInfo.heightM",
-                    )}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <FormField
-                    label="Weight (kg.)"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.weightKg || ""}
-                    onChange={(val: any) => {
-                      handleInputChange(
-                        "student.personalInfo.weightKg",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      );
-                    }}
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.weightKg;
-                      handleInputChange(
-                        "student.personalInfo.weightKg",
-                        val === "" ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.weightKg");
-                    }}
-                    error={errors["student.personalInfo.weightKg"]}
-                    placeholder="65"
-                    required={isFieldRequired(
-                      runtimeSchema,
+                      String(val).replace(/[^0-9.]/g, ""),
+                    );
+                  }}
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.heightM;
+                    handleInputChange(
+                      "student.personalInfo.heightM",
+                      val === "" ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.heightM");
+                  }}
+                  error={errors["student.personalInfo.heightM"]}
+                  placeholder="1.5"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.heightM",
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  label="Weight (kg.)"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.weightKg || ""}
+                  onChange={(val: any) => {
+                    handleInputChange(
                       "student.personalInfo.weightKg",
-                    )}
-                  />
-                </div>
+                      String(val).replace(/[^0-9.]/g, ""),
+                    );
+                  }}
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.weightKg;
+                    handleInputChange(
+                      "student.personalInfo.weightKg",
+                      val === "" ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.weightKg");
+                  }}
+                  error={errors["student.personalInfo.weightKg"]}
+                  placeholder="65"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.weightKg",
+                  )}
+                />
+              </div>
 
-                <div className="md:col-span-6">
-                  <SelectField
-                    formStyle
-                    label="Complexion"
-                    options={COMPLEXIONS.map((c) => ({ id: c, name: c }))}
-                    value={studentInfo?.personalInfo?.complexion || ""}
-                    onChange={(val: any) =>
-                      handleInputChange("student.personalInfo.complexion", val)
-                    }
-                    error={getFieldError("student.personalInfo.complexion")}
-                    required={isFieldRequired(
-                      runtimeSchema,
-                      "student.personalInfo.complexion",
-                    )}
-                  />
-                </div>
-              </>
+              <div className="md:col-span-6">
+                <SelectField
+                  formStyle
+                  label="Complexion"
+                  options={COMPLEXIONS.map((c) => ({ id: c, name: c }))}
+                  value={studentInfo?.personalInfo?.complexion || ""}
+                  onChange={(val: any) =>
+                    handleInputChange("student.personalInfo.complexion", val)
+                  }
+                  error={getFieldError("student.personalInfo.complexion")}
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.complexion",
+                  )}
+                />
+              </div>
+            </>
           </div>
         </SectionContainer>
       )}

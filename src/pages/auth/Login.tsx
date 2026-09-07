@@ -133,18 +133,18 @@ export default function Login() {
       <div className="flex min-h-[75vh] w-full flex-col items-center justify-center px-4 py-12">
         <div
           className={cn(
-            "relative w-full max-w-[1150px] overflow-hidden rounded-[32px]", 
+            "relative w-full max-w-[1150px] overflow-hidden rounded-[32px]",
             "border border-neutral-200/70 bg-white shadow-2xl",
             "shadow-neutral-900/10 dark:border-white/10",
             "dark:bg-neutral-950/95 dark:shadow-black/40",
             "transition-all dark:backdrop-blur-lg",
-            "grid min-h-[650px] grid-cols-1 md:grid-cols-[4.5fr_5.5fr]" 
+            "grid min-h-[650px] grid-cols-1 md:grid-cols-[4.5fr_5.5fr]",
           )}
         >
           <div
             className={cn(
               "relative flex flex-col justify-center overflow-hidden p-10 sm:p-14 lg:p-16",
-              "bg-card", 
+              "bg-card",
               "border-b border-border/50 md:border-b-0 md:border-r",
             )}
           >
@@ -162,31 +162,21 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="flex flex-col justify-center bg-white p-10 sm:p-14 lg:p-16 dark:bg-neutral-950/40">
-            
+          <div className="flex flex-col justify-center bg-white p-10 dark:bg-neutral-950/40 sm:p-14 lg:p-16">
             <div className="mb-8 text-left">
               <span
                 className={cn(
-                  "rounded-full border border-neutral-200 px-3 py-1",
+                  "rounded-full border border-border px-3 py-1",
                   "text-[10px] font-bold uppercase tracking-widest",
-                  "text-neutral-500 dark:border-white/10",
+                  "text-muted-foreground",
                 )}
               >
                 Sign In
               </span>
-              <h2
-                className={cn(
-                  "mt-5 text-2xl font-bold tracking-tight",
-                  "text-neutral-900 dark:text-white",
-                )}
-              >
+              <h2 className="mt-5 text-2xl font-bold tracking-tight text-foreground">
                 {isFallback ? "Fallback Verification" : "Access your account"}
               </h2>
-              <p
-                className={cn(
-                  "mt-2 text-sm text-neutral-500 dark:text-neutral-400",
-                )}
-              >
+              <p className="mt-2 text-sm text-muted-foreground">
                 {isFallback
                   ? "Identity Provider is down. Enter email to receive OTP."
                   : "Use your credentials or institutional login to continue."}
@@ -201,7 +191,10 @@ export default function Login() {
                     success={successMessage}
                   />
                   {!otpSent ? (
-                    <form onSubmit={handleRequestOTP} className="space-y-5">
+                    <form
+                      onSubmit={handleRequestOTP}
+                      className="space-y-5"
+                    >
                       <FormField
                         id="email"
                         label="Email Address"
@@ -216,8 +209,7 @@ export default function Login() {
                             "backdrop-blur",
                           "border-[hsl(var(--border)/0.9)] " +
                             "bg-[hsl(var(--background)/0.78)]",
-                          "shadow-[inset_0_1px_0_" +
-                            "rgba(255,255,255,0.08)]",
+                          "shadow-[inset_0_1px_0_" + "rgba(255,255,255,0.08)]",
                           "placeholder:text-muted-foreground " +
                             "focus-visible:ring-2",
                         )}
@@ -226,10 +218,9 @@ export default function Login() {
                         type="submit"
                         disabled={isLoading}
                         className={cn(
-                          "h-12 w-full rounded-2xl bg-[#8f1113] " +
-                            "text-sm font-semibold text-white " +
-                            "shadow-lg transition hover:bg-[#6a0d0d] " +
-                            "dark:hover:bg-[#6a0d0d] sm:text-base",
+                          "h-12 w-full rounded-2xl bg-primary text-sm",
+                          "font-semibold text-primary-foreground shadow-lg",
+                          "transition hover:bg-primary-dark sm:text-base",
                         )}
                       >
                         {isLoading ? (
@@ -245,7 +236,10 @@ export default function Login() {
                       </Button>
                     </form>
                   ) : (
-                    <form onSubmit={handleVerifyOTP} className="space-y-5">
+                    <form
+                      onSubmit={handleVerifyOTP}
+                      className="space-y-5"
+                    >
                       <FormField
                         id="email-disabled"
                         label="Email Address"
@@ -257,8 +251,7 @@ export default function Login() {
                             "text-muted-foreground backdrop-blur",
                           "border-[hsl(var(--border)/0.9)] " +
                             "bg-[hsl(var(--background)/0.5)]",
-                          "shadow-[inset_0_1px_0_" +
-                            "rgba(255,255,255,0.08)]",
+                          "shadow-[inset_0_1px_0_" + "rgba(255,255,255,0.08)]",
                         )}
                       />
                       <FormField
@@ -274,8 +267,7 @@ export default function Login() {
                             "backdrop-blur",
                           "border-[hsl(var(--border)/0.9)] " +
                             "bg-[hsl(var(--background)/0.78)]",
-                          "shadow-[inset_0_1px_0_" +
-                            "rgba(255,255,255,0.08)]",
+                          "shadow-[inset_0_1px_0_" + "rgba(255,255,255,0.08)]",
                           "placeholder:text-muted-foreground " +
                             "focus-visible:ring-2",
                         )}
@@ -284,10 +276,9 @@ export default function Login() {
                         type="submit"
                         disabled={isLoading}
                         className={cn(
-                          "h-12 w-full rounded-2xl bg-[#8f1113] " +
-                            "text-sm font-semibold text-white " +
-                            "shadow-lg transition hover:bg-[#6a0d0d] " +
-                            "dark:hover:bg-[#6a0d0d] sm:text-base",
+                          "h-12 w-full rounded-2xl bg-primary text-sm",
+                          "font-semibold text-primary-foreground shadow-lg",
+                          "transition hover:bg-primary-dark sm:text-base",
                         )}
                       >
                         {isLoading ? (
@@ -312,8 +303,7 @@ export default function Login() {
                             setSuccessMessage("");
                           }}
                           className={cn(
-                            "text-xs font-semibold text-[#8f1113] " +
-                              "hover:underline",
+                            "text-xs font-semibold text-primary hover:underline",
                           )}
                         >
                           Change Email / Resend Code
@@ -323,19 +313,17 @@ export default function Login() {
                   )}
                 </>
               ) : import.meta.env.VITE_IS_PRODUCTION === "true" ? (
-                <div className="text-center text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="text-center text-sm text-muted-foreground">
                   <p className="mb-6">
                     Login with your university IDP to continue.
                   </p>
                   <IDPLoginButton
                     disabled={isLoading}
                     className={cn(
-                      "h-12 w-full rounded-2xl",
-                      "bg-yellow-400 text-slate-900",
-                      "font-semibold transition-all duration-200",
-                      "hover:bg-yellow-500 dark:hover:bg-yellow-500",
-                      "active:scale-[0.98] sm:text-base",
-                      "shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
+                      "h-12 w-full rounded-2xl bg-secondary",
+                      "text-secondary-foreground font-semibold",
+                      "transition-all duration-200 hover:bg-secondary/90",
+                      "active:scale-[0.98] sm:text-base shadow-sm",
                     )}
                   />
                 </div>
@@ -364,9 +352,8 @@ export default function Login() {
           <Link
             to="/"
             className={cn(
-              "inline-flex items-center gap-2 text-sm text-slate-500",
-              "hover:text-[#8f1113] dark:text-neutral-400",
-              "dark:hover:text-red-400 transition-colors",
+              "inline-flex items-center gap-2 text-sm text-muted-foreground",
+              "transition-colors hover:text-primary",
             )}
           >
             <ArrowLeft className="h-4 w-4" />
