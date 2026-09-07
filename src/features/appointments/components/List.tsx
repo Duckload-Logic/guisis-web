@@ -160,9 +160,9 @@ export default function AppointmentList({
   totalPages,
   className,
 }: AppointmentListProps) {
-  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<
-    Set<string>
-  >(() => new Set());
+  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const [localCategory, setLocalCategory] = useState<string>("all");
   const [localUrgency, setLocalUrgency] = useState<string>("all");
@@ -172,9 +172,7 @@ export default function AppointmentList({
   const currentCategory = isServerFiltered
     ? selectedCategoryProp
     : localCategory;
-  const currentUrgency = isServerFiltered
-    ? selectedUrgencyProp
-    : localUrgency;
+  const currentUrgency = isServerFiltered ? selectedUrgencyProp : localUrgency;
 
   const handleCategoryChange = (val: string) => {
     if (isServerFiltered) {
@@ -195,16 +193,14 @@ export default function AppointmentList({
   const sortKeyName = useMemo(
     () =>
       sortOptions?.find(
-        (o) =>
-          /name|student/i.test(o.id) || /name|student/i.test(o.name),
+        (o) => /name|student/i.test(o.id) || /name|student/i.test(o.name),
       )?.id || "studentName",
     [sortOptions],
   );
   const sortKeyRequested = useMemo(
     () =>
       sortOptions?.find(
-        (o) =>
-          /created|request/i.test(o.id) || /created|request/i.test(o.name),
+        (o) => /created|request/i.test(o.id) || /created|request/i.test(o.name),
       )?.id || "createdAt",
     [sortOptions],
   );
@@ -304,18 +300,14 @@ export default function AppointmentList({
 
   const dropdownOptions = useMemo(() => {
     return statuses.map((status) => {
-      const serverCountObj = statusCounts?.find(
-        (sc) => sc.id === status.id,
-      );
+      const serverCountObj = statusCounts?.find((sc) => sc.id === status.id);
       const count = serverCountObj
         ? serverCountObj.count
         : dynamicStatMap[status.id] || 0;
       return {
         ...status,
         displayName:
-          status.id === 0
-            ? "All Statuses"
-            : `${status.name} (${count})`,
+          status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
       };
     });
   }, [statuses, statusCounts, dynamicStatMap]);
@@ -345,7 +337,15 @@ export default function AppointmentList({
     });
 
     return filtered;
-  }, [baseFilteredAppointments, selectedStatus, selectedSort, selectedOrder, sortKeyName, sortKeyRequested, sortKeyAppointment]);
+  }, [
+    baseFilteredAppointments,
+    selectedStatus,
+    selectedSort,
+    selectedOrder,
+    sortKeyName,
+    sortKeyRequested,
+    sortKeyAppointment,
+  ]);
 
   const hiddenCount = appointments.length - visibleAppointments.length;
 
@@ -354,7 +354,10 @@ export default function AppointmentList({
     onPageChange(1);
   };
 
-  const hideAppointment = (appointment: Appointment, event?: MouseEvent<HTMLButtonElement>) => {
+  const hideAppointment = (
+    appointment: Appointment,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
     event?.stopPropagation();
     setHiddenAppointmentIds((previous) => {
       const next = new Set(previous);
@@ -367,7 +370,10 @@ export default function AppointmentList({
     setHiddenAppointmentIds(new Set());
   };
 
-  const handleViewClick = (appointment: Appointment, event?: MouseEvent<HTMLButtonElement>) => {
+  const handleViewClick = (
+    appointment: Appointment,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
     event?.stopPropagation();
     onViewClick(appointment);
   };
@@ -375,8 +381,7 @@ export default function AppointmentList({
   const renderSortableHeader = useCallback(
     (label: string, sortKey: string) => {
       const isActive = selectedSort === sortKey;
-      const Icon =
-        isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
+      const Icon = isActive && selectedOrder === "desc" ? ArrowDown : ArrowUp;
 
       return (
         <button
@@ -384,7 +389,7 @@ export default function AppointmentList({
           onClick={() => {
             onSortChange?.(sortKey);
             onOrderChange?.(
-              isActive && selectedOrder === "asc" ? "desc" : "asc"
+              isActive && selectedOrder === "asc" ? "desc" : "asc",
             );
             onPageChange(1);
           }}
@@ -395,7 +400,7 @@ export default function AppointmentList({
             "transition-colors",
             isActive
               ? "text-[#800000]"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           <span>{label}</span>
@@ -403,20 +408,14 @@ export default function AppointmentList({
           <Icon
             className={cn(
               "h-3.5 w-3.5 flex-shrink-0",
-              isActive ? "opacity-100" : "opacity-40"
+              isActive ? "opacity-100" : "opacity-40",
             )}
             strokeWidth={isActive ? 2.5 : 2}
           />
         </button>
       );
     },
-    [
-      selectedSort,
-      selectedOrder,
-      onSortChange,
-      onOrderChange,
-      onPageChange,
-    ]
+    [selectedSort, selectedOrder, onSortChange, onOrderChange, onPageChange],
   );
 
   const columns = useMemo<Column<Appointment>[]>(
@@ -424,12 +423,12 @@ export default function AppointmentList({
       {
         header: (
           <div className="flex items-center px-3 py-3">
-             {renderSortableHeader("Student Name", sortKeyName)}
+            {renderSortableHeader("Student Name", sortKeyName)}
           </div>
         ),
         className: "min-w-[220px] p-0",
         render: (apt) => (
-          <div className="px-3 py-3 space-y-0.5">
+          <div className="space-y-0.5 px-3 py-3">
             <p className="font-semibold text-foreground">
               {getAppointmentStudentName(apt) || "Unnamed Student"}
             </p>
@@ -447,11 +446,13 @@ export default function AppointmentList({
         ),
         className: "min-w-[155px] p-0",
         render: (apt) => (
-          <div className="px-3 py-3 space-y-0.5">
+          <div className="space-y-0.5 px-3 py-3">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
               {formatCompactDate(apt.createdAt)}
             </p>
-            <p className="text-[11px] text-muted-foreground">Request submitted</p>
+            <p className="text-[11px] text-muted-foreground">
+              Request submitted
+            </p>
           </div>
         ),
       },
@@ -463,7 +464,7 @@ export default function AppointmentList({
         ),
         className: "min-w-[165px] p-0",
         render: (apt) => (
-          <div className="px-3 py-3 space-y-0.5">
+          <div className="space-y-0.5 px-3 py-3">
             <p className="whitespace-nowrap text-sm font-semibold text-foreground">
               {formatCompactDate(apt.whenDate)}
             </p>
@@ -535,6 +536,37 @@ export default function AppointmentList({
         ),
         className: "min-w-[110px] px-3 py-3",
         render: (apt) => <UrgencyCapsule appointment={apt} />,
+      },
+      {
+        header: (
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
+            )}
+          >
+            Action
+          </span>
+        ),
+        className: "min-w-[100px] px-3 py-3 text-right",
+        render: (apt) => (
+          <div className="flex items-center justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => handleViewClick(apt, event)}
+              className={cn(
+                "h-7 gap-1 rounded-xl border-primary/20 bg-primary/10",
+                "px-2.5 text-[10px] font-bold uppercase text-primary",
+                "hover:bg-primary hover:text-white",
+              )}
+            >
+              <Eye size={12} />
+              View
+            </Button>
+          </div>
+        ),
       },
     ],
     [
@@ -662,7 +694,7 @@ export default function AppointmentList({
       >
         <CalendarX className="h-9 w-9 text-muted-foreground/50" />
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-lg font-semibold tracking-tight text-foreground/80">
           No appointments found
@@ -683,7 +715,8 @@ export default function AppointmentList({
               onClick={() => {
                 handleCategoryChange("all");
                 handleUrgencyChange("all");
-                const allStatus = statuses.find((s) => s.id === 0) ||
+                const allStatus =
+                  statuses.find((s) => s.id === 0) ||
                   ({ id: 0, name: "All Statuses" } as AppointmentStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
@@ -707,7 +740,11 @@ export default function AppointmentList({
               key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
-              {typeof column.header === 'string' ? column.header : <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />}
+              {typeof column.header === "string" ? (
+                column.header
+              ) : (
+                <div className="h-4 w-20 animate-pulse rounded bg-muted/50" />
+              )}
             </th>
           ))}
         </tr>
@@ -719,7 +756,10 @@ export default function AppointmentList({
             className="animate-pulse border-b border-border/60 dark:border-white/10"
           >
             {columns.map((_, columnIndex) => (
-              <td key={columnIndex} className="px-4 py-3">
+              <td
+                key={columnIndex}
+                className="px-4 py-3"
+              >
                 <Skeleton className="h-4 w-24 rounded" />
               </td>
             ))}
@@ -762,7 +802,8 @@ export default function AppointmentList({
               {title}
             </h2>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Student details, date requested, and appointment date are shown in one compact table.
+              Student details, date requested, and appointment date are shown in
+              one compact table.
             </p>
           </div>
 
@@ -775,7 +816,8 @@ export default function AppointmentList({
                   "text-primary shadow-md",
                 )}
               >
-                {visibleAppointments.length} visible / {appointments.length} total
+                {visibleAppointments.length} visible / {appointments.length}{" "}
+                total
               </div>
 
               {hiddenCount > 0 && (

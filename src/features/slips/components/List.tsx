@@ -129,23 +129,20 @@ export function SlipList({
   const sortKeyName = useMemo(
     () =>
       sortOptions?.find(
-        (o) =>
-          /name|student/i.test(o.id) || /name|student/i.test(o.name),
+        (o) => /name|student/i.test(o.id) || /name|student/i.test(o.name),
       )?.id || "studentName",
     [sortOptions],
   );
   const sortKeyAbsence = useMemo(
     () =>
-      sortOptions?.find(
-        (o) => /absence/i.test(o.id) || /absence/i.test(o.name),
-      )?.id || "dateOfAbsence",
+      sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))
+        ?.id || "dateOfAbsence",
     [sortOptions],
   );
   const sortKeyNeeded = useMemo(
     () =>
-      sortOptions?.find(
-        (o) => /needed/i.test(o.id) || /needed/i.test(o.name),
-      )?.id || "dateNeeded",
+      sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))
+        ?.id || "dateNeeded",
     [sortOptions],
   );
 
@@ -178,8 +175,7 @@ export function SlipList({
       if (isServerFiltered) return true;
 
       const matchesCat =
-        currentCategory === "all" ||
-        slip.category?.name === currentCategory;
+        currentCategory === "all" || slip.category?.name === currentCategory;
 
       return matchesCat;
     });
@@ -196,8 +192,7 @@ export function SlipList({
 
     baseFilteredSlips.forEach((slip) => {
       if (slip.status?.id) {
-        map[String(slip.status.id)] =
-          (map[String(slip.status.id)] || 0) + 1;
+        map[String(slip.status.id)] = (map[String(slip.status.id)] || 0) + 1;
       }
     });
 
@@ -234,12 +229,10 @@ export function SlipList({
         const right = getSlipStudentName(b).toLowerCase();
         const res = left.localeCompare(right);
         return selectedOrder === "asc" ? res : -res;
-        
       } else if (selectedSort === sortKeyAbsence) {
         const left = new Date(a.dateOfAbsence || 0).getTime();
         const right = new Date(b.dateOfAbsence || 0).getTime();
         return selectedOrder === "asc" ? left - right : right - left;
-        
       } else if (selectedSort === sortKeyNeeded) {
         const left = new Date(a.dateNeeded || 0).getTime();
         const right = new Date(b.dateNeeded || 0).getTime();
@@ -250,13 +243,13 @@ export function SlipList({
 
     return filtered;
   }, [
-    baseFilteredSlips, 
-    selectedStatus, 
-    selectedSort, 
-    selectedOrder, 
-    sortKeyName, 
-    sortKeyAbsence, 
-    sortKeyNeeded
+    baseFilteredSlips,
+    selectedStatus,
+    selectedSort,
+    selectedOrder,
+    sortKeyName,
+    sortKeyAbsence,
+    sortKeyNeeded,
   ]);
 
   const hiddenCount = slips.length - visibleSlips.length;
@@ -279,7 +272,10 @@ export function SlipList({
     setHiddenSlipKeys(new Set());
   };
 
-  const handleViewClick = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
+  const handleViewClick = (
+    slip: Slip,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
     event?.stopPropagation();
     onViewClick(slip);
   };
@@ -299,7 +295,7 @@ export function SlipList({
           onClick={() => {
             onSortChange?.(sortKey);
             onOrderChange?.(
-              isActive && selectedOrder === "asc" ? "desc" : "asc"
+              isActive && selectedOrder === "asc" ? "desc" : "asc",
             );
             onPageChange(1);
           }}
@@ -310,40 +306,34 @@ export function SlipList({
             "transition-colors",
             isActive
               ? "text-[#800000]"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {label}
           <Icon
             className={cn(
               "h-3.5 w-3.5 shrink-0",
-              isActive ? "opacity-100" : "opacity-40"
+              isActive ? "opacity-100" : "opacity-40",
             )}
             strokeWidth={isActive ? 2.5 : 2}
           />
         </button>
       );
     },
-    [
-      selectedSort,
-      selectedOrder,
-      onSortChange,
-      onOrderChange,
-      onPageChange,
-    ]
+    [selectedSort, selectedOrder, onSortChange, onOrderChange, onPageChange],
   );
 
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
         header: renderSortableHeader("Student Name", sortKeyName),
-        className: "w-[28%] px-3 py-3", 
+        className: "w-[28%] px-3 py-3",
         render: (slip) => (
           <div className="flex items-center gap-3">
             <div
               className={cn(
                 "relative flex h-10 w-10 shrink-0 items-center justify-center",
-                "overflow-hidden rounded-xl border border-primary/20 bg-glass-bg/50",
+                "bg-glass-bg/50 overflow-hidden rounded-xl border border-primary/20",
               )}
             >
               <User className="h-4/5 w-4/5 text-primary/80" />
@@ -353,7 +343,9 @@ export function SlipList({
                 {getSlipStudentName(slip) || "Unnamed Student"}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                {slip.studentNumber || slip.user?.studentNumber || "Student record"}
+                {slip.studentNumber ||
+                  slip.user?.studentNumber ||
+                  "Student record"}
               </p>
             </div>
           </div>
@@ -412,7 +404,7 @@ export function SlipList({
             Status
           </span>
         ),
-        className: "w-[18%] px-3 py-3",
+        className: "w-[16%] min-w-[120px] px-3 py-3",
         render: (slip) => (
           <span
             className={cn(
@@ -424,6 +416,37 @@ export function SlipList({
           >
             {slip.status?.name || "-"}
           </span>
+        ),
+      },
+      {
+        header: (
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
+            )}
+          >
+            Action
+          </span>
+        ),
+        className: "w-[12%] min-w-[90px] px-3 py-3 text-right",
+        render: (slip) => (
+          <div className="flex items-center justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => handleViewClick(slip, event)}
+              className={cn(
+                "h-7 gap-1 rounded-xl border-primary/20 bg-primary/10",
+                "px-2.5 text-[10px] font-bold uppercase text-primary",
+                "hover:bg-primary hover:text-white",
+              )}
+            >
+              <Eye size={12} />
+              View
+            </Button>
+          </div>
         ),
       },
     ],
@@ -566,20 +589,19 @@ export function SlipList({
             : "No active records match the current filters."}
         </p>
 
-        {(currentCategory !== "all" ||
-          String(selectedStatus?.id) !== "0") && (
+        {(currentCategory !== "all" || String(selectedStatus?.id) !== "0") && (
           <div className="pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
                 handleCategoryChange("all");
-                const allStatus = statuses.find(
-                  (s) => String(s.id) === "0"
-                ) || ({
-                  id: 0,
-                  name: "All Statuses",
-                } as unknown as SlipStatus);
+                const allStatus =
+                  statuses.find((s) => String(s.id) === "0") ||
+                  ({
+                    id: 0,
+                    name: "All Statuses",
+                  } as unknown as SlipStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
               }}
@@ -602,7 +624,11 @@ export function SlipList({
               key={index}
               className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
             >
-              {typeof column.header === "string" ? column.header : <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />}
+              {typeof column.header === "string" ? (
+                column.header
+              ) : (
+                <div className="h-4 w-20 animate-pulse rounded bg-muted/50" />
+              )}
             </th>
           ))}
         </tr>
@@ -656,12 +682,13 @@ export function SlipList({
       <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            {title}
-          </h2>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Student details, absence date, and date needed are shown in one compact table.
-          </p>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {title}
+            </h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Student details, absence date, and date needed are shown in one
+              compact table.
+            </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
@@ -743,12 +770,12 @@ export function SlipList({
                     v === "0" ||
                     v === "all"
                   ) {
-                    const allStatus = statuses.find(
-                      (s) => String(s.id) === "0",
-                    ) || ({
-                      id: 0,
-                      name: "All Statuses",
-                    } as unknown as SlipStatus);
+                    const allStatus =
+                      statuses.find((s) => String(s.id) === "0") ||
+                      ({
+                        id: 0,
+                        name: "All Statuses",
+                      } as unknown as SlipStatus);
                     onStatusChange(allStatus);
                     onPageChange(1);
                     return;
@@ -777,12 +804,12 @@ export function SlipList({
                 size="sm"
                 onClick={() => {
                   handleCategoryChange("all");
-                  const allStatus = statuses.find(
-                    (s) => String(s.id) === "0",
-                  ) || ({
-                    id: 0,
-                    name: "All Statuses",
-                  } as unknown as SlipStatus);
+                  const allStatus =
+                    statuses.find((s) => String(s.id) === "0") ||
+                    ({
+                      id: 0,
+                      name: "All Statuses",
+                    } as unknown as SlipStatus);
                   onStatusChange(allStatus);
                   onPageChange(1);
                 }}
@@ -849,7 +876,6 @@ export function SlipList({
           />
         </div>
       </div>
-      
     </div>
   );
 }
