@@ -1,14 +1,10 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  ArrowDown,
-  ArrowUp,
   Calendar,
   CalendarClock,
   CalendarX,
@@ -22,7 +18,6 @@ import {
   getStatusColorKey,
 } from "@/config/constants";
 import {
-  Appointment,
   AppointmentStatus,
   useAppointments,
 } from "@/features/appointments";
@@ -32,7 +27,7 @@ import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointme
 import { Pagination } from "@/components/shared";
 import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
-import { format12HourTime, formatDate } from "@/utils/dateTime";
+import { format12HourTime } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
@@ -63,10 +58,16 @@ export default function StudentAppointments() {
     "status",
     ALL_APPOINTMENT_STATUS,
   );
-  
+
   // Sorting states for table headers
-  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "whenDate");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+  const [selectedSort, setSelectedSort] = useUrlState<string>(
+    "sort",
+    "whenDate",
+  );
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
 
   const { data, isLoading: isAppointmentsLoading } = useAppointments({
     isMe: true,
@@ -96,7 +97,7 @@ export default function StudentAppointments() {
       }
       if (selectedSort === "createdAt") {
         const dateA = new Date(a.createdAt || 0).getTime();
-        const dateB = new Date(b.createdAt || 0).getTime(); 
+        const dateB = new Date(b.createdAt || 0).getTime();
         return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
       }
       if (selectedSort === "whenDate") {
@@ -185,7 +186,6 @@ export default function StudentAppointments() {
     { id: "category-desc", displayName: "Category: Z–A" },
   ];
 
-
   const emptyState = useMemo(
     () => (
       <div className="px-4 py-10 sm:px-6 sm:py-12">
@@ -259,7 +259,7 @@ export default function StudentAppointments() {
     <div
       className={cn(
         "relative isolate mx-auto flex w-full max-w-full flex-col space-y-6",
-        "overflow-x-hidden px-4 sm:px-6 md:px-8"
+        "overflow-x-hidden px-4 sm:px-6 md:px-8",
       )}
     >
       {!user?.studentCorUrl ? (
@@ -303,25 +303,34 @@ export default function StudentAppointments() {
         </Alert>
       ) : null}
 
-      <div className="flex flex-col gap-6 animate-fade-in-up">
+      <div className="animate-fade-in-up flex flex-col gap-6">
         <div className="grid w-full gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           <SelectField
             label="Appointment status"
             options={filterStatuses.map((status) => {
               const count =
                 status.id === 0
-                  ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
-                  : statusCounts.find((item) => item.id === status.id)?.count || 0;
+                  ? statusCounts.reduce(
+                      (sum, item) => sum + (item.count || 0),
+                      0,
+                    )
+                  : statusCounts.find((item) => item.id === status.id)?.count ||
+                    0;
 
               return {
                 id: status.id,
-                displayName: status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
+                displayName:
+                  status.id === 0
+                    ? "All Statuses"
+                    : `${status.name} (${count})`,
                 disabled: status.id !== 0 && count === 0,
               };
             })}
             value={selectedStatus.id}
             onChange={(value) => {
-              const status = filterStatuses.find((item) => String(item.id) === String(value));
+              const status = filterStatuses.find(
+                (item) => String(item.id) === String(value),
+              );
               if (status) {
                 setSelectedStatus(status);
                 setCurrentPage(1);
@@ -335,7 +344,10 @@ export default function StudentAppointments() {
             options={mobileSortOptions}
             value={`${selectedSort}-${selectedOrder}`}
             onChange={(value) => {
-              const [sort, order] = String(value).split("-") as [string, SortOrder];
+              const [sort, order] = String(value).split("-") as [
+                string,
+                SortOrder,
+              ];
               setSelectedSort(sort);
               setSelectedOrder(order);
               setCurrentPage(1);
@@ -358,7 +370,9 @@ export default function StudentAppointments() {
                 <button
                   key={appointment.id}
                   type="button"
-                  onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+                  onClick={() =>
+                    navigate(`/student/appointments/${appointment.id}`)
+                  }
                   className={cn(
                     "w-full rounded-2xl border border-border bg-card p-5",
                     "text-left shadow-md transition-all hover:-translate-y-1",
@@ -389,11 +403,11 @@ export default function StudentAppointments() {
                       {appointment.status?.name || "Unknown"}
                     </Badge>
                   </div>
-                  
+
                   <p className="mt-4 text-sm font-medium leading-relaxed text-foreground/90">
                     {appointment.reason}
                   </p>
-                  
+
                   <div
                     className={cn(
                       "mt-5 flex flex-col gap-4 border-t border-border pt-4",
@@ -415,7 +429,8 @@ export default function StudentAppointments() {
                       </span>
                       <span className="flex items-center gap-2 text-xs font-bold text-primary">
                         <CalendarClock className="h-4 w-4" />
-                        {formatCompactDate(appointment.whenDate)} • {format12HourTime(appointment.timeSlot?.time || "")}
+                        {formatCompactDate(appointment.whenDate)} •{" "}
+                        {format12HourTime(appointment.timeSlot?.time || "")}
                       </span>
                     </div>
                   </div>

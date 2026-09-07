@@ -17,10 +17,8 @@ export const STATUS_COLORS: Record<string, string> = {
     "border-danger-foreground/30 bg-danger-background text-danger-foreground",
   success:
     "border-success-foreground/30 bg-success-background text-success-foreground",
-  info:
-    "border-info-foreground/30 bg-info-background text-info-foreground",
-  stale:
-    "border-stale-foreground/30 bg-stale-background text-stale-foreground",
+  info: "border-info-foreground/30 bg-info-background text-info-foreground",
+  stale: "border-stale-foreground/30 bg-stale-background text-stale-foreground",
   notice:
     "border-notice-foreground/30 bg-notice-background text-notice-foreground",
 } as const;
@@ -124,10 +122,8 @@ export const CACHE_TIMING = {
 // Shared layout style utilities for student and admin modules
 export const LAYOUT_STYLES = {
   CARD:
-    "overflow-hidden rounded-xl border border-border bg-card " +
-    "shadow-md",
-  INNER:
-    "border border-border/55 bg-muted/40 shadow-md",
+    "overflow-hidden rounded-xl border border-border bg-card " + "shadow-md",
+  INNER: "border border-border/55 bg-muted/40 shadow-md",
   ALERT:
     "animate-fade-in-up rounded-xl border border-destructive/30 " +
     "bg-destructive/10 px-5 py-4 text-destructive " +

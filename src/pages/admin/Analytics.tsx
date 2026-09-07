@@ -17,7 +17,6 @@ import {
   Network,
   FileDown,
   Download,
-  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,7 +42,6 @@ import { usePrograms, useEnrollmentYears } from "@/features/iir/hooks";
 import { cn } from "@/lib/utils";
 import { usePageMetadata } from "@/context";
 import {
-  FullScreenLoader,
   PDFPreview,
   DocumentProgressDialog,
 } from "@/components/shared";
@@ -233,7 +231,7 @@ export default function AnalyticsPage() {
           }
           className={cn(
             "flex h-11 w-full items-center justify-between rounded-xl",
-            "border border-glass-border/40 bg-muted/20 px-4 py-2.5",
+            "border-glass-border/40 border bg-muted/20 px-4 py-2.5",
             "text-left text-sm font-medium tracking-tight text-foreground",
             "shadow-sm outline-none transition-all duration-200",
             "hover:border-glass-border/60 focus:border-primary/50",

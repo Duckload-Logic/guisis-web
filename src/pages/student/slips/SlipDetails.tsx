@@ -94,7 +94,10 @@ export default function SlipDetails() {
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {Array.from({ length: 2 }).map((_, idx) => (
-                    <div key={idx} className="space-y-2">
+                    <div
+                      key={idx}
+                      className="space-y-2"
+                    >
                       <Skeleton className="h-3 w-24 rounded" />
                       <Skeleton className="h-5 w-32 rounded" />
                     </div>
@@ -409,8 +412,11 @@ export default function SlipDetails() {
                         >
                           <div className="flex items-start gap-2">
                             <AlertCircle
-                              className="mt-0.5 h-4 w-4 shrink-0 text-warning-foreground"
-                            />
+                            className={cn(
+                              "mt-0.5 h-4 w-4 shrink-0",
+                              "text-warning-foreground",
+                            )}
+                          />
                             <div>
                               <p className="font-bold">Bring your hardcopies</p>
                               <p className="mt-0.5">

@@ -8,7 +8,6 @@ import {
   History,
   ArrowLeft,
   Clock,
-  Accessibility,
   Sliders,
   AudioLines,
   PersonStanding,

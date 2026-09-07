@@ -7,13 +7,16 @@ interface FormSectionShellProps {
   className?: string;
 }
 
-export function FormSectionShell({ children, className }: FormSectionShellProps) {
+export function FormSectionShell({
+  children,
+  className,
+}: FormSectionShellProps) {
   return (
     <div
       className={cn(
         "relative overflow-hidden rounded-xl border border-glass-border",
         "bg-glass-bg p-6 shadow-md backdrop-blur-glass transition-all",
-        "duration-500 hover:bg-glass-bg/80 sm:p-8",
+        "hover:bg-glass-bg/80 duration-500 sm:p-8",
         className,
       )}
     >

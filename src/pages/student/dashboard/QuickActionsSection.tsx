@@ -41,7 +41,7 @@ export function QuickActionsSection({ actions }: QuickActionsSectionProps) {
           >
             <div
               className={cn(
-                "relative hidden overflow-hidden rounded-xl sm:flex flex-col",
+                "relative hidden flex-col overflow-hidden rounded-xl sm:flex",
                 "border border-border bg-background/80 p-4 shadow-sm",
                 "backdrop-blur-md transition-all duration-200",
                 "hover:-translate-y-0.5 hover:border-primary/30",

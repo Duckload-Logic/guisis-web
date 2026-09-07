@@ -58,7 +58,7 @@ export const IIRGate = ({
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none select-none blur-sm opacity-40",
+            "pointer-events-none select-none opacity-40 blur-sm",
             "transition-all duration-300",
           )}
         >

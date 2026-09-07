@@ -1,12 +1,5 @@
 import { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import {
-  Star,
-  Library,
-  Users,
-  Heart,
-  Palette,
-  Sparkles,
-} from "lucide-react";
+import { Star, Library, Users, Heart, Palette, Sparkles } from "lucide-react";
 import { Checkbox, Radio } from "@/components/form";
 import { FormField } from "@/components/ui/form-field";
 import { SectionContainer } from "./SectionContainer";

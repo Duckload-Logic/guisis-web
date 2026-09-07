@@ -63,14 +63,11 @@ export default function CreateAppointment() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isScheduleNoticeOpen, setIsScheduleNoticeOpen] = useState(true);
 
-  const { data: holidays = {} } = usePHHolidays(
-    currentMonth.getFullYear(),
-  );
+  const { data: holidays = {} } = usePHHolidays(currentMonth.getFullYear());
 
   const selectedDateKey = selectedDate ? toISODateString(selectedDate) : "";
   const selectedHolidayName = selectedDateKey
-    ? holidays[selectedDateKey] ||
-      getFallbackHolidayName(selectedDateKey)
+    ? holidays[selectedDateKey] || getFallbackHolidayName(selectedDateKey)
     : null;
 
   const [activePreferredIndex, setActivePreferredIndex] =
@@ -507,15 +504,17 @@ export default function CreateAppointment() {
                   <div
                     className={cn(
                       "flex items-start gap-3 rounded-2xl border " +
-                        "border-warning-foreground/30 bg-warning-background p-4 " +
+                        "border-warning-foreground/30 bg-warning-background" +
+                  " p-4" +
                         "text-warning-foreground",
                     )}
                   >
                     <div
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center " +
-                          "rounded-full bg-warning-foreground/20 " +
-                          "text-warning-foreground text-xs",
+                          "rounded-full" +
+                  " bg-warning-foreground/20" +
+                          "text-xs text-warning-foreground",
                       )}
                     >
                       ⚠️
@@ -866,17 +865,19 @@ export default function CreateAppointment() {
                                     <div
                                       className={cn(
                                         "flex items-start gap-3 rounded-2xl " +
-                                          "border border-warning-foreground/30 " +
-                                          "bg-warning-background p-4 " +
+                                          "border" +
+                  " border-warning-foreground/30" +
+                                          "bg-warning-background p-4" +
                                           "text-warning-foreground",
                                       )}
                                     >
                                       <div
                                         className={cn(
                                           "flex h-5 w-5 shrink-0 " +
-                                            "items-center justify-center " +
-                                            "rounded-full bg-warning-foreground/20 " +
-                                            "text-warning-foreground text-xs",
+                                            "items-center justify-center" +
+                                            "rounded-full" +
+                  " bg-warning-foreground/20" +
+                                            "text-xs text-warning-foreground",
                                         )}
                                       >
                                         ⚠️

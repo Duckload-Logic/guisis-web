@@ -17,6 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePageMetadata } from "@/context";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,12 +95,16 @@ export default function UserSessions() {
               {targetUser.firstName[0]}
               {targetUser.lastName[0]}
             </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="truncate text-lg sm:text-xl font-bold tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h2
+              className="truncate text-lg font-bold tracking-tight sm:text-xl"
+            >
                 {targetUser.firstName} {targetUser.lastName}
               </h2>
               <div className="mt-0.5 flex flex-wrap items-center gap-2">
-                <span className="truncate text-xs sm:text-sm text-muted-foreground">
+                <span
+                className="truncate text-xs text-muted-foreground sm:text-sm"
+              >
                   {targetUser.email}
                 </span>
                 <div className="flex flex-wrap gap-1">
@@ -197,7 +202,12 @@ export default function UserSessions() {
                     </div>
                   </div>
 
-                  <div className="flex items-center border-t border-border/40 p-4 sm:border-t-0 sm:border-l sm:p-0 sm:px-8">
+                  <div
+          className={cn(
+            "flex items-center border-t border-border/40 p-4",
+            "sm:border-l sm:border-t-0 sm:p-0 sm:px-8",
+          )}
+        >
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button

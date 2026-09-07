@@ -101,7 +101,7 @@ function AttachmentIcon({ kind }: { kind: AttachmentKind }) {
           : kind === "pdf"
             ? "border-primary/20 bg-primary/10 text-primary"
             : "border-stale-foreground/20 bg-stale-background " +
-                "text-stale-foreground",
+              "text-stale-foreground",
       )}
     >
       {kind === "image" ? (
@@ -326,8 +326,13 @@ function AttachmentItem({
 export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
   const [selectedFile, setSelectedFile] = useState<SlipAttachment | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const { downloadAttachment, downloadingAttachmentId, downloadProgress, error, clearError } =
-    useDownloadAttachment();
+  const {
+    downloadAttachment,
+    downloadingAttachmentId,
+    downloadProgress,
+    error,
+    clearError,
+  } = useDownloadAttachment();
 
   const normalizedFiles = useMemo(() => files || [], [files]);
 

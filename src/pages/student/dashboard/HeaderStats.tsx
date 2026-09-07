@@ -14,7 +14,7 @@ export function HeaderStats({
       <div
         className={cn(
           "rounded-xl border border-border bg-card/60 px-4 py-3",
-          "backdrop-blur-md animate-fade-in-up",
+          "animate-fade-in-up backdrop-blur-md",
         )}
         style={{ animationDelay: "0.10s", animationFillMode: "both" }}
       >
@@ -39,7 +39,7 @@ export function HeaderStats({
       <div
         className={cn(
           "rounded-xl border border-border bg-card/60 px-4 py-3",
-          "backdrop-blur-md animate-fade-in-up",
+          "animate-fade-in-up backdrop-blur-md",
         )}
         style={{ animationDelay: "0.15s", animationFillMode: "both" }}
       >

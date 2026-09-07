@@ -66,7 +66,7 @@ export default function Header({
       <header
         className={cn(
           "pointer-events-none fixed inset-x-0 top-0 z-[60] flex h-16",
-          "items-center justify-between px-3 border-b border-border/70",
+          "items-center justify-between border-b border-border/70 px-3",
           "bg-background/95 shadow-sm backdrop-blur-xl",
           "supports-[backdrop-filter]:bg-background/85",
           "min-[1025px]:inset-x-4 min-[1025px]:top-4 min-[1025px]:h-auto",
@@ -107,7 +107,10 @@ export default function Header({
           )}
           aria-label="Account controls"
         >
-          <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+          <ThemeToggle
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+          />
 
           <NotificationBell
             showNotifications={showNotifications}
@@ -249,7 +252,7 @@ export default function Header({
               size="sm"
               className={cn(
                 "hidden font-semibold shadow-sm transition-transform",
-                "hover:-translate-y-0.5 sm:inline-flex gap-1.5",
+                "gap-1.5 hover:-translate-y-0.5 sm:inline-flex",
               )}
               onClick={handleLogin}
             >

@@ -18,7 +18,6 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
-  Download,
 } from "lucide-react";
 import { UploadCOR } from "@/features/student-core/services/corService";
 import { cn } from "@/lib/utils";
@@ -167,13 +166,13 @@ export default function CORManagement() {
   const isPdf = corUrl?.toLowerCase().endsWith(".pdf");
 
   return (
-    <div className={cn("w-full mx-auto pb-12", "px-4 sm:px-6 md:px-8")}>
+    <div className={cn("mx-auto w-full pb-12", "px-4 sm:px-6 md:px-8")}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"></div>
       <Card
         className={cn(
           "flex min-h-[620px] flex-col overflow-hidden rounded-xl",
           "border-border bg-card shadow-md backdrop-blur-md",
-          "sm:h-[750px] sm:min-h-0 animate-fade-in-up transition-all",
+          "animate-fade-in-up transition-all sm:h-[750px] sm:min-h-0",
           "duration-300 hover:-translate-y-0.5",
           "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
         )}
@@ -233,7 +232,7 @@ export default function CORManagement() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row w-full sm:w-auto">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <Button
                 variant="outline"
                 className="w-full justify-center gap-2 rounded-xl sm:w-auto"
@@ -271,16 +270,14 @@ export default function CORManagement() {
         >
           {corUrl ? (
             isPdf ? (
-            <PDFPreview
-              url={
-                `${import.meta.env.VITE_API_BASE_URL}${corUrl}`
-              }
-              className={cn(
-                "h-full min-h-[420px] w-full",
-                "border-none sm:min-h-0",
-              )}
-              title="COR PDF Preview"
-            />
+              <PDFPreview
+                url={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
+                className={cn(
+                  "h-full min-h-[420px] w-full",
+                  "border-none sm:min-h-0",
+                )}
+                title="COR PDF Preview"
+              />
             ) : (
               <div
                 className={cn(
@@ -293,7 +290,7 @@ export default function CORManagement() {
                   alt="COR Preview"
                   className={cn(
                     "block h-auto w-full max-w-full rounded-xl object-contain",
-                    "shadow-md sm:w-auto sm:max-h-full",
+                    "shadow-md sm:max-h-full sm:w-auto",
                   )}
                 />
               </div>
@@ -322,7 +319,7 @@ export default function CORManagement() {
                 <Button
                   onClick={() => setIsUploadModalOpen(true)}
                   className={cn(
-                    "rounded-xl gap-2",
+                    "gap-2 rounded-xl",
                     "shadow-lg shadow-primary/20",
                   )}
                 >
@@ -345,7 +342,7 @@ export default function CORManagement() {
       >
         <DialogContent
           className={cn(
-            "bg-card border-border max-w-2xl rounded-2xl shadow-xl p-6",
+            "max-w-2xl rounded-2xl border-border bg-card p-6 shadow-xl",
           )}
         >
           <DialogHeader>
@@ -478,9 +475,12 @@ export default function CORManagement() {
             )}
 
             {/* Upload Guidelines */}
-            <div className="rounded-xl border border-border p-4 bg-muted/20">
-              <h4 className="flex items-center gap-2 text-sm font-bold mb-3">
-                <AlertCircle size={16} className="text-amber-500" />
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <h4 className="mb-3 flex items-center gap-2 text-sm font-bold">
+                <AlertCircle
+                  size={16}
+                  className="text-amber-500"
+                />
                 Upload Guidelines
               </h4>
               <ul className="space-y-2 text-xs text-muted-foreground">
@@ -611,7 +611,7 @@ export default function CORManagement() {
                       "text-[10px] font-bold",
                       uploadProgress === 100
                         ? "bg-emerald-500/20 text-emerald-500"
-                        : "bg-primary/20 text-primary animate-pulse",
+                        : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     {uploadProgress === 100 ? (
@@ -641,7 +641,7 @@ export default function CORManagement() {
                       "text-[10px] font-bold",
                       uploadProgress < 100
                         ? "bg-muted-foreground/10 text-muted-foreground/50"
-                        : "bg-primary/20 text-primary animate-pulse",
+                        : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     2
@@ -667,7 +667,7 @@ export default function CORManagement() {
                       "text-[10px] font-bold",
                       uploadProgress < 100
                         ? "bg-muted-foreground/10 text-muted-foreground/50"
-                        : "bg-primary/20 text-primary animate-pulse",
+                        : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     3

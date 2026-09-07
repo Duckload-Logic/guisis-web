@@ -109,7 +109,9 @@ export function UploadSection({
                   {optional ? "Optional" : "Required"}
                 </Badge>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p
+                                className="mt-0.5 text-xs text-muted-foreground"
+                              >
                 {description}
               </p>
             </div>
@@ -202,7 +204,12 @@ export function UploadIDGuidelines() {
           "text-info-foreground shadow-sm",
         )}
       >
-        <Info className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground" />
+        <Info
+                                  className={cn(
+                      "mt-0.5 h-5 w-5 shrink-0",
+                      "text-info-foreground",
+                    )}
+                                />
         <div className="text-sm">
           <p className="mb-1 font-semibold">
             Important requirements for ID upload:

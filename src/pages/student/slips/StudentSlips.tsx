@@ -1,14 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  ArrowDown,
-  ArrowUp,
   Calendar,
   FileText,
   FileX,
@@ -28,7 +24,7 @@ import {
   useGetSlipStats,
   useGetSlipStatuses,
 } from "@/features/slips/hooks";
-import { Slip, SlipStatus } from "@/features/slips/types";
+import { SlipStatus } from "@/features/slips/types";
 import { Pagination } from "@/components/shared";
 import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
@@ -64,19 +60,27 @@ export default function StudentSlips() {
     useGetSlipStatuses();
 
   const [currentPage, setCurrentPage] = useUrlState("page", 1);
-  const [selectedStatus, setSelectedStatus] =
-    useUrlState<SlipFilterStatus>("status", ALL_SLIP_STATUS);
+  const [selectedStatus, setSelectedStatus] = useUrlState<SlipFilterStatus>(
+    "status",
+    ALL_SLIP_STATUS,
+  );
 
   // Sorting states for table headers
-  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "createdAt");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "desc");
+  const [selectedSort, setSelectedSort] = useUrlState<string>(
+    "sort",
+    "createdAt",
+  );
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "desc",
+  );
 
   const { data, isLoading: isSlipsLoading } = useGetMySlips({
     page: currentPage,
     pageSize: 10,
     statusId: selectedStatus?.id === "0" ? undefined : selectedStatus?.id,
   });
-  
+
   const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
     params: { scope: "me" },
   });
@@ -208,8 +212,6 @@ export default function StudentSlips() {
     { id: "dateNeeded-asc", displayName: "Date needed: oldest" },
   ];
 
-
-
   const emptyState = useMemo(
     () => (
       <div className="px-4 py-10 sm:px-6 sm:py-12">
@@ -280,7 +282,7 @@ export default function StudentSlips() {
         className={cn(
           "mx-auto flex w-full flex-col space-y-6",
           "px-4 sm:px-6 md:px-8",
-          "relative isolate overflow-visible"
+          "relative isolate overflow-visible",
         )}
       >
         {!user?.studentCorUrl ? (
@@ -324,7 +326,7 @@ export default function StudentSlips() {
           </Alert>
         ) : null}
 
-        <div className="flex flex-col gap-6 animate-fade-in-up">
+        <div className="animate-fade-in-up flex flex-col gap-6">
           <div className="grid w-full gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
             {isLoading ? (
               <>
@@ -337,7 +339,10 @@ export default function StudentSlips() {
                   label="Admission Slip Status"
                   options={statsWithAll.map((s) => ({
                     id: s.id,
-                    displayName: String(s.id) === "0" ? "All Statuses" : `${s.name} (${s.count || 0})`,
+                    displayName:
+                      String(s.id) === "0"
+                        ? "All Statuses"
+                        : `${s.name} (${s.count || 0})`,
                     disabled: String(s.id) !== "0" && (s.count || 0) === 0,
                   }))}
                   value={selectedStatus.id}
@@ -415,11 +420,11 @@ export default function StudentSlips() {
                         {slip.status?.name || "Unknown"}
                       </Badge>
                     </div>
-                    
+
                     <p className="mt-4 text-sm font-medium leading-relaxed text-foreground/90">
                       {slip.reason}
                     </p>
-                    
+
                     <div
                       className={cn(
                         "mt-5 flex flex-col gap-4 border-t border-border pt-4",

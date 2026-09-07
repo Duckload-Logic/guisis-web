@@ -72,7 +72,7 @@ function NavItem({
         onClick={onClick}
         className={cn(
           "group flex flex-1 flex-col items-center justify-center",
-          "min-w-0 max-w-[72px] rounded-xl py-1.5 px-0.5",
+          "min-w-0 max-w-[72px] rounded-xl px-0.5 py-1.5",
           "transition-all duration-150 active:scale-95",
           active
             ? "font-semibold text-primary"
@@ -198,8 +198,6 @@ export default function Navigation({
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLElement>(null);
 
-
-
   const ROLE_ROUTES: Record<string, string> = {
     student: "/student",
     admin: "/admin",
@@ -301,13 +299,8 @@ export default function Navigation({
     const filteredNavItems = navigationItems.filter(
       (item) => item.href !== SETTINGS_HREF,
     );
-    const primaryItems = filteredNavItems.slice(
-      0,
-      MAX_PRIMARY_MOBILE_ITEMS,
-    );
-    const overflowItems = filteredNavItems.slice(
-      MAX_PRIMARY_MOBILE_ITEMS,
-    );
+    const primaryItems = filteredNavItems.slice(0, MAX_PRIMARY_MOBILE_ITEMS);
+    const overflowItems = filteredNavItems.slice(MAX_PRIMARY_MOBILE_ITEMS);
     const isMoreActive =
       overflowItems.some((item) => isActive(item)) ||
       location.pathname.includes(SETTINGS_HREF);
@@ -341,7 +334,7 @@ export default function Navigation({
               onClick={() => setOpenDrawer(true)}
               className={cn(
                 "group flex flex-1 flex-col items-center justify-center",
-                "min-w-0 max-w-[72px] rounded-xl py-1.5 px-0.5",
+                "min-w-0 max-w-[72px] rounded-xl px-0.5 py-1.5",
                 "transition-all duration-150 active:scale-95",
                 isMoreActive
                   ? "font-semibold text-primary"
@@ -453,8 +446,6 @@ export default function Navigation({
         willChange: "width",
       }}
     >
-
-
       {/* 12px left gutter: small breathing room while staying visually connected. */}
       <div
         className="relative z-40 h-[calc(100%-1.5rem)]"

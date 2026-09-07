@@ -55,8 +55,7 @@ export const getActionBadgeColor = (action: string): string => {
   }
 
   return (
-    "border-stale-foreground/20 bg-stale-background " +
-    "text-stale-foreground"
+    "border-stale-foreground/20 bg-stale-background " + "text-stale-foreground"
   );
 };
 

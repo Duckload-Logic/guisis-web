@@ -364,7 +364,12 @@ export default function SuperAdminDashboard() {
             </div>
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1.5 text-xs text-emerald-500">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span
+                      className={cn(
+                        "h-2 w-2 animate-pulse",
+                        "rounded-full bg-emerald-500",
+                      )}
+                    />
                 Active Monitor
               </span>
             </div>
@@ -415,7 +420,7 @@ export default function SuperAdminDashboard() {
                   </span>
                 </div>
                 <div className="mt-3 min-w-0">
-                  <p className="truncate font-semibold text-foreground text-sm">
+                  <p className="truncate text-sm font-semibold text-foreground">
                     {service.name}
                   </p>
                   <p
@@ -452,7 +457,7 @@ export default function SuperAdminDashboard() {
                   {logDistribution.secCount} ({logDistribution.security}%)
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full bg-red-500 transition-all duration-500"
                   style={{ width: `${logDistribution.security}%` }}
@@ -469,7 +474,7 @@ export default function SuperAdminDashboard() {
                   {logDistribution.sysCount} ({logDistribution.system}%)
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full bg-amber-500 transition-all duration-500"
                   style={{ width: `${logDistribution.system}%` }}
@@ -486,7 +491,7 @@ export default function SuperAdminDashboard() {
                   {logDistribution.auditCount} ({logDistribution.audit}%)
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full bg-blue-500 transition-all duration-500"
                   style={{ width: `${logDistribution.audit}%` }}
@@ -532,7 +537,10 @@ export default function SuperAdminDashboard() {
               onClick={() => navigate("/superadmin/security-logs")}
             >
               View All Logs
-              <ArrowRight size={14} className="ml-1" />
+              <ArrowRight
+                size={14}
+                className="ml-1"
+              />
             </Button>
           </CardHeader>
           <CardContent>
@@ -560,7 +568,7 @@ export default function SuperAdminDashboard() {
                             <span
                               className={cn(
                                 "rounded-full px-2 py-0.5 text-[10px]",
-                                "font-bold uppercase border",
+                                "border font-bold uppercase",
                                 log.category === "SECURITY"
                                   ? "bg-red-500/10 text-red-500 " +
                                       "border-red-500/20"
@@ -582,7 +590,12 @@ export default function SuperAdminDashboard() {
                           </p>
                         </div>
                         <div className="shrink-0 text-left sm:text-right">
-                          <p className="text-[10px] text-muted-foreground/80 font-medium">
+                          <p
+                          className={cn(
+                            "text-[10px] font-medium",
+                            "text-muted-foreground/80",
+                          )}
+                        >
                             {log.userEmail || "System Agent"}
                           </p>
                           <p className="text-[10px] text-muted-foreground/50">
@@ -636,7 +649,7 @@ export default function SuperAdminDashboard() {
                 onClick={() => navigate(shortcut.link)}
                 className={cn(
                   "flex items-center justify-between rounded-xl border p-3.5",
-                  "border-border/60 bg-card cursor-pointer transition-all",
+                  "cursor-pointer border-border/60 bg-card transition-all",
                   "hover:border-primary/40 hover:bg-muted/30 hover:shadow-sm",
                 )}
               >
@@ -658,7 +671,10 @@ export default function SuperAdminDashboard() {
                     </p>
                   </div>
                 </div>
-                <ArrowRight size={16} className="text-muted-foreground/60" />
+                <ArrowRight
+                  size={16}
+                  className="text-muted-foreground/60"
+                />
               </div>
             ))}
           </CardContent>

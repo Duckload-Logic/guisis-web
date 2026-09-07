@@ -180,7 +180,10 @@ export default function AppointmentDetails() {
               <CardContent className="space-y-6 pt-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={idx} className="space-y-2">
+                    <div
+                      key={idx}
+                      className="space-y-2"
+                    >
                       <Skeleton className="h-3 w-16 rounded" />
                       <Skeleton className="h-5 w-32 rounded" />
                     </div>
@@ -461,8 +464,8 @@ export default function AppointmentDetails() {
                       )}
                     >
                       <AlertCircle
-                        className="mt-0.5 h-4 w-4 shrink-0 text-info-foreground"
-                      />
+                    className="mt-0.5 h-4 w-4 shrink-0 text-info-foreground"
+                  />
                       <p className="text-xs text-info-foreground">
                         This appointment is already{" "}
                         {appointment?.status?.name?.toLowerCase()} and cannot be

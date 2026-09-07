@@ -33,7 +33,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, FileText } from "lucide-react";
+import { Download } from "lucide-react";
 
 const ICON_SIZE = 20;
 
@@ -386,7 +386,10 @@ function IIRProfileSkeleton() {
             )}
           >
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-1.5">
+              <div
+                key={i}
+                className="flex flex-col gap-1.5"
+              >
                 <Skeleton className="h-3 w-1/3 rounded" />
                 <Skeleton className="h-4 w-2/3 rounded" />
               </div>
@@ -399,7 +402,10 @@ function IIRProfileSkeleton() {
           {/* Tabs Navigation Skeleton */}
           <div className="flex gap-2 overflow-x-auto pb-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-28 shrink-0 rounded-xl" />
+              <Skeleton
+                key={i}
+                className="h-10 w-28 shrink-0 rounded-xl"
+              />
             ))}
           </div>
 
@@ -413,7 +419,10 @@ function IIRProfileSkeleton() {
             <Skeleton className="h-6 w-1/4 rounded" />
             <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex flex-col gap-2">
+                <div
+                  key={i}
+                  className="flex flex-col gap-2"
+                >
                   <Skeleton className="h-3 w-1/4 rounded" />
                   <Skeleton className="h-10 w-full rounded" />
                 </div>

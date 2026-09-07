@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { UserAccount } from "@/features/system-admin/types";
+import { cn } from "@/lib/utils";
 
 interface RoleManagementModalProps {
   user: UserAccount | null;

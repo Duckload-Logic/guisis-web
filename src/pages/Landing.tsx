@@ -85,8 +85,8 @@ export default function Landing() {
           )}
         >
           <div
-            className="bg-grid pointer-events-none absolute inset-0 opacity-60"
-          />
+          className="bg-grid pointer-events-none absolute inset-0 opacity-60"
+        />
           <div
             className={cn(
               "pointer-events-none absolute inset-0 bg-gradient-to-br",

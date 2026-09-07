@@ -132,7 +132,8 @@ export default function LoginForm({
               "bg-yellow-400 text-slate-900",
               "font-semibold transition-colors",
               "hover:bg-yellow-500 sm:text-base",
-              "transition-all duration-200 shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
+              "shadow-[0_4px_12px_rgba(250,204,21,0.3)]",
+                "transition-all duration-200",
             )}
           />
         </div>

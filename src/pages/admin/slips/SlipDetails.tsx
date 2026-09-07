@@ -303,7 +303,9 @@ export default function SlipDetails() {
                     "bg-primary/5 font-bold text-primary transition-all",
                     "duration-300 hover:bg-primary hover:text-white",
                   )}
-                  onClick={() => navigate(`/admin/student-records/${slip.iirId}`)}
+                  onClick={() =>
+                    navigate(`/admin/student-records/${slip.iirId}`)
+                  }
                 >
                   <User className="h-3.5 w-3.5" />
                   Access Record
@@ -430,7 +432,7 @@ export default function SlipDetails() {
                     variant="outline"
                     className={cn(
                       "rounded-full border px-3 py-1 text-[10px] font-bold",
-                      "shadow-sm border-border bg-muted/60",
+                      "border-border bg-muted/60 shadow-sm",
                     )}
                   >
                     {slip.category.name}
@@ -457,7 +459,8 @@ export default function SlipDetails() {
                   )}
                 >
                   <Clock3 className="mr-1 inline h-3 w-3" />
-                  Turnaround: {formatProcessDuration(slip.startedAt, slip.completedAt)}
+                  Turnaround:{" "}
+                  {formatProcessDuration(slip.startedAt, slip.completedAt)}
                 </Badge>
               </div>
             </CardHeader>
@@ -749,7 +752,10 @@ export default function SlipDetails() {
             </CardHeader>
             <CardContent className="space-y-6 p-5">
               {auditEntries.map((entry: any, idx: number) => (
-                <div key={idx} className="group flex items-start gap-4">
+                <div
+                  key={idx}
+                  className="group flex items-start gap-4"
+                >
                   <div className="relative mt-1">
                     <div
                       className={cn(
@@ -758,12 +764,12 @@ export default function SlipDetails() {
                         entry.status.toUpperCase().includes("PENDING")
                           ? "border-amber-500 bg-background shadow-sm"
                           : entry.status.toUpperCase().includes("APPROVED") ||
-                            entry.status.toUpperCase().includes("COMPLETED")
-                          ? "border-emerald-500 bg-background shadow-sm"
-                          : entry.status.toUpperCase().includes("REJECTED") ||
-                            entry.status.toUpperCase().includes("REVISION")
-                          ? "border-red-500 bg-background shadow-sm"
-                          : "border-primary bg-background shadow-sm"
+                              entry.status.toUpperCase().includes("COMPLETED")
+                            ? "border-emerald-500 bg-background shadow-sm"
+                            : entry.status.toUpperCase().includes("REJECTED") ||
+                                entry.status.toUpperCase().includes("REVISION")
+                              ? "border-red-500 bg-background shadow-sm"
+                              : "border-primary bg-background shadow-sm",
                       )}
                     />
                     <div
@@ -786,7 +792,7 @@ export default function SlipDetails() {
                       <p
                         className={cn(
                           "text-xs text-muted-foreground",
-                          "whitespace-pre-wrap"
+                          "whitespace-pre-wrap",
                         )}
                       >
                         {entry.remarks}
@@ -912,8 +918,13 @@ export default function SlipDetails() {
               Start Admission Slip Process
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
-              Confirm student <strong className="text-foreground">{fullName}</strong> is present in the office to claim ticket{" "}
-              <span className="font-mono font-bold text-foreground">SLIP-{slip?.ticket?.ticketCode}</span>? This will start tracking process duration.
+              Confirm student{" "}
+              <strong className="text-foreground">{fullName}</strong> is present
+              in the office to claim ticket{" "}
+              <span className="font-mono font-bold text-foreground">
+                SLIP-{slip?.ticket?.ticketCode}
+              </span>
+              ? This will start tracking process duration.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
@@ -923,7 +934,10 @@ export default function SlipDetails() {
             <AlertDialogAction
               onClick={handleConfirmVerifyTicket}
               disabled={isClaiming}
-              className="rounded-xl bg-green-600 font-bold text-white hover:bg-green-700 shadow-md"
+              className={cn(
+              "rounded-xl bg-green-600 font-bold text-white shadow-md",
+              "hover:bg-green-700",
+            )}
             >
               {isClaiming ? "Starting..." : "Start Process & Verify"}
             </AlertDialogAction>

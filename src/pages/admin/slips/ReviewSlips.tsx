@@ -75,10 +75,7 @@ function normalizeTicketCode(rawCode: string): string | null {
     return `${TICKET_PREFIX}${compact}`;
   }
 
-  if (
-    compact.startsWith("SLIP") &&
-    compact.length === 4 + TICKET_CODE_LENGTH
-  ) {
+  if (compact.startsWith("SLIP") && compact.length === 4 + TICKET_CODE_LENGTH) {
     return `${TICKET_PREFIX}${compact.slice(4)}`;
   }
 
@@ -111,13 +108,22 @@ export default function ReviewSlips() {
   const [searchTerm, setSearchTerm] = useUrlState("q", "");
   const [currentPage, setCurrentPage] = useUrlState("page", 1);
   const [selectedSort, setSelectedSort] = useUrlState("sort", "dateNeeded");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
-  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
-  const [selectedStatus, setSelectedStatus] = useUrlState<SlipStatus>("status", {
-    id: "0",
-    name: "All Statuses",
-    colorKey: "stale",
-  } as any);
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>(
+    "category",
+    "all",
+  );
+  const [selectedStatus, setSelectedStatus] = useUrlState<SlipStatus>(
+    "status",
+    {
+      id: "0",
+      name: "All Statuses",
+      colorKey: "stale",
+    } as any,
+  );
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [showNotFound, setShowNotFound] = useState(false);
@@ -268,8 +274,7 @@ export default function ReviewSlips() {
       setPendingVerification(null);
       navigate(`${slipsBasePath}/${targetId}`);
     } catch (error: any) {
-      const claimMessage =
-        error.response?.data?.error || error.message || "";
+      const claimMessage = error.response?.data?.error || error.message || "";
 
       if (claimMessage.toLowerCase().includes("already verified")) {
         triggerToast("Ticket is already verified. Opening slip details.");
@@ -528,9 +533,7 @@ export default function ReviewSlips() {
             "animate-in fade-in slide-in-from-top-4 duration-500",
           )}
         >
-          <Calendar
-            className="h-5 w-5 shrink-0 text-warning-foreground"
-          />
+          <Calendar className="h-5 w-5 shrink-0 text-warning-foreground" />
           <div className="min-w-0">
             <p className="text-sm font-semibold">
               Nearing Next Month's Requests Included
@@ -596,8 +599,8 @@ export default function ReviewSlips() {
             <AlertDialogTitle>Ticket Not Found</AlertDialogTitle>
 
             <AlertDialogDescription>
-              The ticket code could not be found. Check the printed code or
-              scan the student&apos;s QR code again.
+              The ticket code could not be found. Check the printed code or scan
+              the student&apos;s QR code again.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -690,14 +693,33 @@ export default function ReviewSlips() {
 
           <div className="p-5">
             {pendingVerification ? (
-              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                <div className="rounded-2xl border border-success-foreground/30 bg-success-background p-5 space-y-3">
+              <div
+            className="animate-in fade-in zoom-in-95 space-y-4 duration-200"
+          >
+                <div
+              className={cn(
+                "space-y-3 rounded-2xl border",
+                "border-success-foreground/30 bg-success-background p-5",
+              )}
+            >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-success-foreground flex items-center gap-1.5">
+                    <span
+                  className={cn(
+                    "flex items-center gap-1.5 text-[10px]",
+                    "font-bold uppercase tracking-wider",
+                    "text-success-foreground",
+                  )}
+                >
                       <ShieldCheck className="h-3.5 w-3.5" />
                       Ticket Match Found
                     </span>
-                    <Badge variant="outline" className="font-mono text-xs font-bold border-success-foreground/30 bg-background text-success-foreground">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                  "border-success-foreground/30 bg-background font-mono",
+                  "text-xs font-bold text-success-foreground",
+                )}
+                    >
                       SLIP-{pendingVerification.code}
                     </Badge>
                   </div>
@@ -711,16 +733,28 @@ export default function ReviewSlips() {
                         .join(" ")}
                     </h4>
                     <p className="text-xs text-muted-foreground">
-                      Student No: <span className="font-mono font-semibold text-foreground">{pendingVerification.slip.studentNumber || pendingVerification.slip.user?.studentNumber || "N/A"}</span>
+                      Student No:{" "}
+                      <span className="font-mono font-semibold text-foreground">
+                        {pendingVerification.slip.studentNumber ||
+                          pendingVerification.slip.user?.studentNumber ||
+                          "N/A"}
+                      </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Slip Category: <strong className="text-foreground">{pendingVerification.slip.category?.name || "Admission Slip"}</strong>
+                      Slip Category:{" "}
+                      <strong className="text-foreground">
+                        {pendingVerification.slip.category?.name ||
+                          "Admission Slip"}
+                      </strong>
                     </p>
                   </div>
                 </div>
 
-                <p className="text-xs text-muted-foreground leading-relaxed px-1">
-                  Is the student physically present in the office? Click below to start duration tracking and open the details.
+                <p
+              className="px-1 text-xs leading-relaxed text-muted-foreground"
+            >
+                  Is the student physically present in the office? Click below
+                  to start duration tracking and open the details.
                 </p>
 
                 <div className="flex flex-col gap-2.5 pt-2">
@@ -728,14 +762,21 @@ export default function ReviewSlips() {
                     type="button"
                     onClick={handleConfirmClaimPending}
                     disabled={isClaimingPending}
-                    className="h-11 w-full gap-2 rounded-xl bg-green-600 font-bold text-white shadow-md hover:bg-green-700 transition-all hover:scale-[1.01]"
+                    className={cn(
+                "h-11 w-full gap-2 rounded-xl bg-green-600",
+                "font-bold text-white",
+                "shadow-md transition-all hover:scale-[1.01]",
+                "hover:bg-green-700",
+              )}
                   >
                     {isClaimingPending ? (
                       <Clock3 className="h-4 w-4 animate-spin" />
                     ) : (
                       <ShieldCheck className="h-4 w-4" />
                     )}
-                    {isClaimingPending ? "Starting Process..." : "Start Process & Open Details"}
+                    {isClaimingPending
+                      ? "Starting Process..."
+                      : "Start Process & Open Details"}
                   </Button>
                   <Button
                     type="button"
@@ -756,7 +797,10 @@ export default function ReviewSlips() {
                     "flex items-center justify-center bg-neutral-950 shadow-inner",
                   )}
                 >
-                  <div id="qr-reader-viewport" className="h-full w-full" />
+                  <div
+                    id="qr-reader-viewport"
+                    className="h-full w-full"
+                  />
 
                   {isScanning && (
                     <>
@@ -782,7 +826,8 @@ export default function ReviewSlips() {
                             Camera unavailable
                           </p>
                           <p className="mt-1 max-w-[190px] text-[10px] leading-relaxed text-white/65">
-                            Use Manual Code or allow camera access and try again.
+                            Use Manual Code or allow camera access and try
+                            again.
                           </p>
                         </>
                       ) : (
@@ -832,7 +877,10 @@ export default function ReviewSlips() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleManualSubmit} className="space-y-5">
+              <form
+                onSubmit={handleManualSubmit}
+                className="space-y-5"
+              >
                 <div className="space-y-3">
                   <div className="text-center">
                     <p className="text-xs font-semibold text-foreground">

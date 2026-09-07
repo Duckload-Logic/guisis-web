@@ -118,7 +118,8 @@ export const guidanceServices: GuidanceService[] = [
 export const studentReminders: StudentReminder[] = [
   {
     title: "Complete your IIR",
-    description: "Keep your student record updated before using major services.",
+    description:
+      "Keep your student record updated before using major services.",
     icon: BookOpenCheck,
   },
   {

@@ -63,7 +63,8 @@ export function SectionProgress({
     const currentIndex = sections.findIndex(
       (section) => section.id === currentSection,
     );
-    if (sectionIndex < currentIndex && visitedSections.includes(id)) return true;
+    if (sectionIndex < currentIndex && visitedSections.includes(id))
+      return true;
 
     for (const previousSection of sections.slice(0, sectionIndex)) {
       if (!isSectionFinished(previousSection.id)) return false;
@@ -205,7 +206,7 @@ export function SectionProgress({
                       "text-left transition-all duration-300",
                       active
                         ? "bg-card shadow-xl shadow-primary/5"
-                        : "hover:bg-muted/50 opacity-80 hover:opacity-100",
+                        : "opacity-80 hover:bg-muted/50 hover:opacity-100",
                       !navigable && !active && "cursor-not-allowed grayscale",
                       isShaking && "animate-subtle-shake",
                     )}

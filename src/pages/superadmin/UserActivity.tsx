@@ -4,6 +4,7 @@ import LogsTable from "@/features/system-admin/components/LogsTable";
 import { useUserActivity, useUsers } from "@/features/system-admin/hooks";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const ACTIVITY_ACTIONS = [
   "LOGIN_SUCCESS",

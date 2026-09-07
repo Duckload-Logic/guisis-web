@@ -723,54 +723,62 @@ export default function SubmitSlip() {
                       type="single"
                       collapsible
                       className="w-full"
-                      value={activeAccordion}
-                      onValueChange={setActiveAccordion}
                     >
                       {/* 1. EXCUSE LETTER */}
                       <AccordionItem
                         value="excuse-letter"
-                        className="border-b border-border/40"
+                        className="border-b last:border-b-0"
                       >
                         <AccordionTrigger
                           className={cn(
-                            "px-5 py-4 transition-all duration-200",
-                            "hover:bg-muted/30 hover:no-underline sm:px-6",
+                            "px-4 py-3 hover:bg-muted/30",
+                            "hover:no-underline",
                           )}
                         >
-                          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 pr-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-                                <FileText className="h-4 w-4" />
-                              </div>
-                              <div className="text-left">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold text-foreground">
-                                    Excuse Letter
-                                  </span>
-                                  {isFieldRequired("excuseLetter") && (
-                                    <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
-                                      Required
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  {excuseLetterCount > 0
-                                    ? `${excuseLetterCount} file(s) attached`
-                                    : "Signed letter explaining reason"}
-                                </p>
-                              </div>
+                          <div className="flex flex-1 items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex h-6 w-6 items-center justify-center",
+                                "rounded-full bg-muted text-xs font-semibold",
+                                "text-foreground",
+                              )}
+                            >
+                              1
                             </div>
-                            <span className="text-xs font-semibold text-primary">
-                              {excuseLetterCount > 0
-                                ? "Update Files"
-                                : "Upload"}
-                            </span>
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <h3
+                                  className={cn(
+                                    "text-sm font-medium",
+                                    "text-foreground",
+                                  )}
+                                >
+                                  Excuse Letter
+                                </h3>
+                                <Badge
+                                  variant="destructive"
+                                  className="text-xs"
+                                >
+                                  Required
+                                </Badge>
+                              </div>
+                              <p
+                                className="mt-0.5 text-xs text-muted-foreground"
+                              >
+                                Upload your excuse letter
+                              </p>
+                            </div>
                           </div>
+                          {excuseLetterProvided && (
+                            <CheckCircle2
+                              className="mr-2 h-4 w-4 shrink-0 text-green-500"
+                            />
+                          )}
                         </AccordionTrigger>
                         <AccordionContent
                           className={cn(
                             "border-t border-border/40 bg-muted/20",
-                            "px-5 pb-6 pt-4 sm:px-6",
+                            "px-4 py-3",
                           )}
                         >
                           <div className="space-y-4">
@@ -960,7 +968,9 @@ export default function SubmitSlip() {
                                   Required
                                 </Badge>
                               </div>
-                              <p className="mt-0.5 text-xs text-muted-foreground">
+                              <p
+                                className="mt-0.5 text-xs text-muted-foreground"
+                              >
                                 Upload copy of parent/guardian ID
                               </p>
                             </div>
@@ -1022,8 +1032,8 @@ export default function SubmitSlip() {
                                   )}
                                 >
                                   <CheckCircle2
-                                    className="h-4 w-4 shrink-0 text-success-foreground"
-                                  />
+                    className="h-4 w-4 shrink-0 text-success-foreground"
+                  />
                                   Valid ID Requirements
                                 </h4>
                                 <ul
@@ -1244,7 +1254,9 @@ export default function SubmitSlip() {
                                     Required
                                   </Badge>
                                 </div>
-                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                <p
+                                className="mt-0.5 text-xs text-muted-foreground"
+                              >
                                   Upload medical certificate
                                 </p>
                               </div>
@@ -1307,8 +1319,8 @@ export default function SubmitSlip() {
                                     )}
                                   >
                                     <CheckCircle2
-                                      className="h-4 w-4 shrink-0 text-success-foreground"
-                                    />
+                    className="h-4 w-4 shrink-0 text-success-foreground"
+                  />
                                     Upload this
                                   </h4>
                                   <div

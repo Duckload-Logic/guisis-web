@@ -45,8 +45,10 @@ export default function Dashboard() {
 
   const totalSlips = useMemo(
     () =>
-      slipStats?.reduce((sum: number, stat: any) => sum + (stat.count || 0), 0) ||
-      0,
+      slipStats?.reduce(
+        (sum: number, stat: any) => sum + (stat.count || 0),
+        0,
+      ) || 0,
     [slipStats],
   );
 

@@ -97,8 +97,7 @@ const faqCategories: FAQCategory[] = [
     description: "Individual Inventory Record completion and profile updates.",
     icon: ClipboardList,
     gradient: "from-rose-500/15 via-red-500/5 to-transparent",
-    iconStyle:
-      "border-destructive/30 bg-destructive/10 text-destructive",
+    iconStyle: "border-destructive/30 bg-destructive/10 text-destructive",
     questions: [
       {
         question: "Why do I need to complete my IIR first?",
@@ -140,7 +139,7 @@ export default function FAQ() {
           <div
             className={cn(
               "rounded-xl border border-border bg-card/60 px-4 py-3",
-              "backdrop-blur-md animate-fade-in-up",
+              "animate-fade-in-up backdrop-blur-md",
             )}
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
@@ -160,7 +159,7 @@ export default function FAQ() {
           <div
             className={cn(
               "rounded-xl border border-border bg-card/60 px-4 py-3",
-              "backdrop-blur-md animate-fade-in-up",
+              "animate-fade-in-up backdrop-blur-md",
             )}
             style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
@@ -205,7 +204,7 @@ export default function FAQ() {
                 "h-fit w-full overflow-hidden rounded-[28px]",
                 "border border-border bg-card/60 shadow-lg backdrop-blur-xl",
                 "transition-all duration-300 hover:-translate-y-0.5",
-                "hover:shadow-xl animate-fade-in-up",
+                "animate-fade-in-up hover:shadow-xl",
               )}
               style={{
                 animationDelay: `${0.05 * (categoryIndex + 1)}s`,

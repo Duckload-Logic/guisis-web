@@ -1,9 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  BASE_FIELD_CLASSES,
-  getFieldStateClasses,
-} from "./form-styles";
+import { BASE_FIELD_CLASSES, getFieldStateClasses } from "./form-styles";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -12,18 +9,7 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      className,
-      type,
-      disabled,
-      required,
-      error,
-      filled,
-      ...props
-    },
-    ref,
-  ) => {
+  ({ className, type, disabled, required, error, filled, ...props }, ref) => {
     const isFilled =
       filled !== undefined
         ? filled

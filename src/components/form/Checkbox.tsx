@@ -41,7 +41,7 @@ export default function Checkbox({
             className={cn(
               "peer absolute z-10 h-full w-full opacity-0",
               disabled
-                ? "cursor-not-allowed pointer-events-none"
+                ? "pointer-events-none cursor-not-allowed"
                 : "cursor-pointer",
               className,
             )}
@@ -71,7 +71,7 @@ export default function Checkbox({
             "select-none text-sm font-medium",
             "text-foreground transition-colors duration-200",
             disabled
-              ? "opacity-50 cursor-not-allowed pointer-events-none"
+              ? "pointer-events-none cursor-not-allowed opacity-50"
               : "cursor-pointer group-hover/checkbox:text-primary",
           )}
         >

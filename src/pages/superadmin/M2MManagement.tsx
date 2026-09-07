@@ -356,7 +356,7 @@ export default function M2MManagement() {
                                   "group-hover:scale-105",
                                   client.isActive
                                     ? "border-success-foreground/20 " +
-                                        "bg-success-background " +
+                                        "bg-success-background" +
                                         "text-success-foreground"
                                     : "border-destructive/20 bg-destructive/10 " +
                                         "text-destructive",
@@ -720,8 +720,11 @@ export default function M2MManagement() {
                 >
                   <div className="flex items-start gap-2">
                     <AlertTriangle
-                      className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-foreground"
-                    />
+                  className={cn(
+                    "mt-0.5 h-5 w-5 flex-shrink-0",
+                    "text-warning-foreground",
+                  )}
+                />
                     <p className="text-sm text-warning-foreground">
                       Copy this secret now. You will not be able to retrieve it
                       later. If you lose it, you must rotate the secret.
@@ -742,7 +745,7 @@ export default function M2MManagement() {
                     <code
                       className={
                         "block overflow-x-auto whitespace-nowrap " +
-                        "rounded-xl border border-border " +
+                        "rounded-xl border border-border" +
                         "bg-card/60 p-3 font-mono text-xs"
                       }
                     >

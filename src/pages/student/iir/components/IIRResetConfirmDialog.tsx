@@ -22,7 +22,10 @@ export function IIRResetConfirmDialog({
   onConfirm,
 }: IIRResetConfirmDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <AlertDialogContent
         className={cn("max-w-sm rounded-3xl shadow-md", "backdrop-blur-3xl")}
       >
@@ -30,9 +33,7 @@ export function IIRResetConfirmDialog({
           <AlertDialogTitle className="text-2xl">
             Reset this section?
           </AlertDialogTitle>
-          <AlertDialogDescription
-            className="font-medium text-muted-foreground"
-          >
+          <AlertDialogDescription className="font-medium text-muted-foreground">
             This will clear all answers in the current section. This action
             cannot be undone.
           </AlertDialogDescription>

@@ -391,7 +391,7 @@ export default function Layout({
                 className={cn(
                   "relative flex h-full min-w-0 max-w-full flex-col",
                   "overflow-y-auto overflow-x-hidden overscroll-contain",
-                  "after:content-[''] after:block after:shrink-0",
+                  "after:block after:shrink-0 after:content-['']",
                   isLoggedIn ? "after:h-24 xl:after:h-6" : "after:h-6",
                 )}
               >
@@ -399,7 +399,9 @@ export default function Layout({
                   className={cn(
                     "responsive-page-shell min-w-0 max-w-full flex-1",
                     "p-3 sm:p-4 md:p-6 xl:p-8",
-                    isLoggedIn && showHeader && "pt-20 sm:pt-20 md:pt-20 xl:pt-20",
+                    isLoggedIn &&
+                      showHeader &&
+                      "pt-20 sm:pt-20 md:pt-20 xl:pt-20",
                     isLoading && "flex h-full flex-col",
                   )}
                 >
@@ -414,8 +416,8 @@ export default function Layout({
                     >
                       <div className="flex items-center gap-3">
                         <AlertTriangle
-                          className="h-5 w-5 shrink-0 text-warning-foreground"
-                        />
+                    className="h-5 w-5 shrink-0 text-warning-foreground"
+                  />
                         <div className="text-sm font-medium">
                           You are currently using an expedited profile. Please
                           complete your Individual Inventory Record (IIR) to

@@ -99,7 +99,7 @@ export function IIRFormNavigation({
             disabled={isSaving || isSubmitting}
             className={cn(
               "flex h-12 min-w-0 flex-1 items-center justify-center",
-              "gap-2 rounded-2xl bg-green-600 px-6 sm:flex-none font-black",
+              "gap-2 rounded-2xl bg-green-600 px-6 font-black sm:flex-none",
               "tracking-tight text-white shadow-xl shadow-green-600/20",
               "transition-all duration-300 hover:bg-green-700",
               "active:scale-95 sm:px-10",
