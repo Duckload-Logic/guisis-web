@@ -117,15 +117,17 @@ export default function Header({
             setShowNotifications={setShowNotifications}
           />
 
-          <ProfileMenu
-            firstName={user?.firstName}
-            middleName={user?.middleName}
-            lastName={user?.lastName}
-            roleLabel={getRoleLabel()}
-            role={role}
-            profilePath={`/${role}/profile`}
-            onLogout={handleLogout}
-          />
+          <div className="hidden xl:block">
+            <ProfileMenu
+              firstName={user?.firstName}
+              middleName={user?.middleName}
+              lastName={user?.lastName}
+              roleLabel={getRoleLabel()}
+              role={role}
+              profilePath={`/${role}/profile`}
+              onLogout={handleLogout}
+            />
+          </div>
         </div>
       </header>
     );
