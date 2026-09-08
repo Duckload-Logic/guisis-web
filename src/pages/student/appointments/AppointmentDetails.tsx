@@ -4,16 +4,24 @@ import {
   useAppointment,
   useCancelAppointment,
 } from "@/features/appointments/hooks";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertCircle,
+  ArrowLeft,
   Calendar,
   Clock,
-  MapPin,
   FileCheck,
-  AlertCircle,
+  Info,
+  MapPin,
   MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -33,6 +41,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { parseAuditTrail } from "@/utils/auditTrail";
+import { format12HourTime } from "@/utils/dateTime";
 
 const APPOINTMENT_PILL_CLASS =
   "inline-flex h-7 items-center rounded-full border px-3 text-[11px] " +
@@ -77,7 +86,8 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("low")) {
     return {
       label: "Low",
-      description: "This appointment can be handled through the regular queue.",
+      description:
+        "This appointment can be handled through the regular queue.",
       className: STATUS_COLORS.success,
     };
   }
@@ -110,6 +120,23 @@ export default function AppointmentDetails() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
+  const pageHeaderActions = useMemo(
+    () => (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate("/student/appointments")}
+        className={cn(
+          "h-9 gap-1.5 rounded-xl border-border/80 text-xs font-semibold",
+        )}
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to Appointments
+      </Button>
+    ),
+    [navigate],
+  );
+
   usePageMetadata(
     useMemo(
       () => ({
@@ -122,9 +149,10 @@ export default function AppointmentDetails() {
           ) : (
             <Calendar className="h-4 w-4" />
           ),
+        headerActions: pageHeaderActions,
         isLoading: isLoading,
       }),
-      [appointment?.status?.name, isLoading],
+      [appointment?.status?.name, pageHeaderActions, isLoading],
     ),
   );
 
@@ -139,7 +167,7 @@ export default function AppointmentDetails() {
           setIsCancelModalOpen(false);
           navigate("/student/appointments");
         },
-        onError: (error: any) => {
+        onError: () => {
           triggerToast("Failed to cancel appointment");
         },
       },
@@ -164,332 +192,422 @@ export default function AppointmentDetails() {
   if (isLoading) {
     return (
       <div className="space-y-6 py-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Left Column Skeleton */}
-          <div className="space-y-6 md:col-span-2">
-            <Card className="border-0 bg-card/60 shadow-lg">
-              <CardHeader className="border-b border-border/60 pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-9 w-9 rounded-lg" />
-                    <Skeleton className="h-6 w-48 rounded" />
-                  </div>
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="space-y-2"
-                    >
-                      <Skeleton className="h-3 w-16 rounded" />
-                      <Skeleton className="h-5 w-32 rounded" />
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2 border-t border-border/40 pt-4">
-                  <Skeleton className="h-3 w-28 rounded" />
-                  <Skeleton className="h-16 w-full rounded-lg" />
-                </div>
-              </CardContent>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <Card className="rounded-2xl border border-border/70 bg-card p-6">
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <div className="mt-6 grid grid-cols-2 gap-4">
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-16 rounded-xl" />
+              </div>
             </Card>
           </div>
-          {/* Right Column Skeleton */}
-          <div className="space-y-6">
-            <Card className="border-0 bg-card/60 shadow-md">
-              <CardHeader className="border-b border-border/40 pb-3">
-                <Skeleton className="h-4 w-24 rounded" />
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <Skeleton className="h-16 w-full rounded" />
-                <Skeleton className="h-8 w-full rounded" />
-              </CardContent>
-            </Card>
+          <div>
+            <Skeleton className="h-48 w-full rounded-2xl" />
           </div>
         </div>
       </div>
     );
   }
+
   const isCancellable =
     appointment?.status?.name === "Pending" ||
     appointment?.status?.name === "Scheduled";
   const urgencyInfo = getAppointmentUrgency(appointment);
 
+  const whenDate = appointment?.whenDate
+    ? new Date(appointment.whenDate)
+    : null;
+  const monthStr = whenDate
+    ? whenDate.toLocaleDateString("en-US", { month: "short" })
+    : "—";
+  const dayStr = whenDate
+    ? whenDate.toLocaleDateString("en-US", { day: "numeric" })
+    : "—";
+
   return (
     <>
       <AnimationStyles />
-      <div className="min-h-full bg-background">
-        <div className="max-w-full">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {/* Left Column: Primary Details */}
-            <div className="space-y-6 md:col-span-2">
-              <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
-                <CardHeader className="border-b border-border/60 bg-muted/25 px-4 py-4 sm:px-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-primary/10 p-2">
-                        <Calendar className="h-5 w-5 text-primary" />
-                      </div>
-                      <CardTitle className="text-base font-semibold leading-tight sm:text-lg">
-                        Appointment Information
-                      </CardTitle>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          APPOINTMENT_PILL_CLASS,
-                          getStatusColor(appointment?.status?.name),
-                        )}
-                      >
-                        {appointment?.status?.name}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          APPOINTMENT_PILL_CLASS,
-                          urgencyInfo.className,
-                        )}
-                      >
-                        Urgency: {urgencyInfo.label}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6 p-4 sm:p-5">
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Date
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {appointment?.whenDate
-                            ? format(
-                                new Date(appointment.whenDate),
-                                "MMMM d, yyyy",
-                              )
-                            : "---"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Time
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {appointment?.timeSlot.time || "---"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Category
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            APPOINTMENT_PILL_CLASS,
-                            "border-border/70 bg-muted/45 text-foreground",
-                          )}
-                        >
-                          {appointment?.appointmentCategory.name}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Urgency Level
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            APPOINTMENT_PILL_CLASS,
-                            urgencyInfo.className,
-                          )}
-                        >
-                          {urgencyInfo.label}
-                        </Badge>
-                      </div>
-                      <p className="text-[11px] leading-5 text-muted-foreground">
-                        {urgencyInfo.description}
-                      </p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold uppercase text-muted-foreground">
-                        Location
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          Office of the Guidance Counselor (Academic Bldg)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border/40 pt-4">
-                    <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-                      My Reason / Concern
-                    </p>
-                    <div className="rounded-lg border border-border/40 bg-muted/50 p-4">
-                      <p className="whitespace-pre-wrap text-sm italic leading-relaxed">
-                        "{appointment?.reason}"
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {auditEntries.length > 0 && (
-                <Card className="border-border bg-glass-bg shadow-md">
-                  <CardHeader className="border-b bg-muted/5 p-5">
-                    <CardTitle
-                      className={cn(
-                        "flex items-center gap-2 text-[10px] font-bold",
-                        "uppercase tracking-wider text-muted-foreground",
-                      )}
-                    >
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      Counselor Remarks / Audit Trail
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 p-5">
-                    {auditEntries.map((entry, idx) => (
-                      <div
-                        key={idx}
-                        className="group flex items-start gap-4"
-                      >
-                        <div className="relative mt-1">
-                          <div
-                            className={cn(
-                              "relative z-10 h-3.5 w-3.5 shrink-0",
-                              "rounded-full border-2",
-                              entry.status.toUpperCase().includes("PENDING")
-                                ? "border-amber-500 bg-background shadow-sm"
-                                : entry.status
-                                      .toUpperCase()
-                                      .includes("APPROVED") ||
-                                    entry.status
-                                      .toUpperCase()
-                                      .includes("COMPLETED") ||
-                                    entry.status
-                                      .toUpperCase()
-                                      .includes("SCHEDULED")
-                                  ? "border-emerald-500 bg-background shadow-sm"
-                                  : entry.status
-                                        .toUpperCase()
-                                        .includes("REJECTED") ||
-                                      entry.status
-                                        .toUpperCase()
-                                        .includes("CANCELLED") ||
-                                      entry.status
-                                        .toUpperCase()
-                                        .includes("CANCELED")
-                                    ? "border-red-500 bg-background shadow-sm"
-                                    : "border-primary bg-background shadow-sm",
-                            )}
-                          />
-                          <div
-                            className={cn(
-                              "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
-                              "-translate-x-1/2 group-last:hidden",
-                            )}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs font-bold text-foreground/80">
-                            {entry.status}
-                          </p>
-                          {entry.timestamp && (
-                            <p className="text-[10px] text-muted-foreground">
-                              {entry.timestamp}
-                            </p>
-                          )}
-                          {entry.remarks && (
-                            <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-                              {entry.remarks}
-                            </p>
-                          )}
-                          {entry.details && (
-                            <p className="text-[10px] italic text-muted-foreground">
-                              {entry.details}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+      <div className="mx-auto flex w-full max-w-7xl flex-col space-y-6 pb-12">
+        {/* Event Pass Hero Header */}
+        <div
+          className={cn(
+            "flex flex-col justify-between gap-4 rounded-2xl border",
+            "border-border/80 bg-card p-5 shadow-sm sm:flex-row",
+            "sm:items-center",
+          )}
+        >
+          <div className="flex items-center gap-4">
+            {/* Calendar Block */}
+            <div
+              className={cn(
+                "flex h-16 w-16 shrink-0 flex-col items-center",
+                "justify-center rounded-2xl border border-primary/25",
+                "bg-primary/5 text-primary shadow-sm",
               )}
+            >
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {monthStr}
+              </span>
+              <span className="text-2xl font-black leading-none">
+                {dayStr}
+              </span>
             </div>
 
-            {/* Right Column: Actions & Metadata */}
-            <div className="space-y-6">
-              <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
-                <CardHeader className="border-b border-border/60 bg-muted/25 px-4 py-4 sm:px-5">
-                  <CardTitle className="text-sm font-semibold uppercase">
-                    Management
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "border-border/80 bg-muted/40 text-xs font-semibold",
+                  )}
+                >
+                  {appointment?.appointmentCategory?.name || "General"}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "px-2.5 py-0.5 text-[10px] font-bold uppercase",
+                    "tracking-wider",
+                    getStatusColor(appointment?.status?.name),
+                  )}
+                >
+                  {appointment?.status?.name || "Unknown"}
+                </Badge>
+
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "px-2 py-0.5 text-[10px] font-semibold",
+                    urgencyInfo.className,
+                  )}
+                >
+                  {urgencyInfo.label} Urgency
+                </Badge>
+              </div>
+
+              <h2
+                className={cn(
+                  "text-lg font-bold tracking-tight text-foreground",
+                  "sm:text-xl",
+                )}
+              >
+                {whenDate
+                  ? format(whenDate, "EEEE, MMMM d, yyyy")
+                  : "Date TBD"}
+                <span className="font-normal text-muted-foreground"> at </span>
+                <span className="font-mono text-primary">
+                  {format12HourTime(
+                    appointment?.timeSlot?.time || "",
+                  ) || "TBD"}
+                </span>
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 sm:self-center">
+            {isCancellable && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsCancelModalOpen(true)}
+                disabled={isCancelling}
+                className="h-9 rounded-xl font-semibold shadow-sm"
+              >
+                Cancel Appointment
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* 2-Column Balanced Content Grid */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Main Content (2 Cols) */}
+          <div className="space-y-6 lg:col-span-2">
+            {/* Consultation Overview */}
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card shadow-sm",
+              )}
+            >
+              <CardHeader className="border-b border-border/60 pb-3">
+                <CardTitle
+                  className={cn(
+                    "text-sm font-bold uppercase tracking-wider",
+                    "text-muted-foreground",
+                  )}
+                >
+                  Session Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border",
+                      "border-border/60 bg-muted/20 p-3.5",
+                    )}
+                  >
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p
+                        className={cn(
+                          "text-[11px] font-semibold text-muted-foreground",
+                        )}
+                      >
+                        Location / Venue
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-0.5 text-xs font-semibold text-foreground",
+                        )}
+                      >
+                        Guidance Office (Academic Bldg)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border",
+                      "border-border/60 bg-muted/20 p-3.5",
+                    )}
+                  >
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div>
+                      <p
+                        className={cn(
+                          "text-[11px] font-semibold text-muted-foreground",
+                        )}
+                      >
+                        Designated Slot
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-0.5 font-mono text-xs font-semibold",
+                          "text-foreground",
+                        )}
+                      >
+                        {format12HourTime(appointment?.timeSlot?.time || "")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    My Concern / Reason
+                  </p>
+                  <div
+                    className={cn(
+                      "rounded-xl border border-border/70 bg-muted/30 p-4",
+                    )}
+                  >
+                    <p
+                      className={cn(
+                        "whitespace-pre-wrap text-sm leading-relaxed",
+                        "text-foreground/90",
+                      )}
+                    >
+                      "{appointment?.reason}"
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Audit Trail / Remarks */}
+            {auditEntries.length > 0 && (
+              <Card
+                className={cn(
+                  "rounded-2xl border border-border/80 bg-card shadow-sm",
+                )}
+              >
+                <CardHeader className="border-b border-border/60 pb-3">
+                  <CardTitle
+                    className={cn(
+                      "flex items-center gap-2 text-xs font-bold uppercase",
+                      "tracking-wider text-muted-foreground",
+                    )}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Counselor Remarks & Activity Log
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 p-4 sm:p-5">
-                  {isCancellable ? (
-                    <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        Changed your mind? You can cancel your appointment if it
-                        is still pending or scheduled.
-                      </p>
-                      <Button
-                        variant="destructive"
-                        className="w-full"
-                        onClick={() => setIsCancelModalOpen(true)}
-                        disabled={isCancelling}
-                      >
-                        {isCancelling ? "Processing..." : "Cancel Appointment"}
-                      </Button>
+                <CardContent className="space-y-6 pt-5">
+                  {auditEntries.map((entry, idx) => (
+                    <div key={idx} className="group flex items-start gap-4">
+                      <div className="relative mt-1">
+                        <div
+                          className={cn(
+                            "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full",
+                            "border-2",
+                            entry.status.toUpperCase().includes("PENDING")
+                              ? "border-amber-500 bg-background"
+                              : entry.status
+                                    .toUpperCase()
+                                    .includes("APPROVED") ||
+                                  entry.status
+                                    .toUpperCase()
+                                    .includes("COMPLETED") ||
+                                  entry.status
+                                    .toUpperCase()
+                                    .includes("SCHEDULED")
+                                ? "border-emerald-500 bg-background"
+                                : entry.status
+                                      .toUpperCase()
+                                      .includes("REJECTED") ||
+                                    entry.status
+                                      .toUpperCase()
+                                      .includes("CANCELLED")
+                                  ? "border-red-500 bg-background"
+                                  : "border-primary bg-background",
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
+                            "-translate-x-1/2 group-last:hidden",
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-foreground">
+                          {entry.status}
+                        </p>
+                        {entry.timestamp && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {entry.timestamp}
+                          </p>
+                        )}
+                        {entry.remarks && (
+                          <p
+                            className={cn(
+                              "whitespace-pre-wrap text-xs leading-relaxed",
+                              "text-muted-foreground",
+                            )}
+                          >
+                            {entry.remarks}
+                          </p>
+                        )}
+                        {entry.details && (
+                          <p
+                            className={cn(
+                              "text-[10px] italic text-muted-foreground",
+                            )}
+                          >
+                            {entry.details}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div
-                      className={cn(
-                        "flex items-start gap-2 rounded-lg border",
-                        "border-info-foreground/20 bg-info-background/40 p-3",
-                      )}
-                    >
-                      <AlertCircle
-                    className="mt-0.5 h-4 w-4 shrink-0 text-info-foreground"
-                  />
-                      <p className="text-xs text-info-foreground">
-                        This appointment is already{" "}
-                        {appointment?.status?.name?.toLowerCase()} and cannot be
-                        modified.
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="pt-2">
-                    <p className="text-center text-[10px] text-muted-foreground">
-                      ID: {appointment?.id}
-                    </p>
-                  </div>
+                  ))}
                 </CardContent>
               </Card>
-            </div>
+            )}
+          </div>
+
+          {/* Sidebar (1 Col) */}
+          <div className="space-y-6">
+            {/* Student Guidelines Card */}
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card shadow-sm",
+              )}
+            >
+              <CardHeader className="border-b border-border/60 pb-3">
+                <CardTitle
+                  className={cn(
+                    "flex items-center gap-2 text-xs font-bold uppercase",
+                    "tracking-wider text-muted-foreground",
+                  )}
+                >
+                  <Info className="h-3.5 w-3.5" />
+                  Appointment Reminders
+                </CardTitle>
+              </CardHeader>
+              <CardContent
+                className={cn(
+                  "space-y-3 pt-4 text-xs leading-relaxed",
+                  "text-muted-foreground",
+                )}
+              >
+                <p>
+                  • Please arrive at the Guidance Office at least 10 minutes
+                  before your scheduled time.
+                </p>
+                <p>
+                  • Bring your School ID and valid Certificate of Registration
+                  (COR) for identification.
+                </p>
+                <p>
+                  • If you cannot attend, please cancel your schedule early so
+                  other students in need can take the slot.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Reference Metadata Card */}
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card p-4 shadow-sm",
+              )}
+            >
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "px-2 py-0.5 text-[10px] font-bold uppercase",
+                      "tracking-wider",
+                      getStatusColor(appointment?.status?.name),
+                    )}
+                  >
+                    {appointment?.status?.name || "Unknown"}
+                  </Badge>
+                </div>
+                <div
+                  className={cn(
+                    "flex items-center justify-between border-t",
+                    "border-border/50 pt-2",
+                  )}
+                >
+                  <span className="text-muted-foreground">Requested On</span>
+                  <span className="font-medium text-foreground">
+                    {appointment?.createdAt
+                      ? format(new Date(appointment.createdAt), "MMM d, yyyy")
+                      : "—"}
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    "flex items-center justify-between border-t",
+                    "border-border/50 pt-2",
+                  )}
+                >
+                  <span className="text-muted-foreground">Reference ID</span>
+                  <span
+                    className={cn(
+                      "font-mono text-[11px] font-bold text-foreground",
+                    )}
+                  >
+                    #{appointment?.id}
+                  </span>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </div>
 
-      <Dialog
-        open={isCancelModalOpen}
-        onOpenChange={setIsCancelModalOpen}
-      >
+      <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Cancel Appointment</DialogTitle>
@@ -503,13 +621,16 @@ export default function AppointmentDetails() {
               <Label htmlFor="reason">Reason for Cancellation</Label>
               <Textarea
                 id="reason"
-                placeholder="e.g., I have a class conflict, I'm feeling better, etc."
+                placeholder={
+                  "e.g., Class conflict, feeling better, urgent " +
+                  "schedule change..."
+                }
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
                 className="min-h-[100px]"
               />
               <p className="text-[10px] italic text-muted-foreground">
-                * This reason will be shared with the Guidance Office.
+                * This reason will be recorded in your guidance audit trail.
               </p>
             </div>
           </div>
@@ -534,3 +655,4 @@ export default function AppointmentDetails() {
     </>
   );
 }
+
