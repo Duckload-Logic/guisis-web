@@ -4,12 +4,7 @@ import {
   useAppointment,
   useCancelAppointment,
 } from "@/features/appointments/hooks";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,7 +16,6 @@ import {
   Info,
   MapPin,
   MessageSquare,
-  ShieldAlert,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -86,8 +80,7 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("low")) {
     return {
       label: "Low",
-      description:
-        "This appointment can be handled through the regular queue.",
+      description: "This appointment can be handled through the regular queue.",
       className: STATUS_COLORS.success,
     };
   }
@@ -249,9 +242,7 @@ export default function AppointmentDetails() {
               <span className="text-xs font-bold uppercase tracking-wider">
                 {monthStr}
               </span>
-              <span className="text-2xl font-black leading-none">
-                {dayStr}
-              </span>
+              <span className="text-2xl font-black leading-none">{dayStr}</span>
             </div>
 
             <div className="space-y-1">
@@ -293,17 +284,13 @@ export default function AppointmentDetails() {
                   "sm:text-xl",
                 )}
               >
-                {whenDate
-                  ? format(whenDate, "EEEE, MMMM d, yyyy")
-                  : "Date TBD"}
+                {whenDate ? format(whenDate, "EEEE, MMMM d, yyyy") : "Date TBD"}
                 <span className="font-semibold text-muted-foreground">
                   {" "}
                   at{" "}
                 </span>
                 <span className="font-bold text-primary">
-                  {format12HourTime(
-                    appointment?.timeSlot?.time || "",
-                  ) || "TBD"}
+                  {format12HourTime(appointment?.timeSlot?.time || "") || "TBD"}
                 </span>
               </h2>
             </div>
