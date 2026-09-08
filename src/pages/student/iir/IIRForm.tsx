@@ -7,7 +7,7 @@ import { GetAcademicSettings } from "@/features/student-core/services/academicSe
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata, useToast } from "@/context";
-import { useIIRProfile, useIIRStatus, useUserIIR } from "@/features/iir/hooks";
+import { useIIRProfile, useIIRStatus } from "@/features/iir/hooks";
 import {
   useGetIIRDraft,
   useIIRFormSave,
@@ -97,9 +97,7 @@ export default function IIRForm() {
     const saved = localStorage.getItem("iir_visited_sections");
     return saved ? JSON.parse(saved) : [1];
   });
-  const currentIndex = activeSections.findIndex(
-    (s) => s.id === currentSection,
-  );
+  const currentIndex = activeSections.findIndex((s) => s.id === currentSection);
   const nextSectionItem =
     currentIndex < activeSections.length - 1
       ? activeSections[currentIndex + 1]
@@ -123,8 +121,7 @@ export default function IIRForm() {
   const isCompleted = statusData?.isCompleted ?? false;
 
   const profileId =
-    editIirId ||
-    (isSubmitted && !isCompleted ? statusData?.id : undefined);
+    editIirId || (isSubmitted && !isCompleted ? statusData?.id : undefined);
   const { data: profileData, isLoading: isLoadingProfile } = useIIRProfile(
     profileId || "",
   );
@@ -277,9 +274,7 @@ export default function IIRForm() {
 
       if (profileId && !profileData) return;
 
-      const sourceData = profileId
-        ? profileData || draft
-        : draft;
+      const sourceData = profileId ? profileData || draft : draft;
       const initializedData = initializeFormData(
         sourceData ?? null,
         EMPTY_IIR_FORM,
@@ -295,8 +290,7 @@ export default function IIRForm() {
         initializedData,
       );
       if (savedPhoto) {
-        initializedData.student.personalInfo.twoByTwoPhotoDataUrl =
-          savedPhoto;
+        initializedData.student.personalInfo.twoByTwoPhotoDataUrl = savedPhoto;
       }
       setLocalFormData(initializedData);
       setIsInitializing(false);
@@ -360,11 +354,7 @@ export default function IIRForm() {
   const handleRestoreDraft = () => {
     if (draftData) {
       const savedPhoto = getIIRTwoByTwoPhoto(
-        getTwoByTwoPhotoIdentityFromForm(
-          draftData,
-          (me as any)?.id,
-          profileId,
-        ),
+        getTwoByTwoPhotoIdentityFromForm(draftData, (me as any)?.id, profileId),
         draftData,
       );
       const restoredDraft = {
@@ -391,7 +381,7 @@ export default function IIRForm() {
       profileData ?? null,
       EMPTY_IIR_FORM,
       me,
-      { preserveBasicInfoFromSource: !!profileId }
+      { preserveBasicInfoFromSource: !!profileId },
     );
     setLocalFormData(baselineData);
     setShowDraftPrompt(false);
@@ -618,10 +608,7 @@ export default function IIRForm() {
           );
           await UploadIIRTwoByTwoPhoto(fileToUpload);
         } catch (uploadErr) {
-          console.error(
-            "[IIRForm] {UploadIIRTwoByTwoPhoto}:",
-            uploadErr,
-          );
+          console.error("[IIRForm] {UploadIIRTwoByTwoPhoto}:", uploadErr);
         }
       }
 

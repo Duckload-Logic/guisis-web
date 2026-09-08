@@ -69,7 +69,7 @@ export function IIRFormNavigation({
           <div
             className={cn(
               "inline-flex max-w-xl items-start gap-2 rounded-xl border px-3",
-              "py-2 border-warning-foreground/30 bg-warning-background text-xs",
+              "border-warning-foreground/30 bg-warning-background py-2 text-xs",
               "font-medium text-warning-foreground shadow-sm",
             )}
             role="alert"
@@ -119,7 +119,7 @@ export function IIRFormNavigation({
                 Fast-Track Submit
               </span>
               <span
-                className="text-[9px] font-normal opacity-90 hidden sm:inline"
+                className="hidden text-[9px] font-normal opacity-90 sm:inline"
               >
                 Returning Student
               </span>

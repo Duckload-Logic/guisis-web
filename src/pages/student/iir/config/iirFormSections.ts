@@ -69,16 +69,12 @@ export function getActiveIIRSections(_isEditMode?: boolean) {
   return FORM_SECTIONS;
 }
 
-export function getStageForSection(
-  sectionId: number,
-): MacroStage {
+export function getStageForSection(sectionId: number): MacroStage {
   const found = MACRO_STAGES.find((s) => s.sectionIds.includes(sectionId));
   return found || MACRO_STAGES[0];
 }
 
-export function getSectionById(
-  sectionId: number,
-): IIRFormSection | undefined {
+export function getSectionById(sectionId: number): IIRFormSection | undefined {
   return FORM_SECTIONS.find((s) => s.id === sectionId);
 }
 

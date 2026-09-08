@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,7 @@ type ConsentModalProps = {
 
 export default function ConsentModal({
   open,
-  role,
+  role: _role,
   loading = false,
   onAccept,
   onCancel,
@@ -33,66 +34,78 @@ export default function ConsentModal({
     >
       <DialogContent
         className={cn(
-          "max-h-[70vh] overflow-y-auto",
-          "rounded-xl border-glass-border bg-card p-6 outline-none",
-          "sm:w-full sm:p-8",
+          "max-w-[500px] rounded-2xl border-border bg-card p-5 sm:p-6",
+          "shadow-2xl outline-none",
         )}
         hasCloseButton={false}
       >
-        <div
-          className={cn(
-            "mb-6 rounded-xl bg-primary px-6 py-4 text-primary-foreground",
-          )}
-        >
-          <DialogTitle asChild>
-            <h2
-              id="terms-title"
-              className="text-2xl font-bold"
-            >
-              Terms and Conditions
-            </h2>
-          </DialogTitle>
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+              "bg-primary/10 text-primary",
+            )}
+          >
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <DialogTitle asChild>
+              <h2
+                id="terms-title"
+                className="text-base font-bold text-foreground sm:text-lg"
+              >
+                Terms and Conditions
+              </h2>
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              Data Privacy Act &amp; Service Consent
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-5 text-[16px] leading-9 text-foreground">
+        {/* Content Body */}
+        <div
+          className={cn(
+            "space-y-2.5 text-xs sm:text-sm leading-relaxed",
+            "text-muted-foreground",
+          )}
+        >
           <p>
-            By clicking{" "}
-            <span className="font-bold text-primary">“I Agree”</span>, you
-            consent to the collection, use, and processing of your personal data
-            for legitimate purposes related to this service.
+            By acknowledging below, you consent to the collection, use, and
+            processing of your personal information solely for guidance,
+            counseling, and legitimate university purposes.
           </p>
-
           <p>
-            Your information will be handled in accordance with our{" "}
+            Handled strictly in accordance with PUP&apos;s{" "}
             <a
               className={cn(
-                "cursor-pointer font-bold text-secondary underline transition-colors",
-                "duration-200 hover:text-secondary/70",
+                "font-semibold text-primary underline underline-offset-2",
+                "hover:text-primary/80 transition-colors",
               )}
               target="_blank"
+              rel="noreferrer"
               href="https://www.pup.edu.ph/privacy"
             >
               Privacy Policy
             </a>{" "}
-            and in compliance with the{" "}
-            <span className="font-bold text-primary">
-              Data Privacy Act of 2012
+            and compliance with the{" "}
+            <span className="font-semibold text-foreground">
+              Data Privacy Act of 2012 (RA 10173)
             </span>
             .
           </p>
         </div>
 
+        {/* Checkbox acknowledgement */}
         <div
           className={cn(
-            "via-primary-100 from-primary-50 to-glass-bg",
-            "rounded-xl border border-border",
-            "bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]",
-            "px-5 py-5",
+            "rounded-xl border border-border bg-muted/40 p-3 sm:p-3.5",
           )}
         >
           <label
             htmlFor="terms-agree"
-            className="flex cursor-pointer items-start gap-4"
+            className="flex cursor-pointer items-center gap-3 select-none"
           >
             <input
               id="terms-agree"
@@ -101,11 +114,11 @@ export default function ConsentModal({
               onChange={(e) => setAgreed(e.target.checked)}
               className="peer sr-only"
             />
-
             <span
               className={cn(
-                "mt-1 flex h-6 w-6 shrink-0 items-center justify-center",
-                "rounded-md border border-slate-400 bg-glass-bg transition",
+                "flex h-5 w-5 shrink-0 items-center justify-center",
+                "rounded-md border border-muted-foreground/40 bg-background",
+                "transition-all duration-200",
                 "peer-checked:border-primary peer-checked:bg-primary",
               )}
             >
@@ -113,28 +126,28 @@ export default function ConsentModal({
                 <svg
                   viewBox="0 0 20 20"
                   fill="none"
-                  className="h-4 w-4 text-white"
+                  className="h-3.5 w-3.5 text-primary-foreground"
                   aria-hidden="true"
                 >
                   <path
                     d="M5 10.5l3.2 3.2L15 7"
                     stroke="currentColor"
-                    strokeWidth="2.4"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
               )}
             </span>
-
-            <span className="text-base leading-7 text-foreground">
-              I agree and acknowledge the{" "}
+            <span className="text-xs sm:text-sm font-medium text-foreground">
+              I agree to the{" "}
               <a
                 className={cn(
-                  "cursor-pointer font-bold text-primary transition-colors",
-                  "duration-200 hover:text-primary/60",
+                  "font-semibold text-primary underline underline-offset-2",
+                  "hover:text-primary/80 transition-colors",
                 )}
                 target="_blank"
+                rel="noreferrer"
                 href="https://www.pup.edu.ph/terms"
               >
                 Terms of Service
@@ -144,14 +157,17 @@ export default function ConsentModal({
           </label>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        {/* Action Buttons */}
+        <div className="flex flex-row items-center justify-end gap-2.5 pt-1">
           {onCancel ? (
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={loading}
-              className="min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold"
+              className={cn(
+                "h-10 rounded-xl px-4 text-xs sm:text-sm font-semibold",
+              )}
             >
               Sign out
             </Button>
@@ -161,10 +177,10 @@ export default function ConsentModal({
             disabled={!agreed || loading}
             onClick={onAccept}
             className={cn(
-              "min-w-[160px] rounded-2xl px-6 py-6 text-base font-semibold",
+              "h-10 rounded-xl px-5 text-xs sm:text-sm font-semibold",
               "transition-all",
               !agreed || loading
-                ? "border-0 border-transparent bg-muted text-muted-foreground"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >
@@ -175,4 +191,3 @@ export default function ConsentModal({
     </Dialog>
   );
 }
-

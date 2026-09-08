@@ -50,18 +50,14 @@ export function SectionProgress({
 
   const isSectionFinished = (id: number) => {
     const hasError = sectionsWithErrors.includes(id);
-    const completionPercent = calculateCompletion
-      ? calculateCompletion(id)
-      : 0;
+    const completionPercent = calculateCompletion ? calculateCompletion(id) : 0;
     return !hasError && completionPercent === 100;
   };
 
   const isNavigable = (id: number) => {
     if (id === currentSection) return true;
     const sectionIndex = sections.findIndex((s) => s.id === id);
-    const currentIndex = sections.findIndex(
-      (s) => s.id === currentSection,
-    );
+    const currentIndex = sections.findIndex((s) => s.id === currentSection);
     if (sectionIndex < currentIndex && visitedSections.includes(id)) {
       return true;
     }
@@ -248,7 +244,7 @@ export function SectionProgress({
                 <h2
                   className={cn(
                     "text-[10px] uppercase tracking-[0.25em]",
-                    "text-primary font-bold",
+                    "font-bold text-primary",
                   )}
                 >
                   IIR Wizard Progress
@@ -259,7 +255,7 @@ export function SectionProgress({
               </div>
               <div
                 className={cn(
-                  "h-1.5 w-full rounded-full bg-muted/80 overflow-hidden",
+                  "h-1.5 w-full overflow-hidden rounded-full bg-muted/80",
                 )}
               >
                 <div
@@ -311,11 +307,11 @@ export function SectionProgress({
                         "flex w-full items-center justify-between p-3",
                         "text-left transition-colors",
                         isClickable || isActive
-                          ? "hover:bg-muted/40 cursor-pointer"
+                          ? "cursor-pointer hover:bg-muted/40"
                           : "cursor-not-allowed",
                       )}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex min-w-0 items-center gap-3">
                         {/* Stage Badge */}
                         <div
                           className={cn(
@@ -335,7 +331,10 @@ export function SectionProgress({
                           )}
                         >
                           {isFinished ? (
-                            <Check className="h-4 w-4" strokeWidth={3} />
+                            <Check
+                              className="h-4 w-4"
+                              strokeWidth={3}
+                            />
                           ) : hasError ? (
                             <AlertCircle className="h-4 w-4" />
                           ) : (
@@ -344,12 +343,12 @@ export function SectionProgress({
                         </div>
 
                         {/* Title & Info */}
-                        <div className="flex flex-col min-w-0">
+                        <div className="flex min-w-0 flex-col">
                           <span
                             className={cn(
                               "truncate text-[12px] font-bold tracking-tight",
                               isActive
-                                ? "text-foreground font-extrabold"
+                                ? "font-extrabold text-foreground"
                                 : isFinished
                                   ? "text-foreground/90"
                                   : "text-muted-foreground",
@@ -374,7 +373,7 @@ export function SectionProgress({
                       </div>
 
                       {/* Right Indicator */}
-                      <div className="shrink-0 ml-2">
+                      <div className="ml-2 shrink-0">
                         {hasMultipleSubsteps ? (
                           <ChevronRight
                             className={cn(
@@ -403,8 +402,7 @@ export function SectionProgress({
                           const isSubActive = currentSection === secId;
                           const isSubFinished = isSectionFinished(secId);
                           const isSubNavigable = isNavigable(secId);
-                          const isSubError =
-                            sectionsWithErrors.includes(secId);
+                          const isSubError = sectionsWithErrors.includes(secId);
 
                           return (
                             <button
@@ -425,7 +423,7 @@ export function SectionProgress({
                                       "text-muted-foreground",
                               )}
                             >
-                              <div className="flex items-center gap-2 min-w-0">
+                              <div className="flex min-w-0 items-center gap-2">
                                 <span
                                   className={cn(
                                     "flex h-4 w-4 shrink-0 items-center",
@@ -457,9 +455,7 @@ export function SectionProgress({
                                   )}
                                 />
                               ) : !isSubNavigable && !isSubActive ? (
-                                <Lock
-                                  className="h-3 w-3 shrink-0 opacity-40"
-                                />
+                                <Lock className="h-3 w-3 shrink-0 opacity-40" />
                               ) : null}
                             </button>
                           );
