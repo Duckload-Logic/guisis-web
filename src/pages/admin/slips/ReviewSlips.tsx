@@ -12,7 +12,10 @@ import {
   AlertCircle,
   Keyboard,
 } from "lucide-react";
-import { Html5Qrcode } from "html5-qrcode";
+import {
+  Html5Qrcode,
+  Html5QrcodeScannerState,
+} from "html5-qrcode";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";
@@ -291,107 +294,164 @@ export default function ReviewSlips() {
   };
 
   const isCancelledRef = useRef(false);
+  const scannerActionRef = useRef<Promise<void>>(Promise.resolve());
+
+  const runScannerAction = (action: () => Promise<void>) => {
+    const chained = scannerActionRef.current
+      .catch(() => {})
+      .then(async () => {
+        await action();
+      })
+      .catch((err) => {
+        console.warn("[ReviewSlips] {ScannerAction}: error", err);
+      });
+
+    scannerActionRef.current = chained;
+    return chained;
+  };
+
+  const stopScanner = async () => {
+    isCancelledRef.current = true;
+
+    return runScannerAction(async () => {
+      const scanner = qrReaderRef.current;
+      if (scanner) {
+        try {
+          const state = scanner.getState();
+          if (
+            state === Html5QrcodeScannerState.SCANNING ||
+            state === Html5QrcodeScannerState.PAUSED
+          ) {
+            await scanner.stop();
+          }
+        } catch (error) {
+          console.warn("[ReviewSlips] {StopScanner}: error", error);
+        }
+
+        try {
+          scanner.clear();
+        } catch {}
+
+        qrReaderRef.current = null;
+      }
+      setIsScanning(false);
+    });
+  };
 
   const startScanner = async () => {
     isCancelledRef.current = false;
     setScannerError(null);
     setIsScanning(true);
 
-    try {
-      if (qrReaderRef.current) {
-        const previousScanner = qrReaderRef.current;
-
-        if (previousScanner.isScanning) {
-          await previousScanner.stop().catch(() => {});
-        }
-
-        qrReaderRef.current = null;
-      }
-
-      const html5QrCode = new Html5Qrcode("qr-reader-viewport");
-      qrReaderRef.current = html5QrCode;
-
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 200, height: 200 },
-        },
-        async (decodedText: string) => {
-          if (html5QrCode.isScanning) {
-            await html5QrCode.stop().catch(() => {});
-          }
-
-          setIsScanning(false);
-          void verifyTicketByCode(decodedText);
-        },
-        () => {},
-      );
-
-      // If user cancelled while camera was starting up, stop it immediately
-      if (isCancelledRef.current) {
-        if (html5QrCode.isScanning) {
-          await html5QrCode.stop().catch(() => {});
-        }
-        qrReaderRef.current = null;
-        setIsScanning(false);
-      }
-    } catch (error) {
-      // Ignore errors if cancellation or modal closure was requested
+    return runScannerAction(async () => {
       if (isCancelledRef.current) {
         setIsScanning(false);
-        qrReaderRef.current = null;
         return;
       }
 
-      console.error("Scanner start error:", error);
-
-      const message =
-        "Camera access is unavailable. Allow camera permission or use the manual code.";
-
-      setScannerError(message);
-      triggerToast(message);
-      setIsScanning(false);
-      qrReaderRef.current = null;
-    }
-  };
-
-  const stopScanner = async () => {
-    isCancelledRef.current = true;
-    if (qrReaderRef.current) {
-      const currentScanner = qrReaderRef.current;
-      if (currentScanner.isScanning) {
-        await currentScanner.stop().catch(() => {});
+      const viewportEl = document.getElementById("qr-reader-viewport");
+      if (!viewportEl) {
+        setIsScanning(false);
+        return;
       }
-      qrReaderRef.current = null;
-    }
-    setIsScanning(false);
+
+      if (qrReaderRef.current) {
+        const prev = qrReaderRef.current;
+        try {
+          const state = prev.getState();
+          if (
+            state === Html5QrcodeScannerState.SCANNING ||
+            state === Html5QrcodeScannerState.PAUSED
+          ) {
+            await prev.stop();
+          }
+        } catch {}
+
+        try {
+          prev.clear();
+        } catch {}
+
+        qrReaderRef.current = null;
+      }
+
+      if (isCancelledRef.current) {
+        setIsScanning(false);
+        return;
+      }
+
+      try {
+        const html5QrCode = new Html5Qrcode("qr-reader-viewport");
+        qrReaderRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 200, height: 200 },
+          },
+          (decodedText: string) => {
+            void stopScanner();
+            void verifyTicketByCode(decodedText);
+          },
+          () => {},
+        );
+
+        if (isCancelledRef.current) {
+          try {
+            const state = html5QrCode.getState();
+            if (
+              state === Html5QrcodeScannerState.SCANNING ||
+              state === Html5QrcodeScannerState.PAUSED
+            ) {
+              await html5QrCode.stop();
+            }
+          } catch {}
+
+          try {
+            html5QrCode.clear();
+          } catch {}
+
+          qrReaderRef.current = null;
+          setIsScanning(false);
+        }
+      } catch (error) {
+        if (isCancelledRef.current) {
+          setIsScanning(false);
+          qrReaderRef.current = null;
+          return;
+        }
+
+        console.error("[ReviewSlips] {StartScanner}: error", error);
+
+        const message =
+          "Camera access is unavailable. " +
+          "Allow camera permission or use the manual code.";
+
+        setScannerError(message);
+        triggerToast(message);
+        setIsScanning(false);
+        qrReaderRef.current = null;
+      }
+    });
   };
 
   useEffect(() => {
     let active = true;
-    if (isVerifyModalOpen && activeTab === "qr") {
+    if (isVerifyModalOpen && activeTab === "qr" && !pendingVerification) {
       const timer = setTimeout(() => {
         if (active) {
-          startScanner();
+          void startScanner();
         }
-      }, 100);
+      }, 150);
       return () => {
         active = false;
         clearTimeout(timer);
-        isCancelledRef.current = true;
-        if (qrReaderRef.current) {
-          const currentScanner = qrReaderRef.current;
-          if (currentScanner.isScanning) {
-            currentScanner.stop().catch(() => {});
-          }
-          qrReaderRef.current = null;
-        }
+        void stopScanner();
       };
     } else {
-      stopScanner();
+      void stopScanner();
     }
-  }, [isVerifyModalOpen, activeTab]);
+  }, [isVerifyModalOpen, activeTab, !!pendingVerification]);
 
   const handleManualCodeChange = (index: number, value: string) => {
     const cleanVal = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -985,10 +1045,7 @@ export default function ReviewSlips() {
             <p className="hidden text-[10px] text-muted-foreground sm:block">
               Verify only when the student presents the ticket on-site.
             </p>
-            <AlertDialogCancel
-              onClick={() => handleVerifyModalOpenChange(false)}
-              className="ml-auto h-9 rounded-xl px-4 text-xs font-semibold"
-            >
+            <AlertDialogCancel className="ml-auto h-9 rounded-xl px-4 text-xs font-semibold">
               Cancel
             </AlertDialogCancel>
           </div>
