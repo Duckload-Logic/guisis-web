@@ -12,7 +12,6 @@ import {
   X,
   Inbox,
   CheckCheck,
-  Check,
   Copy,
   PanelRightClose,
   PanelRightOpen,
@@ -916,22 +915,6 @@ export function SupportManagement() {
                             <Clock className="h-3 w-3" />
                             {formatRelativeTime(latestTicket.updatedAt)}
                           </span>
-                          {latestTicket.isRead ? (
-                            <span className={cn(
-                              "flex items-center gap-1 text-emerald-600",
-                              "dark:text-emerald-400",
-                            )}>
-                              <CheckCheck className="h-3 w-3" />
-                              Seen
-                            </span>
-                          ) : (
-                            <span
-                              className="flex items-center gap-1 text-blue-500"
-                            >
-                              <Check className="h-3 w-3" />
-                              Delivered
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -1068,20 +1051,11 @@ export function SupportManagement() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3
-                              className="truncate text-xs font-bold sm:text-sm"
-                            >
-                              {headerName}
-                            </h3>
-                            <span className={cn(
-                              "flex items-center gap-1 text-[10px]",
-                              "text-muted-foreground",
-                            )}>
-                              <CheckCheck className="h-3 w-3 text-blue-500" />
-                              Seen
-                            </span>
-                          </div>
+                          <h3
+                            className="truncate text-xs font-bold sm:text-sm"
+                          >
+                            {headerName}
+                          </h3>
                           {headerEmail && (
                             <p className={cn(
                               "truncate text-[10px] text-muted-foreground",
@@ -1278,16 +1252,10 @@ export function SupportManagement() {
                                     },
                                   )}
                                 </span>
-                                {isStaff && (
-                                  <>
-                                    {msg.isPending ? (
-                                      <span className="animate-pulse">
-                                        Sending...
-                                      </span>
-                                    ) : (
-                                      <Check className="h-3 w-3 text-primary" />
-                                    )}
-                                  </>
+                                {isStaff && msg.isPending && (
+                                  <span className="animate-pulse">
+                                    Sending...
+                                  </span>
                                 )}
                               </div>
 
@@ -1654,16 +1622,6 @@ export function SupportManagement() {
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Read State</span>
-                      <span className={cn(
-                        "flex items-center gap-1 text-[11px] text-emerald-600",
-                        "dark:text-emerald-400",
-                      )}>
-                        <CheckCheck className="h-3.5 w-3.5 text-blue-500" />
-                        Seen
-                      </span>
-                    </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">
@@ -1674,22 +1632,6 @@ export function SupportManagement() {
                       </span>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  {activeTicket && (
-                    <Button
-                      size="sm"
-                      onClick={handleResolveTicket}
-                      disabled={isResolving}
-                      className={cn(
-                        "w-full gap-1.5 rounded-xl text-xs font-semibold",
-                        "shadow-xs",
-                      )}
-                    >
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Resolve Ticket
-                    </Button>
-                  )}
                 </div>
               );
             })()}

@@ -11,7 +11,6 @@ import {
   Sliders,
   AudioLines,
   PersonStanding,
-  Check,
   ChevronDown,
   Sparkles,
 } from "lucide-react";
@@ -649,7 +648,6 @@ export function SupportChatWidget() {
                         </p>
                       </div>
 
-                      {/* Delivery Status Indicator */}
                       <div
                         className={cn(
                           "mt-0.5 flex items-center gap-1 px-1 text-[9px]",
@@ -662,7 +660,6 @@ export function SupportChatWidget() {
                             minute: "2-digit",
                           })}
                         </span>
-                        {isMe && <Check className="h-3 w-3 text-primary" />}
                       </div>
 
                       {activeMessageId === msg.id && (
