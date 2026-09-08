@@ -5,13 +5,10 @@ import {
   FileUp,
   CheckCircle2,
   AlertCircle,
-  FileText,
-  Info,
   X,
   MapPin,
   HelpCircle,
   Folder,
-  Plus,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -220,7 +217,10 @@ export default function SubmitSlip() {
     });
   };
 
-  const handleFileAdd = (documentType: DocumentType, files: FileList | null) => {
+  const handleFileAdd = (
+    documentType: DocumentType,
+    files: FileList | null,
+  ) => {
     if (!files) return;
 
     const allFiles = Array.from(files);
@@ -362,7 +362,9 @@ export default function SubmitSlip() {
       <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">{title}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {title}
+            </span>
             <Badge
               variant={isMandatory ? "destructive" : "secondary"}
               className="text-[10px]"
@@ -373,7 +375,7 @@ export default function SubmitSlip() {
           {hasFiles && (
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]"
+              className="border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-600"
             >
               <CheckCircle2 className="mr-1 h-3 w-3" />
               Attached ({localFiles.length + keptFiles.length})

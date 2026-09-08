@@ -55,9 +55,8 @@ export default function CreateAppointment() {
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useCategories();
-  const { data: slots = [], isLoading: isSlotsLoading } = useAvailableSlots(
-    selectedDate,
-  );
+  const { data: slots = [], isLoading: isSlotsLoading } =
+    useAvailableSlots(selectedDate);
   const { data: backupSlots = [], isLoading: isBackupSlotsLoading } =
     useAvailableSlots(backupSchedule.date);
 
@@ -191,7 +190,7 @@ export default function CreateAppointment() {
                     allowCurrentDate={false}
                     allowPastDates={false}
                     maxDate={maxAllowedDate}
-                    className="w-full border-0 shadow-none p-0"
+                    className="w-full border-0 p-0 shadow-none"
                   />
                 </div>
 
@@ -269,7 +268,10 @@ export default function CreateAppointment() {
                   <CardTitle className="text-sm font-medium text-foreground">
                     Alternative Preferred Schedule (Optional)
                   </CardTitle>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px]"
+                  >
                     Optional Backup
                   </Badge>
                 </div>
@@ -301,7 +303,7 @@ export default function CreateAppointment() {
                       allowCurrentDate={false}
                       allowPastDates={false}
                       maxDate={maxAllowedDate}
-                      className="w-full border-0 shadow-none p-0"
+                      className="w-full border-0 p-0 shadow-none"
                     />
                   </div>
                   <div className="md:col-span-6 md:border-l md:border-border/60 md:pl-6">
@@ -351,7 +353,10 @@ export default function CreateAppointment() {
                     <p className="text-sm font-bold text-foreground">
                       {formattedDate}
                     </p>
-                    <Badge variant="secondary" className="font-mono text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="font-mono text-xs"
+                    >
                       {selectedTime.time}
                     </Badge>
                   </div>
@@ -424,9 +429,7 @@ export default function CreateAppointment() {
                     )}
                     <span
                       className={cn(
-                        hasReason
-                          ? "text-foreground"
-                          : "text-muted-foreground",
+                        hasReason ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
                       Reason for consultation provided
