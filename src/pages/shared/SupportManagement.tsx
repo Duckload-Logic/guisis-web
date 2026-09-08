@@ -1,15 +1,20 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { usePageMetadata } from "@/context";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
   Send,
   CheckCircle,
   Clock,
-  User,
   ChevronDown,
   ArrowLeft,
+  Search,
+  X,
+  Inbox,
+  CheckCheck,
 } from "lucide-react";
+
+import { usePageMetadata } from "@/context";
 import { Message, Ticket } from "../../features/support/types";
 import {
   GetSupportTickets,
@@ -22,8 +27,14 @@ import { getProfilePictureUrl } from "../../lib/profilePicture";
 import { FormField } from "@/components/ui/form-field";
 import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+
+const MAX_MESSAGE_WORDS = 100;
+const TICKETS_POLL_INTERVAL_MS = 10000;
+const MESSAGES_POLL_INTERVAL_MS = 3000;
+const DEFAULT_PAGE_SIZE = 10;
 
 interface TicketGroup {
   key: string;
@@ -49,7 +60,9 @@ export function SupportManagement() {
     () => ({
       title: "Support Chat",
       description: "Manage customer support and resolve user concerns.",
-      badgeText: "Admin",
+      badgeText: "Admin Support",
+      badgeIcon: <MessageSquare className="h-3.5 w-3.5" />,
+      isLoading: false,
     }),
     [],
   );
@@ -67,12 +80,13 @@ export function SupportManagement() {
     pagesSize: number;
     totalPages: number;
   } | null>(null);
-  const pageSize = 10;
+
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
     "all",
   );
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
+  const [searchQuery, setSearchQuery] = useState("");
   const [groupMessages, setGroupMessages] = useState<{
     [ticketId: string]: Message[];
   }>({});
@@ -129,13 +143,30 @@ export function SupportManagement() {
   }, [tickets, sortBy]);
 
   const filteredGroups = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return groupedUsers.filter((g) => {
-      const hasOpen = g.tickets.some((t) => t.status.toLowerCase() === "open");
-      if (statusFilter === "open") return hasOpen;
-      if (statusFilter === "closed") return !hasOpen;
-      return true;
+      const hasOpen = g.tickets.some(
+        (t) => t.status.toLowerCase() === "open",
+      );
+      if (statusFilter === "open" && !hasOpen) return false;
+      if (statusFilter === "closed" && hasOpen) return false;
+
+      if (!query) return true;
+
+      const latestTicket = g.tickets[g.tickets.length - 1];
+      const name = (
+        latestTicket?.studentName ||
+        latestTicket?.guestName ||
+        ""
+      ).toLowerCase();
+      const email = (
+        latestTicket?.studentEmail ||
+        latestTicket?.guestEmail ||
+        ""
+      ).toLowerCase();
+      return name.includes(query) || email.includes(query);
     });
-  }, [groupedUsers, statusFilter]);
+  }, [groupedUsers, statusFilter, searchQuery]);
 
   const selectedGroup = useMemo(() => {
     if (!selectedGroupKey) return null;
@@ -149,10 +180,22 @@ export function SupportManagement() {
     return latestTicket.status.toLowerCase() === "open" ? latestTicket : null;
   }, [selectedGroup]);
 
+  const wordCount = useMemo(() => {
+    const trimmed = replyText.trim();
+    if (!trimmed) return 0;
+    return trimmed.split(/\s+/).length;
+  }, [replyText]);
+
+  const isOverWordLimit = wordCount > MAX_MESSAGE_WORDS;
+
   const fetchTickets = async (showLoading = false) => {
     if (showLoading) setIsLoadingTickets(true);
     try {
-      const data = await GetSupportTickets(page, pageSize, statusFilter);
+      const data = await GetSupportTickets(
+        page,
+        DEFAULT_PAGE_SIZE,
+        statusFilter,
+      );
       if (data && Array.isArray(data.tickets)) {
         setTickets(data.tickets);
         setMeta(data.meta);
@@ -170,7 +213,10 @@ export function SupportManagement() {
 
   useEffect(() => {
     fetchTickets(true);
-    const interval = setInterval(() => fetchTickets(false), 10000);
+    const interval = setInterval(
+      () => fetchTickets(false),
+      TICKETS_POLL_INTERVAL_MS,
+    );
     return () => clearInterval(interval);
   }, [page, statusFilter]);
 
@@ -215,7 +261,10 @@ export function SupportManagement() {
     };
 
     fetchGroupMessages();
-    const interval = setInterval(fetchGroupMessages, 3000);
+    const interval = setInterval(
+      fetchGroupMessages,
+      MESSAGES_POLL_INTERVAL_MS,
+    );
 
     return () => clearInterval(interval);
   }, [selectedGroup]);
@@ -266,7 +315,7 @@ export function SupportManagement() {
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyText.trim() || !activeTicket) return;
+    if (!replyText.trim() || isOverWordLimit || !activeTicket) return;
 
     setIsSending(true);
     const textToSend = replyText;
@@ -316,78 +365,191 @@ export function SupportManagement() {
   return (
     <div className="mx-auto flex w-full flex-col px-1 pb-4 sm:px-6 md:px-8">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className={
-          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col overflow-hidden " +
-          "rounded-xl border border-glass-border bg-background/50 shadow-md " +
-          "backdrop-blur-xl md:h-[calc(100vh-12rem)] md:min-h-[560px] md:flex-row"
-        }
+        className={cn(
+          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col overflow-hidden",
+          "rounded-2xl border border-glass-border bg-card/60 shadow-md",
+          "backdrop-blur-xl md:h-[calc(100vh-11rem)] md:min-h-[580px]",
+          "md:flex-row",
+        )}
       >
         {/* Tickets List Sidebar */}
         <div
           className={cn(
-            "flex w-full shrink-0 flex-col border-b border-glass-border md:w-96 md:border-b-0 md:border-r",
+            "flex w-full shrink-0 flex-col border-b border-glass-border",
+            "md:w-96 md:border-b-0 md:border-r",
             selectedGroupKey ? "hidden md:flex" : "flex flex-1",
           )}
         >
-          <div className="border-b border-glass-border p-2.5 sm:p-4">
-            <h2 className="flex items-center gap-2 text-xs sm:text-sm font-bold">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              Active Conversations
-            </h2>
-            <div className="mt-2 sm:mt-3 flex gap-1 rounded-lg bg-muted/30 p-0.5">
-              {(["all", "open", "closed"] as const).map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setStatusFilter(filter)}
-                  className={
-                    `flex-1 rounded-md py-1 text-center text-[9px] sm:text-[10px] ` +
-                    `font-bold uppercase transition-colors ${
-                      statusFilter === filter
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted/50"
-                    }`
-                  }
+          <div className="border-b border-glass-border p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <h2
+                className={cn(
+                  "flex items-center gap-2 text-xs font-bold sm:text-sm",
+                )}
+              >
+                <MessageSquare className="h-4 w-4 text-primary" />
+                Active Conversations
+              </h2>
+              {meta ? (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-lg border-primary/20 bg-primary/10 px-2 py-0.5",
+                    "text-[10px] font-bold text-primary",
+                  )}
                 >
-                  {filter}
-                </button>
-              ))}
+                  {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
+                </Badge>
+              ) : null}
             </div>
+
+            {/* Instant Search Bar */}
+            <div className="relative mt-2.5">
+              <Search
+                className={cn(
+                  "absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5",
+                  "text-muted-foreground",
+                )}
+              />
+              <input
+                type="text"
+                placeholder="Search student or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "w-full rounded-xl border border-glass-border bg-muted/20",
+                  "pl-8 pr-7 py-1.5 text-xs text-foreground",
+                  "placeholder:text-muted-foreground/70",
+                  "focus:outline-none focus:ring-1 focus:ring-primary",
+                  "shadow-inner",
+                )}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSearchQuery("")}
+                  className={cn(
+                    "absolute right-1.5 top-1/2 -translate-y-1/2 h-5 w-5",
+                    "rounded-full p-0 text-muted-foreground",
+                    "hover:text-foreground",
+                  )}
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+
+            {/* Status Filter Tabs */}
+            <div className="mt-2.5 flex gap-1 rounded-xl bg-muted/30 p-1">
+              {(["all", "open", "closed"] as const).map((filter) => {
+                const isActive = statusFilter === filter;
+                return (
+                  <Button
+                    key={filter}
+                    type="button"
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setStatusFilter(filter)}
+                    className={cn(
+                      "flex-1 h-7 rounded-lg text-[10px] font-bold uppercase",
+                      "tracking-wider transition-all",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-xs"
+                        : "text-muted-foreground hover:bg-muted/50 " +
+                          "hover:text-foreground",
+                    )}
+                  >
+                    {filter}
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Sort Selector */}
             <div
-              className={
-                "mt-2 flex items-center justify-between " +
-                "text-[10px] sm:text-[11px] text-muted-foreground"
-              }
+              className={cn(
+                "mt-2 flex items-center justify-between text-[10px]",
+                "text-muted-foreground sm:text-[11px]",
+              )}
             >
-              <span>Sort:</span>
+              <span className="font-medium">Sort Order:</span>
               <SelectField
                 options={[
-                  { id: "recent", label: "Recent" },
-                  { id: "oldest", label: "Oldest" },
+                  { id: "recent", label: "Most Recent" },
+                  { id: "oldest", label: "Oldest First" },
                 ]}
                 value={sortBy}
                 onChange={(val) => {
                   if (val) setSortBy(val as any);
                 }}
-                buttonClassName={
-                  "h-6 sm:h-7 w-24 sm:w-28 px-2 py-0.5 text-[11px] sm:text-xs border " +
-                  "border-glass-border bg-muted/20 shadow-sm"
-                }
+                buttonClassName={cn(
+                  "h-7 w-28 px-2 py-0.5 text-xs border border-glass-border",
+                  "bg-muted/20 shadow-xs rounded-lg font-medium",
+                )}
               />
             </div>
           </div>
 
+          {/* Ticket List View */}
           <div className="flex-1 divide-y divide-glass-border overflow-y-auto">
             {isLoadingTickets && filteredGroups.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground">
-                Loading tickets...
+              <div className="space-y-3 p-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-3 p-2.5">
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3.5 w-28 rounded" />
+                        <Skeleton className="h-4 w-12 rounded-full" />
+                      </div>
+                      <Skeleton className="h-3 w-36 rounded" />
+                      <Skeleton className="h-2.5 w-20 rounded" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : filteredGroups.length === 0 ? (
-              <div className="p-4 text-center text-xs text-muted-foreground">
-                No tickets found
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center p-8 text-center",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl",
+                    "border border-glass-border bg-muted/40",
+                    "text-muted-foreground",
+                  )}
+                >
+                  <Inbox className="h-5 w-5" />
+                </div>
+                <p className="mt-2.5 text-xs font-semibold text-foreground">
+                  No conversations found
+                </p>
+                <p
+                  className={cn(
+                    "mt-0.5 max-w-[200px] text-[11px] text-muted-foreground",
+                  )}
+                >
+                  {searchQuery
+                    ? "Try adjusting your search keywords."
+                    : "No tickets match the selected status filter."}
+                </p>
+                {searchQuery && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearchQuery("")}
+                    className="mt-3 h-7 rounded-lg px-2.5 text-xs"
+                  >
+                    Clear Search
+                  </Button>
+                )}
               </div>
             ) : (
               filteredGroups.map((g) => {
@@ -408,15 +570,26 @@ export function SupportManagement() {
                 return (
                   <motion.button
                     key={g.key}
-                    initial={{ opacity: 0, x: -8 }}
+                    initial={{ opacity: 0, x: -6 }}
                     animate={{ opacity: 1, x: 0 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={() => setSelectedGroupKey(g.key)}
-                    className={`w-full p-2.5 sm:p-4 text-left transition-colors ${isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted/20"}`}
+                    className={cn(
+                      "w-full p-3 text-left transition-colors sm:p-4",
+                      isSelected
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted/20",
+                    )}
                   >
                     <div className="flex gap-3">
-                      <div className="relative mt-0.5 flex-shrink-0">
-                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-glass-border bg-muted">
+                      <div className="relative mt-0.5 shrink-0">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center",
+                            "overflow-hidden rounded-full border",
+                            "border-glass-border bg-muted",
+                          )}
+                        >
                           {latestTicket.profilePicture ? (
                             <img
                               src={getProfilePictureUrl(
@@ -426,53 +599,87 @@ export function SupportManagement() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <span className="select-none text-xs font-bold text-primary">
+                            <span
+                              className={cn(
+                                "select-none text-xs font-bold text-primary",
+                              )}
+                            >
                               {getInitials(name)}
                             </span>
                           )}
                         </div>
                         {!latestTicket.isRead && (
-                          <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500 ring-2 ring-background" />
+                          <span
+                            className={cn(
+                              "absolute -right-0.5 -top-0.5 h-2.5 w-2.5",
+                              "animate-pulse rounded-full bg-blue-500",
+                              "ring-2 ring-background",
+                            )}
+                          />
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
+                        <div
+                          className={cn(
+                            "flex items-center justify-between gap-1",
+                          )}
+                        >
                           <span
-                            className={`truncate text-sm ${
+                            className={cn(
+                              "truncate text-xs font-bold sm:text-sm",
                               !latestTicket.isRead
-                                ? "font-bold text-foreground"
-                                : "font-semibold text-muted-foreground"
-                            }`}
+                                ? "text-foreground"
+                                : "text-muted-foreground",
+                            )}
                           >
                             {name}
                           </span>
                           <span
-                            className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                            className={cn(
+                              "shrink-0 rounded-full px-2 py-0.5",
+                              "text-[9px] font-bold uppercase",
                               hasOpen
-                                ? "bg-emerald-500/15 text-emerald-500"
-                                : "bg-muted text-muted-foreground"
-                            }`}
+                                ? "bg-emerald-500/15 text-emerald-600 " +
+                                  "dark:text-emerald-400"
+                                : "bg-muted text-muted-foreground",
+                            )}
                           >
                             {hasOpen ? "Open" : "Resolved"}
                           </span>
                         </div>
                         {email && (
-                          <div className="truncate text-[11px] text-muted-foreground">
+                          <div
+                            className={cn(
+                              "truncate text-[11px] text-muted-foreground",
+                            )}
+                          >
                             {email}
                           </div>
                         )}
                         {latestTicket.lastMessage && (
-                          <div className="mt-1 truncate text-xs font-normal italic text-muted-foreground">
+                          <div
+                            className={cn(
+                              "mt-1 truncate text-xs font-normal italic",
+                              "text-muted-foreground",
+                            )}
+                          >
                             {latestTicket.lastMessage}
                           </div>
                         )}
-                        <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {new Date(latestTicket.updatedAt).toLocaleTimeString(
-                            [],
-                            { hour: "2-digit", minute: "2-digit" },
+                        <div
+                          className={cn(
+                            "mt-2 flex items-center gap-1 text-[10px]",
+                            "text-muted-foreground",
                           )}
+                        >
+                          <Clock className="h-3 w-3" />
+                          {new Date(
+                            latestTicket.updatedAt,
+                          ).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       </div>
                     </div>
@@ -482,25 +689,37 @@ export function SupportManagement() {
             )}
           </div>
 
+          {/* Standardized Pagination */}
           {meta && meta.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-glass-border p-3 text-xs">
-              <button
+            <div
+              className={cn(
+                "flex items-center justify-between border-t",
+                "border-glass-border px-3 py-2 text-xs",
+              )}
+            >
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(p - 1, 1))}
                 disabled={page === 1}
-                className="rounded bg-muted px-2.5 py-1.5 font-medium hover:bg-muted/80 disabled:pointer-events-none disabled:opacity-50"
+                className="h-7 rounded-lg px-2.5 text-xs font-semibold"
               >
-                Prev
-              </button>
-              <span className="text-muted-foreground">
+                Previous
+              </Button>
+              <span className="text-[11px] font-medium text-muted-foreground">
                 Page {page} of {meta.totalPages}
               </span>
-              <button
-                onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPage((p) => Math.min(p + 1, meta.totalPages))
+                }
                 disabled={page === meta.totalPages}
-                className="rounded bg-muted px-2.5 py-1.5 font-medium hover:bg-muted/80 disabled:pointer-events-none disabled:opacity-50"
+                className="h-7 rounded-lg px-2.5 text-xs font-semibold"
               >
                 Next
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -518,13 +737,19 @@ export function SupportManagement() {
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap items-center justify-between gap-2 border-b border-glass-border bg-muted/20 p-2.5 sm:p-4"
+                className={cn(
+                  "flex flex-wrap items-center justify-between gap-2",
+                  "border-b border-glass-border bg-muted/20 p-3 sm:p-4",
+                )}
               >
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 shrink-0 rounded-lg border border-glass-border md:hidden"
+                    className={cn(
+                      "h-8 w-8 shrink-0 rounded-lg border",
+                      "border-glass-border md:hidden",
+                    )}
                     onClick={() => setSelectedGroupKey(null)}
                     title="Back to conversations"
                   >
@@ -544,7 +769,13 @@ export function SupportManagement() {
                       "";
                     return (
                       <>
-                        <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-glass-border bg-muted">
+                        <div
+                          className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center",
+                            "overflow-hidden rounded-full border",
+                            "border-glass-border bg-muted sm:h-9 sm:w-9",
+                          )}
+                        >
                           {latestTicket?.profilePicture ? (
                             <img
                               src={getProfilePictureUrl(
@@ -554,15 +785,26 @@ export function SupportManagement() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <span className="select-none text-xs font-bold text-primary">
+                            <span
+                              className={cn(
+                                "select-none text-xs font-bold text-primary",
+                              )}
+                            >
                               {getInitials(headerName)}
                             </span>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="truncate text-xs sm:text-sm font-bold">{headerName}</h3>
+                          <h3 className="truncate text-xs font-bold sm:text-sm">
+                            {headerName}
+                          </h3>
                           {headerEmail && (
-                            <p className="truncate text-[10px] sm:text-xs text-muted-foreground">
+                            <p
+                              className={cn(
+                                "truncate text-[10px] text-muted-foreground",
+                                "sm:text-xs",
+                              )}
+                            >
                               {headerEmail}
                             </p>
                           )}
@@ -572,15 +814,31 @@ export function SupportManagement() {
                   })()}
                 </div>
 
-                {activeTicket && (
-                  <button
+                {activeTicket ? (
+                  <Button
+                    size="sm"
                     onClick={handleResolveTicket}
                     disabled={isResolving}
-                    className="flex shrink-0 items-center gap-1 rounded-xl bg-primary px-2.5 py-1 text-[11px] sm:px-3 sm:py-1.5 sm:text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+                    className={cn(
+                      "h-8 gap-1.5 rounded-xl px-3 text-xs font-semibold",
+                      "shadow-xs",
+                    )}
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Mark as </span>Resolved
-                  </button>
+                  </Button>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-lg border-emerald-500/30 bg-emerald-500/10",
+                      "px-2.5 py-1 text-[10px] font-bold uppercase",
+                      "text-emerald-600 dark:text-emerald-400",
+                    )}
+                  >
+                    <CheckCheck className="mr-1 h-3.5 w-3.5 inline" />
+                    Resolved
+                  </Badge>
                 )}
               </motion.div>
 
@@ -588,17 +846,14 @@ export function SupportManagement() {
               <div
                 ref={messagesContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 space-y-3 overflow-y-auto p-2.5 sm:p-4"
+                className="flex-1 space-y-3 overflow-y-auto p-3 sm:p-4"
               >
                 {selectedGroup.tickets.map((t) => {
                   const msgs = groupMessages[t.id] || [];
                   const isResolved = t.status.toLowerCase() !== "open";
 
                   return (
-                    <div
-                      key={t.id}
-                      className="flex flex-col"
-                    >
+                    <div key={t.id} className="flex flex-col">
                       {msgs.map((msg, idx) => {
                         const isStaff =
                           msg.senderId && msg.senderId !== t.userId;
@@ -635,24 +890,24 @@ export function SupportManagement() {
                         return (
                           <div
                             key={msg.id}
-                            className={`flex flex-col ${
-                              isStaff ? "items-end" : "items-start"
-                            } ${
+                            className={cn(
+                              "flex flex-col",
+                              isStaff ? "items-end" : "items-start",
                               isNewStack
                                 ? idx === 0
                                   ? "mt-0"
                                   : "mt-3.5"
-                                : "mt-[1px]"
-                            }`}
+                                : "mt-[1px]",
+                            )}
                           >
                             {showSenderLabel && (
                               <span
-                                className={
-                                  "px-1 text-[10px] text-muted-foreground"
-                                }
+                                className={cn(
+                                  "px-1 text-[10px] text-muted-foreground",
+                                )}
                               >
                                 {isStaff
-                                  ? `Admin (${msg.senderName})`
+                                  ? `Staff (${msg.senderName})`
                                   : msg.senderName}
                               </span>
                             )}
@@ -662,30 +917,35 @@ export function SupportManagement() {
                                   prev === msg.id ? null : msg.id,
                                 )
                               }
-                              className={
-                                `${
-                                  showSenderLabel ? "mt-1" : "mt-0"
-                                } max-w-[88%] sm:max-w-[80%] rounded-2xl px-3 py-2 ` +
-                                `cursor-pointer select-none text-sm ${
-                                  isStaff
-                                    ? "bg-primary text-primary-foreground " +
-                                      "rounded-tr-none"
-                                    : "rounded-tl-none bg-muted text-foreground"
-                                }`
-                              }
+                              className={cn(
+                                "max-w-[88%] cursor-pointer select-none",
+                                "rounded-2xl px-3.5 py-2 text-xs",
+                                "sm:max-w-[80%] sm:text-sm",
+                                showSenderLabel ? "mt-1" : "mt-0",
+                                isStaff
+                                  ? "rounded-tr-none bg-primary " +
+                                    "text-primary-foreground shadow-xs"
+                                  : "rounded-tl-none bg-muted/80 " +
+                                    "text-foreground border " +
+                                    "border-glass-border/60",
+                              )}
                               title={formattedDate}
                             >
-                              <p className="whitespace-pre-wrap break-words">
+                              <p
+                                className={cn(
+                                  "whitespace-pre-wrap break-words",
+                                  "leading-relaxed",
+                                )}
+                              >
                                 {msg.message}
                               </p>
                             </div>
                             {activeMessageId === msg.id && (
                               <span
-                                className={
-                                  "mt-1 px-1 text-[9px] " +
-                                  "animate-in text-muted-foreground " +
-                                  "fade-in duration-150"
-                                }
+                                className={cn(
+                                  "mt-1 animate-in fade-in px-1 text-[9px]",
+                                  "text-muted-foreground duration-150",
+                                )}
                               >
                                 {formattedDate}
                               </span>
@@ -696,11 +956,24 @@ export function SupportManagement() {
 
                       {isResolved && (
                         <div className="my-6 flex items-center">
-                          <div className="flex-1 border-t border-glass-border"></div>
-                          <span className="mx-4 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            Resolved
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
+                          <span
+                            className={cn(
+                              "mx-4 inline-flex items-center gap-1",
+                              "rounded-full border border-glass-border",
+                              "bg-muted/40 px-2.5 py-0.5 text-[10px]",
+                              "font-bold uppercase tracking-wider",
+                              "text-muted-foreground",
+                            )}
+                          >
+                            <CheckCircle className="h-3 w-3 text-emerald-500" />
+                            Ticket Resolved
                           </span>
-                          <div className="flex-1 border-t border-glass-border"></div>
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                         </div>
                       )}
                     </div>
@@ -708,41 +981,44 @@ export function SupportManagement() {
                 })}
               </div>
 
+              {/* Scroll to Bottom Button */}
               {showScrollBottom && (
-                <button
+                <Button
                   type="button"
+                  size="icon"
                   onClick={scrollToBottom}
-                  className={
-                    "absolute bottom-20 right-4 sm:bottom-28 sm:right-6 z-20 " +
-                    "flex h-9 w-9 items-center justify-center p-0 " +
-                    "rounded-full bg-primary text-primary-foreground " +
-                    "shadow-lg hover:bg-primary/95 " +
-                    "transition-all duration-300 active:scale-95"
-                  }
+                  className={cn(
+                    "absolute bottom-20 right-4 z-20 h-8 w-8 rounded-full",
+                    "bg-primary text-primary-foreground shadow-lg",
+                    "transition-all hover:bg-primary/90 active:scale-95",
+                    "sm:bottom-24 sm:right-6",
+                  )}
+                  aria-label="Scroll to newest messages"
                 >
-                  <ChevronDown className="h-5 w-5 shrink-0" />
-                </button>
+                  <ChevronDown className="h-4 w-4 shrink-0" />
+                </Button>
               )}
 
               {/* Conversation Input */}
               {activeTicket ? (
                 <form
                   onSubmit={handleSendReply}
-                  className="space-y-2 border-t border-glass-border p-2.5 sm:p-4"
+                  className={cn(
+                    "space-y-1.5 border-t border-glass-border p-3 sm:p-4",
+                  )}
                 >
                   <div className="flex items-start gap-2">
                     <FormField
                       label=""
                       value={replyText}
                       onChange={setReplyText}
-                      placeholder="Type a message to reply..."
+                      placeholder="Type a response to assist this student..."
                       noSpecialCharacters={false}
                       disabled={isSending}
                       className="flex-1"
                       error={
-                        replyText.trim().split(/\s+/).filter(Boolean).length >
-                        100
-                          ? "Message cannot exceed 100 words"
+                        isOverWordLimit
+                          ? `Message cannot exceed ${MAX_MESSAGE_WORDS} words`
                           : undefined
                       }
                     />
@@ -753,47 +1029,77 @@ export function SupportManagement() {
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
                           transition={{ duration: 0.15 }}
-                          className="flex-shrink-0"
+                          className="shrink-0"
                         >
                           <Button
                             type="submit"
                             disabled={
                               !replyText.trim() ||
-                              replyText.trim().split(/\s+/).filter(Boolean)
-                                .length > 100
+                              isOverWordLimit ||
+                              isSending
                             }
                             size="icon"
-                            className="flex-shrink-0 text-white"
+                            className="h-10 w-10 shrink-0 text-white shadow-xs"
+                            aria-label="Send message"
                           >
-                            <Send className="h-5 w-5 min-w-5 shrink-0" />
+                            <Send className="h-4 w-4 shrink-0" />
                           </Button>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
+
                   {replyText.trim() && (
                     <div
-                      className={
-                        "flex justify-end text-[10px] " +
-                        "px-1 text-muted-foreground"
-                      }
+                      className={cn(
+                        "flex justify-end text-[10px] px-1 font-medium",
+                        isOverWordLimit
+                          ? "text-destructive font-bold"
+                          : "text-muted-foreground",
+                      )}
                     >
-                      {replyText.trim().split(/\s+/).filter(Boolean).length}
-                      /100 words
+                      {wordCount}/{MAX_MESSAGE_WORDS} words
                     </div>
                   )}
                 </form>
               ) : (
-                <div className="border-t border-glass-border bg-muted/10 p-4 text-center text-xs text-muted-foreground">
+                <div
+                  className={cn(
+                    "border-t border-glass-border bg-muted/10 p-4",
+                    "text-center text-xs text-muted-foreground font-medium",
+                  )}
+                >
                   All conversations with this user have been resolved.
                 </div>
               )}
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center p-8">
-              <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground/50" />
-              <p className="text-sm font-semibold text-muted-foreground">
-                Select a student to view their support history
+            <div
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center",
+                "p-8 text-center",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-14 w-14 items-center justify-center rounded-2xl",
+                  "border border-glass-border bg-primary/10 text-primary",
+                  "shadow-inner",
+                )}
+              >
+                <MessageSquare className="h-7 w-7" />
+              </div>
+              <h3 className="mt-4 text-base font-bold text-foreground">
+                Support Conversation Inbox
+              </h3>
+              <p
+                className={cn(
+                  "mt-1 max-w-sm text-xs text-muted-foreground",
+                  "leading-relaxed",
+                )}
+              >
+                Select an active ticket from the left panel to review message
+                history, reply to students, and manage support resolutions.
               </p>
             </div>
           )}
