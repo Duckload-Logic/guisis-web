@@ -34,6 +34,7 @@ import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 
 const MAX_MESSAGE_WORDS = 100;
@@ -43,6 +44,10 @@ const DEFAULT_PAGE_SIZE = 10;
 const SCROLL_THRESHOLD_PX = 80;
 const MAX_TEXTAREA_HEIGHT_PX = 120;
 const STACK_TIME_THRESHOLD_MS = 2 * 60 * 1000;
+const DEFAULT_SIDEBAR_WIDTH = 320;
+const MIN_SIDEBAR_WIDTH = 260;
+const MAX_SIDEBAR_WIDTH = 480;
+const SIDEBAR_WIDTH_STORAGE_KEY = "guisis_support_sidebar_width";
 
 const CANNED_RESPONSES = [
   "Hello! How may I assist you today?",
@@ -159,6 +164,67 @@ export function SupportManagement() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastScrollPosRef = useRef<number>(0);
+
+  const isMobile = useIsMobile();
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    if (typeof window === "undefined") return DEFAULT_SIDEBAR_WIDTH;
+    const saved = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
+    if (saved) {
+      const parsed = parseInt(saved, 10);
+      if (parsed >= MIN_SIDEBAR_WIDTH && parsed <= MAX_SIDEBAR_WIDTH) {
+        return parsed;
+      }
+    }
+    return DEFAULT_SIDEBAR_WIDTH;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  const handleMouseDownResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    startXRef.current = e.clientX;
+    startWidthRef.current = sidebarWidth;
+    setIsResizing(true);
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const deltaX = moveEvent.clientX - startXRef.current;
+      const nextWidth = Math.min(
+        Math.max(startWidthRef.current + deltaX, MIN_SIDEBAR_WIDTH),
+        MAX_SIDEBAR_WIDTH,
+      );
+      setSidebarWidth(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      setIsResizing(false);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      setSidebarWidth((current) => {
+        localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, current.toString());
+        return current;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const handleResetSidebarWidth = () => {
+    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
+    localStorage.setItem(
+      SIDEBAR_WIDTH_STORAGE_KEY,
+      DEFAULT_SIDEBAR_WIDTH.toString(),
+    );
+  };
 
   const groupedUsers = useMemo(() => {
     const groups: { [key: string]: TicketGroup } = {};
@@ -530,9 +596,10 @@ export function SupportManagement() {
       >
         {/* Left Panel: Tickets List */}
         <div
+          style={!isMobile ? { width: `${sidebarWidth}px` } : undefined}
           className={cn(
             "flex w-full shrink-0 flex-col border-b border-glass-border",
-            "md:w-80 lg:w-88 md:border-b-0 md:border-r",
+            "md:border-b-0",
             selectedGroupKey ? "hidden md:flex" : "flex flex-1",
           )}
         >
@@ -906,6 +973,29 @@ export function SupportManagement() {
             </div>
           )}
         </div>
+
+        {/* Draggable Divider (Jakob's, Fitts's, & Tesler's Law) */}
+        {!isMobile && (
+          <div
+            onMouseDown={handleMouseDownResize}
+            onDoubleClick={handleResetSidebarWidth}
+            className={cn(
+              "group relative hidden w-1 shrink-0 cursor-col-resize",
+              "select-none border-r border-glass-border bg-transparent",
+              "transition-colors hover:bg-primary/50 md:block",
+              isResizing && "bg-primary shadow-xs",
+            )}
+            title="Drag to resize • Double-click to reset"
+            role="separator"
+            aria-orientation="vertical"
+            aria-valuenow={sidebarWidth}
+            aria-valuemin={MIN_SIDEBAR_WIDTH}
+            aria-valuemax={MAX_SIDEBAR_WIDTH}
+          >
+            {/* Invisible 10px Hitbox for Fitts's Law */}
+            <div className="absolute inset-y-0 -left-1 -right-1 z-20" />
+          </div>
+        )}
 
         {/* Center Panel: Conversation Area */}
         <div
