@@ -11,11 +11,13 @@ import {
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { formatDate } from "@/utils/dateTime";
 import { SearchInput } from "@/components/form";
 import { SelectField } from "@/components/ui/select-field";
@@ -326,28 +328,46 @@ export function SlipList({
       {
         header: renderSortableHeader("Student Name", sortKeyName),
         className: "w-[28%] px-3 py-3",
-        render: (slip) => (
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "relative flex h-10 w-10 shrink-0 items-center justify-center",
-                "bg-glass-bg/50 overflow-hidden rounded-xl border border-primary/20",
-              )}
-            >
-              <User className="h-4/5 w-4/5 text-primary/80" />
+        render: (slip) => {
+          const studentName = getSlipStudentName(slip) || "Unnamed Student";
+          const initials =
+            `${slip.user?.firstName?.[0] || ""}${slip.user?.lastName?.[0] || ""}`
+              .toUpperCase() || "ST";
+          const picUrl = getProfilePictureUrl(slip.user?.profilePicture);
+
+          return (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+                {picUrl ? (
+                  <AvatarImage
+                    src={picUrl}
+                    alt={studentName}
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={cn(
+                    "rounded-xl bg-primary/10 text-xs font-bold",
+                    "text-primary",
+                  )}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 space-y-0.5">
+                <p className="truncate text-sm font-bold text-foreground">
+                  {studentName}
+                </p>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {slip.studentNumber ||
+                    slip.user?.studentNumber ||
+                    "Student record"}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <p className="truncate text-sm font-bold text-foreground">
-                {getSlipStudentName(slip) || "Unnamed Student"}
-              </p>
-              <p className="truncate text-[11px] text-muted-foreground">
-                {slip.studentNumber ||
-                  slip.user?.studentNumber ||
-                  "Student record"}
-              </p>
-            </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         header: renderSortableHeader("Absence Date", sortKeyAbsence),
@@ -478,16 +498,36 @@ export function SlipList({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <User className="h-4 w-4 text-primary" />
-            <span className="truncate">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+            {getProfilePictureUrl(slip.user?.profilePicture) ? (
+              <AvatarImage
+                src={getProfilePictureUrl(slip.user?.profilePicture)}
+                alt={getSlipStudentName(slip) || "Student"}
+                className="object-cover"
+              />
+            ) : null}
+            <AvatarFallback
+              className={cn(
+                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
+              )}
+            >
+              {`${slip.user?.firstName?.[0] || ""}${
+                slip.user?.lastName?.[0] || ""
+              }`.toUpperCase() || "ST"}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
               {getSlipStudentName(slip) || "Unnamed Student"}
-            </span>
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {slip.studentNumber ||
+                slip.user?.studentNumber ||
+                "Student record"}
+            </p>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-            {slip.studentNumber || slip.user?.studentNumber || "Student record"}
-          </p>
         </div>
 
         <span
@@ -644,7 +684,7 @@ export function SlipList({
             {/* Student Name */}
             <td className="w-[28%] px-3 py-3">
               <div className="flex items-center gap-3">
-                <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+                <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
                 <div className="min-w-0 space-y-1.5">
                   <Skeleton className="h-4 w-32 rounded-md" />
                   <Skeleton className="h-3 w-20 rounded-md" />

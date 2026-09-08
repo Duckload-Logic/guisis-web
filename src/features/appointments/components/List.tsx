@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { format12HourTime } from "@/utils/dateTime";
 import { SearchInput } from "@/components/form";
 import { SelectField } from "@/components/ui/select-field";
@@ -428,16 +430,45 @@ export default function AppointmentList({
           </div>
         ),
         className: "min-w-[220px] p-0",
-        render: (apt) => (
-          <div className="space-y-0.5 px-3 py-3">
-            <p className="font-semibold text-foreground">
-              {getAppointmentStudentName(apt) || "Unnamed Student"}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              {apt.studentNumber || apt.user?.email || "Student record"}
-            </p>
-          </div>
-        ),
+        render: (apt) => {
+          const studentName =
+            getAppointmentStudentName(apt) || "Unnamed Student";
+          const initials =
+            `${apt.user?.firstName?.[0] || ""}${apt.user?.lastName?.[0] || ""}`
+              .toUpperCase() || "ST";
+          const picUrl = getProfilePictureUrl(apt.user?.profilePicture);
+
+          return (
+            <div className="flex items-center gap-3 px-3 py-3">
+              <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+                {picUrl ? (
+                  <AvatarImage
+                    src={picUrl}
+                    alt={studentName}
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={cn(
+                    "rounded-xl bg-primary/10 text-xs font-bold",
+                    "text-primary",
+                  )}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 space-y-0.5">
+                <p className="truncate font-semibold text-foreground">
+                  {studentName}
+                </p>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {apt.studentNumber || apt.user?.email || "Student record"}
+                </p>
+              </div>
+            </div>
+          );
+        },
       },
       {
         header: (
@@ -603,16 +634,34 @@ export default function AppointmentList({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <User className="h-4 w-4 text-primary" />
-            <span className="truncate">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+            {getProfilePictureUrl(apt.user?.profilePicture) ? (
+              <AvatarImage
+                src={getProfilePictureUrl(apt.user?.profilePicture)}
+                alt={getAppointmentStudentName(apt) || "Student"}
+                className="object-cover"
+              />
+            ) : null}
+            <AvatarFallback
+              className={cn(
+                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
+              )}
+            >
+              {`${apt.user?.firstName?.[0] || ""}${
+                apt.user?.lastName?.[0] || ""
+              }`.toUpperCase() || "ST"}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
               {getAppointmentStudentName(apt) || "Unnamed Student"}
-            </span>
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {apt.appointmentCategory?.name}
+            </p>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-            {apt.appointmentCategory?.name}
-          </p>
         </div>
 
         <Badge
@@ -761,9 +810,12 @@ export default function AppointmentList({
           >
             {/* Student Name */}
             <td className="min-w-[220px] px-3 py-3">
-              <div className="space-y-1.5">
-                <Skeleton className="h-4 w-36 rounded-md" />
-                <Skeleton className="h-3 w-24 rounded-md" />
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4 w-32 rounded-md" />
+                  <Skeleton className="h-3 w-24 rounded-md" />
+                </div>
               </div>
             </td>
             {/* Date Requested */}
