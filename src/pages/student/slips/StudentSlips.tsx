@@ -3,19 +3,14 @@ import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowUpDown,
   Calendar,
-  CheckCircle2,
-  Clock,
-  FileCheck2,
+  ChevronRight,
   FileText,
   FileX,
   Plus,
-  Tag,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
@@ -106,6 +101,16 @@ const SORT_OPTIONS: SortOption[] = [
   },
 ];
 
+const getEventDateParts = (dateStr?: string) => {
+  if (!dateStr) return { month: "—", day: "—" };
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return { month: "—", day: "—" };
+  return {
+    month: d.toLocaleDateString("en-US", { month: "short" }),
+    day: d.toLocaleDateString("en-US", { day: "numeric" }),
+  };
+};
+
 export default function StudentSlips() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -146,32 +151,6 @@ export default function StudentSlips() {
         (sum: number, stat: StatusCount) => sum + (stat.count || 0),
         0,
       ) || 0
-    );
-  }, [slipStats]);
-
-  const pendingCount = useMemo(() => {
-    return (
-      slipStats?.find((s: StatusCount) =>
-        s.name?.toLowerCase().includes("pending"),
-      )?.count || 0
-    );
-  }, [slipStats]);
-
-  const approvedCount = useMemo(() => {
-    return (
-      slipStats?.find((s: StatusCount) =>
-        s.name?.toLowerCase().includes("approved"),
-      )?.count || 0
-    );
-  }, [slipStats]);
-
-  const attentionCount = useMemo(() => {
-    return (
-      slipStats?.find(
-        (s: StatusCount) =>
-          s.name?.toLowerCase().includes("rejected") ||
-          s.name?.toLowerCase().includes("revision"),
-      )?.count || 0
     );
   }, [slipStats]);
 
@@ -220,10 +199,7 @@ export default function StudentSlips() {
     return result;
   }, [slips, selectedSort, selectedOrder]);
 
-  const pageBadgeIcon = useMemo(
-    () => <FileText className="h-3.5 w-3.5" />,
-    [],
-  );
+  const pageBadgeIcon = useMemo(() => <FileText className="h-3.5 w-3.5" />, []);
 
   const hasValidCor = !!user?.studentCorUrl && !!user?.isStudentCorValid;
 
@@ -290,30 +266,11 @@ export default function StudentSlips() {
     return STATUS_COLORS[key] || STATUS_COLORS.secondary;
   };
 
-  const handleMetricCardClick = (targetName: string) => {
-    if (targetName === "All") {
-      setSelectedStatus(ALL_SLIP_STATUS);
-      setCurrentPage(1);
-      return;
-    }
-    const match = statsWithAll.find((s) =>
-      s.name.toLowerCase().includes(targetName.toLowerCase()),
-    );
-    if (match) {
-      if (String(selectedStatus.id) === String(match.id)) {
-        setSelectedStatus(ALL_SLIP_STATUS);
-      } else {
-        setSelectedStatus(match);
-      }
-      setCurrentPage(1);
-    }
-  };
-
   const emptyState = useMemo(() => {
     const isFiltered = String(selectedStatus?.id) !== "0";
 
     return (
-      <div className="px-4 py-12 text-center sm:py-16">
+      <div className="px-4 py-16 text-center">
         <div className="mx-auto flex max-w-md flex-col items-center">
           <div
             className={cn(
@@ -324,7 +281,7 @@ export default function StudentSlips() {
             <FileX className="h-8 w-8" />
           </div>
 
-          <h3 className="text-lg font-semibold text-foreground">
+          <h3 className="text-base font-semibold text-foreground">
             {isFiltered
               ? `No ${selectedStatus.name.toLowerCase()} slips found`
               : "No admission slips submitted yet"}
@@ -379,7 +336,7 @@ export default function StudentSlips() {
   return (
     <div
       className={cn(
-        "relative isolate mx-auto flex w-full max-w-7xl flex-col",
+        "relative isolate mx-auto flex w-full max-w-6xl flex-col",
         "space-y-6 px-4 pb-12 sm:px-6 md:px-8",
       )}
     >
@@ -424,138 +381,14 @@ export default function StudentSlips() {
         </Alert>
       ) : null}
 
-      {/* Top Metric Bento Row */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <Card
-          onClick={() => handleMetricCardClick("All")}
-          className={cn(
-            "cursor-pointer rounded-2xl border border-border bg-card p-4",
-            "shadow-sm transition-all hover:border-primary/40",
-            "hover:bg-accent/40 active:scale-[0.98]",
-            String(selectedStatus.id) === "0" &&
-              "border-primary/40 bg-primary/5",
-          )}
-        >
-          <CardContent className="flex items-center justify-between p-0">
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground">
-                Total Slips
-              </p>
-              <p className="mt-1 text-2xl font-bold text-foreground">
-                {totalCount}
-              </p>
-            </div>
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                "bg-primary/10 text-primary",
-              )}
-            >
-              <FileCheck2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card
-          onClick={() => handleMetricCardClick("Pending")}
-          className={cn(
-            "cursor-pointer rounded-2xl border border-border bg-card p-4",
-            "shadow-sm transition-all hover:border-amber-500/40",
-            "hover:bg-amber-500/5 active:scale-[0.98]",
-            selectedStatus.name.toLowerCase().includes("pending") &&
-              "border-amber-500/50 bg-amber-500/10",
-          )}
-        >
-          <CardContent className="flex items-center justify-between p-0">
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground">
-                Pending
-              </p>
-              <p className="mt-1 text-2xl font-bold text-amber-600">
-                {pendingCount}
-              </p>
-            </div>
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                "bg-amber-500/10 text-amber-600",
-              )}
-            >
-              <Clock className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card
-          onClick={() => handleMetricCardClick("Approved")}
-          className={cn(
-            "cursor-pointer rounded-2xl border border-border bg-card p-4",
-            "shadow-sm transition-all hover:border-emerald-500/40",
-            "hover:bg-emerald-500/5 active:scale-[0.98]",
-            selectedStatus.name.toLowerCase().includes("approved") &&
-              "border-emerald-500/50 bg-emerald-500/10",
-          )}
-        >
-          <CardContent className="flex items-center justify-between p-0">
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground">
-                Approved
-              </p>
-              <p className="mt-1 text-2xl font-bold text-emerald-600">
-                {approvedCount}
-              </p>
-            </div>
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                "bg-emerald-500/10 text-emerald-600",
-              )}
-            >
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card
-          onClick={() => handleMetricCardClick("Rejected")}
-          className={cn(
-            "cursor-pointer rounded-2xl border border-border bg-card p-4",
-            "shadow-sm transition-all hover:border-rose-500/40",
-            "hover:bg-rose-500/5 active:scale-[0.98]",
-            (selectedStatus.name.toLowerCase().includes("rejected") ||
-              selectedStatus.name.toLowerCase().includes("revision")) &&
-              "border-rose-500/50 bg-rose-500/10",
-          )}
-        >
-          <CardContent className="flex items-center justify-between p-0">
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground">
-                Needs Attention
-              </p>
-              <p className="mt-1 text-2xl font-bold text-rose-600">
-                {attentionCount}
-              </p>
-            </div>
-            <div
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-xl",
-                "bg-rose-500/10 text-rose-600",
-              )}
-            >
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Segmented Filter Pills & Compact Sort Bar */}
+      {/* Segmented Filter Tabs & Compact Sort Pill */}
       <div
         className={cn(
           "flex flex-col gap-3 sm:flex-row sm:items-center",
-          "sm:justify-between border-b border-border/60 pb-3",
+          "border-b border-border/60 pb-3 sm:justify-between",
         )}
       >
-        {/* Horizontal Segmented Status Tabs (1-click filtering) */}
+        {/* Horizontal Segmented Status Tabs */}
         <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
           {statsWithAll.map((status) => {
             const count = status.count || 0;
@@ -571,12 +404,12 @@ export default function StudentSlips() {
                 }}
                 className={cn(
                   "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs",
-                  "font-semibold transition-all select-none",
+                  "select-none font-semibold transition-all",
                   isSelected
                     ? "border border-primary/40 bg-primary/10 " +
                         "text-primary shadow-sm"
                     : "border border-border/70 bg-card " +
-                        "text-muted-foreground hover:bg-muted/60 " +
+                        "text-muted-foreground hover:bg-muted/60" +
                         "hover:text-foreground",
                 )}
               >
@@ -597,9 +430,7 @@ export default function StudentSlips() {
 
         {/* Compact Sort Selector using SelectField */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <ArrowUpDown
-            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-          />
+          <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <div className="w-[185px] sm:w-[200px]">
             <SelectField
               options={SORT_OPTIONS}
@@ -625,7 +456,7 @@ export default function StudentSlips() {
         </div>
       </div>
 
-      {/* Slip Cards Grid / Loading / Empty State */}
+      {/* Slip Cards (Clean 2-column agenda passes) */}
       <div className="w-full">
         {isSlipsLoading ? (
           <div className="flex w-full items-center justify-center p-16">
@@ -634,103 +465,105 @@ export default function StudentSlips() {
         ) : sortedSlips.length === 0 ? (
           emptyState
         ) : (
-          <div
-            className={cn(
-              "grid grid-cols-1 gap-4 md:grid-cols-2",
-              "xl:grid-cols-3 2xl:grid-cols-4",
-            )}
-          >
-            {sortedSlips.map((slip) => (
-              <button
-                key={slip.id}
-                type="button"
-                onClick={() => navigate(`/student/slips/${slip.id}`)}
-                className={cn(
-                  "group flex flex-col justify-between rounded-2xl border",
-                  "border-border bg-card p-5 text-left shadow-sm",
-                  "transition-all hover:-translate-y-0.5",
-                  "hover:border-primary/40 hover:shadow-md",
-                  "focus-visible:outline-none focus-visible:ring-2",
-                  "focus-visible:ring-primary",
-                )}
-                aria-label={`View admission slip: ${
-                  slip.category?.name || "Uncategorized"
-                }`}
-              >
-                <div className="space-y-3">
-                  {/* Category & Status Badges */}
-                  <div className="flex items-start justify-between gap-2">
-                    <Badge
-                      variant="outline"
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {sortedSlips.map((slip) => {
+              const absenceDate = getEventDateParts(slip.dateOfAbsence);
+
+              return (
+                <button
+                  key={slip.id}
+                  type="button"
+                  onClick={() => navigate(`/student/slips/${slip.id}`)}
+                  className={cn(
+                    "group flex items-center justify-between rounded-2xl",
+                    "border border-border/80 bg-card p-4 text-left shadow-sm",
+                    "transition-all hover:-translate-y-0.5",
+                    "hover:border-primary/40 hover:shadow-md",
+                    "focus-visible:outline-none focus-visible:ring-2",
+                    "focus-visible:ring-primary",
+                  )}
+                  aria-label={`View admission slip: ${
+                    slip.category?.name || "Uncategorized"
+                  }`}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                    {/* Event Calendar Date Block (Absence Date) */}
+                    <div
                       className={cn(
-                        "max-w-[170px] truncate border-border/80 bg-muted/40",
-                        "text-[11px] font-semibold text-foreground",
+                        "flex h-12 w-12 shrink-0 flex-col items-center",
+                        "justify-center rounded-xl border border-primary/20",
+                        "bg-primary/5 text-primary",
                       )}
                     >
-                      <Tag
-                        className={cn(
-                          "mr-1.5 h-3 w-3 shrink-0 text-muted-foreground",
-                        )}
-                      />
-                      <span className="truncate">
-                        {slip.category?.name || "Uncategorized"}
+                      <span className="text-[10px] font-bold uppercase">
+                        {absenceDate.month}
                       </span>
-                    </Badge>
+                      <span className="text-base font-extrabold leading-none">
+                        {absenceDate.day}
+                      </span>
+                    </div>
 
+                    {/* Content Details */}
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "border-border/70 bg-muted/40 text-[11px]",
+                            "font-semibold text-foreground",
+                          )}
+                        >
+                          {slip.category?.name || "Excuse Slip"}
+                        </Badge>
+                        <span
+                          className={cn(
+                            "flex items-center gap-1 font-mono text-[11px]",
+                            "text-muted-foreground",
+                          )}
+                        >
+                          <Calendar className="h-3 w-3" />
+                          Needed: {formatCompactDate(slip.dateNeeded)}
+                        </span>
+                      </div>
+
+                      <p
+                        className={cn(
+                          "truncate text-xs font-medium text-foreground/90",
+                        )}
+                        title={slip.reason}
+                      >
+                        {slip.reason || "No reason specified"}
+                      </p>
+
+                      <p className="text-[10px] text-muted-foreground">
+                        Submitted on {formatCompactDate(slip.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge & Action Indicator */}
+                  <div className="ml-3 flex shrink-0 items-center gap-2">
                     <Badge
                       variant="outline"
                       className={cn(
-                        "shrink-0 px-2.5 py-0.5 text-[11px] font-bold",
-                        "uppercase tracking-wider",
+                        "px-2 py-0.5 text-[10px] font-bold uppercase",
+                        "tracking-wider",
                         getStatusColor(slip.status?.name),
                       )}
                     >
                       {slip.status?.name || "Unknown"}
                     </Badge>
+                    <ChevronRight
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground/40 transition-transform",
+                        "group-hover:translate-x-0.5",
+                        "group-hover:text-foreground",
+                      )}
+                    />
                   </div>
-
-                  {/* Reason (Clamped to 2 lines) */}
-                  <p
-                    className={cn(
-                      "line-clamp-2 text-xs font-medium leading-relaxed",
-                      "text-foreground/85",
-                    )}
-                    title={slip.reason}
-                  >
-                    {slip.reason}
-                  </p>
-                </div>
-
-                {/* Footer Dates */}
-                <div
-                  className={cn(
-                    "mt-4 flex flex-col gap-2 border-t border-border/60",
-                    "pt-3 text-xs sm:flex-row sm:items-center",
-                    "sm:justify-between",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex items-center gap-1.5 text-[11px]",
-                      "text-muted-foreground",
-                    )}
-                  >
-                    <Calendar className="h-3 w-3" />
-                    Absence: {formatCompactDate(slip.dateOfAbsence)}
-                  </span>
-
-                  <span
-                    className={cn(
-                      "flex items-center gap-1.5 font-mono text-[11px]",
-                      "font-semibold text-primary",
-                    )}
-                  >
-                    <Calendar className="h-3.5 w-3.5 shrink-0" />
-                    Needed: {formatCompactDate(slip.dateNeeded)}
-                  </span>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
 
