@@ -1,310 +1,119 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAvailableSlots } from "@/features/appointments/hooks/useLookups";
-import {
-  SlotSelector,
-  AppointmentForm,
-} from "@/features/appointments/components";
-import {
-  Appointment,
-  TimeSlot,
-  CreateAppointmentRequest,
-} from "@/features/appointments";
-import Calendar from "@/features/appointments/components/Calendar";
-import { usePHHolidays, getFallbackHolidayName } from "@/utils/holidays";
 import {
   CalendarDays,
+  Clock,
   CheckCircle2,
-  Edit2,
-  LockKeyhole,
-  RefreshCw,
-  UserPlus,
+  AlertCircle,
+  Sparkles,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { SelectField } from "@/components/ui/select-field";
+import { FormField } from "@/components/ui/form-field";
+import Calendar from "@/features/appointments/components/Calendar";
+import SlotSelector from "@/features/appointments/components/SlotSelector";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  useAvailableSlots,
+  useCategories,
+} from "@/features/appointments/hooks";
 import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
-import { toISODateString } from "@/utils";
+import {
+  TimeSlot,
+  CreateAppointmentRequest,
+  AvailableTimeSlotView,
+} from "@/features/appointments/types";
+import { toISODateString } from "@/utils/dateTime";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 
-const FIRST_OPTION_INDEX = 0;
-const SECOND_OPTION_INDEX = 1;
-const THIRD_OPTION_INDEX = 2;
+const MAX_REASON_LENGTH = 500;
+const MAX_BOOKING_DAYS_AHEAD = 60;
 
-const EMPTY_APPOINTMENT_FORM: Appointment = {
-  reason: "",
-  whenDate: "",
-  timeSlot: { id: FIRST_OPTION_INDEX, time: "" },
-  appointmentCategory: { id: FIRST_OPTION_INDEX, name: "" },
-};
-
-type PreferredScheduleOption = {
+interface BackupSchedule {
   date?: Date;
-  time?: TimeSlot;
-  month: Date;
-};
+  timeSlot?: TimeSlot;
+}
 
 export default function CreateAppointment() {
-  const [appointmentFormData, setAppointmentFormData] = useState<Appointment>(
-    EMPTY_APPOINTMENT_FORM,
-  );
-
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isScheduleNoticeOpen, setIsScheduleNoticeOpen] = useState(true);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [categoryId, setCategoryId] = useState<number>(0);
+  const [reason, setReason] = useState<string>("");
 
-  const { data: holidays = {} } = usePHHolidays(currentMonth.getFullYear());
+  const [showBackupSchedule, setShowBackupSchedule] = useState(false);
+  const [backupSchedule, setBackupSchedule] = useState<BackupSchedule>({
+    date: undefined,
+    timeSlot: undefined,
+  });
 
-  const selectedDateKey = selectedDate ? toISODateString(selectedDate) : "";
-  const selectedHolidayName = selectedDateKey
-    ? holidays[selectedDateKey] || getFallbackHolidayName(selectedDateKey)
-    : null;
+  const { data: categories = [], isLoading: isCategoriesLoading } =
+    useCategories();
+  const { data: slots = [], isLoading: isSlotsLoading } = useAvailableSlots(
+    selectedDate,
+  );
+  const { data: backupSlots = [], isLoading: isBackupSlotsLoading } =
+    useAvailableSlots(backupSchedule.date);
 
-  const [activePreferredIndex, setActivePreferredIndex] =
-    useState(FIRST_OPTION_INDEX);
+  const { mutate: submitAppointment, isPending: isSubmitting } =
+    useSubmitAppointment();
 
-  const [preferredOptions, setPreferredOptions] = useState<
-    PreferredScheduleOption[]
-  >([
-    { date: undefined, time: undefined, month: new Date() },
-    { date: undefined, time: undefined, month: new Date() },
-    { date: undefined, time: undefined, month: new Date() },
-  ]);
-
-  const { data: slots, isLoading } = useAvailableSlots(
-    selectedDate || undefined,
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Book Consultation Appointment",
+        description: "Schedule your guidance and counseling consultation",
+        badgeText: "Student Portal",
+        badgeIcon: <CalendarDays className="h-4 w-4" />,
+      }),
+      [],
+    ),
   );
 
-  const { data: preferredSlotsOne, isLoading: isPreferredSlotsOneLoading } =
-    useAvailableSlots(preferredOptions[0].date || undefined);
+  const maxAllowedDate = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + MAX_BOOKING_DAYS_AHEAD);
+    return d;
+  }, []);
 
-  const { data: preferredSlotsTwo, isLoading: isPreferredSlotsTwoLoading } =
-    useAvailableSlots(preferredOptions[1].date || undefined);
+  const selectedCategory = categories.find((c) => c.id === categoryId);
 
-  const { data: preferredSlotsThree, isLoading: isPreferredSlotsThreeLoading } =
-    useAvailableSlots(preferredOptions[2].date || undefined);
+  const hasPrimarySchedule = !!selectedDate && !!selectedTime?.id;
+  const hasCategory = categoryId > 0;
+  const hasReason = reason.trim().length > 0;
+  const isFormValid = hasPrimarySchedule && hasCategory && hasReason;
 
-  const navigate = useNavigate();
-  const { mutate: submit, isPending: isSubmitting } = useSubmitAppointment();
-
-  const currentStep = !selectedDate ? 1 : !selectedTime ? 2 : 3;
-
-  const hasSelectedCategory = !!appointmentFormData.appointmentCategory?.id;
-  const hasReason = !!appointmentFormData.reason?.trim();
-
-  const canShowPreferredProcess =
-    !!selectedDate && !!selectedTime && hasSelectedCategory && hasReason;
-
-  const requiredPreferredComplete =
-    !!preferredOptions[0].date && !!preferredOptions[0].time?.id;
-
-  const canSubmitAppointment =
-    canShowPreferredProcess &&
-    requiredPreferredComplete &&
-    !isSubmitting &&
-    !isLoading &&
-    !isPreferredSlotsOneLoading &&
-    !isPreferredSlotsTwoLoading &&
-    !isPreferredSlotsThreeLoading;
-
-  const formatSelectedDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const formatFullDate = (date?: Date) => {
-    if (!date) return "Not provided";
-
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const getPreferredSlots = (index: number) => {
-    if (index === FIRST_OPTION_INDEX) return preferredSlotsOne || [];
-    if (index === SECOND_OPTION_INDEX) return preferredSlotsTwo || [];
-    if (index === THIRD_OPTION_INDEX) return preferredSlotsThree || [];
-    return [];
-  };
-
-  const getPreferredSlotsLoading = (index: number) => {
-    if (index === FIRST_OPTION_INDEX) return isPreferredSlotsOneLoading;
-    if (index === SECOND_OPTION_INDEX) return isPreferredSlotsTwoLoading;
-    if (index === THIRD_OPTION_INDEX) return isPreferredSlotsThreeLoading;
-    return false;
-  };
-
-  const updatePreferredOption = (
-    index: number,
-    updates: Partial<PreferredScheduleOption>,
-  ) => {
-    setPreferredOptions((prev) => {
-      const isClearing =
-        ("date" in updates && !updates.date) ||
-        ("time" in updates && !updates.time);
-
-      return prev.map((option, optionIndex) => {
-        if (optionIndex === index) {
-          return { ...option, ...updates };
-        }
-        if (isClearing && optionIndex > index) {
-          return {
-            date: undefined,
-            time: undefined,
-            month: new Date(),
-          };
-        }
-        return option;
-      });
-    });
-  };
-
-  const resetPreferredOption = (index: number) => {
-    updatePreferredOption(index, {
-      date: undefined,
-      time: undefined,
-      month: new Date(),
-    });
-  };
-
-  const resetPreferredTime = (index: number) => {
-    updatePreferredOption(index, {
-      time: undefined,
-    });
-  };
-
-  const resetAllPreferredOptions = () => {
-    setPreferredOptions([
-      { date: undefined, time: undefined, month: new Date() },
-      { date: undefined, time: undefined, month: new Date() },
-      { date: undefined, time: undefined, month: new Date() },
-    ]);
-    setActivePreferredIndex(FIRST_OPTION_INDEX);
-  };
-
-  const resetDateAndTime = () => {
-    setSelectedDate(undefined);
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
     setSelectedTime(undefined);
-    resetAllPreferredOptions();
-
-    setAppointmentFormData((prev) => ({
-      ...prev,
-      whenDate: "",
-      timeSlot: { id: 0, time: "" },
-    }));
   };
 
-  const resetTime = () => {
-    setSelectedTime(undefined);
-    resetAllPreferredOptions();
-
-    setAppointmentFormData((prev) => ({
-      ...prev,
-      timeSlot: { id: 0, time: "" },
-    }));
+  const handleSlotSelect = (slot: AvailableTimeSlotView) => {
+    setSelectedTime({ id: slot.id, time: slot.time });
   };
 
-  const buildPreferredScheduleText = () => {
-    return preferredOptions
-      .map((option, index) => {
-        const optionNumber = index + 1;
-        const requirement = index === 0 ? "Required" : "Optional";
+  const handleSubmit = () => {
+    if (!isFormValid || !selectedDate || !selectedTime) return;
 
-        if (!option.date || !option.time?.time) {
-          return `Option ${optionNumber} (${requirement}): Not provided`;
-        }
-
-        return [
-          `Option ${optionNumber} (${requirement}):`,
-          `Preferred Date: ${formatFullDate(option.date)}`,
-          `Preferred Time: ${option.time.time}`,
-        ].join("\n");
-      })
-      .join("\n\n");
-  };
-
-  const filterConflictingSlots = (
-    slotsList: any[],
-    targetDate: Date | undefined,
-    excludePreferredIndex?: number,
-  ) => {
-    if (!targetDate) return slotsList;
-    const targetDateStr = toISODateString(targetDate);
-
-    const selections: Array<{ dateStr: string; slotId: number }> = [];
-
-    if (excludePreferredIndex !== undefined) {
-      if (selectedDate && selectedTime?.id) {
-        selections.push({
-          dateStr: toISODateString(selectedDate),
-          slotId: selectedTime.id,
-        });
-      }
-    }
-
-    preferredOptions.forEach((option, idx) => {
-      if (idx !== excludePreferredIndex && option.date && option.time?.id) {
-        selections.push({
-          dateStr: toISODateString(option.date),
-          slotId: option.time.id,
-        });
-      }
-    });
-
-    return slotsList.map((slot) => {
-      const isConflicting = selections.some(
-        (sel) => sel.dateStr === targetDateStr && sel.slotId === slot.id,
-      );
-      if (isConflicting) {
-        return { ...slot, isAvailable: false };
-      }
-      return slot;
-    });
-  };
-
-  const handleSubmitAppointment = () => {
     const payload: CreateAppointmentRequest = {
-      reason: appointmentFormData.reason.trim(),
-      whenDate: appointmentFormData.whenDate,
-      timeSlot: {
-        id: appointmentFormData.timeSlot.id,
-      },
-      appointmentCategory: {
-        id: appointmentFormData.appointmentCategory.id,
-      },
+      whenDate: toISODateString(selectedDate),
+      timeSlot: { id: selectedTime.id },
+      appointmentCategory: { id: categoryId },
+      reason: reason.trim(),
     };
 
-    if (preferredOptions[0].date && preferredOptions[0].time?.id) {
-      payload.preferredDate1 = toISODateString(preferredOptions[0].date);
-      payload.preferredTimeSlot1 = { id: preferredOptions[0].time.id };
-    }
-    if (preferredOptions[1].date && preferredOptions[1].time?.id) {
-      payload.preferredDate2 = toISODateString(preferredOptions[1].date);
-      payload.preferredTimeSlot2 = { id: preferredOptions[1].time.id };
-    }
-    if (preferredOptions[2].date && preferredOptions[2].time?.id) {
-      payload.preferredDate3 = toISODateString(preferredOptions[2].date);
-      payload.preferredTimeSlot3 = { id: preferredOptions[2].time.id };
+    if (backupSchedule.date && backupSchedule.timeSlot?.id) {
+      payload.preferredDate1 = toISODateString(backupSchedule.date);
+      payload.preferredTimeSlot1 = { id: backupSchedule.timeSlot.id };
     }
 
-    submit(payload, {
+    submitAppointment(payload, {
       onSuccess: () => {
         navigate("/student/appointments");
       },
@@ -316,767 +125,333 @@ export default function CreateAppointment() {
     });
   };
 
-  usePageMetadata(
-    useMemo(() => {
-      return {
-        title: "Schedule Appointment",
-        description:
-          "Pick a date, select a time, fill out your reason, then choose up to 3 preferred schedules before submitting.",
-        badgeText: "New Appointment",
-        badgeIcon: <UserPlus className="h-3 w-3" />,
-        isLoading,
-      };
-    }, [isLoading]),
-  );
-
-  const maxDate = new Date();
-  maxDate.setMonth(maxDate.getMonth() + 2);
-
-  const activePreferredOption = preferredOptions[activePreferredIndex];
-
-  const activePreferredOptionKey = activePreferredOption.date
-    ? toISODateString(activePreferredOption.date)
-    : "";
-  const activePreferredHolidayName = activePreferredOptionKey
-    ? holidays[activePreferredOptionKey] ||
-      getFallbackHolidayName(activePreferredOptionKey)
+  const formattedDate = selectedDate
+    ? selectedDate.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : null;
 
   return (
-    <>
-      <Dialog
-        open={isScheduleNoticeOpen}
-        onOpenChange={setIsScheduleNoticeOpen}
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+      {/* Schedule Context Banner (Replaces intrusive popup) */}
+      <div
+        className={cn(
+          "flex flex-col gap-2.5 rounded-2xl border border-primary/20",
+          "bg-primary/5 p-4 text-xs sm:flex-row sm:items-center",
+          "sm:justify-between sm:text-sm",
+        )}
       >
-        <DialogContent
-          className={cn(
-            "overflow-hidden rounded-xl border border-border bg-background p-0",
-            "shadow-md sm:max-w-[600px]",
-          )}
-        >
-          <div className="px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6">
-            <DialogHeader className="space-y-4 text-left">
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-                    "border border-primary/20 bg-primary/10 text-primary",
-                  )}
-                >
-                  <CalendarDays className="h-5 w-5" />
-                </div>
-
-                <div className="min-w-0 space-y-1.5">
-                  <span
-                    className={cn(
-                      "inline-flex rounded-full border border-primary/20 bg-primary/5",
-                      "px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em]",
-                      "text-primary",
-                    )}
-                  >
-                    Appointment Notice
-                  </span>
-
-                  <DialogTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                    Guidance Office Schedule
-                  </DialogTitle>
-                </div>
-              </div>
-
-              <DialogDescription
-                className={cn(
-                  "rounded-xl border border-border bg-muted/40 px-4 py-4",
-                  "text-sm leading-6 text-muted-foreground sm:px-5",
-                )}
-              >
-                Ma&apos;am Liwanag L. Maliksi&apos;s schedule is strictly from
-                8:00 AM to 5:00 PM only.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
-          <DialogFooter
-            className={cn(
-              "border-t border-border bg-background px-5 py-4",
-              "sm:justify-end sm:px-6",
-            )}
-          >
-            <Button
-              type="button"
-              onClick={() => setIsScheduleNoticeOpen(false)}
-              className={cn(
-                "h-10 rounded-xl bg-primary px-7 text-sm font-semibold",
-                "text-primary-foreground shadow-md transition-colors",
-                "hover:bg-primary/90 focus-visible:ring-primary",
-              )}
-            >
-              I understand
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="min-h-full">
-        <div className="mx-auto w-full max-w-[1500px] overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
-          <div className="space-y-5">
-            {currentStep === 1 && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                <Calendar
-                  currentMonth={currentMonth}
-                  selectedDate={selectedDate}
-                  onMonthChange={setCurrentMonth}
-                  onDateSelect={(date) => {
-                    setSelectedDate(date);
-                    setSelectedTime(undefined);
-                    resetAllPreferredOptions();
-
-                    setAppointmentFormData((prev) => ({
-                      ...prev,
-                      whenDate: toISODateString(date),
-                      timeSlot: { id: 0, time: "" },
-                    }));
-                  }}
-                  title="Select a Date"
-                  occupiedDayColor="bg-primary/80"
-                  legends={[
-                    {
-                      color:
-                        "border border-dashed border-amber-500 " +
-                        "bg-amber-500/10",
-                      label: "Holiday",
-                    },
-                  ]}
-                  hasHeader
-                  className="mx-auto w-full max-w-lg"
-                  allowCurrentDate={false}
-                  allowPastDates={false}
-                  maxDate={maxDate}
-                />
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 duration-300">
-                <Card
-                  className={cn(
-                    "rounded-2xl border border-border bg-glass-bg",
-                    "shadow-md backdrop-blur-xl",
-                  )}
-                >
-                  <CardContent className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                          "border border-primary/15 bg-primary/10 text-primary",
-                        )}
-                      >
-                        <CalendarDays className="h-4.5 w-4.5" />
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Selected Date
-                        </p>
-
-                        <p className="text-sm font-semibold text-foreground">
-                          {selectedDate
-                            ? formatSelectedDate(selectedDate)
-                            : "—"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetDateAndTime}
-                      className="h-9 rounded-xl"
-                    >
-                      <Edit2 className="mr-2 h-3.5 w-3.5" />
-                      Change Date
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {selectedHolidayName && (
-                  <div
-                    className={cn(
-                      "flex items-start gap-3 rounded-2xl border " +
-                        "border-warning-foreground/30 bg-warning-background" +
-                  " p-4" +
-                        "text-warning-foreground",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center " +
-                          "rounded-full" +
-                  " bg-warning-foreground/20" +
-                          "text-xs text-warning-foreground",
-                      )}
-                    >
-                      ⚠️
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">
-                        Notice: Selected Date is a Holiday
-                      </p>
-                      <p className="mt-1 text-xs leading-5 opacity-90">
-                        {selectedDate && formatSelectedDate(selectedDate)} is{" "}
-                        <strong>{selectedHolidayName}</strong>. The Guidance
-                        Office may have limited counselor availability.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <SlotSelector
-                  selectedDate={selectedDate}
-                  selectedTime={selectedTime}
-                  availableSlots={filterConflictingSlots(
-                    slots || [],
-                    selectedDate,
-                  )}
-                  loading={isLoading}
-                  onTimeSelect={(time) => {
-                    setSelectedTime(time);
-                    resetAllPreferredOptions();
-
-                    setAppointmentFormData((prev) => ({
-                      ...prev,
-                      timeSlot: time,
-                    }));
-                  }}
-                />
-              </div>
-            )}
-
-            {currentStep === 3 && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 space-y-5 duration-300">
-                <div
-                  className={cn(
-                    "flex flex-col gap-3 rounded-2xl border border-border",
-                    "bg-glass-bg p-4 shadow-md backdrop-blur-xl",
-                    "lg:flex-row lg:items-center lg:justify-between",
-                  )}
-                >
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Schedule Selected
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      Fill out your request details, then choose preferred
-                      schedule options on the right.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetDateAndTime}
-                      className="h-9 rounded-xl"
-                    >
-                      Change Date
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={resetTime}
-                      className="h-9 rounded-xl"
-                    >
-                      Change Time
-                    </Button>
-                  </div>
-                </div>
-
-                <div
-                  className={cn(
-                    "grid w-full min-w-0 gap-5 sm:gap-6",
-                    "xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
-                    "2xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
-                    "xl:items-start",
-                  )}
-                >
-                  <div className="w-full min-w-0">
-                    <AppointmentForm
-                      data={appointmentFormData}
-                      onChange={(name: string, value: any) => {
-                        setAppointmentFormData((prev) => ({
-                          ...prev,
-                          [name]: value,
-                        }));
-                      }}
-                      onSubmit={handleSubmitAppointment}
-                      isLoading={isLoading}
-                      isSubmitting={isSubmitting}
-                      showSubmitButton={false}
-                    />
-                  </div>
-
-                  <div className="w-full min-w-0">
-                    <Card
-                      className={cn(
-                        "overflow-hidden rounded-2xl border bg-glass-bg",
-                        canShowPreferredProcess
-                          ? "border-border shadow-md"
-                          : "border-dashed border-border/70 shadow-sm",
-                        "backdrop-blur-xl",
-                      )}
-                    >
-                      <CardHeader className="border-b border-border/60 bg-muted/30 px-4 py-4 sm:px-5">
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
-                              canShowPreferredProcess
-                                ? "border-primary/15 bg-primary/10 text-primary"
-                                : "border-muted-foreground/20 bg-muted text-muted-foreground",
-                            )}
-                          >
-                            {canShowPreferredProcess ? (
-                              <CheckCircle2 className="h-4.5 w-4.5" />
-                            ) : (
-                              <LockKeyhole className="h-4.5 w-4.5" />
-                            )}
-                          </div>
-
-                          <div className="min-w-0">
-                            <p
-                              className={cn(
-                                "text-xs font-semibold uppercase tracking-[0.14em]",
-                                canShowPreferredProcess
-                                  ? "text-primary"
-                                  : "text-muted-foreground",
-                              )}
-                            >
-                              Preferred Schedule
-                            </p>
-
-                            <CardTitle className="mt-1 text-base font-bold tracking-tight text-foreground sm:text-lg">
-                              Choose Up to 3 Preferred Schedules
-                            </CardTitle>
-
-                            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                              Select at least one preferred schedule. Option 1
-                              is required, while Options 2 and 3 are optional
-                              backup schedules.
-                            </p>
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-5">
-                        {!canShowPreferredProcess && (
-                          <div
-                            className={cn(
-                              "flex min-h-[260px] flex-col items-center justify-center rounded-2xl",
-                              "border border-dashed border-border/70 bg-muted/20 px-6 py-10 text-center",
-                              "shadow-inner",
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "mb-4 flex h-14 w-14 items-center justify-center rounded-2xl",
-                                "border border-primary/15 bg-primary/10 text-primary",
-                              )}
-                            >
-                              <LockKeyhole className="h-6 w-6" />
-                            </div>
-
-                            <h4 className="text-base font-semibold text-foreground">
-                              Complete the request details first
-                            </h4>
-
-                            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                              Complete the concern category and reason/request
-                              on the left first. The preferred schedule options
-                              will unlock after that.
-                            </p>
-                          </div>
-                        )}
-
-                        {canShowPreferredProcess && (
-                          <>
-                            <div className="grid gap-3 md:grid-cols-3">
-                              {preferredOptions.map((option, index) => {
-                                const isActive = activePreferredIndex === index;
-                                const isRequired = index === FIRST_OPTION_INDEX;
-                                const isComplete =
-                                  !!option.date && !!option.time;
-                                const isDisabled =
-                                  index > FIRST_OPTION_INDEX &&
-                                  (!preferredOptions[index - 1].date ||
-                                    !preferredOptions[index - 1].time);
-
-                                return (
-                                  <button
-                                    key={index}
-                                    type="button"
-                                    disabled={isDisabled}
-                                    onClick={() =>
-                                      setActivePreferredIndex(index)
-                                    }
-                                    className={cn(
-                                      "min-h-[92px] rounded-2xl border",
-                                      "px-3 py-3 text-left",
-                                      "transition-all sm:px-4",
-                                      isActive
-                                        ? cn(
-                                            "border-primary/40 bg-primary/10",
-                                            "shadow-sm",
-                                          )
-                                        : cn(
-                                            "border-border bg-card",
-                                            "hover:bg-muted/30",
-                                          ),
-                                      isDisabled &&
-                                        cn(
-                                          "cursor-not-allowed opacity-50",
-                                          "hover:bg-card",
-                                        ),
-                                    )}
-                                  >
-                                    <div className="flex items-center justify-between gap-2">
-                                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-foreground">
-                                        Option {index + 1}
-                                      </p>
-
-                                      <span
-                                        className={cn(
-                                          "rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                                          isRequired
-                                            ? "bg-primary/10 text-primary"
-                                            : "bg-muted text-muted-foreground",
-                                        )}
-                                      >
-                                        {isRequired ? "Required" : "Optional"}
-                                      </span>
-                                    </div>
-
-                                    <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
-                                      {isComplete
-                                        ? `${formatFullDate(option.date)} at ${
-                                            option.time?.time
-                                          }`
-                                        : option.date
-                                          ? `${formatFullDate(
-                                              option.date,
-                                            )} — select time`
-                                          : "No schedule selected"}
-                                    </p>
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            {!activePreferredOption.date && (
-                              <Calendar
-                                currentMonth={activePreferredOption.month}
-                                selectedDate={activePreferredOption.date}
-                                onMonthChange={(month) =>
-                                  updatePreferredOption(activePreferredIndex, {
-                                    month,
-                                  })
-                                }
-                                onDateSelect={(date) => {
-                                  updatePreferredOption(activePreferredIndex, {
-                                    date,
-                                    time: undefined,
-                                  });
-                                }}
-                                title={`Select Preferred Date - Option ${
-                                  activePreferredIndex + 1
-                                }`}
-                                occupiedDayColor="bg-primary/80"
-                                legends={[
-                                  {
-                                    color:
-                                      "border border-dashed border-amber-500 " +
-                                      "bg-amber-500/10",
-                                    label: "Holiday",
-                                  },
-                                ]}
-                                hasHeader
-                                className="mx-auto w-full max-w-full sm:max-w-[430px]"
-                                allowCurrentDate={false}
-                                allowPastDates={false}
-                                maxDate={maxDate}
-                              />
-                            )}
-
-                            {activePreferredOption.date &&
-                              !activePreferredOption.time && (
-                                <div className="space-y-4">
-                                  <Card
-                                    className={cn(
-                                      "rounded-2xl border border-border bg-card",
-                                      "shadow-sm",
-                                    )}
-                                  >
-                                    <CardContent className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                      <div className="flex items-center gap-3">
-                                        <div
-                                          className={cn(
-                                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                                            "border border-primary/15 bg-primary/10 text-primary",
-                                          )}
-                                        >
-                                          <CalendarDays className="h-4.5 w-4.5" />
-                                        </div>
-
-                                        <div>
-                                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-                                            Preferred Date - Option{" "}
-                                            {activePreferredIndex + 1}
-                                          </p>
-
-                                          <p className="text-sm font-semibold text-foreground">
-                                            {formatFullDate(
-                                              activePreferredOption.date,
-                                            )}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          resetPreferredOption(
-                                            activePreferredIndex,
-                                          )
-                                        }
-                                        className="h-9 rounded-xl"
-                                      >
-                                        <Edit2 className="mr-2 h-3.5 w-3.5" />
-                                        Change Date
-                                      </Button>
-                                    </CardContent>
-                                  </Card>
-
-                                  {activePreferredHolidayName && (
-                                    <div
-                                      className={cn(
-                                        "flex items-start gap-3 rounded-2xl " +
-                                          "border" +
-                  " border-warning-foreground/30" +
-                                          "bg-warning-background p-4" +
-                                          "text-warning-foreground",
-                                      )}
-                                    >
-                                      <div
-                                        className={cn(
-                                          "flex h-5 w-5 shrink-0 " +
-                                            "items-center justify-center" +
-                                            "rounded-full" +
-                  " bg-warning-foreground/20" +
-                                            "text-xs text-warning-foreground",
-                                        )}
-                                      >
-                                        ⚠️
-                                      </div>
-                                      <div>
-                                        <p className="text-sm font-semibold">
-                                          Notice: Selected Date is a Holiday
-                                        </p>
-                                        <p className="mt-1 text-xs leading-5 opacity-90">
-                                          {formatFullDate(
-                                            activePreferredOption.date,
-                                          )}{" "}
-                                          is{" "}
-                                          <strong>
-                                            {activePreferredHolidayName}
-                                          </strong>
-                                          . The Guidance Office may have limited
-                                          availability.
-                                        </p>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  <div className="min-w-0">
-                                    <SlotSelector
-                                      selectedDate={activePreferredOption.date}
-                                      selectedTime={activePreferredOption.time}
-                                      availableSlots={filterConflictingSlots(
-                                        getPreferredSlots(activePreferredIndex),
-                                        activePreferredOption.date,
-                                        activePreferredIndex,
-                                      )}
-                                      loading={getPreferredSlotsLoading(
-                                        activePreferredIndex,
-                                      )}
-                                      onTimeSelect={(time) => {
-                                        updatePreferredOption(
-                                          activePreferredIndex,
-                                          { time },
-                                        );
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              )}
-
-                            {activePreferredOption.date &&
-                              activePreferredOption.time && (
-                                <div
-                                  className={cn(
-                                    "rounded-2xl border border-success-foreground/30",
-                                    "bg-success-background px-4 py-3",
-                                    "text-success-foreground",
-                                  )}
-                                >
-                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <p className="text-sm leading-6">
-                                      Option {activePreferredIndex + 1}{" "}
-                                      selected:{" "}
-                                      <span className="font-semibold">
-                                        {formatFullDate(
-                                          activePreferredOption.date,
-                                        )}
-                                      </span>{" "}
-                                      at{" "}
-                                      <span className="font-semibold">
-                                        {activePreferredOption.time.time}
-                                      </span>
-                                      .
-                                    </p>
-
-                                    <div className="flex shrink-0 flex-wrap gap-1.5">
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          resetPreferredOption(
-                                            activePreferredIndex,
-                                          )
-                                        }
-                                        className={cn(
-                                          "h-7 rounded-lg border-success-foreground/30",
-                                          "bg-card/60 px-2.5 text-[10px] font-semibold",
-                                          "text-success-foreground hover:bg-muted/60",
-                                        )}
-                                      >
-                                        Change Date
-                                      </Button>
-
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          resetPreferredTime(
-                                            activePreferredIndex,
-                                          )
-                                        }
-                                        className={cn(
-                                          "h-7 rounded-lg border-success-foreground/30",
-                                          "bg-card/60 px-2.5 text-[10px] font-semibold",
-                                          "text-success-foreground hover:bg-muted/60",
-                                        )}
-                                      >
-                                        Change Time
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-
-                            <div
-                              className={cn(
-                                "rounded-2xl border px-4 py-3 text-sm leading-6",
-                                requiredPreferredComplete
-                                  ? "border-success-foreground/30 bg-success-background text-success-foreground"
-                                  : "border-warning-foreground/30 bg-warning-background text-warning-foreground",
-                              )}
-                            >
-                              {requiredPreferredComplete
-                                ? "Required preferred schedule is complete. You may add Option 2 and Option 3 if you want backup schedules."
-                                : "Please complete Preferred Schedule Option 1 to enable submission."}
-                            </div>
-
-                            {requiredPreferredComplete && (
-                              <div className="flex items-center justify-center pt-1">
-                                <Button
-                                  type="button"
-                                  onClick={handleSubmitAppointment}
-                                  disabled={!canSubmitAppointment}
-                                  className={cn(
-                                    "h-auto w-full rounded-xl bg-primary py-3",
-                                    "text-base font-semibold text-primary-foreground",
-                                    "transition-colors hover:bg-primary/90",
-                                  )}
-                                >
-                                  {isSubmitting
-                                    ? "Submitting..."
-                                    : "Submit Appointment Request"}
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Info className="h-4 w-4 shrink-0 text-primary" />
+          <span className="font-medium text-foreground">
+            Guidance Office Schedule: Consultations are strictly from{" "}
+            <strong>8:00 AM to 5:00 PM</strong> on weekdays.
+          </span>
         </div>
+        <Badge
+          variant="secondary"
+          className="w-fit rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+        >
+          Ma&apos;am Liwanag L. Maliksi
+        </Badge>
       </div>
 
-      <AnimatePresence>
-        {isSubmitting && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={cn(
-              "fixed inset-0 z-[100] flex flex-col items-center",
-              "justify-center bg-slate-950/40 shadow-md",
-            )}
-          >
-            <div
-              className={cn(
-                "flex w-[calc(100%-2rem)] max-w-sm flex-col items-center",
-                "gap-4 rounded-xl border border-border bg-card p-6",
-                "shadow-2xl backdrop-blur-2xl sm:p-10",
-              )}
-            >
-              <div className="relative">
-                <RefreshCw
-                  size={48}
-                  className="animate-spin text-primary"
-                />
-                <div
-                  className={cn(
-                    "absolute inset-0 animate-ping rounded-full",
-                    "border border-primary/20",
+      {/* 2-Column Master-Detail Layout */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        {/* Left Column: Form & Schedule (8 cols) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Card 1: Interactive Schedule Picker */}
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-4">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <CardTitle className="text-base font-semibold">
+                  1. Select Date & Available Time Slot
+                </CardTitle>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Click a date on the calendar, then choose your consultation time
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+                {/* Calendar sub-column */}
+                <div className="md:col-span-6">
+                  <Calendar
+                    currentMonth={currentMonth}
+                    selectedDate={selectedDate}
+                    onMonthChange={setCurrentMonth}
+                    onDateSelect={handleDateSelect}
+                    title="Consultation Calendar"
+                    occupiedDayColor="bg-primary/80"
+                    hasHeader
+                    allowCurrentDate={false}
+                    allowPastDates={false}
+                    maxDate={maxAllowedDate}
+                    className="w-full border-0 shadow-none p-0"
+                  />
+                </div>
+
+                {/* Time slot sub-column */}
+                <div className="border-t border-border/60 pt-4 md:col-span-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+                  {selectedDate ? (
+                    <SlotSelector
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      availableSlots={slots}
+                      loading={isSlotsLoading}
+                      onTimeSelect={handleSlotSelect}
+                    />
+                  ) : (
+                    <div className="flex min-h-[280px] flex-col items-center justify-center rounded-xl border border-dashed border-border/70 p-6 text-center">
+                      <Clock className="mb-2 h-8 w-8 text-muted-foreground/60" />
+                      <p className="text-sm font-medium text-foreground">
+                        No Date Selected
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Select a date on the calendar to see available slots
+                      </p>
+                    </div>
                   )}
-                />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Consultation Details */}
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <CardTitle className="text-base font-semibold">
+                  2. Consultation Request Details
+                </CardTitle>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Help the guidance counselor prepare for your consultation
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              <SelectField
+                label="Concern Category"
+                value={categoryId}
+                onChange={(val) => setCategoryId(Number(val))}
+                options={categories}
+                loading={isCategoriesLoading}
+                required
+              />
+
+              <FormField
+                label="Reason for Consultation"
+                value={reason}
+                onChange={(val) => setReason(val)}
+                placeholder="Briefly state your concern or topic for counseling"
+                isTextarea
+                required
+                maxChars={MAX_REASON_LENGTH}
+                info="This note is confidential and read by the guidance counselor."
+              />
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Optional Backup Schedule */}
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader
+              className="cursor-pointer border-b border-border/60 py-3.5"
+              onClick={() => setShowBackupSchedule(!showBackupSchedule)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-foreground">
+                    Alternative Preferred Schedule (Optional)
+                  </CardTitle>
+                  <Badge variant="outline" className="text-[10px]">
+                    Optional Backup
+                  </Badge>
+                </div>
+                {showBackupSchedule ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+            {showBackupSchedule && (
+              <CardContent className="p-4 sm:p-6">
+                <p className="mb-4 text-xs text-muted-foreground">
+                  If your primary date has scheduling conflicts, the counselor
+                  can consider this alternative date:
+                </p>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+                  <div className="md:col-span-6">
+                    <Calendar
+                      currentMonth={backupSchedule.date || new Date()}
+                      selectedDate={backupSchedule.date}
+                      onMonthChange={() => {}}
+                      onDateSelect={(d) =>
+                        setBackupSchedule({ date: d, timeSlot: undefined })
+                      }
+                      title="Backup Date"
+                      occupiedDayColor="bg-primary/80"
+                      hasHeader
+                      allowCurrentDate={false}
+                      allowPastDates={false}
+                      maxDate={maxAllowedDate}
+                      className="w-full border-0 shadow-none p-0"
+                    />
+                  </div>
+                  <div className="md:col-span-6 md:border-l md:border-border/60 md:pl-6">
+                    {backupSchedule.date ? (
+                      <SlotSelector
+                        selectedDate={backupSchedule.date}
+                        selectedTime={backupSchedule.timeSlot}
+                        availableSlots={backupSlots}
+                        loading={isBackupSlotsLoading}
+                        onTimeSelect={(slot) =>
+                          setBackupSchedule((prev) => ({
+                            ...prev,
+                            timeSlot: { id: slot.id, time: slot.time },
+                          }))
+                        }
+                      />
+                    ) : (
+                      <div className="flex min-h-[200px] flex-col items-center justify-center rounded-xl border border-dashed border-border/70 p-4 text-center">
+                        <p className="text-xs text-muted-foreground">
+                          Select an alternative date on the calendar
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </div>
+
+        {/* Right Column: Sticky Booking Summary (4 cols) */}
+        <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-4">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Appointment Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              {/* Selected Schedule Pill */}
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Primary Schedule
+                </span>
+                {formattedDate && selectedTime?.time ? (
+                  <div className="mt-1 flex items-center justify-between">
+                    <p className="text-sm font-bold text-foreground">
+                      {formattedDate}
+                    </p>
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {selectedTime.time}
+                    </Badge>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs italic text-muted-foreground">
+                    Select a date and time slot
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-1 text-center">
-                <h3 className="text-lg font-bold text-foreground">
-                  Scheduling Appointment
-                </h3>
-
-                <p className="max-w-[280px] text-sm text-muted-foreground">
-                  Sending your appointment request. Please wait...
+              {/* Concern Category */}
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Category
+                </span>
+                <p className="mt-1 text-xs font-semibold text-foreground">
+                  {selectedCategory?.name || (
+                    <span className="italic text-muted-foreground">
+                      No category selected
+                    </span>
+                  )}
                 </p>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+
+              {/* Readiness Checklist */}
+              <div className="space-y-2 border-t border-border/60 pt-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Booking Checklist (3-Click Rule):
+                </span>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2">
+                    {hasPrimarySchedule ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        hasPrimarySchedule
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Date & Time slot selected
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {hasCategory ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        hasCategory
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Concern category selected
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {hasReason ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        hasReason
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Reason for consultation provided
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Primary Action Button */}
+              <Button
+                onClick={handleSubmit}
+                disabled={!isFormValid || isSubmitting}
+                className="w-full rounded-xl py-5 text-sm font-semibold shadow-sm"
+              >
+                {isSubmitting ? "Booking Appointment..." : "Book Appointment"}
+              </Button>
+
+              <p className="text-center text-[11px] text-muted-foreground">
+                You will receive a notification once the counselor confirms your
+                appointment slot.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

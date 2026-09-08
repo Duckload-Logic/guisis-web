@@ -1,14 +1,21 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  Calendar,
+  FileUp,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Info,
+  X,
+  MapPin,
+  HelpCircle,
+  Folder,
+  Plus,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Dialog,
   DialogContent,
@@ -16,21 +23,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Calendar,
-  FileUp,
-  CheckCircle2,
-  ChevronRight,
-  Edit2,
-  Layers,
-  Folder,
-  Plus,
-  FileText,
-  Info,
-  X,
-  MapPin,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { DatePicker } from "@/components/ui/date-picker";
+import { SelectField } from "@/components/ui/select-field";
+import { FormField } from "@/components/ui/form-field";
+import { PDFPreview } from "@/components/shared";
+import { ExistingFileCard } from "./components/ExistingFileCard";
+import { LocalFileCard } from "./components/LocalFileCard";
 import {
   useGetSlipCategories,
   useSubmitSlip,
@@ -38,21 +36,19 @@ import {
   useGetSlipById,
   useGetSlipAttachments,
 } from "@/features/slips/hooks";
-import { StepProgress } from "@/features/slips/components";
-import { AnimationStyles } from "@/components/ui/animations";
 import { CreateSlipRequest } from "@/features/slips/types";
-import { usePageMetadata } from "@/context";
-import { PDFPreview } from "@/components/shared";
-import { SelectField } from "@/components/ui/select-field";
-import { CustomTooltip, FormField } from "@/components/ui/form-field";
-import { ExistingFileCard } from "./components/ExistingFileCard";
-import { LocalFileCard } from "./components/LocalFileCard";
-import { useToast } from "@/context";
+import { usePageMetadata, useToast } from "@/context";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import goodCertImage from "@/assets/images/good-certificate-example.png";
 import badCertImage from "@/assets/images/bad-certificate-example.png";
-import { DatePicker } from "@/components/ui/date-picker";
+
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_REASON_CHARS = 500;
+const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
+
+type DocumentType = "excuseLetter" | "parentId" | "medicalCert";
 
 interface SubmitSlipFormState {
   dateOfAbsence: string;
@@ -79,45 +75,51 @@ const EMPTY_FORM_DATA: SubmitSlipFormState = {
 };
 
 export default function SubmitSlip() {
-  const [formData, setFormData] =
-    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [previewData, setPreviewData] = useState<{
-    file: File;
-    url: string;
-  } | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const submittingRef = useRef(false);
-
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const { triggerToast } = useToast();
+  const submittingRef = useRef(false);
+
+  const [formData, setFormData] =
+    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewData, setPreviewData] = useState<{
+    file: File;
+    url: string;
+  } | null>(null);
+  const [isGuidelineModalOpen, setIsGuidelineModalOpen] = useState(false);
+  const [keptAttachments, setKeptAttachments] = useState<any[]>([]);
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useGetSlipCategories();
-  const { data: existingSlip, isLoading: isSlipLoading } = useGetSlipById(
-    id || "",
-  );
-  const { mutate: submitSlip, isPending: isSubmitting } = useSubmitSlip();
-  const { mutate: updateSlip, isPending: isUpdating } = useUpdateSlip();
-
+  const { data: existingSlip } = useGetSlipById(id || "");
   const { data: existingAttachments = [] } = useGetSlipAttachments(
     isEditMode ? id : undefined,
   );
-  const [keptAttachments, setKeptAttachments] = useState<any[]>([]);
+
+  const { mutate: submitSlip, isPending: isSubmitting } = useSubmitSlip();
+  const { mutate: updateSlip, isPending: isUpdating } = useUpdateSlip();
+
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: isEditMode
+          ? "Edit Admission Slip"
+          : "Submit Admission Slip Request",
+        description: "Submit your excuse letter and supporting documents",
+        badgeText: "Student Portal",
+        badgeIcon: <FileUp className="h-4 w-4" />,
+      }),
+      [isEditMode],
+    ),
+  );
 
   useEffect(() => {
     if (isEditMode && existingAttachments.length > 0) {
       setKeptAttachments(existingAttachments);
     }
   }, [isEditMode, existingAttachments]);
-
-  const getKeptFiles = (type: "excuseLetter" | "parentId" | "medicalCert") => {
-    return keptAttachments.filter((att) =>
-      att.fileName?.toLowerCase().startsWith(type.toLowerCase()),
-    );
-  };
 
   useEffect(() => {
     if (isEditMode && existingSlip) {
@@ -139,98 +141,75 @@ export default function SubmitSlip() {
     }
   }, [isEditMode, existingSlip]);
 
-  const steps = [
-    { id: 1, label: "Info & Dates", icon: Calendar },
-    { id: 2, label: "Category", icon: Layers },
-    { id: 3, label: "Documents", icon: FileUp },
-  ];
-
-  const datesComplete = !!(formData.dateOfAbsence && formData.dateNeeded);
-  const categoryComplete =
-    formData.categoryId > 0 && formData.reason.trim() !== "";
-
-  const getSelectedCategory = () => {
-    return categories.find((c) => c.id === formData.categoryId);
-  };
-
-  const isMedicalCategory = () => {
-    const selected = getSelectedCategory();
-    if (!selected) return false;
-    const categoryName = selected.name?.toLowerCase() || "";
-    return (
-      categoryName.includes("medical") ||
-      categoryName.includes("health") ||
-      categoryName.includes("illness") ||
-      categoryName.includes("sick")
+  const getKeptFiles = (type: DocumentType) => {
+    return keptAttachments.filter((att) =>
+      att.fileName?.toLowerCase().startsWith(type.toLowerCase()),
     );
   };
 
+  const selectedCategory = categories.find((c) => c.id === formData.categoryId);
+
+  const isMedicalCategory = useMemo(() => {
+    if (!selectedCategory) return false;
+    const catName = selectedCategory.name?.toLowerCase() || "";
+    return (
+      catName.includes("medical") ||
+      catName.includes("health") ||
+      catName.includes("illness") ||
+      catName.includes("sick")
+    );
+  }, [selectedCategory]);
+
+  const datesComplete = !!(formData.dateOfAbsence && formData.dateNeeded);
+  const categoryComplete =
+    formData.categoryId > 0 && formData.reason.trim().length > 0;
   const excuseLetterProvided =
     formData.files.excuseLetter.length > 0 ||
     getKeptFiles("excuseLetter").length > 0;
   const parentIdProvided =
     formData.files.parentId.length > 0 || getKeptFiles("parentId").length > 0;
   const medicalCertProvided =
-    !isMedicalCategory() ||
+    !isMedicalCategory ||
     formData.files.medicalCert.length > 0 ||
     getKeptFiles("medicalCert").length > 0;
 
-  const documentsProvided =
-    excuseLetterProvided && parentIdProvided && medicalCertProvided;
-
-  const isFormValid = datesComplete && categoryComplete && documentsProvided;
-  const completedSteps: boolean[] = [
-    datesComplete,
-    categoryComplete,
-    documentsProvided,
-  ];
+  const isFormValid =
+    datesComplete &&
+    categoryComplete &&
+    excuseLetterProvided &&
+    parentIdProvided &&
+    medicalCertProvided;
 
   const handleDateChange = (
     field: "dateOfAbsence" | "dateNeeded",
     value: string,
   ) => {
     if (field === "dateOfAbsence" && value) {
-      const selectedDate = new Date(value);
+      const selected = new Date(value);
       const today = new Date();
       today.setHours(23, 59, 59, 999);
-
-      if (selectedDate > today) {
-        triggerToast(
-          "You cannot be absent in the future. Please select a valid date.",
-        );
+      if (selected > today) {
+        triggerToast("Date of absence cannot be in the future.");
         return;
       }
     }
 
     if (field === "dateNeeded" && value) {
-      const selectedDate = new Date(value);
-      selectedDate.setHours(23, 59, 59, 999);
+      const selected = new Date(value);
+      selected.setHours(23, 59, 59, 999);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
-      if (selectedDate < today) {
-        triggerToast(
-          "Date needed cannot be in the past. Please select a valid date.",
-        );
+      if (selected < today) {
+        triggerToast("Date needed cannot be in the past.");
         return;
       }
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleCategoryChange = (categoryId: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      categoryId,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const sanitizeFileNames = (
-    documentType: "excuseLetter" | "parentId" | "medicalCert",
+    documentType: DocumentType,
     filesList: File[],
   ): File[] => {
     return filesList.map((file, idx) => {
@@ -241,17 +220,10 @@ export default function SubmitSlip() {
     });
   };
 
-  const handleFileAdd = (
-    documentType: "excuseLetter" | "parentId" | "medicalCert",
-    files: FileList | null,
-  ) => {
+  const handleFileAdd = (documentType: DocumentType, files: FileList | null) => {
     if (!files) return;
 
-    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-    const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
-    const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
     const allFiles = Array.from(files);
-
     const currentTotalSize = formData.files[documentType].reduce(
       (acc, f) => acc + f.size,
       0,
@@ -276,27 +248,24 @@ export default function SubmitSlip() {
 
     if (validFiles.length === 0) return;
 
-    if (currentTotalSize + incomingSize > MAX_SIZE) {
+    if (currentTotalSize + incomingSize > MAX_FILE_SIZE_BYTES) {
       triggerToast("Total size for this category must not exceed 5MB.");
       return;
     }
 
     setFormData((prev) => {
-      const updatedList = [...prev.files[documentType], ...validFiles];
+      const updated = [...prev.files[documentType], ...validFiles];
       return {
         ...prev,
         files: {
           ...prev.files,
-          [documentType]: sanitizeFileNames(documentType, updatedList),
+          [documentType]: sanitizeFileNames(documentType, updated),
         },
       };
     });
   };
 
-  const handleFileRemove = (
-    documentType: "excuseLetter" | "parentId" | "medicalCert",
-    index: number,
-  ) => {
+  const handleFileRemove = (documentType: DocumentType, index: number) => {
     setFormData((prev) => {
       const filtered = prev.files[documentType].filter((_, i) => i !== index);
       return {
@@ -343,11 +312,7 @@ export default function SubmitSlip() {
 
     if (isEditMode && id) {
       updateSlip(
-        {
-          id,
-          data: payload,
-          onUploadProgress: progressHandler,
-        },
+        { id, data: payload, onUploadProgress: progressHandler },
         {
           onSuccess: () => {
             submittingRef.current = false;
@@ -362,10 +327,7 @@ export default function SubmitSlip() {
       );
     } else {
       submitSlip(
-        {
-          ...payload,
-          onUploadProgress: progressHandler,
-        },
+        { ...payload, onUploadProgress: progressHandler },
         {
           onSuccess: () => {
             submittingRef.current = false;
@@ -385,1266 +347,452 @@ export default function SubmitSlip() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const renderUploadDropzone = (
+    documentType: DocumentType,
+    title: string,
+    badgeText: string,
+    description: string,
+    isMandatory: boolean,
+  ) => {
+    const localFiles = formData.files[documentType];
+    const keptFiles = getKeptFiles(documentType);
+    const hasFiles = localFiles.length > 0 || keptFiles.length > 0;
 
-  usePageMetadata(
-    useMemo(() => {
-      return {
-        title: isEditMode ? "Update Admission Slip" : "Submit Admission Slip",
-        description: isEditMode
-          ? "Update your information or re-upload your document links as requested by the guidance counselor."
-          : "Provide the required information and supporting documents for your absence.",
-        badgeText: isEditMode ? "Revision" : "New Request",
-        badgeIcon: isEditMode ? (
-          <Edit2 className="h-4 w-4" />
-        ) : (
-          <Plus className="h-4 w-4" />
-        ),
-        isLoading: isCategoriesLoading || (isEditMode && isSlipLoading),
-      };
-    }, [isEditMode, isCategoriesLoading, isSlipLoading]),
-  );
+    return (
+      <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">{title}</span>
+            <Badge
+              variant={isMandatory ? "destructive" : "secondary"}
+              className="text-[10px]"
+            >
+              {badgeText}
+            </Badge>
+          </div>
+          {hasFiles && (
+            <Badge
+              variant="outline"
+              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-[10px]"
+            >
+              <CheckCircle2 className="mr-1 h-3 w-3" />
+              Attached ({localFiles.length + keptFiles.length})
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">{description}</p>
 
-  return (
-    <>
-      <AnimationStyles />
-      <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-          <div className="space-y-6">
-            <StepProgress
-              steps={steps}
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-            />
+        {/* Existing & Local File Cards */}
+        {hasFiles && (
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+            {keptFiles.map((file) => (
+              <ExistingFileCard
+                key={file.id}
+                slipId={id || ""}
+                file={file}
+                onRemove={() => {
+                  setKeptAttachments((prev) =>
+                    prev.filter((x) => x.id !== file.id),
+                  );
+                }}
+              />
+            ))}
+            {localFiles.map((file, idx) => (
+              <LocalFileCard
+                key={`${documentType}-${idx}`}
+                file={file}
+                onRemove={() => handleFileRemove(documentType, idx)}
+                onPreview={(f, url) => setPreviewData({ file: f, url })}
+              />
+            ))}
+          </div>
+        )}
 
-            {(datesComplete || categoryComplete) && (
-              <Card className="mb-4 border-primary/20 bg-primary/5">
-                <CardContent className="px-4 py-2.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {datesComplete && (
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(1)}
-                        className={cn(
-                          "group inline-flex items-center gap-2 rounded-full",
-                          "border border-border bg-background px-3 py-1.5",
-                          "text-sm font-medium transition-colors hover:bg-muted",
-                        )}
-                      >
-                        <Calendar className="h-4 w-4 text-primary" />
-                        {formatDate(formData.dateOfAbsence)} to{" "}
-                        {formatDate(formData.dateNeeded)}
-                        <Edit2 className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
-                      </button>
-                    )}
-                    {datesComplete && categoryComplete && (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    {categoryComplete && (
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(2)}
-                        className={cn(
-                          "group inline-flex items-center gap-2 rounded-full",
-                          "border border-border bg-background px-3 py-1.5",
-                          "text-sm font-medium transition-colors hover:bg-muted",
-                        )}
-                      >
-                        <Badge
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {getSelectedCategory()?.name}
-                        </Badge>
-                        <Edit2 className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === 1 && (
-              <div className="animate-in fade-in duration-200">
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="border-b border-border/60 bg-muted/30 py-3">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-red-500" />
-                      <CardTitle className="text-base">Absence Dates</CardTitle>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Tell us when you were absent and when you need approval by
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-5">
-                    <div className="grid grid-cols-1 gap-4 pb-4">
-                      <div className="space-y-1.5">
-                        <DatePicker
-                          label="Date of Absence"
-                          required
-                          value={formData.dateOfAbsence}
-                          onChange={(val) =>
-                            handleDateChange("dateOfAbsence", val)
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div
-                          className={cn(
-                            "flex max-h-10 items-start gap-1 text-sm",
-                            "font-medium text-card-foreground",
-                          )}
-                        >
-                          <CustomTooltip
-                            content={
-                              "The day the slip is needed to be passed to " +
-                              "the respective professors."
-                            }
-                          />
-                          <span>Date Needed</span>
-                          <span className="text-red-500"> *</span>
-                        </div>
-                        <DatePicker
-                          value={formData.dateNeeded}
-                          onChange={(val) =>
-                            handleDateChange("dateNeeded", val)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex gap-3">
-                      <Button
-                        onClick={() => navigate("/student/slips")}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={() => setCurrentStep(2)}
-                        disabled={!datesComplete}
-                        className="flex-1"
-                      >
-                        Continue
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="animate-in fade-in duration-200">
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="border-b border-border/60 bg-muted/30 py-3">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-red-500" />
-                      <CardTitle className="text-base">
-                        Category & Reason
-                      </CardTitle>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Choose the category and briefly explain your absence
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-5">
-                    <SelectField
-                      label="Category"
-                      value={formData.categoryId}
-                      onChange={(val) => handleCategoryChange(Number(val))}
-                      options={categories || []}
-                      loading={isCategoriesLoading}
-                      required
-                    />
-
-                    <FormField
-                      label="Reason for Absence"
-                      value={formData.reason}
-                      onChange={(val) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          reason: val,
-                        }))
-                      }
-                      placeholder="Briefly explain why you were absent"
-                      isTextarea
-                      required
-                      info={
-                        "This reason will be reviewed by the " +
-                        "Guidance Office. Use the mic icon to " +
-                        "dictate your reason."
-                      }
-                      maxChars={500}
-                    />
-
-                    <div className="mt-4 flex gap-3">
-                      <Button
-                        onClick={() => setCurrentStep(1)}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        onClick={() => setCurrentStep(3)}
-                        disabled={!categoryComplete}
-                        className="flex-1"
-                      >
-                        Continue
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {currentStep === 3 && (
-              <div className="animate-in fade-in space-y-4 duration-200">
-                <Card
-                  className={cn(
-                    "overflow-hidden rounded-xl border border-border/60",
-                    "bg-card shadow-md",
-                  )}
-                >
-                  <CardHeader
-                    className={cn(
-                      "border-b border-border/60 bg-muted/20",
-                      "px-4 py-4 sm:px-5",
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center",
-                          "rounded-lg bg-primary/10 text-primary",
-                        )}
-                      >
-                        <FileUp className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <CardTitle className="text-base text-foreground">
-                          Upload Documents
-                        </CardTitle>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          Review the requirements, then upload each document
-                          below.
-                        </p>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4 p-4 sm:p-5">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Info className="h-4 w-4 shrink-0 text-primary" />
-                        <h3 className="text-sm font-semibold text-foreground">
-                          Before you upload
-                        </h3>
-                      </div>
-
-                      <div className="mt-3 divide-y divide-border/50">
-                        <div className="grid gap-1 py-2.5 first:pt-0 sm:grid-cols-[10rem_1fr] sm:gap-3">
-                          <span className="text-xs font-semibold text-foreground">
-                            Excuse Letter
-                          </span>
-                          <span className="text-xs leading-5 text-muted-foreground">
-                            Parent or legal guardian signature required.
-                          </span>
-                        </div>
-
-                        <div className="grid gap-1 py-2.5 sm:grid-cols-[10rem_1fr] sm:gap-3">
-                          <span className="text-xs font-semibold text-foreground">
-                            Parent / Guardian ID
-                          </span>
-                          <span className="text-xs leading-5 text-muted-foreground">
-                            <strong className="font-semibold text-foreground">
-                              1-page photocopy
-                            </strong>{" "}
-                            of the parent&apos;s valid ID with the parent&apos;s
-                            signature.
-                          </span>
-                        </div>
-
-                        <div className="grid gap-1 py-2.5 last:pb-0 sm:grid-cols-[10rem_1fr] sm:gap-3">
-                          <span className="text-xs font-semibold text-foreground">
-                            Medical Certificate
-                          </span>
-                          <span className="text-xs leading-5 text-muted-foreground">
-                            For medical cases, University nurse signature
-                            required.
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex flex-wrap items-center gap-x-2 gap-y-1",
-                        "border-t border-border/60 pt-3",
-                        "text-[11px] text-muted-foreground",
-                      )}
-                    >
-                      <FileText className="h-3.5 w-3.5 shrink-0" />
-                      <span>PDF, JPG, or PNG</span>
-                      <span aria-hidden="true">•</span>
-                      <span>Maximum 5MB per document category</span>
-                    </div>
-
-                    <div
-                      className={cn(
-                        "flex items-start gap-2.5 rounded-lg border",
-                        "border-primary/15 bg-primary/5 px-3 py-2.5",
-                      )}
-                    >
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                      <p className="text-xs font-medium leading-5 text-foreground">
-                        Please bring all hardcopy documents to the Guidance
-                        Office upon claiming your admission slip.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card
-                  className={cn(
-                    "overflow-hidden rounded-xl border border-border/60",
-                    "bg-card shadow-md",
-                  )}
-                >
-                  <CardContent className="p-0">
-                    <Accordion
-                      type="single"
-                      collapsible
-                      className="w-full"
-                    >
-                      {/* 1. EXCUSE LETTER */}
-                      <AccordionItem
-                        value="excuse-letter"
-                        className="border-b last:border-b-0"
-                      >
-                        <AccordionTrigger
-                          className={cn(
-                            "px-4 py-3 hover:bg-muted/30",
-                            "hover:no-underline",
-                          )}
-                        >
-                          <div className="flex flex-1 items-center gap-3">
-                            <div
-                              className={cn(
-                                "flex h-6 w-6 items-center justify-center",
-                                "rounded-full bg-muted text-xs font-semibold",
-                                "text-foreground",
-                              )}
-                            >
-                              1
-                            </div>
-                            <div className="text-left">
-                              <div className="flex items-center gap-2">
-                                <h3
-                                  className={cn(
-                                    "text-sm font-medium",
-                                    "text-foreground",
-                                  )}
-                                >
-                                  Excuse Letter
-                                </h3>
-                                <Badge
-                                  variant="destructive"
-                                  className="text-xs"
-                                >
-                                  Required
-                                </Badge>
-                              </div>
-                              <p className="mt-0.5 text-xs text-muted-foreground">
-                                Upload your excuse letter
-                              </p>
-                            </div>
-                          </div>
-                          {excuseLetterProvided && (
-                            <CheckCircle2 className="mr-2 h-4 w-4 shrink-0 text-green-500" />
-                          )}
-                        </AccordionTrigger>
-                        <AccordionContent
-                          className={cn(
-                            "border-t border-border/40 bg-muted/20",
-                            "px-4 py-3",
-                          )}
-                        >
-                          <div className="space-y-4">
-                            <div
-                              className={cn(
-                                "flex items-start gap-3 rounded-xl border",
-                                "border-notice-foreground/30 bg-notice-background",
-                                "p-4 text-notice-foreground shadow-sm",
-                              )}
-                            >
-                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground" />
-                              <div className="text-sm">
-                                <p className="mb-1 font-semibold">
-                                  Excuse Letter Format Requirement:
-                                </p>
-                                <p className="text-notice-foreground">
-                                  Please ensure the letter is{" "}
-                                  <strong>clearly readable and legible</strong>,
-                                  and includes the{" "}
-                                  <strong>
-                                    signature of your parent or guardian
-                                  </strong>{" "}
-                                  placed directly above their printed name.
-                                </p>
-                              </div>
-                            </div>
-                            {formData.files.excuseLetter.length === 0 &&
-                              getKeptFiles("excuseLetter").length === 0 && (
-                                <div
-                                  className={cn(
-                                    "relative cursor-pointer rounded-lg",
-                                    "border-2 border-dashed border-border/60",
-                                    "p-6 transition-colors hover:bg-muted/20",
-                                    "hover:border-primary/50",
-                                  )}
-                                >
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) =>
-                                      handleFileAdd(
-                                        "excuseLetter",
-                                        e.target.files,
-                                      )
-                                    }
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "cursor-pointer opacity-0",
-                                    )}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                  />
-                                  <div className="flex flex-col items-center justify-center text-center">
-                                    <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                    <p className="text-sm font-medium text-foreground">
-                                      Click to upload or drag and drop
-                                    </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      PDF, JPG, PNG up to 5MB total
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-
-                            {(formData.files.excuseLetter.length > 0 ||
-                              getKeptFiles("excuseLetter").length > 0) && (
-                              <div
-                                className={cn(
-                                  "flex flex-col gap-2",
-                                  "md:grid md:grid-cols-3 md:gap-3",
-                                )}
-                              >
-                                {getKeptFiles("excuseLetter").map((file) => (
-                                  <ExistingFileCard
-                                    key={file.id}
-                                    slipId={id || ""}
-                                    file={file}
-                                    onRemove={() => {
-                                      setKeptAttachments((prev) =>
-                                        prev.filter((x) => x.id !== file.id),
-                                      );
-                                    }}
-                                  />
-                                ))}
-                                {formData.files.excuseLetter.map(
-                                  (file, index) => (
-                                    <LocalFileCard
-                                      key={`excuse-${index}`}
-                                      file={file}
-                                      onRemove={() =>
-                                        handleFileRemove("excuseLetter", index)
-                                      }
-                                      onPreview={(f, url) =>
-                                        setPreviewData({ file: f, url })
-                                      }
-                                    />
-                                  ),
-                                )}
-                                <div
-                                  className={cn(
-                                    "group relative cursor-pointer",
-                                    "transition-all duration-300",
-                                    "flex items-center justify-center gap-2",
-                                    "rounded-lg border border-dashed",
-                                    "border-border/60 bg-card p-2.5",
-                                    "hover:border-primary/40 hover:bg-muted/10",
-                                    "md:aspect-[4/3] md:flex-col",
-                                    "md:rounded-xl md:bg-card md:p-0",
-                                    "md:hover:shadow-lg",
-                                    "md:hover:shadow-primary/5",
-                                  )}
-                                >
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) =>
-                                      handleFileAdd(
-                                        "excuseLetter",
-                                        e.target.files,
-                                      )
-                                    }
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "cursor-pointer opacity-0",
-                                    )}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                  />
-                                  <Plus
-                                    className={cn(
-                                      "h-4 w-4 text-muted-foreground",
-                                      "group-hover:text-primary",
-                                      "md:h-5 md:w-5",
-                                    )}
-                                  />
-                                  <span
-                                    className={cn(
-                                      "text-xs font-medium",
-                                      "text-muted-foreground",
-                                      "group-hover:text-primary",
-                                      "md:mt-1 md:text-[9px]",
-                                    )}
-                                  >
-                                    Add File
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      <AccordionItem
-                        value="parent-id"
-                        className="border-b last:border-b-0"
-                      >
-                        <AccordionTrigger
-                          className={cn(
-                            "px-4 py-3 hover:bg-muted/30",
-                            "hover:no-underline",
-                          )}
-                        >
-                          <div className="flex flex-1 items-center gap-3">
-                            <div
-                              className={cn(
-                                "flex h-6 w-6 items-center justify-center",
-                                "rounded-full bg-muted text-xs font-semibold",
-                                "text-foreground",
-                              )}
-                            >
-                              2
-                            </div>
-                            <div className="text-left">
-                              <div className="flex items-center gap-2">
-                                <h3
-                                  className={cn(
-                                    "text-sm font-medium",
-                                    "text-foreground",
-                                  )}
-                                >
-                                  Valid Parent&apos;s ID
-                                </h3>
-                                <Badge
-                                  variant="destructive"
-                                  className="text-xs"
-                                >
-                                  Required
-                                </Badge>
-                              </div>
-                              <p className="mt-0.5 text-xs text-muted-foreground">
-                                Upload copy of parent/guardian ID
-                              </p>
-                            </div>
-                          </div>
-                          {parentIdProvided && (
-                            <CheckCircle2 className="mr-2 h-4 w-4 shrink-0 text-green-500" />
-                          )}
-                        </AccordionTrigger>
-                        <AccordionContent
-                          className={cn(
-                            "border-t border-border/40 bg-muted/20",
-                            "px-4 py-3",
-                          )}
-                        >
-                          <div className="space-y-4">
-                            <div
-                              className={cn(
-                                "flex items-start gap-3 rounded-xl border",
-                                "border-notice-foreground/30 bg-notice-background",
-                                "p-4 text-notice-foreground shadow-sm",
-                              )}
-                            >
-                              <Info className="mt-0.5 h-5 w-5 shrink-0 text-notice-foreground" />
-                              <div className="text-sm">
-                                <p className="mb-1 font-semibold">
-                                  Parent ID Xerox Copy Requirement:
-                                </p>
-                                <p className="text-notice-foreground">
-                                  The parent&apos;s valid ID must be submitted
-                                  as a{" "}
-                                  <strong>
-                                    1-page photocopy containing the
-                                    parent&apos;s actual signature
-                                  </strong>
-                                  .
-                                </p>
-                              </div>
-                            </div>
-
-                            <div
-                              className={cn(
-                                "grid grid-cols-1 gap-4",
-                                "sm:grid-cols-2",
-                              )}
-                            >
-                              {/* Valid Requirements */}
-                              <div
-                                className={cn(
-                                  "rounded-xl border border-success-foreground/30",
-                                  "bg-success-background p-4 shadow-sm",
-                                )}
-                              >
-                                <h4
-                                  className={cn(
-                                    "mb-2 flex items-center gap-2",
-                                    "font-semibold text-success-foreground",
-                                  )}
-                                >
-                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-success-foreground" />
-                                  Valid ID Requirements
-                                </h4>
-                                <ul
-                                  className={cn(
-                                    "ml-6 list-outside list-disc",
-                                    "space-y-1 text-xs text-success-foreground",
-                                  )}
-                                >
-                                  <li>
-                                    Must be a photocopy with the parent&apos;s
-                                    signature.
-                                  </li>
-                                  <li>Upload a government-issued ID.</li>
-                                  <li>The ID must be valid (not expired).</li>
-                                  <li>
-                                    Ensure all text and photo are clear and
-                                    readable.
-                                  </li>
-                                  <li>
-                                    Capture the entire ID (all four corners must
-                                    be visible).
-                                  </li>
-                                  <li>
-                                    Use a plain, non-reflective background.
-                                  </li>
-                                  <li>
-                                    Avoid glare, shadows, blur, or filters.
-                                  </li>
-                                  <li>
-                                    Do not crop, edit, or cover any part of the
-                                    ID.
-                                  </li>
-                                  <li>
-                                    Upload the front side (and back side if
-                                    required).
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div
-                                className={cn(
-                                  "rounded-xl border border-destructive/20",
-                                  "bg-destructive/5 p-4 shadow-sm",
-                                )}
-                              >
-                                <h4 className="mb-2 flex items-center gap-2 font-semibold text-destructive">
-                                  <X className="h-4 w-4 shrink-0 text-destructive" />
-                                  Do Not Upload
-                                </h4>
-                                <ul
-                                  className={cn(
-                                    "ml-6 list-outside list-disc space-y-1 text-xs",
-                                    "text-foreground/80",
-                                  )}
-                                >
-                                  <li>Expired IDs.</li>
-                                  <li>Blurry or low-resolution photos.</li>
-                                  <li>Cropped or partially visible IDs.</li>
-                                  <li>
-                                    IDs with glare, reflections, or shadows.
-                                  </li>
-                                  <li>Screenshots.</li>
-                                  <li>Edited or digitally altered IDs.</li>
-                                </ul>
-                              </div>
-                            </div>
-                            {formData.files.parentId.length === 0 &&
-                              getKeptFiles("parentId").length === 0 && (
-                                <div
-                                  className={cn(
-                                    "relative cursor-pointer rounded-lg",
-                                    "border-2 border-dashed border-border/60",
-                                    "p-6 transition-colors hover:bg-muted/20",
-                                    "hover:border-primary/50",
-                                  )}
-                                >
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) =>
-                                      handleFileAdd("parentId", e.target.files)
-                                    }
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "cursor-pointer opacity-0",
-                                    )}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                  />
-                                  <div className="flex flex-col items-center justify-center text-center">
-                                    <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                    <p className="text-sm font-medium text-foreground">
-                                      Click to upload or drag and drop
-                                    </p>
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      PDF, JPG, PNG up to 5MB total
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
-
-                            {(formData.files.parentId.length > 0 ||
-                              getKeptFiles("parentId").length > 0) && (
-                              <div
-                                className={cn(
-                                  "flex flex-col gap-2",
-                                  "md:grid md:grid-cols-3 md:gap-3",
-                                )}
-                              >
-                                {getKeptFiles("parentId").map((file) => (
-                                  <ExistingFileCard
-                                    key={file.id}
-                                    slipId={id || ""}
-                                    file={file}
-                                    onRemove={() => {
-                                      setKeptAttachments((prev) =>
-                                        prev.filter((x) => x.id !== file.id),
-                                      );
-                                    }}
-                                  />
-                                ))}
-                                {formData.files.parentId.map((file, index) => (
-                                  <LocalFileCard
-                                    key={`parent-${index}`}
-                                    file={file}
-                                    onRemove={() =>
-                                      handleFileRemove("parentId", index)
-                                    }
-                                    onPreview={(f, url) =>
-                                      setPreviewData({ file: f, url })
-                                    }
-                                  />
-                                ))}
-                                <div
-                                  className={cn(
-                                    "group relative cursor-pointer",
-                                    "transition-all duration-300",
-                                    "flex items-center justify-center gap-2",
-                                    "rounded-lg border border-dashed",
-                                    "border-border/60 bg-card p-2.5",
-                                    "hover:border-primary/40 hover:bg-muted/10",
-                                    "md:aspect-[4/3] md:flex-col",
-                                    "md:rounded-xl md:bg-card md:p-0",
-                                    "md:hover:shadow-lg",
-                                    "md:hover:shadow-primary/5",
-                                  )}
-                                >
-                                  <input
-                                    type="file"
-                                    multiple
-                                    onChange={(e) =>
-                                      handleFileAdd("parentId", e.target.files)
-                                    }
-                                    className={cn(
-                                      "absolute inset-0",
-                                      "cursor-pointer opacity-0",
-                                    )}
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                  />
-                                  <Plus
-                                    className={cn(
-                                      "h-4 w-4 text-muted-foreground",
-                                      "group-hover:text-primary",
-                                      "md:h-5 md:w-5",
-                                    )}
-                                  />
-                                  <span
-                                    className={cn(
-                                      "text-xs font-medium",
-                                      "text-muted-foreground",
-                                      "group-hover:text-primary",
-                                      "md:mt-1 md:text-[9px]",
-                                    )}
-                                  >
-                                    Add File
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-
-                      {isMedicalCategory() && (
-                        <AccordionItem
-                          value="medical-cert"
-                          className="border-b last:border-b-0"
-                        >
-                          <AccordionTrigger
-                            className={cn(
-                              "px-4 py-3 hover:bg-muted/30",
-                              "hover:no-underline",
-                            )}
-                          >
-                            <div className="flex flex-1 items-center gap-3">
-                              <div
-                                className={cn(
-                                  "flex h-6 w-6 items-center justify-center",
-                                  "rounded-full bg-muted text-xs font-semibold",
-                                  "text-foreground",
-                                )}
-                              >
-                                3
-                              </div>
-                              <div className="text-left">
-                                <div className="flex items-center gap-2">
-                                  <h3
-                                    className={cn(
-                                      "text-sm font-medium",
-                                      "text-foreground",
-                                    )}
-                                  >
-                                    Medical Certificate
-                                  </h3>
-                                  <Badge
-                                    variant="destructive"
-                                    className="text-xs"
-                                  >
-                                    Required
-                                  </Badge>
-                                </div>
-                                <p className="mt-0.5 text-xs text-muted-foreground">
-                                  Upload medical certificate
-                                </p>
-                              </div>
-                            </div>
-                            {medicalCertProvided &&
-                              (formData.files.medicalCert.length > 0 ||
-                                getKeptFiles("medicalCert").length > 0) && (
-                                <CheckCircle2
-                                  className={cn(
-                                    "mr-2 h-4 w-4 shrink-0",
-                                    "text-green-500",
-                                  )}
-                                />
-                              )}
-                          </AccordionTrigger>
-                          <AccordionContent
-                            className={cn(
-                              "border-t border-border/40 bg-muted/20",
-                              "px-4 py-3",
-                            )}
-                          >
-                            <div className="space-y-4">
-                              <div
-                                className={cn(
-                                  "flex items-start gap-3 rounded-xl border",
-                                  "border-info-foreground/30 bg-info-background p-4",
-                                  "text-info-foreground shadow-sm",
-                                )}
-                              >
-                                <Info className="mt-0.5 h-5 w-5 shrink-0 text-info-foreground" />
-                                <div className="text-sm">
-                                  <p className="mb-1 font-semibold">
-                                    University Nurse Sign-off Requirement:
-                                  </p>
-                                  <p className="text-info-foreground">
-                                    For all medical cases, the medical
-                                    certificate{" "}
-                                    <strong>
-                                      must be signed by the University nurse
-                                    </strong>{" "}
-                                    before submitting in the system.
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div
-                                  className={cn(
-                                    "flex flex-col items-center rounded-xl border",
-                                    "border-success-foreground/30 bg-success-background",
-                                    "p-4 shadow-sm",
-                                  )}
-                                >
-                                  <h4
-                                    className={cn(
-                                      "mb-3 flex items-center gap-2 font-semibold",
-                                      "text-success-foreground",
-                                    )}
-                                  >
-                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-success-foreground" />
-                                    Upload this
-                                  </h4>
-                                  <div
-                                    className={cn(
-                                      "overflow-hidden rounded border",
-                                      "border-success-foreground/30 shadow-sm",
-                                    )}
-                                  >
-                                    <img
-                                      src={goodCertImage}
-                                      alt="Example of a valid medical certificate"
-                                      className="h-auto w-full max-w-[220px] object-contain"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="flex flex-col items-center rounded-xl border border-destructive/20 bg-destructive/5 p-4 shadow-sm">
-                                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-destructive">
-                                    <X className="h-4 w-4 shrink-0 text-destructive" />
-                                    Do Not Upload
-                                  </h4>
-                                  <div className="overflow-hidden rounded border border-destructive/20 shadow-sm">
-                                    <img
-                                      src={badCertImage}
-                                      alt="Example of an invalid medical certificate"
-                                      className="h-auto w-full max-w-[220px] object-contain"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              {formData.files.medicalCert.length === 0 &&
-                                getKeptFiles("medicalCert").length === 0 && (
-                                  <div
-                                    className={cn(
-                                      "relative cursor-pointer rounded-lg",
-                                      "border-2 border-dashed border-border/60",
-                                      "p-6 transition-colors hover:bg-muted/20",
-                                      "hover:border-primary/50",
-                                    )}
-                                  >
-                                    <input
-                                      type="file"
-                                      multiple
-                                      onChange={(e) =>
-                                        handleFileAdd(
-                                          "medicalCert",
-                                          e.target.files,
-                                        )
-                                      }
-                                      className={cn(
-                                        "absolute inset-0",
-                                        "cursor-pointer opacity-0",
-                                      )}
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                    />
-                                    <div className="flex flex-col items-center justify-center text-center">
-                                      <Folder className="mb-2 h-8 w-8 text-muted-foreground" />
-                                      <p className="text-sm font-medium text-foreground">
-                                        Click to upload or drag and drop
-                                      </p>
-                                      <p className="mt-1 text-xs text-muted-foreground">
-                                        PDF, JPG, PNG up to 5MB total
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-
-                              {(formData.files.medicalCert.length > 0 ||
-                                getKeptFiles("medicalCert").length > 0) && (
-                                <div
-                                  className={cn(
-                                    "flex flex-col gap-2",
-                                    "md:grid md:grid-cols-3 md:gap-3",
-                                  )}
-                                >
-                                  {getKeptFiles("medicalCert").map((file) => (
-                                    <ExistingFileCard
-                                      key={file.id}
-                                      slipId={id || ""}
-                                      file={file}
-                                      onRemove={() => {
-                                        setKeptAttachments((prev) =>
-                                          prev.filter((x) => x.id !== file.id),
-                                        );
-                                      }}
-                                    />
-                                  ))}
-                                  {formData.files.medicalCert.map(
-                                    (file, index) => (
-                                      <LocalFileCard
-                                        key={`cert-${index}`}
-                                        file={file}
-                                        onRemove={() =>
-                                          handleFileRemove("medicalCert", index)
-                                        }
-                                        onPreview={(f, url) =>
-                                          setPreviewData({ file: f, url })
-                                        }
-                                      />
-                                    ),
-                                  )}
-                                  <div
-                                    className={cn(
-                                      "group relative cursor-pointer",
-                                      "transition-all duration-300",
-                                      "flex items-center justify-center gap-2",
-                                      "rounded-lg border border-dashed",
-                                      "border-border/60 bg-card p-2.5",
-                                      "hover:border-primary/40 hover:bg-muted/10",
-                                      "md:aspect-[4/3] md:flex-col",
-                                      "md:rounded-xl md:bg-card md:p-0",
-                                      "md:hover:shadow-lg",
-                                      "md:hover:shadow-primary/5",
-                                    )}
-                                  >
-                                    <input
-                                      type="file"
-                                      multiple
-                                      onChange={(e) =>
-                                        handleFileAdd(
-                                          "medicalCert",
-                                          e.target.files,
-                                        )
-                                      }
-                                      className={cn(
-                                        "absolute inset-0",
-                                        "cursor-pointer opacity-0",
-                                      )}
-                                      accept=".pdf,.jpg,.jpeg,.png"
-                                    />
-                                    <Plus
-                                      className={cn(
-                                        "h-4 w-4 text-muted-foreground",
-                                        "group-hover:text-primary",
-                                        "md:h-5 md:w-5",
-                                      )}
-                                    />
-                                    <span
-                                      className={cn(
-                                        "text-xs font-medium",
-                                        "text-muted-foreground",
-                                        "group-hover:text-primary",
-                                        "md:mt-1 md:text-[9px]",
-                                      )}
-                                    >
-                                      Add File
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      )}
-                    </Accordion>
-                  </CardContent>
-                </Card>
-
-                <div className="mt-5 flex gap-3 pt-2">
-                  <Button
-                    onClick={() => setCurrentStep(2)}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!isFormValid || isSubmitting || isUpdating}
-                    className="flex-1"
-                  >
-                    {isSubmitting || isUpdating
-                      ? "Saving..."
-                      : isEditMode
-                        ? "Update & Resubmit"
-                        : "Submit Admission Slip"}
-                  </Button>
-                </div>
-              </div>
-            )}
+        {/* Upload Button Dropzone */}
+        <div className="relative flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 p-4 transition-colors hover:border-primary/50 hover:bg-muted/40">
+          <input
+            type="file"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => handleFileAdd(documentType, e.target.files)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <Folder className="h-4 w-4 text-primary" />
+            <span>Click or drag to attach {title.toLowerCase()}</span>
+            <span className="text-[10px] text-muted-foreground/60">
+              (PDF, JPG, PNG ≤ 5MB)
+            </span>
           </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Full Screen Preview Dialog */}
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+      {/* 2-Column Master-Detail Layout */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+        {/* Left Column: Form & Attachments (8 cols) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Card 1: Absence Details */}
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                <CardTitle className="text-base font-semibold">
+                  1. Absence & Filing Details
+                </CardTitle>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter your absence date and state your reason for filing
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <DatePicker
+                  label="Date of Absence"
+                  required
+                  value={formData.dateOfAbsence}
+                  onChange={(val) => handleDateChange("dateOfAbsence", val)}
+                />
+                <DatePicker
+                  label="Date Needed"
+                  required
+                  value={formData.dateNeeded}
+                  onChange={(val) => handleDateChange("dateNeeded", val)}
+                />
+              </div>
+
+              <SelectField
+                label="Absence Category"
+                value={formData.categoryId}
+                onChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    categoryId: Number(val),
+                  }))
+                }
+                options={categories}
+                loading={isCategoriesLoading}
+                required
+              />
+
+              <FormField
+                label="Reason for Absence"
+                value={formData.reason}
+                onChange={(val) =>
+                  setFormData((prev) => ({ ...prev, reason: val }))
+                }
+                placeholder="Explain why you were absent"
+                isTextarea
+                required
+                maxChars={MAX_REASON_CHARS}
+                info="This will be reviewed by the guidance counselor upon validation."
+              />
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Required Supporting Documents */}
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <FileUp className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base font-semibold">
+                    2. Supporting Documents
+                  </CardTitle>
+                </div>
+                {isMedicalCategory && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsGuidelineModalOpen(true)}
+                    className="h-8 gap-1.5 rounded-lg text-xs"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-primary" />
+                    Nurse Sign-off Guide
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Upload clear photocopies or digital files of all required
+                documents
+              </p>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              {/* 1. Excuse Letter */}
+              {renderUploadDropzone(
+                "excuseLetter",
+                "Excuse Letter",
+                "Required",
+                "Parent or legal guardian signature required placed above their printed name.",
+                true,
+              )}
+
+              {/* 2. Parent / Guardian ID */}
+              {renderUploadDropzone(
+                "parentId",
+                "Parent / Guardian ID",
+                "Required",
+                "1-page clear copy of parent or legal guardian's valid government/company ID with signature.",
+                true,
+              )}
+
+              {/* 3. Medical Certificate */}
+              {renderUploadDropzone(
+                "medicalCert",
+                "Medical Certificate",
+                isMedicalCategory ? "Required for Medical Cases" : "Optional",
+                isMedicalCategory
+                  ? "Must be signed by the University Nurse prior to filing."
+                  : "Only required for medical or illness-related absences.",
+                isMedicalCategory,
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Sticky Filing Summary Sidebar (4 cols) */}
+        <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-4">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Filing Checklist & Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              {/* Dates Pill */}
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Filing Timeline
+                </span>
+                <div className="mt-1 flex items-center justify-between text-xs font-semibold text-foreground">
+                  <span>Absence: {formData.dateOfAbsence || "—"}</span>
+                  <span>Needed: {formData.dateNeeded || "—"}</span>
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Category
+                </span>
+                <p className="mt-1 text-xs font-semibold text-foreground">
+                  {selectedCategory?.name || (
+                    <span className="italic text-muted-foreground">
+                      No category selected
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* Readiness Checklist (3-Click Rule) */}
+              <div className="space-y-2 border-t border-border/60 pt-3">
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Filing Checklist (3-Click Rule):
+                </span>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center gap-2">
+                    {datesComplete ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        datesComplete
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Absence dates filled
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {categoryComplete ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        categoryComplete
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Category & reason provided
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {excuseLetterProvided ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        excuseLetterProvided
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Excuse letter attached
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {parentIdProvided ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        parentIdProvided
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Parent/Guardian ID attached
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {medicalCertProvided ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span
+                      className={cn(
+                        medicalCertProvided
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {isMedicalCategory
+                        ? "Medical certificate attached"
+                        : "Medical certificate (Not required)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Physical Protocol Callout */}
+              <div className="flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs leading-5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="text-foreground">
+                  Please bring all original physical copies to the Guidance
+                  Office when claiming your slip.
+                </p>
+              </div>
+
+              {/* Primary Action Button */}
+              <Button
+                onClick={handleSubmit}
+                disabled={!isFormValid || isSubmitting || isUpdating}
+                className="w-full rounded-xl py-5 text-sm font-semibold shadow-sm"
+              >
+                {isSubmitting || isUpdating
+                  ? `Uploading... ${uploadProgress}%`
+                  : isEditMode
+                    ? "Update Admission Slip"
+                    : "Submit Admission Slip"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Guidelines Modal Dialog */}
+      <Dialog
+        open={isGuidelineModalOpen}
+        onOpenChange={setIsGuidelineModalOpen}
+      >
+        <DialogContent className="max-w-2xl rounded-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">
+              University Nurse Sign-off Requirement
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              For all medical cases, medical certificates must have the
+              University Clinic Nurse signature before submission.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-center">
+              <Badge
+                variant="outline"
+                className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
+              >
+                <CheckCircle2 className="mr-1 h-3 w-3" /> Valid Example
+              </Badge>
+              <img
+                src={goodCertImage}
+                alt="Valid certificate example"
+                className="mt-3 max-h-48 w-full object-contain"
+              />
+            </div>
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-center">
+              <Badge
+                variant="outline"
+                className="border-destructive/40 bg-destructive/10 text-destructive"
+              >
+                <X className="mr-1 h-3 w-3" /> Invalid (Unsigned)
+              </Badge>
+              <img
+                src={badCertImage}
+                alt="Invalid certificate example"
+                className="mt-3 max-h-48 w-full object-contain"
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Local File Preview Dialog */}
       <Dialog
         open={!!previewData}
         onOpenChange={(open) => !open && setPreviewData(null)}
       >
-        <DialogContent
-          hasCloseButton
-          className="max-w-4xl border-border/40 bg-card shadow-2xl backdrop-blur-xl"
-        >
+        <DialogContent className="max-w-3xl rounded-2xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-foreground">
+            <DialogTitle className="text-sm font-semibold">
               {previewData?.file.name}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Local File Preview - Verify document clarity before submission
+              Local document preview
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex min-h-[300px] flex-col items-center justify-center py-4">
+          <div className="mt-4 flex min-h-[320px] items-center justify-center">
             {previewData?.file.type.startsWith("image/") ? (
               <img
                 src={previewData.url}
                 alt="Preview"
-                className="max-h-[60vh] max-w-full rounded-lg border border-border/40 object-contain shadow-md"
+                className="max-h-[60vh] max-w-full rounded-xl object-contain shadow-md"
               />
             ) : previewData?.file.type === "application/pdf" ? (
               <PDFPreview
                 url={previewData.url}
-                className="h-[60vh] w-full rounded-lg border border-border/40"
-                title="PDF Preview"
+                className="h-[60vh] w-full rounded-xl"
+                title="Document Preview"
               />
             ) : (
-              <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border/60 bg-muted/30 p-8 text-center">
-                <FileText className="h-10 w-10 text-primary" />
-                <p className="text-sm font-medium text-foreground">
-                  Preview Unavailable
-                </p>
+              <div className="text-xs text-muted-foreground">
+                Preview not available for this file type.
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
-
-      <AnimatePresence>
-        {(isSubmitting || isUpdating) && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={cn(
-              "fixed inset-0 z-[100] flex flex-col items-center",
-              "justify-center bg-slate-950/60 backdrop-blur-sm",
-            )}
-          >
-            <div
-              className={cn(
-                "flex w-[calc(100%-2rem)] max-w-md flex-col items-center",
-                "gap-6 rounded-2xl border border-border/40 bg-card/85 p-6",
-                "shadow-2xl backdrop-blur-2xl sm:p-8",
-              )}
-            >
-              <div className="space-y-1.5 text-center">
-                <h3 className="text-xl font-bold text-foreground">
-                  {isEditMode ? "Updating Slip" : "Submitting Slip"}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Uploading files. Please do not close this window.
-                </p>
-              </div>
-
-              {/* Progress Bar & Percentage */}
-              <div className="w-full space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-foreground">
-                    Overall Progress
-                  </span>
-                  <span className="font-bold text-primary">
-                    {uploadProgress}%
-                  </span>
-                </div>
-                <div
-                  className={cn(
-                    "h-2.5 w-full overflow-hidden",
-                    "rounded-full bg-muted/50",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-300",
-                      "bg-gradient-to-r from-primary to-primary/80",
-                    )}
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Steps Checklist */}
-              <div className="w-full space-y-4 rounded-xl bg-muted/30 p-4">
-                {/* Step 1: File Upload */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "flex h-6 w-6 shrink-0",
-                      "items-center justify-center rounded-full",
-                      "text-[10px] font-bold",
-                      uploadProgress === 100
-                        ? "bg-emerald-500/20 text-emerald-500"
-                        : "animate-pulse bg-primary/20 text-primary",
-                    )}
-                  >
-                    {uploadProgress === 100 ? (
-                      <CheckCircle2 className="h-4.5 w-4.5" />
-                    ) : (
-                      "1"
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      uploadProgress === 100
-                        ? "text-emerald-500"
-                        : "text-foreground",
-                    )}
-                  >
-                    Uploading attached documents
-                  </span>
-                </div>
-
-                {/* Step 2: Saving to Database */}
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "flex h-6 w-6 shrink-0",
-                      "items-center justify-center rounded-full",
-                      "text-[10px] font-bold",
-                      uploadProgress < 100
-                        ? "bg-muted-foreground/10 text-muted-foreground/50"
-                        : "animate-pulse bg-primary/20 text-primary",
-                    )}
-                  >
-                    2
-                  </div>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      uploadProgress < 100
-                        ? "text-muted-foreground/50"
-                        : "text-foreground",
-                    )}
-                  >
-                    Registering admission slip request
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+    </div>
   );
 }

@@ -355,7 +355,7 @@ export default function AppointmentDetails() {
     lastName: appointment.user?.lastName,
     email: appointment.user?.email,
     studentNumber: appointment.studentNumber || appointment.user?.studentNumber,
-    contactNumber: appointment.contactNumber || appointment.user?.contactNumber,
+    contactNumber: appointment.contactNumber,
     profilePicture: appointment.user?.profilePicture,
     iirId: appointment.iirId,
     studentCorUrl: appointment.studentCorUrl,
