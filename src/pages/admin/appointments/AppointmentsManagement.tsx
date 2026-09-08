@@ -11,6 +11,7 @@ import { useStatuses, useCategories } from "@/features/appointments/hooks";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toISODateString } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { Button } from "@/components/ui/button";
 import { usePageMetadata } from "@/context";
@@ -233,7 +234,7 @@ export default function AppointmentsManagement() {
     description: "View and manage all counseling appointments",
     badgeText: "Admin Management",
     badgeIcon: pageBadgeIcon,
-    isLoading: isPageLoading,
+    isLoading: false,
     headerActions: pageHeaderActions,
   });
 
@@ -360,7 +361,25 @@ export default function AppointmentsManagement() {
                 )}
               >
                 <div className="relative h-[280px]">
-                  {chartData.length > 0 &&
+                  {isStatsLoading ? (
+                    <div className="flex h-full flex-col justify-around py-4">
+                      {[75, 45, 90, 60, 30].map((widthPct, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-3"
+                        >
+                          <Skeleton className="h-4 w-20 rounded-md" />
+                          <div className="flex-1">
+                            <Skeleton
+                              className="h-4 rounded-full"
+                              style={{ width: `${widthPct}%` }}
+                            />
+                          </div>
+                          <Skeleton className="h-4 w-6 rounded-md" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : chartData.length > 0 &&
                   chartData.some((d) => d.count > 0) ? (
                     <ChartContainer
                       config={chartConfig}
@@ -433,17 +452,28 @@ export default function AppointmentsManagement() {
                   ) : (
                     <div
                       className={cn(
-                        "animate-in fade-in zoom-in flex h-full flex-col items-center",
-                        "justify-center text-center duration-700",
+                        "animate-in fade-in zoom-in flex h-full flex-col",
+                        "items-center justify-center text-center duration-700",
                       )}
                     >
                       <div className="mb-4 rounded-full bg-primary/5 p-6">
-                        <Archive className="h-10 w-10 text-muted-foreground/40" />
+                        <Archive
+                          className="h-10 w-10 text-muted-foreground/40"
+                        />
                       </div>
-                      <p className="text-sm font-medium text-muted-foreground/60">
+                      <p
+                        className={cn(
+                          "text-sm font-medium text-muted-foreground/60",
+                        )}
+                      >
                         No activity recorded for this period
                       </p>
-                      <p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground/40">
+                      <p
+                        className={cn(
+                          "mt-1 text-[10px] font-bold uppercase",
+                          "text-muted-foreground/40",
+                        )}
+                      >
                         Appointments Stats
                       </p>
                     </div>
@@ -451,26 +481,33 @@ export default function AppointmentsManagement() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {chartData.map((item) => (
-                    <div
-                      key={item.status}
-                      className={cn(
-                        "inline-flex items-center gap-2 rounded-full border",
-                        "border-border bg-background px-3 py-1",
-                      )}
-                    >
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: item.fill }}
-                      />
-                      <span
-                        className="text-[11px] font-semibold"
-                        style={{ color: item.fill }}
-                      >
-                        {item.status}
-                      </span>
-                    </div>
-                  ))}
+                  {isStatsLoading
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton
+                          key={i}
+                          className="h-6 w-20 rounded-full"
+                        />
+                      ))
+                    : chartData.map((item) => (
+                        <div
+                          key={item.status}
+                          className={cn(
+                            "inline-flex items-center gap-2 rounded-full",
+                            "border border-border bg-background px-3 py-1",
+                          )}
+                        >
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <span
+                            className="text-[11px] font-semibold"
+                            style={{ color: item.fill }}
+                          >
+                            {item.status}
+                          </span>
+                        </div>
+                      ))}
                 </div>
               </div>
             </CardContent>
@@ -527,7 +564,7 @@ export default function AppointmentsManagement() {
               onPageChange={setCurrentPage}
               currentPage={currentPage}
               totalPages={totalPages}
-              isLoading={isLoading}
+              isLoading={isLoading || isPageLoading}
             />
           </div>
         </div>

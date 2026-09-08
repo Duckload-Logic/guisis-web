@@ -847,7 +847,14 @@ export function SlipList({
                 "py-0.5",
               )}
             >
-              {dropdownOptions.map((status) => {
+              {isLoading && dropdownOptions.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-8 w-24 rounded-xl"
+                    />
+                  ))
+                : dropdownOptions.map((status) => {
                 const isSelected =
                   String(selectedStatus?.id) === String(status.id);
                 const serverCountObj = statusCounts?.find(

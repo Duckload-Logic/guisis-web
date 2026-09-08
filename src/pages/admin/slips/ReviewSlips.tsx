@@ -170,7 +170,7 @@ export default function ReviewSlips() {
     };
   }, []);
 
-  const { data: slipStats } = useGetSlipStats({
+  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -533,7 +533,7 @@ export default function ReviewSlips() {
     navigate(`${slipsBasePath}/${slip.id}`);
   };
 
-  const isPageLoading = isStatusesLoading;
+  const isPageLoading = isStatusesLoading || isStatsLoading;
 
   const headerActions = useMemo(
     () => (
@@ -573,7 +573,7 @@ export default function ReviewSlips() {
       "Review submissions, filter the queue, and process student requests.",
     badgeText: "Slip Management",
     badgeIcon: useMemo(() => <FileText className="h-4 w-4" />, []),
-    isLoading: isPageLoading,
+    isLoading: false,
     headerActions,
   });
 
@@ -635,7 +635,7 @@ export default function ReviewSlips() {
           "duration-500 [animation-delay:150ms]",
         )}
         slips={slips}
-        isLoading={isLoading}
+        isLoading={isLoading || isPageLoading}
         onViewClick={handleViewSlip}
         searchTerm={searchTerm}
         onSearchChange={(value: string) => {
