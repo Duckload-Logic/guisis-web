@@ -46,6 +46,9 @@ import { StudentProfileBentoCard } from "@/components/shared/StudentProfileBento
 import { parseAuditTrail } from "@/utils/auditTrail";
 import { formatProcessDuration, formatDate } from "@/utils/dateTime";
 import { cn } from "@/lib/utils";
+import AddNoteModal from "@/features/notes/components/AddNoteModal";
+import { useCreateNote } from "@/features/notes/hooks/useNotes";
+import type { SignificantNoteFormData } from "@/features/notes/validation/noteSchema";
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
@@ -67,11 +70,44 @@ export default function SlipDetails() {
   const [isVerifyConfirming, setIsVerifyConfirming] = useState(false);
   const [showCorPreview, setShowCorPreview] = useState(false);
   const [hasCopiedId, setHasCopiedId] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
   const claimTicketMutation = useClaimTicket();
   const startSlipMutation = useStartSlip();
   const isClaiming = claimTicketMutation.isPending;
   const { triggerToast } = useToast();
+
+  const createNoteMutation = useCreateNote(
+    slip?.iirId || "",
+    () => {
+      setIsNoteModalOpen(false);
+      triggerToast("✓ Significant note saved successfully!");
+      refetch();
+    },
+    (error) => {
+      const errorMessage =
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to save note. Please try again.";
+      triggerToast(errorMessage);
+    },
+  );
+
+  const handleAddNoteSubmit = async (data: SignificantNoteFormData) => {
+    if (!slip?.iirId || !slip.id) {
+      triggerToast("Unable to record a note for this admission slip.");
+      return;
+    }
+
+    try {
+      await createNoteMutation.mutateAsync({
+        ...data,
+        admissionSlipId: slip.id,
+      });
+    } catch {
+      // The mutation error handler already shows the appropriate feedback.
+    }
+  };
 
   const handleStartSession = async (offsetMinutes = 0) => {
     if (!id) return;
@@ -270,7 +306,7 @@ export default function SlipDetails() {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
       {/* Significant Note Banner */}
-      {needsSignificantNote && !isAssistant && (
+      {needsSignificantNote && (
         <div
           className={cn(
             "flex flex-col items-center justify-between gap-4 rounded-2xl",
@@ -292,11 +328,19 @@ export default function SlipDetails() {
             </div>
           </div>
           <Button
-            onClick={() =>
+            type="button"
+            onClick={(event) => {
+              if (isAssistant) {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsNoteModalOpen(true);
+                return;
+              }
+
               navigate(
                 `/admin/student-records/${slip.iirId}?addNote=true&admissionSlipId=${slip.id}`,
-              )
-            }
+              );
+            }}
             className="h-10 rounded-xl bg-primary px-5 text-xs font-bold text-white shadow-sm hover:bg-primary/90"
           >
             Add Note Now
@@ -769,6 +813,16 @@ export default function SlipDetails() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {isAssistant && (
+        <AddNoteModal
+          open={isNoteModalOpen}
+          onClose={() => setIsNoteModalOpen(false)}
+          onSubmit={handleAddNoteSubmit}
+          isSubmitting={createNoteMutation.isPending}
+          admissionSlipId={slip.id}
+        />
+      )}
 
       {/* COR Preview Modal */}
       <CORPreviewDialog
