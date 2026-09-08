@@ -143,15 +143,15 @@ export default {
           "toast-slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         ring: "ring 0.5s ease-in-out 3",
         "dialog-overlay-show":
-          "dialog-overlay-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-overlay-show 300ms cubic-bezier(0.16, 1, 0.3, 1)",
         "dialog-overlay-hide":
-          "dialog-overlay-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-overlay-hide 200ms cubic-bezier(0.16, 1, 0.3, 1)",
         "dialog-content-show":
-          "dialog-content-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-content-show 300ms cubic-bezier(0.16, 1, 0.3, 1)",
         "dialog-content-hide":
-          "dialog-content-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-content-hide 200ms cubic-bezier(0.16, 1, 0.3, 1)",
         "popover-show":
-          "popover-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "popover-show 250ms cubic-bezier(0.16, 1, 0.3, 1)",
         "popover-hide":
           "popover-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
       },

@@ -53,7 +53,7 @@ const DropdownMenuSubContent = React.forwardRef<
     className={cn(
       "z-50 min-w-[8rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl",
       "border border-glass-border bg-card p-1 text-popover-foreground",
-      "shadow-lg data-[state=open]:animate-popover-show",
+      "data-[state=open]:animate-popover-show shadow-lg",
       "data-[state=closed]:animate-popover-hide motion-reduce:animate-none",
       "origin-[--radix-dropdown-menu-content-transform-origin]",
       className,
@@ -77,7 +77,7 @@ const DropdownMenuContent = React.forwardRef<
         "overflow-x-hidden rounded-xl",
         "max-h-[var(--radix-dropdown-menu-content-available-height)]",
         "border border-glass-border bg-card p-1 text-popover-foreground",
-        "shadow-lg data-[state=open]:animate-popover-show",
+        "data-[state=open]:animate-popover-show shadow-lg",
         "data-[state=closed]:animate-popover-hide motion-reduce:animate-none",
         "origin-[--radix-dropdown-menu-content-transform-origin]",
         className,
