@@ -90,7 +90,12 @@ function NavItem({
           {item.icon}
         </div>
         <span
-          className="mt-0.5 w-full truncate text-center text-[10px] leading-tight"
+          className={cn(
+            "mt-0.5 w-full text-center text-[10px] leading-tight",
+            item.href === "/student/slips"
+              ? "whitespace-normal"
+              : "truncate",
+          )}
           title={item.label}
         >
           {item.label}
