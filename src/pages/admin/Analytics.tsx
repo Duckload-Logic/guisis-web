@@ -1,5 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useAnalyticsDashboard } from "@/features/analytics/hooks/useAnalyticsDashboard";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import {
+  useAnalyticsDashboard,
+} from "@/features/analytics/hooks/useAnalyticsDashboard";
 import {
   Card,
   CardContent,
@@ -13,23 +15,17 @@ import {
   TrendingUp,
   Users,
   MapPin,
-  Home,
-  Network,
+  School,
+  GraduationCap,
+  DollarSign,
+  HeartHandshake,
   FileDown,
   Download,
+  Inbox,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import { SelectField } from "@/components/ui/select-field";
 import {
   ChartContainer,
@@ -52,53 +48,38 @@ import {
   ResponsiveModalTitle,
 } from "@/components/ui/responsive-modal";
 import { useQuery } from "@tanstack/react-query";
-import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
+import type { DemographicStat } from "@/features/analytics/types";
 
-// --- THEME COLORS ---
-const COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--secondary))",
-  "hsl(var(--accent))",
-  "hsl(var(--muted-foreground))",
-  "#3b82f6", // male
-  "#ec4899", // female
-  "#94a3b8", // total/muted
-  "#10b981", // emerald
-];
+// --- CONSTANTS & CHART CONFIG ---
+const GENDER_COLORS = {
+  male: "#3b82f6",
+  female: "#ec4899",
+} as const;
 
-// --- CHART CONFIGURATIONS ---
-const genderSplitConfig = {
-  maleCount: {
-    label: "Male",
-    color: "#3b82f6",
-  },
-  femaleCount: {
-    label: "Female",
-    color: "#ec4899",
-  },
-  total: {
-    label: "Total Students",
-    color: "#94a3b8",
-  },
-} satisfies ChartConfig;
-
-const genderDistributionConfig = {
+const GENDER_CONFIG = {
   Male: {
     label: "Male",
-    color: "#3b82f6",
+    color: GENDER_COLORS.male,
   },
   Female: {
     label: "Female",
-    color: "#ec4899",
+    color: GENDER_COLORS.female,
   },
 } satisfies ChartConfig;
+
+const MAX_DISPLAY_CITIES = 5;
+const ALL_PROGRAMS_VALUE = "0";
 
 export default function AnalyticsPage() {
   const currentCalendarYear = useMemo(() => new Date().getFullYear(), []);
   const [selectedYear, setSelectedYear] = useState<string>(() =>
     currentCalendarYear.toString(),
   );
-  const [selectedProgram, setSelectedProgram] = useState<string>("0");
+  const [selectedProgram, setSelectedProgram] =
+    useState<string>(ALL_PROGRAMS_VALUE);
 
   const { data: settings, isLoading: isSettingsLoading } = useQuery({
     queryKey: ["counselor", "academicSettings"],
@@ -118,18 +99,19 @@ export default function AnalyticsPage() {
     isDownloading,
     downloadProgress,
   } = useAnalyticsDashboard();
+
   const { data: programsData } = usePrograms();
   const programs = useMemo(() => {
     return [
-      { value: "0", label: "All Programs" },
+      { value: ALL_PROGRAMS_VALUE, label: "All Programs" },
       ...(programsData || []).map((p: any) => ({
         value: p.id.toString(),
         label: p.code,
       })),
     ];
   }, [programsData]);
-  const { data: enrollmentYears } = useEnrollmentYears();
 
+  const { data: enrollmentYears } = useEnrollmentYears();
   const [hasSetDefaultYear, setHasSetDefaultYear] = useState(false);
 
   useEffect(() => {
@@ -152,37 +134,37 @@ export default function AnalyticsPage() {
     refresh,
   ]);
 
-  // Update filters and refresh
-  const handleYearChange = (val: string) => {
-    setSelectedYear(val);
-    refresh(parseInt(val), parseInt(selectedProgram), 0);
-  };
+  const handleYearChange = useCallback(
+    (val: string) => {
+      setSelectedYear(val);
+      refresh(parseInt(val), parseInt(selectedProgram), 0);
+    },
+    [refresh, selectedProgram],
+  );
 
-  const handleProgramChange = (val: string) => {
-    setSelectedProgram(val);
-    refresh(parseInt(selectedYear), parseInt(val), 0);
-  };
+  const handleProgramChange = useCallback(
+    (val: string) => {
+      setSelectedProgram(val);
+      refresh(parseInt(selectedYear), parseInt(val), 0);
+    },
+    [refresh, selectedYear],
+  );
 
   const yearOptions = useMemo(() => {
     const yearSet = new Set<number>();
-
     if (settings?.currentYearStart) {
       yearSet.add(settings.currentYearStart);
     }
-
     (enrollmentYears || []).forEach((year: number) => {
       if (Number.isFinite(year)) yearSet.add(year);
     });
-
-    const parsedSelectedYear = Number.parseInt(selectedYear, 10);
-    if (Number.isFinite(parsedSelectedYear) && parsedSelectedYear > 0) {
-      yearSet.add(parsedSelectedYear);
+    const parsedYear = Number.parseInt(selectedYear, 10);
+    if (Number.isFinite(parsedYear) && parsedYear > 0) {
+      yearSet.add(parsedYear);
     }
-
     if (yearSet.size === 0) {
       yearSet.add(currentCalendarYear);
     }
-
     return Array.from(yearSet)
       .sort((a, b) => b - a)
       .map((year: number) => ({
@@ -190,6 +172,13 @@ export default function AnalyticsPage() {
         label: year.toString(),
       }));
   }, [currentCalendarYear, enrollmentYears, selectedYear, settings]);
+
+  const selectedProgramLabel = useMemo(() => {
+    return (
+      programs.find((p) => p.value === selectedProgram)?.label ||
+      "Selected Program"
+    );
+  }, [programs, selectedProgram]);
 
   const headerActions = useMemo(
     () => (
@@ -225,9 +214,12 @@ export default function AnalyticsPage() {
 
         <Button
           variant="outline"
-          disabled={isDownloading}
+          disabled={isDownloading || !data || data.totalStudents === 0}
           onClick={() =>
-            generatePreview(parseInt(selectedYear), parseInt(selectedProgram))
+            generatePreview(
+              parseInt(selectedYear),
+              parseInt(selectedProgram),
+            )
           }
           className={cn(
             "flex h-11 w-full items-center justify-between rounded-xl",
@@ -253,17 +245,9 @@ export default function AnalyticsPage() {
       programs,
       isDownloading,
       generatePreview,
+      data,
     ],
   );
-
-  const majorityGender = useMemo(() => {
-    if (!data?.genderDistribution || data.genderDistribution.length === 0) {
-      return null;
-    }
-    return data.genderDistribution.reduce((max, current) =>
-      current.totalPct > max.totalPct ? current : max,
-    );
-  }, [data?.genderDistribution]);
 
   const pageBadgeIcon = useMemo(() => <TrendingUp className="h-4 w-4" />, []);
 
@@ -271,7 +255,7 @@ export default function AnalyticsPage() {
     title: "Student Analytics",
     description:
       "Holistic analysis of student demographics, academic background, " +
-      "and social profiles",
+      "and socioeconomic profiles",
     badgeText: "Real-time Metrics",
     badgeIcon: pageBadgeIcon,
     isLoading: false,
@@ -304,10 +288,10 @@ export default function AnalyticsPage() {
   }
 
   if (loading && !data) {
-    return <AnalyticsSkeleton />;
+    return <AnalyticsBentoSkeleton />;
   }
 
-  if (!data) return null;
+  const hasNoData = !data || data.totalStudents === 0;
 
   return (
     <>
@@ -316,105 +300,126 @@ export default function AnalyticsPage() {
         progress={downloadProgress}
         message="Please wait while we compile your report."
       />
+
       <div
         className={cn(
-          "mx-auto flex w-full flex-col space-y-8",
-          "px-4 sm:px-6 md:px-8",
+          "mx-auto flex w-full flex-col space-y-6",
+          "px-4 sm:px-6 md:px-8 pb-12",
         )}
       >
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          {/* Left Column: Gender Distribution Chart */}
-          <div
-            className="animate-fade-in-up xl:col-span-1"
-            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-          >
-            <ChartCard
-              title="Gender Distribution"
-              description="Total student body split"
+        {hasNoData ? (
+          <EmptyAnalyticsState
+            selectedYear={selectedYear}
+            selectedProgram={selectedProgram}
+            selectedProgramLabel={selectedProgramLabel}
+            onResetFilter={() => handleProgramChange(ALL_PROGRAMS_VALUE)}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
+            {/* Bento 1: Cohort Overview & Gender Distribution (8 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 lg:col-span-8"
+              style={{ animationDelay: "0.04s", animationFillMode: "both" }}
             >
-              <ChartContainer
-                config={genderDistributionConfig}
-                className={cn(
-                  "mx-auto aspect-square h-[220px] w-full max-w-[260px]",
-                  "sm:h-[260px] sm:max-w-[300px] xl:h-[300px]",
-                )}
-              >
-                <PieChart>
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Pie
-                    data={data?.genderDistribution ?? []}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={54}
-                    outerRadius={88}
-                    paddingAngle={5}
-                    dataKey="total"
-                    nameKey="category"
-                    isAnimationActive={false}
-                  >
-                    {(data?.genderDistribution ?? []).map((gender) => (
-                      <Cell
-                        key={gender.category}
-                        fill={
-                          gender.category === "Male"
-                            ? "var(--color-Male)"
-                            : "var(--color-Female)"
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    iconType="circle"
-                  />
-                </PieChart>
-              </ChartContainer>
-            </ChartCard>
-          </div>
+              <CohortOverviewCard data={data} />
+            </div>
 
-          {/* Right Columns: KPIs */}
-          <div
-            className="animate-fade-in-up grid grid-cols-1 gap-4 sm:grid-cols-2 xl:col-span-2"
-            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
-          >
-            <KPICard
-              title="Total Population"
-              value={data?.totalStudents?.toLocaleString() ?? "0"}
-              subtitle="Enrolled Students"
-              icon={<Users className="h-5 w-5 text-primary" />}
-              gradient="from-primary/10 via-background to-background"
-            />
-            <KPICard
-              title="Gender Balance"
-              value={majorityGender ? `${majorityGender.totalPct}%` : "0%"}
-              subtitle={`${majorityGender?.category || "N/A"} Majority`}
-              icon={<Network className="h-5 w-5 text-indigo-500" />}
-              gradient={
-                majorityGender?.category === "Male"
-                  ? "from-blue-500/10 via-background to-background"
-                  : "from-pink-500/10 via-background to-background"
-              }
-            />
-            <KPICard
-              title="Top Location"
-              value={data?.cityAddress?.[0]?.category || "None"}
-              subtitle="Primary Residence"
-              icon={<MapPin className="h-5 w-5 text-emerald-500" />}
-              gradient="from-emerald-500/10 via-background to-background"
-            />
-            <KPICard
-              title="Metric Depth"
-              value={(Object.keys(data || {}).length - 1).toString()}
-              subtitle="Datasets Analyzed"
-              icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
-              gradient="from-amber-500/10 via-background to-background"
-            />
+            {/* Bento 2: Cohort Dominant Highlights (4 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 lg:col-span-4"
+              style={{ animationDelay: "0.08s", animationFillMode: "both" }}
+            >
+              <CohortVitalsCard data={data} />
+            </div>
+
+            {/* Bento 3: Academic Readiness / High School GWA (7 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 lg:col-span-7"
+              style={{ animationDelay: "0.12s", animationFillMode: "both" }}
+            >
+              <BentoCard
+                title="Academic Readiness"
+                description={
+                  "High School General Weighted Average (GWA) brackets"
+                }
+                icon={<GraduationCap className="h-4 w-4 text-primary" />}
+              >
+                <DistributionBarList
+                  items={data.highSchoolGWA}
+                  totalCohort={data.totalStudents}
+                  emptyMessage="No high school GWA records reported"
+                  accentColorClass="bg-primary"
+                />
+              </BentoCard>
+            </div>
+
+            {/* Bento 4: Geographic Reach / Top Municipalities (5 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 lg:col-span-5"
+              style={{ animationDelay: "0.16s", animationFillMode: "both" }}
+            >
+              <BentoCard
+                title="Geographic Distribution"
+                description="Top municipalities and student residences"
+                icon={<MapPin className="h-4 w-4 text-emerald-500" />}
+              >
+                <DistributionBarList
+                  items={(data.cityAddress || []).slice(0, MAX_DISPLAY_CITIES)}
+                  totalCohort={data.totalStudents}
+                  emptyMessage="No residence locations recorded"
+                  accentColorClass="bg-emerald-500"
+                />
+                {(data.cityAddress || []).length > MAX_DISPLAY_CITIES && (
+                  <p className="mt-4 text-center text-xs text-muted-foreground">
+                    + {
+                      (data.cityAddress || []).length -
+                      MAX_DISPLAY_CITIES
+                    }{" "}
+                    more locations in full report
+                  </p>
+                )}
+              </BentoCard>
+            </div>
+
+            {/* Bento 5: Socioeconomic Bracket (6 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 md:col-span-6"
+              style={{ animationDelay: "0.20s", animationFillMode: "both" }}
+            >
+              <BentoCard
+                title="Monthly Family Income"
+                description="Socioeconomic brackets for financial guidance"
+                icon={<DollarSign className="h-4 w-4 text-amber-500" />}
+              >
+                <DistributionBarList
+                  items={data.monthlyIncome}
+                  totalCohort={data.totalStudents}
+                  emptyMessage="No income data recorded"
+                  accentColorClass="bg-amber-500"
+                />
+              </BentoCard>
+            </div>
+
+            {/* Bento 6: Family Structure & Living Environment (6 cols) */}
+            <div
+              className="animate-fade-in-up col-span-12 md:col-span-6"
+              style={{ animationDelay: "0.24s", animationFillMode: "both" }}
+            >
+              <BentoCard
+                title="Family Birth Order"
+                description="Ordinal position of students among siblings"
+                icon={<HeartHandshake className="h-4 w-4 text-indigo-500" />}
+              >
+                <DistributionBarList
+                  items={data.ordinalPosition}
+                  totalCohort={data.totalStudents}
+                  emptyMessage="No sibling order data recorded"
+                  accentColorClass="bg-indigo-500"
+                />
+              </BentoCard>
+            </div>
           </div>
-        </div>
+        )}
 
         <ResponsiveModal
           open={!!pdfUrl}
@@ -432,8 +437,9 @@ export default function AnalyticsPage() {
                 <button
                   onClick={downloadFromPreview}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2",
-                    "text-sm font-semibold text-white transition-colors hover:bg-emerald-600",
+                    "flex items-center gap-2 rounded-lg bg-emerald-500",
+                    "px-4 py-2 text-sm font-semibold text-white",
+                    "transition-colors hover:bg-emerald-600",
                   )}
                 >
                   <Download size={16} />
@@ -457,274 +463,494 @@ export default function AnalyticsPage() {
   );
 }
 
-// --- HELPER COMPONENTS ---
+// --- BENTO COMPONENTS ---
 
-const KPICard = React.memo(
-  ({ title, value, subtitle, icon, gradient }: any) => {
+interface BentoCardProps {
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const BentoCard = React.memo(
+  ({ title, description, icon, children, className }: BentoCardProps) => {
     return (
       <Card
-        className={`shadow-premium overflow-hidden border-none bg-gradient-to-br ${gradient}`}
+        className={cn(
+          "group relative flex h-full flex-col overflow-hidden",
+          "border border-border/60 bg-card/60 backdrop-blur-sm",
+          "transition-all duration-300 hover:-translate-y-0.5",
+          "hover:border-border hover:shadow-md",
+          className,
+        )}
       >
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xs font-bold uppercase text-muted-foreground">
-            {title}
-          </CardTitle>
-          <div className="rounded-xl p-2 shadow-sm">{icon}</div>
+        <CardHeader
+          className={cn(
+            "flex flex-row items-start justify-between",
+            "border-b border-border/40 bg-muted/10 p-4 pb-3",
+          )}
+        >
+          <div className="space-y-0.5">
+            <CardTitle
+              className="text-sm font-bold tracking-tight text-foreground"
+            >
+              {title}
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              {description}
+            </CardDescription>
+          </div>
+          {icon && (
+            <div
+              className={cn(
+                "rounded-xl border border-border/40",
+                "bg-background/80 p-2 shadow-xs",
+              )}
+            >
+              {icon}
+            </div>
+          )}
         </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-semibold">{value}</div>
-          <p className="mt-1 text-[10px] font-medium text-muted-foreground">
-            {subtitle}
-          </p>
-        </CardContent>
+        <CardContent className="flex-1 p-5">{children}</CardContent>
       </Card>
     );
   },
 );
 
-const ChartCard = React.memo(
-  ({ title, description, children, className }: any) => {
-    return (
-      <Card
-        className={`shadow-premium overflow-hidden border-primary/5 bg-card/40 backdrop-blur-sm ${className}`}
-      >
-        <CardHeader className="border-b border-primary/5 bg-muted/5 pb-2">
-          <CardTitle className="text-base font-bold">{title}</CardTitle>
-          <CardDescription className="text-xs">{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">{children}</CardContent>
-      </Card>
+const CohortOverviewCard = React.memo(({ data }: { data: any }) => {
+  const maleStat = useMemo(() => {
+    return (data?.genderDistribution || []).find(
+      (g: DemographicStat) => g.category.toLowerCase() === "male",
     );
-  },
-);
+  }, [data]);
 
-const CityDistributionCard = React.memo(({ data }: { data: any[] }) => {
-  const [cityPage, setCityPage] = useState(0);
-  const CITY_PAGE_SIZE = 10;
+  const femaleStat = useMemo(() => {
+    return (data?.genderDistribution || []).find(
+      (g: DemographicStat) => g.category.toLowerCase() === "female",
+    );
+  }, [data]);
+
+  const malePct = maleStat?.totalPct ?? 0;
+  const femalePct = femaleStat?.totalPct ?? 0;
 
   return (
-    <ChartCard
-      title="City Distribution"
-      description={`Page ${cityPage + 1} of ${Math.ceil((data?.length || 0) / CITY_PAGE_SIZE)} cities`}
-      className="lg:col-span-3"
+    <Card
+      className={cn(
+        "relative flex h-full flex-col overflow-hidden",
+        "border border-border/60 bg-card/60 backdrop-blur-sm",
+        "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      )}
     >
-      <div className="space-y-6">
-        <ChartContainer
-          config={genderSplitConfig}
-          className="aspect-auto h-[400px] w-full"
-        >
-          <BarChart
-            layout="vertical"
-            data={data.slice(
-              cityPage * CITY_PAGE_SIZE,
-              (cityPage + 1) * CITY_PAGE_SIZE,
-            )}
-            margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              horizontal={false}
-              stroke="hsl(var(--border))"
-            />
-            <XAxis
-              type="number"
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <YAxis
-              type="category"
-              dataKey="category"
-              axisLine={false}
-              tickLine={false}
-              width={110}
-              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Legend
-              verticalAlign="top"
-              height={36}
-            />
-            <Bar
-              isAnimationActive={false}
-              name="Male"
-              dataKey="maleCount"
-              fill="var(--color-maleCount)"
-              radius={[0, 4, 4, 0]}
-              barSize={15}
-            />
-            <Bar
-              isAnimationActive={false}
-              name="Female"
-              dataKey="femaleCount"
-              fill="var(--color-femaleCount)"
-              radius={[0, 4, 4, 0]}
-              barSize={15}
-            />
-            <Bar
-              isAnimationActive={false}
-              name="Total"
-              dataKey="total"
-              fill="var(--color-total)"
-              radius={[0, 4, 4, 0]}
-              barSize={15}
-              opacity={0.3}
-            />
-          </BarChart>
-        </ChartContainer>
-
-        <div className="flex items-center justify-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCityPage((p) => Math.max(0, p - 1))}
-            disabled={cityPage === 0}
-            className="h-8 text-[10px] font-bold uppercase"
-          >
-            Previous
-          </Button>
-          <div className="text-[10px] font-medium uppercase text-muted-foreground">
-            Showing {cityPage * CITY_PAGE_SIZE + 1} -{" "}
-            {Math.min((cityPage + 1) * CITY_PAGE_SIZE, data?.length || 0)} of{" "}
-            {data?.length || 0}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCityPage((p) => p + 1)}
-            disabled={(cityPage + 1) * CITY_PAGE_SIZE >= (data?.length || 0)}
-            className="h-8 text-[10px] font-bold uppercase"
-          >
-            Next
-          </Button>
+      <CardHeader
+        className={cn(
+          "flex flex-row items-center justify-between",
+          "border-b border-border/40 bg-muted/10 p-5 pb-4",
+        )}
+      >
+        <div>
+          <CardTitle className="text-base font-bold tracking-tight">
+            Cohort Demographics
+          </CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            Total student intake and gender distribution
+          </CardDescription>
         </div>
-      </div>
-    </ChartCard>
+        <div
+          className={cn(
+            "flex items-center gap-1.5 rounded-full border",
+            "border-primary/20 bg-primary/10 px-3 py-1",
+            "text-xs font-semibold text-primary",
+          )}
+        >
+          <Users className="h-3.5 w-3.5" />
+          <span>Active Cohort</span>
+        </div>
+      </CardHeader>
+
+      <CardContent
+        className={cn(
+          "flex flex-1 flex-col justify-between gap-6 p-5",
+          "sm:flex-row sm:items-center",
+        )}
+      >
+        {/* Left Stats Section */}
+        <div className="flex-1 space-y-5">
+          <div>
+            <p
+              className={cn(
+                "text-xs font-semibold uppercase",
+                "tracking-wider text-muted-foreground",
+              )}
+            >
+              Total Enrolled Students
+            </p>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span
+                className={cn(
+                  "text-4xl font-extrabold tracking-tight",
+                  "text-foreground",
+                )}
+              >
+                {(data?.totalStudents || 0).toLocaleString()}
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Analyzed Profiles
+              </span>
+            </div>
+          </div>
+
+          {/* Segmented Ratio Bar */}
+          <div className="space-y-2">
+            <div
+              className={cn(
+                "flex items-center justify-between",
+                "text-xs font-semibold",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex items-center gap-1.5",
+                  "text-blue-600 dark:text-blue-400",
+                )}
+              >
+                <span className="h-2 w-2 rounded-full bg-blue-500" />
+                Male: {maleStat?.total?.toLocaleString() ?? 0} ({malePct}%)
+              </span>
+              <span
+                className={cn(
+                  "flex items-center gap-1.5",
+                  "text-pink-600 dark:text-pink-400",
+                )}
+              >
+                <span className="h-2 w-2 rounded-full bg-pink-500" />
+                Female: {femaleStat?.total?.toLocaleString() ?? 0} (
+                {femalePct}%)
+              </span>
+            </div>
+
+            <div
+              className={cn(
+                "flex h-3.5 w-full overflow-hidden rounded-full",
+                "bg-muted/50 p-0.5",
+              )}
+            >
+              <div
+                className={cn(
+                  "h-full rounded-l-full bg-blue-500",
+                  "transition-all duration-500",
+                )}
+                style={{ width: `${Math.max(malePct, 0)}%` }}
+              />
+              <div
+                className={cn(
+                  "h-full rounded-r-full bg-pink-500",
+                  "transition-all duration-500",
+                )}
+                style={{ width: `${Math.max(femalePct, 0)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Donut Chart */}
+        <div className="flex shrink-0 items-center justify-center">
+          <ChartContainer
+            config={GENDER_CONFIG}
+            className={cn(
+              "aspect-square h-[140px] w-[140px]",
+              "sm:h-[160px] sm:w-[160px]",
+            )}
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={data?.genderDistribution ?? []}
+                cx="50%"
+                cy="50%"
+                innerRadius={45}
+                outerRadius={68}
+                paddingAngle={4}
+                dataKey="total"
+                nameKey="category"
+                isAnimationActive={false}
+              >
+                {(data?.genderDistribution ?? []).map(
+                  (gender: DemographicStat) => (
+                    <Cell
+                      key={gender.category}
+                      fill={
+                        gender.category.toLowerCase() === "male"
+                          ? GENDER_COLORS.male
+                          : GENDER_COLORS.female
+                      }
+                    />
+                  ),
+                )}
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        </div>
+      </CardContent>
+    </Card>
   );
 });
 
-function StatSummaryCard({ title, data, className }: any) {
-  const topAddress = data.cityAddress[0]?.category || "N/A";
-  const topNature = data.natureOfSchooling[0]?.category || "N/A";
-  const topOrdinal = data.ordinalPosition[0]?.category || "N/A";
+const CohortVitalsCard = React.memo(({ data }: { data: any }) => {
+  const topLocation = data?.cityAddress?.[0]?.category || "None";
+  const topLocationPct = data?.cityAddress?.[0]?.totalPct || 0;
 
-  return (
-    <StatCard
-      title={title}
-      description="Key insights and dominant categories"
-      className={className}
-    >
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <InsightItem
-          label="Primary Location"
-          value={topAddress}
-          icon={<MapPin className="h-4 w-4" />}
-        />
-        <InsightItem
-          label="Enrollment Nature"
-          value={topNature}
-          icon={<Home className="h-4 w-4" />}
-        />
-        <InsightItem
-          label="Family Position"
-          value={topOrdinal}
-          icon={<Network className="h-4 w-4" />}
-        />
-      </div>
-    </StatCard>
-  );
-}
+  const topNature = data?.natureOfSchooling?.[0]?.category || "None";
+  const topNaturePct = data?.natureOfSchooling?.[0]?.totalPct || 0;
 
-function StatCard({ title, description, children, className }: any) {
+  const topOrdinal = data?.ordinalPosition?.[0]?.category || "None";
+  const topOrdinalPct = data?.ordinalPosition?.[0]?.totalPct || 0;
+
   return (
     <Card
-      className={`shadow-premium overflow-hidden border-primary/5 bg-card/40 backdrop-blur-sm ${className}`}
+      className={cn(
+        "flex h-full flex-col justify-between overflow-hidden",
+        "border border-border/60 bg-card/60 backdrop-blur-sm",
+        "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      )}
     >
-      <CardHeader className="border-b border-primary/5 bg-muted/5 pb-2">
-        <CardTitle className="text-base font-bold">{title}</CardTitle>
-        <CardDescription className="text-xs">{description}</CardDescription>
+      <CardHeader className="border-b border-border/40 bg-muted/10 p-4 pb-3">
+        <CardTitle className="text-sm font-bold tracking-tight">
+          Dominant Highlights
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground">
+          Primary cohort demographics at a glance
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">{children}</CardContent>
+
+      <CardContent className="flex flex-1 flex-col justify-around gap-3 p-4">
+        <VitalTile
+          icon={<MapPin className="h-4 w-4 text-emerald-500" />}
+          label="Primary Residence"
+          value={topLocation}
+          share={`${topLocationPct}%`}
+        />
+        <VitalTile
+          icon={<School className="h-4 w-4 text-primary" />}
+          label="School Background"
+          value={topNature}
+          share={`${topNaturePct}%`}
+        />
+        <VitalTile
+          icon={<Users className="h-4 w-4 text-indigo-500" />}
+          label="Family Position"
+          value={topOrdinal}
+          share={`${topOrdinalPct}%`}
+        />
+      </CardContent>
     </Card>
   );
-}
+});
 
-function InsightItem({ label, value, icon }: any) {
+function VitalTile({
+  icon,
+  label,
+  value,
+  share,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  share: string;
+}) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-primary/10 bg-background p-4">
-      <div className="rounded-lg bg-primary/10 p-2 text-primary">{icon}</div>
-      <div>
-        <p className="text-[10px] font-bold uppercase text-muted-foreground">
-          {label}
-        </p>
-        <p className="mt-0.5 text-sm font-bold text-foreground">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function AnalyticsSkeleton() {
-  return (
-    <div className="space-y-8 p-6">
-      <div className="grid grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton
-            key={i}
-            className="h-32 w-full rounded-2xl"
-          />
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-6">
-        <Skeleton className="col-span-2 h-[400px] rounded-2xl" />
-        <Skeleton className="h-[400px] rounded-2xl" />
-      </div>
-    </div>
-  );
-}
-
-const MiniBarChart = React.memo(
-  ({ title, data }: { title: string; data: any[] }) => {
-    return (
-      <div className="space-y-2">
-        <p className="text-[10px] font-bold uppercase text-muted-foreground">
-          {title}
-        </p>
-        <ChartContainer
-          config={genderSplitConfig}
-          className="aspect-auto h-[120px] w-full"
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-xl border border-border/50",
+        "bg-background/60 p-3 transition-colors hover:bg-background/90",
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0 pr-2">
+        <div
+          className={cn(
+            "rounded-lg border border-border/40",
+            "bg-muted/30 p-2 shrink-0",
+          )}
         >
-          <BarChart
-            data={data}
-            margin={{ top: 5, right: 5, left: 0, bottom: 5 }}
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <p
+            className={cn(
+              "text-[10px] font-bold uppercase tracking-wider",
+              "text-muted-foreground truncate",
+            )}
           >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="hsl(var(--border))"
-            />
-            <XAxis
-              dataKey="category"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 8, fill: "hsl(var(--muted-foreground))" }}
-            />
-            <YAxis hide />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar
-              isAnimationActive={false}
-              name="Male"
-              dataKey="maleCount"
-              fill="var(--color-maleCount)"
-              radius={[2, 2, 0, 0]}
-            />
-            <Bar
-              isAnimationActive={false}
-              name="Female"
-              dataKey="femaleCount"
-              fill="var(--color-femaleCount)"
-              radius={[2, 2, 0, 0]}
-            />
-          </BarChart>
-        </ChartContainer>
+            {label}
+          </p>
+          <p className="truncate text-xs font-semibold text-foreground">
+            {value}
+          </p>
+        </div>
+      </div>
+      <span
+        className={cn(
+          "shrink-0 rounded-md bg-muted/60 px-2 py-0.5",
+          "text-[11px] font-bold text-foreground",
+        )}
+      >
+        {share}
+      </span>
+    </div>
+  );
+}
+
+interface DistributionBarListProps {
+  items?: DemographicStat[];
+  totalCohort: number;
+  emptyMessage: string;
+  accentColorClass?: string;
+}
+
+const DistributionBarList = React.memo(
+  ({
+    items,
+    emptyMessage,
+    accentColorClass = "bg-primary",
+  }: DistributionBarListProps) => {
+    if (!items || items.length === 0) {
+      return (
+        <div
+          className={cn(
+            "flex h-32 items-center justify-center",
+            "text-xs text-muted-foreground",
+          )}
+        >
+          {emptyMessage}
+        </div>
+      );
+    }
+
+    const maxPercentage = Math.max(
+      ...items.map((item) => item.totalPct || 0),
+      1,
+    );
+
+    return (
+      <div className="space-y-3.5">
+        {items.map((item) => {
+          const barWidth = `${Math.min(
+            100,
+            Math.round(((item.totalPct || 0) / maxPercentage) * 100),
+          )}%`;
+
+          return (
+            <div key={item.category} className="space-y-1">
+              <div
+                className={cn(
+                  "flex items-center justify-between",
+                  "text-xs font-medium",
+                )}
+              >
+                <span className="truncate text-foreground pr-2 font-semibold">
+                  {item.category}
+                </span>
+                <span className="shrink-0 text-muted-foreground text-[11px]">
+                  <strong className="text-foreground font-semibold">
+                    {item.total.toLocaleString()}
+                  </strong>{" "}
+                  ({item.totalPct}%)
+                </span>
+              </div>
+              <div
+                className="h-2 w-full overflow-hidden rounded-full bg-muted/40"
+              >
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    accentColorClass,
+                  )}
+                  style={{ width: barWidth }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   },
 );
+
+function EmptyAnalyticsState({
+  selectedYear,
+  selectedProgram,
+  selectedProgramLabel,
+  onResetFilter,
+}: {
+  selectedYear: string;
+  selectedProgram: string;
+  selectedProgramLabel: string;
+  onResetFilter: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "animate-fade-in-up flex flex-col items-center justify-center",
+        "rounded-3xl border border-dashed border-border/80 bg-card/40 p-12",
+        "text-center shadow-xs backdrop-blur-sm",
+      )}
+      style={{ animationDuration: "350ms" }}
+    >
+      <div
+        className={cn(
+          "mb-4 flex h-16 w-16 items-center justify-center rounded-2xl",
+          "border border-border/50 bg-muted/40",
+          "text-muted-foreground shadow-inner",
+        )}
+      >
+        <Inbox className="h-8 w-8" />
+      </div>
+      <h3 className="text-lg font-bold tracking-tight text-foreground">
+        No Student Profiles Found
+      </h3>
+      <p
+        className={cn(
+          "mt-1.5 max-w-md text-sm leading-relaxed",
+          "text-muted-foreground",
+        )}
+      >
+        No Individual Inventory Records (IIR) were submitted for Academic
+        Year{" "}
+        <span className="font-semibold text-foreground">{selectedYear}</span>
+        {selectedProgram !== ALL_PROGRAMS_VALUE
+          ? ` under ${selectedProgramLabel}`
+          : ""}
+        . Try picking another academic year or changing the program filter.
+      </p>
+      {selectedProgram !== ALL_PROGRAMS_VALUE && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onResetFilter}
+          className="mt-6 gap-2 rounded-xl text-xs font-semibold"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          Reset to All Programs
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function AnalyticsBentoSkeleton() {
+  return (
+    <div className="space-y-6 px-4 sm:px-6 md:px-8">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
+        <Skeleton className="col-span-12 h-64 rounded-3xl lg:col-span-8" />
+        <Skeleton className="col-span-12 h-64 rounded-3xl lg:col-span-4" />
+        <Skeleton className="col-span-12 h-80 rounded-3xl lg:col-span-7" />
+        <Skeleton className="col-span-12 h-80 rounded-3xl lg:col-span-5" />
+        <Skeleton className="col-span-12 h-72 rounded-3xl md:col-span-6" />
+        <Skeleton className="col-span-12 h-72 rounded-3xl md:col-span-6" />
+      </div>
+    </div>
+  );
+}
