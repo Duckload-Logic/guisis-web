@@ -53,6 +53,7 @@ export interface Appointment {
   id?: string;
   iirId?: string;
   studentNumber?: string;
+  contactNumber?: string;
   user?: User;
   reason: string;
   adminNotes?: string;

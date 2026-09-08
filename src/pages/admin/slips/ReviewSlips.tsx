@@ -12,10 +12,7 @@ import {
   AlertCircle,
   Keyboard,
 } from "lucide-react";
-import {
-  Html5Qrcode,
-  Html5QrcodeScannerState,
-} from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { Button } from "@/components/ui/button";

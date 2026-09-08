@@ -44,6 +44,7 @@ export interface Slip {
   iirId?: string;
   user?: User;
   studentNumber?: string;
+  contactNumber?: string;
   reason: string;
   dateOfAbsence: string;
   dateNeeded: string;
