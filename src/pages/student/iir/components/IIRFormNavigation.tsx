@@ -12,6 +12,7 @@ interface IIRFormNavigationProps {
   isEditMode: boolean;
   isNextBlocked?: boolean;
   nextBlockedMessage?: string;
+  nextSectionTitle?: string;
   showExpressSubmit?: boolean;
   onExpressSubmit?: () => void;
   onReset: () => void;
@@ -29,6 +30,7 @@ export function IIRFormNavigation({
   isEditMode,
   isNextBlocked = false,
   nextBlockedMessage,
+  nextSectionTitle,
   showExpressSubmit = false,
   onExpressSubmit,
   onReset,
@@ -38,6 +40,9 @@ export function IIRFormNavigation({
 }: IIRFormNavigationProps) {
   const hasNextSection = currentIndex < totalSections - 1;
   const shouldDisableNext = isSaving || isNextBlocked;
+  const nextLabel = nextSectionTitle
+    ? `Next: ${nextSectionTitle}`
+    : "Next Step";
 
   return (
     <div
@@ -63,8 +68,8 @@ export function IIRFormNavigation({
         {isNextBlocked && nextBlockedMessage && (
           <div
             className={cn(
-              "inline-flex max-w-xl items-start gap-2 rounded-xl border px-3 py-2",
-              "border-warning-foreground/30 bg-warning-background text-xs",
+              "inline-flex max-w-xl items-start gap-2 rounded-xl border px-3",
+              "py-2 border-warning-foreground/30 bg-warning-background text-xs",
               "font-medium text-warning-foreground shadow-sm",
             )}
             role="alert"
@@ -97,15 +102,28 @@ export function IIRFormNavigation({
             id="btn-express-submit"
             onClick={onExpressSubmit}
             disabled={isSaving || isSubmitting}
+            title={
+              "Submit record using prior semester details " +
+              "(Returning Student Fast-Track)"
+            }
             className={cn(
               "flex h-12 min-w-0 flex-1 items-center justify-center",
-              "gap-2 rounded-2xl bg-green-600 px-6 font-black sm:flex-none",
-              "tracking-tight text-white shadow-xl shadow-green-600/20",
-              "transition-all duration-300 hover:bg-green-700",
-              "active:scale-95 sm:px-10",
+              "gap-2 rounded-2xl bg-emerald-600 px-5 font-bold sm:flex-none",
+              "tracking-tight text-white shadow-xl shadow-emerald-600/20",
+              "transition-all duration-300 hover:bg-emerald-700",
+              "active:scale-95 sm:px-7",
             )}
           >
-            Express Submit
+            <div className="flex flex-col items-center leading-tight">
+              <span className="text-xs font-bold sm:text-sm">
+                Fast-Track Submit
+              </span>
+              <span
+                className="text-[9px] font-normal opacity-90 hidden sm:inline"
+              >
+                Returning Student
+              </span>
+            </div>
           </Button>
         )}
 
@@ -114,14 +132,16 @@ export function IIRFormNavigation({
             onClick={onNext}
             disabled={shouldDisableNext}
             aria-disabled={shouldDisableNext}
-            title={isNextBlocked ? nextBlockedMessage : "Next Step"}
+            title={isNextBlocked ? nextBlockedMessage : nextLabel}
             className={cn(
-              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 sm:flex-none",
-              "font-black tracking-tight text-primary-foreground shadow-xl",
-              "shadow-primary/20 transition-all duration-300",
-              "hover:bg-primary/90 active:scale-95 sm:px-10",
+              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2",
+              "rounded-2xl bg-primary px-6 font-black tracking-tight",
+              "text-primary-foreground shadow-xl shadow-primary/20",
+              "transition-all duration-300 hover:bg-primary/90",
+              "active:scale-95 sm:flex-none sm:px-8",
               isNextBlocked &&
-                "cursor-not-allowed bg-muted text-muted-foreground shadow-none hover:bg-muted active:scale-100",
+                "cursor-not-allowed bg-muted text-muted-foreground " +
+                  "shadow-none hover:bg-muted active:scale-100",
             )}
           >
             {isSaving ? (
@@ -136,8 +156,10 @@ export function IIRFormNavigation({
               </div>
             ) : (
               <>
-                <span>Next Step</span>
-                <ChevronRight className="h-5 w-5" />
+                <span className="max-w-[200px] truncate sm:max-w-none">
+                  {nextLabel}
+                </span>
+                <ChevronRight className="h-5 w-5 shrink-0" />
               </>
             )}
           </Button>
@@ -146,8 +168,8 @@ export function IIRFormNavigation({
             onClick={onSubmit}
             disabled={isSaving}
             className={cn(
-              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary sm:flex-none",
-              "px-6 tracking-tight",
+              "flex h-12 min-w-0 flex-1 items-center justify-center gap-2",
+              "rounded-2xl bg-primary px-6 tracking-tight sm:flex-none",
               "text-primary-foreground shadow-xl shadow-primary/20",
               "transition-all duration-300 hover:bg-primary/90",
               "active:scale-95 sm:px-10",

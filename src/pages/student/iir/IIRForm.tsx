@@ -97,7 +97,13 @@ export default function IIRForm() {
     const saved = localStorage.getItem("iir_visited_sections");
     return saved ? JSON.parse(saved) : [1];
   });
-  const currentIndex = activeSections.findIndex((s) => s.id === currentSection);
+  const currentIndex = activeSections.findIndex(
+    (s) => s.id === currentSection,
+  );
+  const nextSectionItem =
+    currentIndex < activeSections.length - 1
+      ? activeSections[currentIndex + 1]
+      : undefined;
   const [localFormData, setLocalFormData] = useState<IIRFormType | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -469,13 +475,20 @@ export default function IIRForm() {
     );
     if (!validation.isValid) {
       markAllTouched();
-      const raw = validation.errors || {};
-      const total = Object.keys(raw).length;
-      if (total > 0) {
-        setGroupedErrors(groupErrorsBySection(raw));
-        setTotalErrors(total);
-        setIsErrorModalOpen(true);
-      }
+      sectionRefs[currentSection]?.current?.validate?.(stepToValidate);
+      triggerToast("Please complete the required fields in this section.");
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector(
+          '[aria-invalid="true"], .border-destructive, [data-invalid="true"]',
+        ) as HTMLElement | null;
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          firstErrorEl.focus?.();
+        }
+      }, 50);
       return;
     }
 
@@ -1108,6 +1121,7 @@ export default function IIRForm() {
                     isEditMode={isEditMode}
                     onReset={() => setShowResetConfirm(true)}
                     isNextBlocked={isPhotoStepBlocked}
+                    nextSectionTitle={nextSectionItem?.title}
                     nextBlockedMessage={
                       showPhotoValidationWarning || isPhotoStepBlocked
                         ? PHOTO_REQUIRED_MESSAGE
