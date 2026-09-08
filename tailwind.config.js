@@ -110,7 +110,7 @@ export default {
         "dialog-content-show": {
           from: {
             opacity: "0",
-            transform: "translate(-50%, -48%) scale(0.97)",
+            transform: "translate(-50%, -42%) scale(0.90)",
           },
           to: {
             opacity: "1",
@@ -124,16 +124,28 @@ export default {
           },
           to: {
             opacity: "0",
-            transform: "translate(-50%, -48%) scale(0.97)",
+            transform: "translate(-50%, -46%) scale(0.95)",
           },
         },
         "popover-show": {
-          from: { opacity: "0", transform: "scale(0.96)" },
-          to: { opacity: "1", transform: "scale(1)" },
+          from: {
+            opacity: "0",
+            transform: "scale(0.90) translateY(-6px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "scale(1) translateY(0)",
+          },
         },
         "popover-hide": {
-          from: { opacity: "1", transform: "scale(1)" },
-          to: { opacity: "0", transform: "scale(0.96)" },
+          from: {
+            opacity: "1",
+            transform: "scale(1) translateY(0)",
+          },
+          to: {
+            opacity: "0",
+            transform: "scale(0.95) translateY(-4px)",
+          },
         },
       },
       animation: {
@@ -143,17 +155,17 @@ export default {
           "toast-slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         ring: "ring 0.5s ease-in-out 3",
         "dialog-overlay-show":
-          "dialog-overlay-show 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-overlay-show 200ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "dialog-overlay-hide":
-          "dialog-overlay-hide 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-overlay-hide 150ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "dialog-content-show":
-          "dialog-content-show 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-content-show 220ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "dialog-content-hide":
-          "dialog-content-hide 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "dialog-content-hide 150ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "popover-show":
-          "popover-show 250ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "popover-show 180ms cubic-bezier(0.16, 1, 0.3, 1) both",
         "popover-hide":
-          "popover-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+          "popover-hide 120ms cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },
