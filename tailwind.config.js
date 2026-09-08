@@ -99,6 +99,42 @@ export default {
           "50%": { transform: "rotate(-20deg)" },
           "75%": { transform: "rotate(10deg)" },
         },
+        "dialog-overlay-show": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "dialog-overlay-hide": {
+          from: { opacity: "1" },
+          to: { opacity: "0" },
+        },
+        "dialog-content-show": {
+          from: {
+            opacity: "0",
+            transform: "translate(-50%, -48%) scale(0.97)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translate(-50%, -50%) scale(1)",
+          },
+        },
+        "dialog-content-hide": {
+          from: {
+            opacity: "1",
+            transform: "translate(-50%, -50%) scale(1)",
+          },
+          to: {
+            opacity: "0",
+            transform: "translate(-50%, -48%) scale(0.97)",
+          },
+        },
+        "popover-show": {
+          from: { opacity: "0", transform: "scale(0.96)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "popover-hide": {
+          from: { opacity: "1", transform: "scale(1)" },
+          to: { opacity: "0", transform: "scale(0.96)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -106,6 +142,18 @@ export default {
         "toast-slide-in-right":
           "toast-slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         ring: "ring 0.5s ease-in-out 3",
+        "dialog-overlay-show":
+          "dialog-overlay-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "dialog-overlay-hide":
+          "dialog-overlay-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "dialog-content-show":
+          "dialog-content-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "dialog-content-hide":
+          "dialog-content-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "popover-show":
+          "popover-show 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "popover-hide":
+          "popover-hide 150ms cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

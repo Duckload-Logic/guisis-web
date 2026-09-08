@@ -269,7 +269,6 @@ export default function SlipDetails() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
-
       {/* Significant Note Banner */}
       {needsSignificantNote && !isAssistant && (
         <div
