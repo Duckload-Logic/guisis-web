@@ -426,10 +426,10 @@ export default function StudentAppointments() {
         </div>
       </div>
 
-      {/* Appointment Cards (Clean 2-column agenda passes) */}
+      {/* Appointment Cards (Single-column vertical feed) */}
       <div className="w-full">
         {isAppointmentsLoading ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-2.5">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -456,7 +456,7 @@ export default function StudentAppointments() {
         ) : sortedAppointments.length === 0 ? (
           emptyState
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-2.5">
             {sortedAppointments.map((appointment, idx) => {
               const dateParts = getEventDateParts(appointment.whenDate);
               const animDelay = `${Math.min(idx * 0.04, 0.24)}s`;
