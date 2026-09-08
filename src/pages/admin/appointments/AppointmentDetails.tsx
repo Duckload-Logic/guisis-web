@@ -1011,7 +1011,6 @@ export default function AppointmentDetails() {
                     studentNumber={appointment.studentNumber}
                     onStart={(offset) => handleConfirmStartAppointment(offset)}
                     onComplete={() => handleActionClick("Complete")}
-                    onCancel={() => handleActionClick("Cancel")}
                     isPending={startAppointmentMutation.isPending}
                   />
                 )}

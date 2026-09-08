@@ -580,7 +580,7 @@ export default function StudentGrid({
             <div className="w-full md:w-[260px] xl:w-[280px]">
               {renderSearchInput(true)}
             </div>
-            <div className="w-full sm:w-[150px] xl:flex-1">
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
               <SelectField
                 label="Program"
                 options={programOptions}
@@ -590,7 +590,7 @@ export default function StudentGrid({
                 enabled={!isStudentsLoading}
               />
             </div>
-            <div className="w-full sm:w-[150px] xl:flex-1">
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
               <SelectField
                 label="Year Level"
                 options={yearLevelOptions}
@@ -600,7 +600,7 @@ export default function StudentGrid({
                 enabled={!isStudentsLoading}
               />
             </div>
-            <div className="w-full sm:w-[150px] xl:flex-1">
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
               <SelectField
                 label="Status"
                 options={statusOptions}
@@ -612,7 +612,7 @@ export default function StudentGrid({
             </div>
             {viewMode === "tile" && (
               <>
-                <div className="w-full sm:w-[150px] xl:flex-1">
+                <div className="w-full min-w-[155px] sm:w-[170px] xl:flex-1">
                   <SelectField
                     label="Sort By"
                     options={sortOptions}
@@ -624,7 +624,7 @@ export default function StudentGrid({
                     enabled={!isStudentsLoading}
                   />
                 </div>
-                <div className="w-full sm:w-[150px] xl:flex-1">
+                <div className="w-full min-w-[155px] sm:w-[170px] xl:flex-1">
                   <SelectField
                     label="Order"
                     options={orderOptions}

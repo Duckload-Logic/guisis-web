@@ -336,7 +336,12 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
       )}
 
       {(onComplete || onCancel) && (
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div
+          className={cn(
+            "grid gap-2 pt-1",
+            onComplete && onCancel ? "grid-cols-2" : "grid-cols-1",
+          )}
+        >
           {onComplete && (
             <Button
               size="sm"

@@ -561,81 +561,89 @@ export function SupportChatWidget() {
               className="relative flex flex-col items-center gap-3"
             >
               {/* Expanded Menu Items */}
-              {menuExpanded && (
-                <div className="animate-in slide-in-from-bottom-5 fade-in mb-2 flex flex-col items-center gap-3 duration-200">
-                  {/* Accessibility Settings Item */}
-                  <div className="group relative">
-                    <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition-opacity duration-150 group-hover:opacity-100">
-                      Accessibility Settings
-                    </span>
-                    <button
-                      onClick={() => {
-                        window.dispatchEvent(
-                          new CustomEvent("open-ui-settings"),
-                        );
-                        setMenuExpanded(false);
-                      }}
-                      className={cn(
-                        "flex h-12 w-12 items-center justify-center",
-                        "rounded-full border border-glass-border bg-background",
-                        "p-0 text-foreground shadow-md transition-transform",
-                        "duration-200 hover:scale-110",
-                      )}
-                      aria-label="Accessibility Settings"
-                    >
-                      <Sliders className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Text to Speech Item */}
-                  <div className="group relative">
-                    <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition-opacity duration-150 group-hover:opacity-100">
-                      Read Aloud (TTS)
-                    </span>
-                    <button
-                      onClick={() => {
-                        window.dispatchEvent(
-                          new CustomEvent("toggle-speech-reader"),
-                        );
-                        setMenuExpanded(false);
-                      }}
-                      className={cn(
-                        "flex h-12 w-12 items-center justify-center",
-                        "rounded-full border border-glass-border bg-background",
-                        "p-0 text-foreground shadow-md transition-transform",
-                        "duration-200 hover:scale-110",
-                      )}
-                      aria-label="Toggle Text-to-Speech"
-                    >
-                      <AudioLines className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Support Chat Item */}
-                  {!isStaff && (
+              <AnimatePresence>
+                {menuExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 16, scale: 0.85 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 16, scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="mb-2 flex flex-col items-center gap-3"
+                  >
+                    {/* Accessibility Settings Item */}
                     <div className="group relative">
                       <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition-opacity duration-150 group-hover:opacity-100">
-                        Support Chat
+                        Accessibility Settings
                       </span>
                       <button
                         onClick={() => {
-                          setIsOpen(true);
+                          window.dispatchEvent(
+                            new CustomEvent("open-ui-settings"),
+                          );
                           setMenuExpanded(false);
                         }}
                         className={cn(
                           "flex h-12 w-12 items-center justify-center",
                           "rounded-full border border-glass-border bg-background",
-                          "p-0 text-foreground shadow-md transition-transform",
-                          "duration-200 hover:scale-110",
+                          "p-0 text-foreground shadow-md transition-all",
+                          "duration-200 hover:scale-110 active:scale-95",
                         )}
-                        aria-label="Open Support Chat"
+                        aria-label="Accessibility Settings"
                       >
-                        <MessageSquare className="h-5 w-5" />
+                        <Sliders className="h-5 w-5" />
                       </button>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {/* Text to Speech Item */}
+                    <div className="group relative">
+                      <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition-opacity duration-150 group-hover:opacity-100">
+                        Read Aloud (TTS)
+                      </span>
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(
+                            new CustomEvent("toggle-speech-reader"),
+                          );
+                          setMenuExpanded(false);
+                        }}
+                        className={cn(
+                          "flex h-12 w-12 items-center justify-center",
+                          "rounded-full border border-glass-border bg-background",
+                          "p-0 text-foreground shadow-md transition-all",
+                          "duration-200 hover:scale-110 active:scale-95",
+                        )}
+                        aria-label="Toggle Text-to-Speech"
+                      >
+                        <AudioLines className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    {/* Support Chat Item */}
+                    {!isStaff && (
+                      <div className="group relative">
+                        <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded bg-slate-900/90 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition-opacity duration-150 group-hover:opacity-100">
+                          Support Chat
+                        </span>
+                        <button
+                          onClick={() => {
+                            setIsOpen(true);
+                            setMenuExpanded(false);
+                          }}
+                          className={cn(
+                            "flex h-12 w-12 items-center justify-center",
+                            "rounded-full border border-glass-border bg-background",
+                            "p-0 text-foreground shadow-md transition-all",
+                            "duration-200 hover:scale-110 active:scale-95",
+                          )}
+                          aria-label="Open Support Chat"
+                        >
+                          <MessageSquare className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Trigger Button */}
               <button
@@ -644,15 +652,39 @@ export function SupportChatWidget() {
                   "flex h-14 w-14 items-center justify-center rounded-full",
                   "bg-primary p-0 text-primary-foreground shadow-lg",
                   "transition-all duration-200 hover:scale-110 active:scale-95",
+                  "hover:shadow-xl hover:shadow-primary/25",
                   "xl:h-16 xl:w-16",
                 )}
                 aria-label="Accessibility & Support Menu"
               >
-                {menuExpanded ? (
-                  <X className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
-                ) : (
-                  <PersonStanding className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
-                )}
+                <AnimatePresence
+                  mode="wait"
+                  initial={false}
+                >
+                  {menuExpanded ? (
+                    <motion.span
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center justify-center"
+                    >
+                      <X className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="open"
+                      initial={{ rotate: 90, opacity: 0, scale: 0.8 }}
+                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                      exit={{ rotate: -90, opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center justify-center"
+                    >
+                      <PersonStanding className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
             </motion.div>
           )}

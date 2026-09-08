@@ -290,7 +290,10 @@ export default function ReviewSlips() {
     }
   };
 
+  const isCancelledRef = useRef(false);
+
   const startScanner = async () => {
+    isCancelledRef.current = false;
     setScannerError(null);
     setIsScanning(true);
 
@@ -324,7 +327,23 @@ export default function ReviewSlips() {
         },
         () => {},
       );
+
+      // If user cancelled while camera was starting up, stop it immediately
+      if (isCancelledRef.current) {
+        if (html5QrCode.isScanning) {
+          await html5QrCode.stop().catch(() => {});
+        }
+        qrReaderRef.current = null;
+        setIsScanning(false);
+      }
     } catch (error) {
+      // Ignore errors if cancellation or modal closure was requested
+      if (isCancelledRef.current) {
+        setIsScanning(false);
+        qrReaderRef.current = null;
+        return;
+      }
+
       console.error("Scanner start error:", error);
 
       const message =
@@ -338,6 +357,7 @@ export default function ReviewSlips() {
   };
 
   const stopScanner = async () => {
+    isCancelledRef.current = true;
     if (qrReaderRef.current) {
       const currentScanner = qrReaderRef.current;
       if (currentScanner.isScanning) {
@@ -359,6 +379,7 @@ export default function ReviewSlips() {
       return () => {
         active = false;
         clearTimeout(timer);
+        isCancelledRef.current = true;
         if (qrReaderRef.current) {
           const currentScanner = qrReaderRef.current;
           if (currentScanner.isScanning) {
@@ -519,8 +540,8 @@ export default function ReviewSlips() {
           object-fit: cover !important;
           width: 100% !important;
           height: 100% !important;
-          transform: none !important;
-          -webkit-transform: none !important;
+          transform: scaleX(-1) !important;
+          -webkit-transform: scaleX(-1) !important;
         }
       `}</style>
 
@@ -693,32 +714,30 @@ export default function ReviewSlips() {
 
           <div className="p-5">
             {pendingVerification ? (
-              <div
-            className="animate-in fade-in zoom-in-95 space-y-4 duration-200"
-          >
+              <div className="animate-in fade-in zoom-in-95 space-y-4 duration-200">
                 <div
-              className={cn(
-                "space-y-3 rounded-2xl border",
-                "border-success-foreground/30 bg-success-background p-5",
-              )}
-            >
-                  <div className="flex items-center justify-between">
-                    <span
                   className={cn(
-                    "flex items-center gap-1.5 text-[10px]",
-                    "font-bold uppercase tracking-wider",
-                    "text-success-foreground",
+                    "space-y-3 rounded-2xl border",
+                    "border-success-foreground/30 bg-success-background p-5",
                   )}
                 >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={cn(
+                        "flex items-center gap-1.5 text-[10px]",
+                        "font-bold uppercase tracking-wider",
+                        "text-success-foreground",
+                      )}
+                    >
                       <ShieldCheck className="h-3.5 w-3.5" />
                       Ticket Match Found
                     </span>
                     <Badge
                       variant="outline"
                       className={cn(
-                  "border-success-foreground/30 bg-background font-mono",
-                  "text-xs font-bold text-success-foreground",
-                )}
+                        "border-success-foreground/30 bg-background font-mono",
+                        "text-xs font-bold text-success-foreground",
+                      )}
                     >
                       SLIP-{pendingVerification.code}
                     </Badge>
@@ -750,9 +769,7 @@ export default function ReviewSlips() {
                   </div>
                 </div>
 
-                <p
-              className="px-1 text-xs leading-relaxed text-muted-foreground"
-            >
+                <p className="px-1 text-xs leading-relaxed text-muted-foreground">
                   Is the student physically present in the office? Click below
                   to start duration tracking and open the details.
                 </p>
@@ -763,11 +780,11 @@ export default function ReviewSlips() {
                     onClick={handleConfirmClaimPending}
                     disabled={isClaimingPending}
                     className={cn(
-                "h-11 w-full gap-2 rounded-xl bg-green-600",
-                "font-bold text-white",
-                "shadow-md transition-all hover:scale-[1.01]",
-                "hover:bg-green-700",
-              )}
+                      "h-11 w-full gap-2 rounded-xl bg-green-600",
+                      "font-bold text-white",
+                      "shadow-md transition-all hover:scale-[1.01]",
+                      "hover:bg-green-700",
+                    )}
                   >
                     {isClaimingPending ? (
                       <Clock3 className="h-4 w-4 animate-spin" />
