@@ -467,7 +467,11 @@ export default function CreateAppointment() {
                           "border-border/70 p-4 text-center",
                         )}
                       >
-                        <Clock className="mb-1.5 h-6 w-6 text-muted-foreground/50" />
+                        <Clock
+                          className={cn(
+                            "mb-1.5 h-6 w-6 text-muted-foreground/50",
+                          )}
+                        />
                         <p className="text-xs font-medium text-foreground">
                           Select a date on the calendar for Option{" "}
                           {activeBackupTab + 1}
@@ -562,7 +566,11 @@ export default function CreateAppointment() {
                               day: "numeric",
                             })}
                           </span>
-                          <span className="font-mono text-[11px] text-foreground">
+                          <span
+                            className={cn(
+                              "font-mono text-[11px] text-foreground",
+                            )}
+                          >
                             {b.timeSlot.time}
                           </span>
                         </div>

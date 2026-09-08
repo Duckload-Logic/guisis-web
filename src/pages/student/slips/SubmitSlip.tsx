@@ -23,6 +23,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { SelectField } from "@/components/ui/select-field";
 import { FormField } from "@/components/ui/form-field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PDFPreview } from "@/components/shared";
 import { ExistingFileCard } from "./components/ExistingFileCard";
 import { LocalFileCard } from "./components/LocalFileCard";
@@ -91,7 +92,9 @@ export default function SubmitSlip() {
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useGetSlipCategories();
-  const { data: existingSlip } = useGetSlipById(id || "");
+  const { data: existingSlip, isLoading: isSlipLoading } = useGetSlipById(
+    id || "",
+  );
   const { data: existingAttachments = [] } = useGetSlipAttachments(
     isEditMode ? id : undefined,
   );
@@ -394,9 +397,7 @@ export default function SubmitSlip() {
 
         {/* Existing & Local File Cards */}
         {hasFiles && (
-          <div
-            className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3"
-          >
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
             {keptFiles.map((file) => (
               <ExistingFileCard
                 key={file.id}
@@ -451,6 +452,59 @@ export default function SubmitSlip() {
       </div>
     );
   };
+
+  if (isEditMode && isSlipLoading) {
+    return (
+      <div
+        className={cn(
+          "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8",
+        )}
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
+          <div className="space-y-6 lg:col-span-8">
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card p-6 shadow-sm",
+              )}
+            >
+              <Skeleton className="h-5 w-48 rounded-md" />
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Skeleton className="h-14 rounded-xl" />
+                <Skeleton className="h-14 rounded-xl" />
+              </div>
+              <Skeleton className="mt-4 h-14 w-full rounded-xl" />
+              <Skeleton className="mt-4 h-24 w-full rounded-xl" />
+            </Card>
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card p-6 shadow-sm",
+              )}
+            >
+              <Skeleton className="h-5 w-48 rounded-md" />
+              <div className="mt-5 space-y-4">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+              </div>
+            </Card>
+          </div>
+          <div className="space-y-4 lg:col-span-4">
+            <Card
+              className={cn(
+                "rounded-2xl border border-border/80 bg-card p-6 shadow-sm",
+              )}
+            >
+              <Skeleton className="h-5 w-40 rounded-md" />
+              <div className="mt-4 space-y-3">
+                <Skeleton className="h-12 w-full rounded-xl" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+              </div>
+              <Skeleton className="mt-6 h-11 w-full rounded-xl" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -531,9 +585,7 @@ export default function SubmitSlip() {
           {/* Card 2: Required Supporting Documents */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
-              <div
-                className="flex flex-wrap items-center justify-between gap-2"
-              >
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <FileUp className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
@@ -614,12 +666,8 @@ export default function SubmitSlip() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Dates Pill */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className="text-[11px] font-semibold text-muted-foreground"
-                >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
                   Filing Timeline
                 </span>
                 <div
@@ -634,12 +682,8 @@ export default function SubmitSlip() {
               </div>
 
               {/* Category */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className="text-[11px] font-semibold text-muted-foreground"
-                >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
