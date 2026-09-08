@@ -3,6 +3,7 @@ import {
   ArrowDown,
   ArrowUp,
   CalendarX,
+  Download,
   Eye,
   EyeOff,
   RotateCcw,
@@ -940,7 +941,10 @@ export default function AppointmentList({
             </div>
 
             {!isLoading && appointments.length > 0 && (
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() =>
                   exportToCSV(
                     visibleAppointments,
@@ -950,27 +954,14 @@ export default function AppointmentList({
                 }
                 disabled={visibleAppointments.length === 0}
                 className={cn(
-                  "flex h-9 items-center justify-center rounded-xl border",
-                  "border-red-800/30 bg-white/60 px-3 text-xs font-semibold",
-                  "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
+                  "h-9 gap-1.5 rounded-xl border-border/70 bg-card px-3",
+                  "text-xs font-semibold shadow-xs transition-all",
+                  "hover:bg-muted/60 hover:text-foreground",
                 )}
               >
-                <svg
-                  className="mr-1.5 h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
+                <Download className="h-3.5 w-3.5" />
                 Export CSV
-              </button>
+              </Button>
             )}
           </div>
 

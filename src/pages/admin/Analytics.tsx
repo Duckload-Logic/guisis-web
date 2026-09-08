@@ -364,7 +364,9 @@ export default function AnalyticsPage() {
                 icon={<MapPin className="h-4 w-4 text-emerald-500" />}
               >
                 <DistributionBarList
-                  items={(data.cityAddress || []).slice(0, MAX_DISPLAY_CITIES)}
+                  items={[...(data.cityAddress || [])]
+                    .sort((a, b) => (b.total || 0) - (a.total || 0))
+                    .slice(0, MAX_DISPLAY_CITIES)}
                   totalCohort={data.totalStudents}
                   emptyMessage="No residence locations recorded"
                   accentColorClass="bg-emerald-500"
@@ -699,15 +701,28 @@ const CohortOverviewCard = React.memo(({ data }: { data: any }) => {
   );
 });
 
+function getTopDemographic(
+  items?: DemographicStat[],
+): DemographicStat | null {
+  if (!items || items.length === 0) return null;
+  return items.reduce((max, curr) =>
+    (curr.total || 0) > (max.total || 0) ? curr : max,
+  );
+}
+
 const CohortVitalsCard = React.memo(({ data }: { data: any }) => {
-  const topLocation = data?.cityAddress?.[0]?.category || "None";
-  const topLocationPct = data?.cityAddress?.[0]?.totalPct || 0;
-
-  const topNature = data?.natureOfSchooling?.[0]?.category || "None";
-  const topNaturePct = data?.natureOfSchooling?.[0]?.totalPct || 0;
-
-  const topOrdinal = data?.ordinalPosition?.[0]?.category || "None";
-  const topOrdinalPct = data?.ordinalPosition?.[0]?.totalPct || 0;
+  const topLocation = useMemo(
+    () => getTopDemographic(data?.cityAddress),
+    [data?.cityAddress],
+  );
+  const topNature = useMemo(
+    () => getTopDemographic(data?.natureOfSchooling),
+    [data?.natureOfSchooling],
+  );
+  const topOrdinal = useMemo(
+    () => getTopDemographic(data?.ordinalPosition),
+    [data?.ordinalPosition],
+  );
 
   return (
     <Card
@@ -730,20 +745,20 @@ const CohortVitalsCard = React.memo(({ data }: { data: any }) => {
         <VitalTile
           icon={<MapPin className="h-4 w-4 text-emerald-500" />}
           label="Primary Residence"
-          value={topLocation}
-          share={`${topLocationPct}%`}
+          value={topLocation?.category || "None"}
+          share={`${topLocation?.totalPct || 0}%`}
         />
         <VitalTile
           icon={<School className="h-4 w-4 text-primary" />}
           label="School Background"
-          value={topNature}
-          share={`${topNaturePct}%`}
+          value={topNature?.category || "None"}
+          share={`${topNature?.totalPct || 0}%`}
         />
         <VitalTile
           icon={<Users className="h-4 w-4 text-indigo-500" />}
           label="Family Position"
-          value={topOrdinal}
-          share={`${topOrdinalPct}%`}
+          value={topOrdinal?.category || "None"}
+          share={`${topOrdinal?.totalPct || 0}%`}
         />
       </CardContent>
     </Card>
