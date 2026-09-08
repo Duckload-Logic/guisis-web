@@ -21,9 +21,7 @@ import {
   useAvailableSlots,
   useCategories,
 } from "@/features/appointments/hooks";
-import {
-  useSubmitAppointment,
-} from "@/features/appointments/hooks/useAppointments";
+import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
 import {
   TimeSlot,
   CreateAppointmentRequest,
@@ -31,6 +29,7 @@ import {
 } from "@/features/appointments/types";
 import { toISODateString } from "@/utils/dateTime";
 import { usePageMetadata } from "@/context";
+import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 
 const MAX_REASON_LENGTH = 500;
@@ -173,12 +172,14 @@ export default function CreateAppointment() {
         "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8",
       )}
     >
+      <AnimationStyles />
+
       {/* Schedule Context Banner (Replaces intrusive popup) */}
       <div
         className={cn(
-          "flex flex-col gap-2.5 rounded-2xl border border-primary/20",
-          "bg-primary/5 p-4 text-xs sm:flex-row sm:items-center",
-          "sm:justify-between sm:text-sm",
+          "animate-fade-in-up flex flex-col gap-2.5 rounded-2xl border",
+          "border-primary/20 bg-primary/5 p-4 text-xs sm:flex-row",
+          "sm:items-center sm:justify-between sm:text-sm",
         )}
       >
         <div className="flex items-center gap-2.5">
@@ -199,7 +200,10 @@ export default function CreateAppointment() {
       {/* 2-Column Master-Detail Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
         {/* Left Column: Form & Schedule (8 cols) */}
-        <div className="space-y-6 lg:col-span-8">
+        <div
+          className="animate-fade-in-up space-y-6 lg:col-span-8"
+          style={{ animationDelay: "0.04s", animationFillMode: "both" }}
+        >
           {/* Card 1: Interactive Schedule Picker */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
@@ -463,9 +467,7 @@ export default function CreateAppointment() {
                           "border-border/70 p-4 text-center",
                         )}
                       >
-                        <Clock
-                          className="mb-1.5 h-6 w-6 text-muted-foreground/50"
-                        />
+                        <Clock className="mb-1.5 h-6 w-6 text-muted-foreground/50" />
                         <p className="text-xs font-medium text-foreground">
                           Select a date on the calendar for Option{" "}
                           {activeBackupTab + 1}
@@ -480,7 +482,12 @@ export default function CreateAppointment() {
         </div>
 
         {/* Right Column: Sticky Booking Summary (4 cols) */}
-        <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-4">
+        <div
+          className={cn(
+            "animate-fade-in-up space-y-4 lg:sticky lg:top-6 lg:col-span-4",
+          )}
+          style={{ animationDelay: "0.08s", animationFillMode: "both" }}
+        >
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-3">
               <CardTitle
@@ -494,12 +501,8 @@ export default function CreateAppointment() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Selected Schedule Pill */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className="text-[11px] font-semibold text-muted-foreground"
-                >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
                   Primary Schedule
                 </span>
                 {formattedDate && selectedTime?.time ? (
@@ -522,12 +525,8 @@ export default function CreateAppointment() {
               </div>
 
               {/* Concern Category */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className="text-[11px] font-semibold text-muted-foreground"
-                >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                <span className="text-[11px] font-semibold text-muted-foreground">
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
@@ -541,12 +540,8 @@ export default function CreateAppointment() {
 
               {/* Backup Schedules Summary */}
               {filledBackupCount > 0 && (
-                <div
-                  className="rounded-xl border border-border/70 bg-muted/30 p-3"
-                >
-                  <span
-                    className="text-[11px] font-semibold text-muted-foreground"
-                  >
+                <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                  <span className="text-[11px] font-semibold text-muted-foreground">
                     Backup Options ({filledBackupCount})
                   </span>
                   <div className="mt-1.5 space-y-1 text-xs">
@@ -567,9 +562,7 @@ export default function CreateAppointment() {
                               day: "numeric",
                             })}
                           </span>
-                          <span
-                            className="font-mono text-[11px] text-foreground"
-                          >
+                          <span className="font-mono text-[11px] text-foreground">
                             {b.timeSlot.time}
                           </span>
                         </div>
@@ -627,9 +620,7 @@ export default function CreateAppointment() {
                     )}
                     <span
                       className={cn(
-                        hasReason
-                          ? "text-foreground"
-                          : "text-muted-foreground",
+                        hasReason ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
                       Reason for consultation provided

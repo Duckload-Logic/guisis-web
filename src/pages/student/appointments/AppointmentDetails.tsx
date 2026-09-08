@@ -225,9 +225,9 @@ export default function AppointmentDetails() {
         {/* Event Pass Hero Header */}
         <div
           className={cn(
-            "flex flex-col justify-between gap-4 rounded-2xl border",
-            "border-border/80 bg-card p-5 shadow-sm sm:flex-row",
-            "sm:items-center",
+            "animate-fade-in-up flex flex-col justify-between gap-4",
+            "rounded-2xl border border-border/80 bg-card p-5 shadow-sm",
+            "sm:flex-row sm:items-center",
           )}
         >
           <div className="flex items-center gap-4">
@@ -314,7 +314,10 @@ export default function AppointmentDetails() {
         {/* 2-Column Balanced Content Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content (2 Cols) */}
-          <div className="space-y-6 lg:col-span-2">
+          <div
+            className="animate-fade-in-up space-y-6 lg:col-span-2"
+            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
+          >
             {/* Consultation Overview */}
             <Card
               className={cn(
@@ -507,7 +510,10 @@ export default function AppointmentDetails() {
           </div>
 
           {/* Sidebar (1 Col) */}
-          <div className="space-y-6">
+          <div
+            className="animate-fade-in-up space-y-6"
+            style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+          >
             {/* Student Guidelines Card */}
             <Card
               className={cn(

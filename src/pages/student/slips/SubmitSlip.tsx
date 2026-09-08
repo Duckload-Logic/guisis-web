@@ -35,6 +35,7 @@ import {
 } from "@/features/slips/hooks";
 import { CreateSlipRequest } from "@/features/slips/types";
 import { usePageMetadata, useToast } from "@/context";
+import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import goodCertImage from "@/assets/images/good-certificate-example.png";
@@ -359,7 +360,11 @@ export default function SubmitSlip() {
     const hasFiles = localFiles.length > 0 || keptFiles.length > 0;
 
     return (
-      <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+      <div
+        className={cn(
+          "space-y-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm",
+        )}
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-foreground">
@@ -375,7 +380,10 @@ export default function SubmitSlip() {
           {hasFiles && (
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-[10px] text-emerald-600"
+              className={cn(
+                "border-emerald-500/30 bg-emerald-500/10 text-[10px]",
+                "text-emerald-600",
+              )}
             >
               <CheckCircle2 className="mr-1 h-3 w-3" />
               Attached ({localFiles.length + keptFiles.length})
@@ -386,7 +394,9 @@ export default function SubmitSlip() {
 
         {/* Existing & Local File Cards */}
         {hasFiles && (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+          <div
+            className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3"
+          >
             {keptFiles.map((file) => (
               <ExistingFileCard
                 key={file.id}
@@ -411,7 +421,13 @@ export default function SubmitSlip() {
         )}
 
         {/* Upload Button Dropzone */}
-        <div className="relative flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 p-4 transition-colors hover:border-primary/50 hover:bg-muted/40">
+        <div
+          className={cn(
+            "relative flex cursor-pointer items-center justify-center",
+            "rounded-xl border border-dashed border-border/80 bg-muted/20",
+            "p-4 transition-colors hover:border-primary/50 hover:bg-muted/40",
+          )}
+        >
           <input
             type="file"
             multiple
@@ -419,7 +435,12 @@ export default function SubmitSlip() {
             onChange={(e) => handleFileAdd(documentType, e.target.files)}
             className="absolute inset-0 cursor-pointer opacity-0"
           />
-          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <div
+            className={cn(
+              "flex items-center gap-2 text-xs font-medium",
+              "text-muted-foreground",
+            )}
+          >
             <Folder className="h-4 w-4 text-primary" />
             <span>Click or drag to attach {title.toLowerCase()}</span>
             <span className="text-[10px] text-muted-foreground/60">
@@ -432,11 +453,20 @@ export default function SubmitSlip() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+    <div
+      className={cn(
+        "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8",
+      )}
+    >
+      <AnimationStyles />
+
       {/* 2-Column Master-Detail Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
         {/* Left Column: Form & Attachments (8 cols) */}
-        <div className="space-y-6 lg:col-span-8">
+        <div
+          className="animate-fade-in-up space-y-6 lg:col-span-8"
+          style={{ animationDelay: "0.04s", animationFillMode: "both" }}
+        >
           {/* Card 1: Absence Details */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
@@ -490,7 +520,10 @@ export default function SubmitSlip() {
                 isTextarea
                 required
                 maxChars={MAX_REASON_CHARS}
-                info="This will be reviewed by the guidance counselor upon validation."
+                info={
+                  "This will be reviewed by the guidance counselor upon " +
+                  "validation."
+                }
               />
             </CardContent>
           </Card>
@@ -498,7 +531,9 @@ export default function SubmitSlip() {
           {/* Card 2: Required Supporting Documents */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div
+                className="flex flex-wrap items-center justify-between gap-2"
+              >
                 <div className="flex items-center gap-2">
                   <FileUp className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
@@ -530,7 +565,8 @@ export default function SubmitSlip() {
                 "excuseLetter",
                 "Excuse Letter",
                 "Required",
-                "Parent or legal guardian signature required placed above their printed name.",
+                "Parent or legal guardian signature required placed above " +
+                  "their printed name.",
                 true,
               )}
 
@@ -539,7 +575,8 @@ export default function SubmitSlip() {
                 "parentId",
                 "Parent / Guardian ID",
                 "Required",
-                "1-page clear copy of parent or legal guardian's valid government/company ID with signature.",
+                "1-page clear copy of parent or legal guardian's valid " +
+                  "government/company ID with signature.",
                 true,
               )}
 
@@ -558,28 +595,51 @@ export default function SubmitSlip() {
         </div>
 
         {/* Right Column: Sticky Filing Summary Sidebar (4 cols) */}
-        <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-4">
+        <div
+          className={cn(
+            "animate-fade-in-up space-y-4 lg:sticky lg:top-6 lg:col-span-4",
+          )}
+          style={{ animationDelay: "0.08s", animationFillMode: "both" }}
+        >
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-3">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              <CardTitle
+                className={cn(
+                  "text-sm font-bold uppercase tracking-wider",
+                  "text-muted-foreground",
+                )}
+              >
                 Filing Checklist & Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Dates Pill */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Filing Timeline
                 </span>
-                <div className="mt-1 flex items-center justify-between text-xs font-semibold text-foreground">
+                <div
+                  className={cn(
+                    "mt-1 flex items-center justify-between text-xs",
+                    "font-semibold text-foreground",
+                  )}
+                >
                   <span>Absence: {formData.dateOfAbsence || "—"}</span>
                   <span>Needed: {formData.dateNeeded || "—"}</span>
                 </div>
               </div>
 
               {/* Category */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
@@ -687,7 +747,12 @@ export default function SubmitSlip() {
               </div>
 
               {/* Physical Protocol Callout */}
-              <div className="flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs leading-5">
+              <div
+                className={cn(
+                  "flex items-start gap-2 rounded-xl border border-primary/20",
+                  "bg-primary/5 p-3 text-xs leading-5",
+                )}
+              >
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <p className="text-foreground">
                   Please bring all original physical copies to the Guidance
@@ -699,7 +764,9 @@ export default function SubmitSlip() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting || isUpdating}
-                className="w-full rounded-xl py-5 text-sm font-semibold shadow-sm"
+                className={cn(
+                  "w-full rounded-xl py-5 text-sm font-semibold shadow-sm",
+                )}
               >
                 {isSubmitting || isUpdating
                   ? `Uploading... ${uploadProgress}%`
@@ -729,10 +796,17 @@ export default function SubmitSlip() {
           </DialogHeader>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-center">
+            <div
+              className={cn(
+                "rounded-xl border border-emerald-500/30 bg-emerald-500/5",
+                "p-3 text-center",
+              )}
+            >
               <Badge
                 variant="outline"
-                className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
+                className={cn(
+                  "border-emerald-500/40 bg-emerald-500/10 text-emerald-600",
+                )}
               >
                 <CheckCircle2 className="mr-1 h-3 w-3" /> Valid Example
               </Badge>
@@ -742,10 +816,17 @@ export default function SubmitSlip() {
                 className="mt-3 max-h-48 w-full object-contain"
               />
             </div>
-            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-center">
+            <div
+              className={cn(
+                "rounded-xl border border-destructive/30 bg-destructive/5",
+                "p-3 text-center",
+              )}
+            >
               <Badge
                 variant="outline"
-                className="border-destructive/40 bg-destructive/10 text-destructive"
+                className={cn(
+                  "border-destructive/40 bg-destructive/10 text-destructive",
+                )}
               >
                 <X className="mr-1 h-3 w-3" /> Invalid (Unsigned)
               </Badge>
@@ -779,7 +860,10 @@ export default function SubmitSlip() {
               <img
                 src={previewData.url}
                 alt="Preview"
-                className="max-h-[60vh] max-w-full rounded-xl object-contain shadow-md"
+                className={cn(
+                  "max-h-[60vh] max-w-full rounded-xl object-contain",
+                  "shadow-md",
+                )}
               />
             ) : previewData?.file.type === "application/pdf" ? (
               <PDFPreview

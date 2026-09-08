@@ -24,6 +24,7 @@ import { Pagination } from "@/components/shared";
 import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
 import { useAuth, usePageMetadata } from "@/context";
+import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 
 interface StatusCount {
@@ -340,6 +341,8 @@ export default function StudentSlips() {
         "space-y-6 px-4 pb-12 sm:px-6 md:px-8",
       )}
     >
+      <AnimationStyles />
+
       {/* Missing / Invalid COR Alerts */}
       {!user?.studentCorUrl ? (
         <Alert
@@ -466,21 +469,26 @@ export default function StudentSlips() {
           emptyState
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {sortedSlips.map((slip) => {
+            {sortedSlips.map((slip, idx) => {
               const absenceDate = getEventDateParts(slip.dateOfAbsence);
+              const animDelay = `${Math.min(idx * 0.04, 0.24)}s`;
 
               return (
                 <button
                   key={slip.id}
                   type="button"
                   onClick={() => navigate(`/student/slips/${slip.id}`)}
+                  style={{
+                    animationDelay: animDelay,
+                    animationFillMode: "both",
+                  }}
                   className={cn(
-                    "group flex items-center justify-between rounded-2xl",
-                    "border border-border/80 bg-card p-4 text-left shadow-sm",
-                    "transition-all hover:-translate-y-0.5",
-                    "hover:border-primary/40 hover:shadow-md",
-                    "focus-visible:outline-none focus-visible:ring-2",
-                    "focus-visible:ring-primary",
+                    "animate-fade-in-up group flex items-center",
+                    "justify-between rounded-2xl border border-border/80",
+                    "bg-card p-4 text-left shadow-sm transition-all",
+                    "hover:-translate-y-0.5 hover:border-primary/40",
+                    "hover:shadow-md focus-visible:outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-primary",
                   )}
                   aria-label={`View admission slip: ${
                     slip.category?.name || "Uncategorized"

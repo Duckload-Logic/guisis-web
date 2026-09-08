@@ -16,12 +16,15 @@ import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { AppointmentStatus, useAppointments } from "@/features/appointments";
 import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
-import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
+import {
+  useAppointmentsStats,
+} from "@/features/appointments/hooks/useAppointments";
 import { Pagination } from "@/components/shared";
 import { Spinner } from "@/components/shared/Spinner";
 import { SelectField } from "@/components/ui/select-field";
 import { format12HourTime } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
+import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 
 const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
@@ -301,6 +304,8 @@ export default function StudentAppointments() {
         "space-y-6 px-4 pb-12 sm:px-6 md:px-8",
       )}
     >
+      <AnimationStyles />
+
       {/* COR Missing / Invalid Alerts */}
       {!user?.studentCorUrl ? (
         <Alert
@@ -312,7 +317,8 @@ export default function StudentAppointments() {
             Action Required: Missing Certificate of Registration
           </AlertTitle>
           <AlertDescription className="text-xs">
-            Upload your valid COR in your profile before booking consultations.{" "}
+            Upload your valid COR in your profile before booking
+            consultations.{" "}
             <Link
               to="/student/cor-management"
               className="font-semibold underline hover:opacity-80"
@@ -430,8 +436,9 @@ export default function StudentAppointments() {
           emptyState
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {sortedAppointments.map((appointment) => {
+            {sortedAppointments.map((appointment, idx) => {
               const dateParts = getEventDateParts(appointment.whenDate);
+              const animDelay = `${Math.min(idx * 0.04, 0.24)}s`;
 
               return (
                 <button
@@ -440,13 +447,17 @@ export default function StudentAppointments() {
                   onClick={() =>
                     navigate(`/student/appointments/${appointment.id}`)
                   }
+                  style={{
+                    animationDelay: animDelay,
+                    animationFillMode: "both",
+                  }}
                   className={cn(
-                    "group flex items-center justify-between rounded-2xl",
-                    "border border-border/80 bg-card p-4 text-left shadow-sm",
-                    "transition-all hover:-translate-y-0.5",
-                    "hover:border-primary/40 hover:shadow-md",
-                    "focus-visible:outline-none focus-visible:ring-2",
-                    "focus-visible:ring-primary",
+                    "animate-fade-in-up group flex items-center",
+                    "justify-between rounded-2xl border border-border/80",
+                    "bg-card p-4 text-left shadow-sm transition-all",
+                    "hover:-translate-y-0.5 hover:border-primary/40",
+                    "hover:shadow-md focus-visible:outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-primary",
                   )}
                   aria-label={`View appointment: ${
                     appointment.appointmentCategory?.name || "Uncategorized"

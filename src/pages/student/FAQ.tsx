@@ -87,8 +87,7 @@ const FAQ_CATEGORIES: FAQCategory[] = [
   {
     id: "slips",
     title: "Admission Slips",
-    description:
-      "Submission guidance for excuse or admission slip requests.",
+    description: "Submission guidance for excuse or admission slip requests.",
     icon: FileText,
     questions: [
       {
@@ -129,8 +128,7 @@ const FAQ_CATEGORIES: FAQCategory[] = [
   {
     id: "iir",
     title: "IIR Profile",
-    description:
-      "Individual Inventory Record completion and profile updates.",
+    description: "Individual Inventory Record completion and profile updates.",
     icon: ClipboardList,
     questions: [
       {
@@ -285,7 +283,7 @@ export default function FAQ() {
             className={cn(
               "rounded-full px-1.5 py-0.5 text-[10px]",
               selectedCategory === "all"
-                ? "bg-primary/20 text-primary font-bold"
+                ? "bg-primary/20 font-bold text-primary"
                 : "bg-muted text-muted-foreground",
             )}
           >
@@ -316,7 +314,7 @@ export default function FAQ() {
                 className={cn(
                   "rounded-full px-1.5 py-0.5 text-[10px]",
                   isSelected
-                    ? "bg-primary/20 text-primary font-bold"
+                    ? "bg-primary/20 font-bold text-primary"
                     : "bg-muted text-muted-foreground",
                 )}
               >
@@ -400,9 +398,7 @@ export default function FAQ() {
                 )}
               >
                 <CardHeader
-                  className={cn(
-                    "border-b border-border/60 bg-muted/10 p-5",
-                  )}
+                  className={cn("border-b border-border/60 bg-muted/10 p-5")}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -417,14 +413,10 @@ export default function FAQ() {
                         <Icon className="h-5 w-5" />
                       </div>
                       <div>
-                        <CardTitle
-                          className="text-base font-bold text-foreground"
-                        >
+                        <CardTitle className="text-base font-bold text-foreground">
                           {category.title}
                         </CardTitle>
-                        <CardDescription
-                          className="text-xs text-muted-foreground"
-                        >
+                        <CardDescription className="text-xs text-muted-foreground">
                           {category.description}
                         </CardDescription>
                       </div>
@@ -440,7 +432,10 @@ export default function FAQ() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <Accordion type="multiple" className="w-full">
+                  <Accordion
+                    type="multiple"
+                    className="w-full"
+                  >
                     {category.questions.map((q, idx) => (
                       <AccordionItem
                         key={idx}
