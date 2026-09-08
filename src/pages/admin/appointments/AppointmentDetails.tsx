@@ -117,9 +117,7 @@ export default function AppointmentDetails() {
     setIsStartConfirming(true);
   };
 
-  const handleConfirmStartAppointment = async (
-    offsetMinutes: number = 0,
-  ) => {
+  const handleConfirmStartAppointment = async (offsetMinutes: number = 0) => {
     if (!id) return;
     try {
       await startAppointmentMutation.mutateAsync({ id, offsetMinutes });
@@ -1011,9 +1009,7 @@ export default function AppointmentDetails() {
                     title="Counseling Session"
                     studentName={fullName}
                     studentNumber={appointment.studentNumber}
-                    onStart={(offset) =>
-                      handleConfirmStartAppointment(offset)
-                    }
+                    onStart={(offset) => handleConfirmStartAppointment(offset)}
                     onComplete={() => handleActionClick("Complete")}
                     onCancel={() => handleActionClick("Cancel")}
                     isPending={startAppointmentMutation.isPending}
@@ -1035,28 +1031,31 @@ export default function AppointmentDetails() {
                       })
                       .map((action) => (
                         <Button
-                        key={action}
-                        onClick={() => handleActionClick(action)}
-                        className={cn(
-                          actionColor(action),
-                          "group/action h-11 w-full items-center justify-between",
-                          "rounded-xl border border-white/10 px-4 shadow-sm",
-                          "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          {actionIcon(action)}
-                          <span className="text-xs font-bold">{action}</span>
-                        </div>
-                        <ArrowLeft
+                          key={action}
+                          onClick={() => handleActionClick(action)}
                           className={cn(
-                            "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
-                            "transition-all duration-300",
-                            "group-hover/action:translate-x-0 group-hover/action:opacity-100",
+                            actionColor(action),
+                            "group/action h-11 w-full items-center",
+                            "justify-between rounded-xl border",
+                            "border-white/10 px-4 shadow-sm transition-all",
+                            "duration-300 hover:-translate-y-0.5",
+                            "hover:shadow-md",
                           )}
-                        />
-                      </Button>
-                    ))}
+                        >
+                          <div className="flex items-center gap-3">
+                            {actionIcon(action)}
+                            <span className="text-xs font-bold">{action}</span>
+                          </div>
+                          <ArrowLeft
+                            className={cn(
+                              "h-3.5 w-3.5 -translate-x-1.5 rotate-180",
+                              "opacity-0 transition-all duration-300",
+                              "group-hover/action:translate-x-0",
+                              "group-hover/action:opacity-100",
+                            )}
+                          />
+                        </Button>
+                      ))}
                   </div>
                 ) : (
                   <div

@@ -104,14 +104,26 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
 
   if (isNotStarted) {
     return (
-      <div className="flex flex-col gap-3 rounded-2xl border p-4 bg-card shadow-sm">
+      <div
+        className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center",
+                "rounded-lg bg-primary/10 text-primary",
+              )}
+            >
               <Timer className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-foreground uppercase tracking-wide">
+              <p
+                className={cn(
+                  "text-xs font-bold uppercase tracking-wide",
+                  "text-foreground",
+                )}
+              >
                 {title}
               </p>
               {subtitle && (
@@ -141,7 +153,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
             className={cn(
               "h-10 w-full items-center justify-between rounded-xl",
               "border border-emerald-500/30 bg-emerald-600 text-white",
-              "font-bold text-xs shadow-sm hover:bg-emerald-500",
+              "text-xs font-bold shadow-sm hover:bg-emerald-500",
             )}
           >
             <div className="flex items-center gap-2">
@@ -175,7 +187,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
                   onClick={() => handleSimulate(sim.mins)}
                   className={cn(
                     "rounded-lg border border-border bg-card py-1",
-                    "text-[11px] font-bold text-foreground shadow-xs",
+                    "shadow-xs text-[11px] font-bold text-foreground",
                     "transition hover:bg-emerald-500/10",
                     "hover:border-emerald-500/40 hover:text-emerald-600",
                     "active:scale-95 disabled:opacity-50",
@@ -197,7 +209,12 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+            <span
+              className={cn(
+                "text-xs font-bold uppercase tracking-wide",
+                "text-emerald-700 dark:text-emerald-400",
+              )}
+            >
               {title} Completed
             </span>
           </div>
@@ -221,7 +238,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
       className={cn(
         "flex flex-col gap-3.5 rounded-2xl border shadow-sm",
         "border-emerald-500/30 bg-card p-4 transition-all",
-        compact && "p-3 gap-2.5",
+        compact && "gap-2.5 p-3",
       )}
     >
       <div className="flex items-center justify-between border-b border-border/50 pb-2.5">
@@ -230,7 +247,12 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
             <Timer className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+            <h4
+              className={cn(
+                "text-xs font-bold uppercase tracking-wider",
+                "text-foreground",
+              )}
+            >
               {title}
             </h4>
             {studentName && (
@@ -272,7 +294,12 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
               <Zap className="h-3.5 w-3.5 fill-amber-500" />
               <span>Fast-Forward Simulation</span>
             </div>
-            <span className="rounded bg-amber-500/15 px-1.5 py-0.2 text-[9px] font-bold text-amber-600">
+            <span
+              className={cn(
+                "py-0.2 rounded bg-amber-500/15 px-1.5",
+                "text-[9px] font-bold text-amber-600",
+              )}
+            >
               Staging Only
             </span>
           </div>
@@ -288,7 +315,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
                 onClick={() => handleSimulate(sim.mins)}
                 className={cn(
                   "rounded-lg border border-border bg-card py-1.5",
-                  "text-[11px] font-bold text-foreground shadow-xs",
+                  "shadow-xs text-[11px] font-bold text-foreground",
                   "transition hover:bg-emerald-500/10",
                   "hover:border-emerald-500/40 hover:text-emerald-600",
                   "active:scale-95 disabled:opacity-50",
@@ -303,7 +330,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
 
       {IS_PROD && (
         <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-muted/20 px-3 py-2 text-[10px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+          <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
           <span>
             Tamper-proof timer active. Turnaround logged for accreditation.
           </span>
@@ -329,7 +356,10 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
               variant="outline"
               onClick={onCancel}
               disabled={isPending}
-              className="h-9 gap-1.5 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 text-xs font-bold"
+              className={cn(
+                "h-9 gap-1.5 rounded-lg border-destructive/30",
+                "text-xs font-bold text-destructive hover:bg-destructive/10",
+              )}
             >
               <XCircle className="h-3.5 w-3.5" />
               Cancel Session

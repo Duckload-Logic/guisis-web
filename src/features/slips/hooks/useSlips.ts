@@ -145,9 +145,7 @@ export function useStartSlip() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (
-      params: string | { id: string; offsetMinutes?: number },
-    ) => {
+    mutationFn: (params: string | { id: string; offsetMinutes?: number }) => {
       if (typeof params === "string") {
         return PostStartSlip(params, 0);
       }

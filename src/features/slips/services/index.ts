@@ -24,7 +24,6 @@ export async function GetSlipStats(
     });
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -42,7 +41,6 @@ export async function GetSlipStatuses(config?: AxiosConfigWithMeta) {
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -60,7 +58,6 @@ export async function GetSlipCategories(config?: AxiosConfigWithMeta) {
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -116,7 +113,6 @@ export async function GetUrgentSlips(
     });
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -138,7 +134,6 @@ export async function GetAllSlips(
     });
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -154,7 +149,6 @@ export async function GetSlipById(id: string, config?: AxiosConfigWithMeta) {
     const response = await apiClient.get(API_ROUTES.slips.byId(id), config);
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -176,7 +170,6 @@ export async function GetSlipAttachments(
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -238,7 +231,6 @@ export async function PatchSlip(
     });
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -273,7 +265,6 @@ export async function PatchSlipStatus(
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -296,7 +287,6 @@ export async function ClaimTicket(
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }
@@ -318,7 +308,6 @@ export async function GetTicketDetails(
     );
     return response.data;
   } catch (error: any) {
-
     throw error;
   }
 }

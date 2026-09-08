@@ -204,8 +204,11 @@ export default function SlipDetails() {
   };
 
   const isPending =
-    slip.status?.name?.toLowerCase() === "pending" ||
-    slip.status?.name?.toLowerCase() === "for revision";
+    slip?.status?.name?.toLowerCase() === "pending" ||
+    slip?.status?.name?.toLowerCase() === "for revision";
+
+  const isApproved =
+    slip?.status?.name?.toLowerCase() === "approved";
 
   const formatDateShort = (dateStr?: string) => {
     if (!dateStr) return "N/A";
@@ -601,115 +604,8 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5">
-              {slip.ticket && (
-                <div
-                  className={cn(
-                    "mb-4 rounded-xl border border-dashed p-4 transition-all duration-300",
-                    slip.ticket.isVerified
-                      ? "border-green-500/50 bg-green-500/5"
-                      : "border-primary/50 bg-primary/5",
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "rounded-lg p-2 text-white",
-                        slip.ticket.isVerified ? "bg-green-500" : "bg-primary",
-                      )}
-                    >
-                      <Ticket className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
-                        Admission Slip Ticket
-                      </p>
-                      <p className="font-mono text-lg font-bold tracking-tighter text-foreground">
-                        {slip.ticket.ticketCode}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between border-t border-border/20 pt-3">
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                      Status
-                    </span>
-                    <Badge
-                      variant={slip.ticket.isVerified ? "default" : "outline"}
-                      className={cn(
-                        "rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase",
-                        slip.ticket.isVerified &&
-                          "bg-green-600 hover:bg-green-700",
-                      )}
-                    >
-                      {slip.ticket.isVerified ? "Claimed" : "Pending Claim"}
-                    </Badge>
-                  </div>
-
-                  {!slip.ticket.isVerified && (
-                    <Button
-                      onClick={handleVerifyTicket}
-                      disabled={isClaiming}
-                      className={cn(
-                        "mt-4 w-full gap-2 rounded-xl bg-green-600",
-                        "font-semibold text-white shadow-md",
-                        "transition-all hover:bg-green-700",
-                        "hover:scale-[1.01] active:scale-95",
-                      )}
-                    >
-                      {isClaiming ? (
-                        <Clock3 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ShieldCheck className="h-4 w-4" />
-                      )}
-                      Verify Ticket
-                    </Button>
-                  )}
-                </div>
-              )}
-
-              {slip.startedAt && !slip.completedAt && (
-                <div className="mb-4">
-                  <InOfficeSessionTimer
-                    startedAt={slip.startedAt}
-                    completedAt={slip.completedAt}
-                    title="In-Office Document Validation"
-                    subtitle="Validating absence reason & physical documents"
-                    studentName={fullName}
-                    studentNumber={slip.studentNumber}
-                    onStart={(offset) => handleStartSession(offset)}
-                    isPending={startSlipMutation.isPending}
-                  />
-                </div>
-              )}
-
-              {!slip.startedAt && isPending && (
-                <div className="mb-4">
-                  <InOfficeSessionTimer
-                    startedAt={null}
-                    completedAt={null}
-                    title="In-Office Document Validation"
-                    subtitle="Validating absence reason & physical documents"
-                    studentName={fullName}
-                    studentNumber={slip.studentNumber}
-                    onStart={(offset) => handleStartSession(offset)}
-                    isPending={startSlipMutation.isPending}
-                  />
-                </div>
-              )}
-
-              {slip.completedAt && (
-                <div className="mb-4">
-                  <InOfficeSessionTimer
-                    startedAt={slip.startedAt}
-                    completedAt={slip.completedAt}
-                    title="In-Office Document Validation"
-                    studentName={fullName}
-                    studentNumber={slip.studentNumber}
-                  />
-                </div>
-              )}
-
-              {isPending ? (
+              {/* If slip is Pending or For Revision: Online Evaluation only */}
+              {isPending && (
                 <div className="flex flex-col gap-3">
                   <Button
                     onClick={() => handleActionClick("approve")}
@@ -729,7 +625,8 @@ export default function SlipDetails() {
                       className={cn(
                         "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
                         "transition-all duration-300",
-                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
+                        "group-hover/action:translate-x-0",
+                        "group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
@@ -754,7 +651,8 @@ export default function SlipDetails() {
                       className={cn(
                         "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
                         "transition-all duration-300",
-                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
+                        "group-hover/action:translate-x-0",
+                        "group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
@@ -764,9 +662,9 @@ export default function SlipDetails() {
                     disabled={isUpdatingStatus}
                     className={cn(
                       "group/action h-11 w-full items-center justify-between",
-                      "rounded-xl border border-white/10 bg-red-600 px-4 text-white",
-                      "shadow-sm transition-all duration-300 hover:scale-[1.02]",
-                      "hover:bg-red-700 hover:shadow-md",
+                      "rounded-xl border border-white/10 bg-red-600 px-4",
+                      "text-white shadow-sm transition-all duration-300",
+                      "hover:scale-[1.02] hover:bg-red-700 hover:shadow-md",
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -777,12 +675,155 @@ export default function SlipDetails() {
                       className={cn(
                         "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
                         "transition-all duration-300",
-                        "group-hover/action:translate-x-0 group-hover/action:opacity-100",
+                        "group-hover/action:translate-x-0",
+                        "group-hover/action:opacity-100",
                       )}
                     />
                   </Button>
                 </div>
-              ) : (
+              )}
+
+              {/* If slip is Approved: In-Office Claiming Workflow */}
+              {isApproved && (
+                <div className="space-y-4">
+                  {slip.ticket && (
+                    <div
+                      className={cn(
+                        "rounded-xl border border-dashed p-4",
+                        "transition-all duration-300",
+                        slip.ticket.isVerified
+                          ? "border-green-500/50 bg-green-500/5"
+                          : "border-primary/50 bg-primary/5",
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "rounded-lg p-2 text-white",
+                            slip.ticket.isVerified
+                              ? "bg-green-500"
+                              : "bg-primary",
+                          )}
+                        >
+                          <Ticket className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p
+                            className={cn(
+                              "text-[10px] font-bold uppercase",
+                              "text-muted-foreground",
+                            )}
+                          >
+                            Admission Slip Ticket
+                          </p>
+                          <p
+                            className={cn(
+                              "font-mono text-lg font-bold tracking-tighter",
+                              "text-foreground",
+                            )}
+                          >
+                            {slip.ticket.ticketCode}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div
+                        className={cn(
+                          "mt-3 flex items-center justify-between",
+                          "border-t border-border/20 pt-3",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold uppercase",
+                            "text-muted-foreground",
+                          )}
+                        >
+                          Status
+                        </span>
+                        <Badge
+                          variant={
+                            slip.ticket.isVerified ? "default" : "outline"
+                          }
+                          className={cn(
+                            "rounded-full px-2.5 py-0.5 text-[9px]",
+                            "font-bold uppercase",
+                            slip.ticket.isVerified &&
+                              "bg-green-600 hover:bg-green-700",
+                          )}
+                        >
+                          {slip.ticket.isVerified
+                            ? "Claimed"
+                            : "Pending Claim"}
+                        </Badge>
+                      </div>
+
+                      {!slip.ticket.isVerified && !slip.startedAt && (
+                        <Button
+                          onClick={handleVerifyTicket}
+                          disabled={isClaiming}
+                          className={cn(
+                            "mt-4 w-full gap-2 rounded-xl bg-green-600",
+                            "font-semibold text-white shadow-md",
+                            "transition-all hover:bg-green-700",
+                            "hover:scale-[1.01] active:scale-95",
+                          )}
+                        >
+                          {isClaiming ? (
+                            <Clock3 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <ShieldCheck className="h-4 w-4" />
+                          )}
+                          Verify & Claim Ticket
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Active In-Office Claiming Session */}
+                  {slip.startedAt && !slip.ticket?.isVerified && (
+                    <InOfficeSessionTimer
+                      startedAt={slip.startedAt}
+                      completedAt={slip.completedAt}
+                      title="In-Office Claiming Session"
+                      subtitle="Student is claiming physical admission slip"
+                      studentName={fullName}
+                      studentNumber={slip.studentNumber}
+                      onStart={(offset) => handleStartSession(offset)}
+                      onComplete={handleVerifyTicket}
+                      isPending={startSlipMutation.isPending || isClaiming}
+                    />
+                  )}
+
+                  {/* Ready to Start In-Office Claiming */}
+                  {!slip.startedAt && !slip.ticket?.isVerified && (
+                    <InOfficeSessionTimer
+                      startedAt={null}
+                      completedAt={null}
+                      title="In-Office Claiming Session"
+                      subtitle="Student is claiming physical admission slip"
+                      studentName={fullName}
+                      studentNumber={slip.studentNumber}
+                      onStart={(offset) => handleStartSession(offset)}
+                      isPending={startSlipMutation.isPending}
+                    />
+                  )}
+
+                  {/* Claiming Completed */}
+                  {slip.ticket?.isVerified && (
+                    <InOfficeSessionTimer
+                      startedAt={slip.startedAt}
+                      completedAt={slip.completedAt}
+                      title="In-Office Claiming Session"
+                      studentName={fullName}
+                      studentNumber={slip.studentNumber}
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* If not pending and not approved (e.g. Rejected) */}
+              {!isPending && !isApproved && (
                 <div
                   className={cn(
                     "space-y-3 rounded-xl border border-dashed py-8 text-center",
@@ -996,9 +1037,9 @@ export default function SlipDetails() {
               onClick={handleConfirmVerifyTicket}
               disabled={isClaiming}
               className={cn(
-              "rounded-xl bg-green-600 font-bold text-white shadow-md",
-              "hover:bg-green-700",
-            )}
+                "rounded-xl bg-green-600 font-bold text-white shadow-md",
+                "hover:bg-green-700",
+              )}
             >
               {isClaiming ? "Starting..." : "Start Process & Verify"}
             </AlertDialogAction>
