@@ -187,7 +187,7 @@ export default function AppointmentDetails() {
   const isCompleted = appointment.status?.name === "Completed";
   const needsSignificantNote = isCompleted && !appointment.hasSignificantNote;
   const isSessionActive =
-    Boolean(appointment.startedAt) && !Boolean(appointment.completedAt);
+    Boolean(appointment.startedAt) && !appointment.completedAt;
 
   const handleCopyId = () => {
     if (!appointment.id) return;
@@ -299,10 +299,8 @@ export default function AppointmentDetails() {
     middleName: appointment.user?.middleName,
     lastName: appointment.user?.lastName,
     email: appointment.user?.email,
-    studentNumber:
-      appointment.studentNumber || appointment.user?.studentNumber,
-    contactNumber:
-      appointment.contactNumber || appointment.user?.contactNumber,
+    studentNumber: appointment.studentNumber || appointment.user?.studentNumber,
+    contactNumber: appointment.contactNumber || appointment.user?.contactNumber,
     profilePicture: appointment.user?.profilePicture,
     iirId: appointment.iirId,
     studentCorUrl: appointment.studentCorUrl,
@@ -458,27 +456,161 @@ export default function AppointmentDetails() {
         </div>
       )}
 
-      {/* Bento Row 1: Student Dossier + Request Information */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Bento Cell 1: Student Profile (Col-span 4) */}
-        <div className="lg:col-span-4">
+      {/* 2-Column Sidebar Master-Detail Layout (Jakob's Law) */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* Left Column: Dossier & Controls (Col-span 4) */}
+        <div className="space-y-6 lg:col-span-4">
           <StudentProfileBentoCard
             student={studentData}
             onViewCor={() => setShowCorPreview(true)}
             canAccessIir={true}
-            className="h-full"
           />
-        </div>
 
-        {/* Bento Cell 2: Request Context & Schedule Options (Col-span 8) */}
-        <div className="lg:col-span-8">
+          {/* Administrative Controls Card */}
           <Card
             className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+              <CardTitle
+                className={cn(
+                  "flex items-center gap-2 text-xs font-bold uppercase",
+                  "tracking-wider text-muted-foreground",
+                )}
+              >
+                <CalendarRange className="h-4 w-4 text-primary" />
+                Administrative Controls
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-5">
+              {/* In-Office Session Timer */}
+              {isScheduled && !appointment.startedAt && (
+                <InOfficeSessionTimer
+                  startedAt={null}
+                  completedAt={null}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => {
+                    if (!offset) {
+                      setIsStartConfirming(true);
+                    } else {
+                      handleConfirmStartAppointment(offset);
+                    }
+                  }}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
+
+              {isSessionActive && (
+                <InOfficeSessionTimer
+                  startedAt={appointment.startedAt}
+                  completedAt={appointment.completedAt}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => handleConfirmStartAppointment(offset)}
+                  onComplete={() => handleActionClick("Complete")}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
+
+              {/* Lifecycle Actions */}
+              {isPending && (
+                <div className="space-y-2.5">
+                  <Button
+                    onClick={() => handleActionClick("Approve")}
+                    className={cn(
+                      "h-10 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
+                      "shadow-sm transition-all hover:bg-emerald-700",
+                    )}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Approve Selected Schedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Reject")}
+                    className={cn(
+                      "h-9 w-full gap-2 rounded-xl border-destructive/30 text-xs",
+                      "font-semibold text-destructive hover:bg-destructive/10",
+                    )}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Reject Consultation Request
+                  </Button>
+                </div>
+              )}
+
+              {isScheduled && !isSessionActive && (
+                <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Reschedule")}
+                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                  >
+                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
+                    Reschedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("No-show")}
+                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                  >
+                    <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                    Mark No-show
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Cancel")}
+                    className={cn(
+                      "col-span-2 h-9 gap-2 rounded-xl border-destructive/30 text-xs",
+                      "font-semibold text-destructive hover:bg-destructive/10",
+                    )}
+                  >
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    Cancel Appointment
+                  </Button>
+                </div>
+              )}
+
+              {isCompleted && (
+                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
+                  <CheckCircle className="mx-auto h-7 w-7 text-emerald-600/80" />
+                  <p className="mt-2 text-xs font-bold text-foreground/80">
+                    Consultation Completed
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    All session actions have concluded.
+                  </p>
+                </div>
+              )}
+
+              {!isPending && !isScheduled && !isCompleted && (
+                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
+                  <ShieldAlert className="mx-auto h-7 w-7 text-muted-foreground/60" />
+                  <p className="mt-2 text-xs font-bold text-muted-foreground">
+                    Appointment is {appointment.status?.name}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Context & Audit History (Col-span 8) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Consultation Request Context Card */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
+            )}
+          >
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
               <div className="flex items-center justify-between">
                 <CardTitle
                   className={cn(
@@ -498,9 +630,9 @@ export default function AppointmentDetails() {
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-6 p-5 sm:p-6">
+            <CardContent className="space-y-5 p-5">
               {/* Reason description box */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Reason for Consultation
                 </p>
@@ -512,7 +644,7 @@ export default function AppointmentDetails() {
               </div>
 
               {/* Schedule options / Selected schedule */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     {isPending
@@ -548,7 +680,7 @@ export default function AppointmentDetails() {
                           "group relative flex flex-col justify-between rounded-xl",
                           "border p-3.5 text-left transition-all duration-200",
                           isSelected
-                            ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
+                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
                             : "border-border/80 bg-muted/10 hover:border-primary/30 hover:bg-muted/20",
                           !isPending && "cursor-default hover:border-border/80",
                         )}
@@ -576,156 +708,15 @@ export default function AppointmentDetails() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
 
-      {/* Bento Row 2: RBAC Administrative Controls + Activity Timeline */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Bento Cell 3: Administrative Controls (Col-span 5) */}
-        <div className="lg:col-span-5">
+          {/* Audit Trail & History Card */}
           <Card
             className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
-              <CardTitle
-                className={cn(
-                  "flex items-center gap-2 text-xs font-bold uppercase",
-                  "tracking-wider text-muted-foreground",
-                )}
-              >
-                <CalendarRange className="h-4 w-4 text-primary" />
-                Administrative Controls
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4 p-5 sm:p-6">
-              {/* In-Office Session Timer (When Scheduled or In-Progress) */}
-              {isScheduled && !appointment.startedAt && (
-                <InOfficeSessionTimer
-                  startedAt={null}
-                  completedAt={null}
-                  title="Counseling Session"
-                  studentName={fullName}
-                  studentNumber={appointment.studentNumber}
-                  onStart={(offset) => {
-                    if (!offset) {
-                      setIsStartConfirming(true);
-                    } else {
-                      handleConfirmStartAppointment(offset);
-                    }
-                  }}
-                  isPending={startAppointmentMutation.isPending}
-                />
-              )}
-
-              {isSessionActive && (
-                <InOfficeSessionTimer
-                  startedAt={appointment.startedAt}
-                  completedAt={appointment.completedAt}
-                  title="Counseling Session"
-                  studentName={fullName}
-                  studentNumber={appointment.studentNumber}
-                  onStart={(offset) => handleConfirmStartAppointment(offset)}
-                  onComplete={() => handleActionClick("Complete")}
-                  isPending={startAppointmentMutation.isPending}
-                />
-              )}
-
-              {/* Hick's Law: Clean, state-specific primary & secondary actions */}
-              {isPending && (
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => handleActionClick("Approve")}
-                    className={cn(
-                      "h-11 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
-                      "shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg",
-                    )}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Approve Selected Schedule
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("Reject")}
-                    className={cn(
-                      "h-11 w-full gap-2 rounded-xl border-destructive/30 text-xs",
-                      "font-semibold text-destructive hover:bg-destructive/10",
-                    )}
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Reject Consultation Request
-                  </Button>
-                </div>
-              )}
-
-              {isScheduled && !isSessionActive && (
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("Reschedule")}
-                    className="h-10 gap-2 rounded-xl border-border/80 text-xs font-semibold"
-                  >
-                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
-                    Reschedule
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("No-show")}
-                    className="h-10 gap-2 rounded-xl border-border/80 text-xs font-semibold"
-                  >
-                    <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
-                    Mark No-show
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("Cancel")}
-                    className={cn(
-                      "col-span-2 h-10 gap-2 rounded-xl border-destructive/30 text-xs",
-                      "font-semibold text-destructive hover:bg-destructive/10",
-                    )}
-                  >
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Cancel Appointment
-                  </Button>
-                </div>
-              )}
-
-              {isCompleted && (
-                <div className="rounded-xl border border-dashed border-border/70 py-8 text-center">
-                  <CheckCircle className="mx-auto h-8 w-8 text-emerald-600/80" />
-                  <p className="mt-2 text-xs font-bold text-foreground/80">
-                    Consultation Completed
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    All session actions have concluded.
-                  </p>
-                </div>
-              )}
-
-              {!isPending && !isScheduled && !isCompleted && (
-                <div className="rounded-xl border border-dashed border-border/70 py-8 text-center">
-                  <ShieldAlert className="mx-auto h-8 w-8 text-muted-foreground/60" />
-                  <p className="mt-2 text-xs font-bold text-muted-foreground">
-                    Appointment is {appointment.status?.name}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Bento Cell 4: Audit Trail Timeline (Col-span 7) */}
-        <div className="lg:col-span-7">
-          <Card
-            className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
-            )}
-          >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
               <CardTitle
                 className={cn(
                   "flex items-center gap-2 text-xs font-bold uppercase",
@@ -737,9 +728,12 @@ export default function AppointmentDetails() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4 p-5 sm:p-6">
+            <CardContent className="space-y-4 p-5">
               {auditEntries.map((entry, idx) => (
-                <div key={idx} className="group flex items-start gap-3.5">
+                <div
+                  key={idx}
+                  className="group flex items-start gap-3.5"
+                >
                   <div className="relative mt-1">
                     <div
                       className={cn(
@@ -838,8 +832,8 @@ export default function AppointmentDetails() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-muted-foreground">
               Confirm student{" "}
-              <strong className="text-foreground">{fullName}</strong> is
-              present in the office to begin tracking session duration.
+              <strong className="text-foreground">{fullName}</strong> is present
+              in the office to begin tracking session duration.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-end gap-3 border-t border-border/50 pt-4">

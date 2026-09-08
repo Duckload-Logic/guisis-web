@@ -325,120 +325,24 @@ export default function SlipDetails() {
         </div>
       )}
 
-      {/* Bento Row 1: Student Dossier + Request Information */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Bento Cell 1: Student Profile (Col-span 4) */}
-        <div className="lg:col-span-4">
+      {/* 2-Column Sidebar Master-Detail Layout (Jakob's Law) */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* Left Column: Dossier & Administrative Controls (Col-span 4) */}
+        <div className="space-y-6 lg:col-span-4">
           <StudentProfileBentoCard
             student={studentData}
             onViewCor={() => setShowCorPreview(true)}
             canAccessIir={!isAssistant}
-            className="h-full"
           />
-        </div>
 
-        {/* Bento Cell 2: Submission Context & Attachments (Col-span 8) */}
-        <div className="lg:col-span-8">
+          {/* Administrative Controls Card */}
           <Card
             className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
-              <div className="flex items-center justify-between">
-                <CardTitle
-                  className={cn(
-                    "flex items-center gap-2 text-xs font-bold uppercase",
-                    "tracking-wider text-muted-foreground",
-                  )}
-                >
-                  <MessageSquare className="h-4 w-4 text-primary" />
-                  Submission Context
-                </CardTitle>
-                <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                  <span>Category: {slip.category?.name || "General"}</span>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6 p-5 sm:p-6">
-              {/* Reason for absence blockquote */}
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Reason for Absence
-                </p>
-                <div className="rounded-xl border bg-muted/10 p-4">
-                  <p className="text-sm font-medium italic leading-relaxed text-foreground/90">
-                    "{slip.reason || "No specific reason provided."}"
-                  </p>
-                </div>
-              </div>
-
-              {/* Date Info Grid */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="space-y-1.5 rounded-xl border bg-muted/10 p-4">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
-                      Date of Absence
-                    </span>
-                  </div>
-                  <p className="text-base font-bold text-foreground">
-                    {formatDate(slip.dateOfAbsence)}
-                  </p>
-                </div>
-
-                <div className="space-y-1.5 rounded-xl border bg-muted/10 p-4">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">
-                      Date Needed
-                    </span>
-                  </div>
-                  <p className="text-base font-bold text-foreground">
-                    {formatDate(slip.dateNeeded)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Supporting Attachments Section */}
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Paperclip className="h-3.5 w-3.5 text-primary" />
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Supporting Documents
-                  </p>
-                </div>
-                <div className="rounded-xl border bg-muted/5 p-4">
-                  {attachments && attachments.length > 0 ? (
-                    <AttachmentsGrid
-                      slipId={slip.id || ""}
-                      files={attachments}
-                    />
-                  ) : (
-                    <p className="py-4 text-center text-xs italic text-muted-foreground">
-                      No documents attached to this submission.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Bento Row 2: RBAC Administrative Controls + Activity Timeline */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Bento Cell 3: Administrative Controls (Col-span 5) */}
-        <div className="lg:col-span-5">
-          <Card
-            className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
-            )}
-          >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
               <CardTitle
                 className={cn(
                   "flex items-center gap-2 text-xs font-bold uppercase",
@@ -450,16 +354,16 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4 p-5 sm:p-6">
-              {/* Online Evaluation Phase: Pending or For Revision */}
+            <CardContent className="space-y-4 p-5">
+              {/* Online Evaluation: Pending or For Revision */}
               {isPending && (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <Button
                     onClick={() => handleActionClick("approve")}
                     disabled={isUpdatingStatus}
                     className={cn(
-                      "h-11 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
-                      "shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg",
+                      "h-10 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
+                      "shadow-sm transition-all hover:bg-emerald-700",
                     )}
                   >
                     <CheckCircle2 className="h-4 w-4" />
@@ -469,19 +373,19 @@ export default function SlipDetails() {
                     variant="outline"
                     onClick={() => handleActionClick("revision")}
                     disabled={isUpdatingStatus}
-                    className="h-10 w-full gap-2 rounded-xl border-blue-500/30 text-xs font-semibold text-blue-600 hover:bg-blue-500/10"
+                    className="h-9 w-full gap-2 rounded-xl border-blue-500/30 text-xs font-semibold text-blue-600 hover:bg-blue-500/10"
                   >
-                    <RefreshCw className="h-4 w-4" />
-                    Request Revision from Student
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Request Revision
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => handleActionClick("reject")}
                     disabled={isUpdatingStatus}
-                    className="h-10 w-full gap-2 rounded-xl border-destructive/30 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                    className="h-9 w-full gap-2 rounded-xl border-destructive/30 text-xs font-semibold text-destructive hover:bg-destructive/10"
                   >
-                    <Ban className="h-4 w-4" />
-                    Reject Admission Slip
+                    <Ban className="h-3.5 w-3.5" />
+                    Reject Slip
                   </Button>
                 </div>
               )}
@@ -492,7 +396,7 @@ export default function SlipDetails() {
                   {slip.ticket && (
                     <div
                       className={cn(
-                        "rounded-xl border border-dashed p-4 transition-all",
+                        "rounded-xl border border-dashed p-3.5 transition-all",
                         slip.ticket.isVerified
                           ? "border-emerald-500/40 bg-emerald-500/5"
                           : "border-primary/40 bg-primary/5",
@@ -502,7 +406,7 @@ export default function SlipDetails() {
                         <div className="flex items-center gap-2.5">
                           <div
                             className={cn(
-                              "rounded-lg p-2 text-white",
+                              "rounded-lg p-1.5 text-white",
                               slip.ticket.isVerified
                                 ? "bg-emerald-600"
                                 : "bg-primary",
@@ -538,12 +442,12 @@ export default function SlipDetails() {
                         <Button
                           onClick={handleVerifyTicket}
                           disabled={isClaiming}
-                          className="mt-4 h-10 w-full gap-2 rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
+                          className="mt-3.5 h-9 w-full gap-2 rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-sm hover:bg-emerald-700"
                         >
                           {isClaiming ? (
-                            <Clock3 className="h-4 w-4 animate-spin" />
+                            <Clock3 className="h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <ShieldCheck className="h-4 w-4" />
+                            <ShieldCheck className="h-3.5 w-3.5" />
                           )}
                           Verify & Claim Ticket
                         </Button>
@@ -580,7 +484,7 @@ export default function SlipDetails() {
                     />
                   )}
 
-                  {/* Claiming Completed */}
+                  {/* Claiming Completed (Only shown when ticket is verified!) */}
                   {slip.ticket?.isVerified && (
                     <InOfficeSessionTimer
                       startedAt={slip.startedAt}
@@ -593,10 +497,10 @@ export default function SlipDetails() {
                 </div>
               )}
 
-              {/* Other States (e.g. Rejected) */}
+              {/* Processed state */}
               {!isPending && !isApproved && (
-                <div className="rounded-xl border border-dashed border-border/70 py-8 text-center">
-                  <ShieldAlert className="mx-auto h-8 w-8 text-muted-foreground/60" />
+                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
+                  <ShieldAlert className="mx-auto h-7 w-7 text-muted-foreground/60" />
                   <p className="mt-2 text-xs font-bold text-muted-foreground">
                     Processed as {slip.status?.name}
                   </p>
@@ -606,15 +510,104 @@ export default function SlipDetails() {
           </Card>
         </div>
 
-        {/* Bento Cell 4: Audit Trail Timeline (Col-span 7) */}
-        <div className="lg:col-span-7">
+        {/* Right Column: Submission Context & Audit History (Col-span 8) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Submission Context Card */}
           <Card
             className={cn(
-              "flex h-full flex-col justify-between overflow-hidden rounded-2xl",
-              "border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl",
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+              <div className="flex items-center justify-between">
+                <CardTitle
+                  className={cn(
+                    "flex items-center gap-2 text-xs font-bold uppercase",
+                    "tracking-wider text-muted-foreground",
+                  )}
+                >
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                  Submission Context
+                </CardTitle>
+                <span className="font-mono text-xs text-muted-foreground">
+                  Category: {slip.category?.name || "General"}
+                </span>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-5 p-5">
+              {/* Reason for absence blockquote */}
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Reason for Absence
+                </p>
+                <div className="rounded-xl border bg-muted/10 p-4">
+                  <p className="text-sm font-medium italic leading-relaxed text-foreground/90">
+                    "{slip.reason || "No specific reason provided."}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Date Info Grid */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1 rounded-xl border bg-muted/10 p-3.5">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                      Date of Absence
+                    </span>
+                  </div>
+                  <p className="text-base font-bold text-foreground">
+                    {formatDate(slip.dateOfAbsence)}
+                  </p>
+                </div>
+
+                <div className="space-y-1 rounded-xl border bg-muted/10 p-3.5">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                      Date Needed
+                    </span>
+                  </div>
+                  <p className="text-base font-bold text-foreground">
+                    {formatDate(slip.dateNeeded)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Supporting Attachments Section */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-3.5 w-3.5 text-primary" />
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Supporting Documents
+                  </p>
+                </div>
+                <div className="rounded-xl border bg-muted/5 p-3.5">
+                  {attachments && attachments.length > 0 ? (
+                    <AttachmentsGrid
+                      slipId={slip.id || ""}
+                      files={attachments}
+                    />
+                  ) : (
+                    <p className="py-3 text-center text-xs italic text-muted-foreground">
+                      No documents attached to this submission.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Audit Trail & History Card */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
+            )}
+          >
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
               <CardTitle
                 className={cn(
                   "flex items-center gap-2 text-xs font-bold uppercase",
@@ -626,7 +619,7 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4 p-5 sm:p-6">
+            <CardContent className="space-y-4 p-5">
               {auditEntries.map((entry: any, idx: number) => (
                 <div
                   key={idx}

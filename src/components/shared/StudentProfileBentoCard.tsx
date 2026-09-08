@@ -13,7 +13,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
 
@@ -54,8 +53,8 @@ export function StudentProfileBentoCard({
     .join(" ");
 
   const initials =
-    `${student.firstName?.[0] || ""}${student.lastName?.[0] || ""}`
-      .toUpperCase() || "ST";
+    `${student.firstName?.[0] || ""}${student.lastName?.[0] || ""}`.toUpperCase() ||
+    "ST";
 
   const profilePicUrl = getProfilePictureUrl(student.profilePicture);
 
@@ -69,51 +68,30 @@ export function StudentProfileBentoCard({
   return (
     <Card
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden",
-        "rounded-2xl border border-border/70 bg-card/70 shadow-sm",
-        "backdrop-blur-xl transition-all duration-300 hover:shadow-md",
+        "group relative overflow-hidden rounded-2xl border border-border/70",
+        "bg-card/70 shadow-sm backdrop-blur-xl transition-all duration-300",
+        "hover:shadow-md",
         className,
       )}
     >
-      <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-4">
-        <div className="flex items-center justify-between">
-          <CardTitle
-            className={cn(
-              "flex items-center gap-2 text-xs font-bold uppercase",
-              "tracking-wider text-muted-foreground",
-            )}
-          >
-            <ShieldUser className="h-4 w-4 text-primary" />
-            Student Profile
-          </CardTitle>
-          {student.studentNumber && (
-            <Badge
-              variant="outline"
-              onClick={handleCopyStudentNumber}
-              className={cn(
-                "cursor-pointer gap-1.5 rounded-lg border-border/60 font-mono",
-                "text-[11px] font-semibold text-foreground/80 transition-colors",
-                "hover:border-primary/40 hover:bg-primary/5",
-              )}
-              title="Click to copy student number"
-            >
-              {hasCopiedId ? (
-                <Check className="h-3 w-3 text-emerald-600" />
-              ) : (
-                <Copy className="h-3 w-3 text-muted-foreground" />
-              )}
-              {student.studentNumber}
-            </Badge>
+      <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+        <CardTitle
+          className={cn(
+            "flex items-center gap-2 text-xs font-bold uppercase",
+            "tracking-wider text-muted-foreground",
           )}
-        </div>
+        >
+          <ShieldUser className="h-4 w-4 text-primary" />
+          Student Profile
+        </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col justify-between space-y-5 p-5">
+      <CardContent className="space-y-4 p-5">
         {/* Identity row */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3.5">
           <Avatar
             className={cn(
-              "h-16 w-16 shrink-0 rounded-2xl border-2 border-border/80",
+              "h-14 w-14 shrink-0 rounded-2xl border-2 border-border/80",
               "shadow-sm",
             )}
           >
@@ -124,7 +102,7 @@ export function StudentProfileBentoCard({
             />
             <AvatarFallback
               className={cn(
-                "rounded-2xl bg-primary/10 text-lg font-bold uppercase",
+                "rounded-2xl bg-primary/10 text-base font-bold uppercase",
                 "text-primary",
               )}
             >
@@ -134,27 +112,45 @@ export function StudentProfileBentoCard({
 
           <div className="min-w-0 flex-1 space-y-1">
             <h3
-              className={cn(
-                "truncate text-base font-bold tracking-tight text-foreground",
-              )}
+              className="truncate text-base font-bold tracking-tight text-foreground"
               title={fullName}
             >
               {fullName || "Unknown Student"}
             </h3>
-            <p className="font-mono text-xs text-muted-foreground">
-              {student.studentNumber || "No ID Number"}
-            </p>
+
+            {student.studentNumber ? (
+              <button
+                type="button"
+                onClick={handleCopyStudentNumber}
+                className={cn(
+                  "flex items-center gap-1.5 font-mono text-xs text-muted-foreground",
+                  "transition-colors hover:text-foreground",
+                )}
+                title="Click to copy student number"
+              >
+                {hasCopiedId ? (
+                  <Check className="h-3 w-3 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3 w-3 opacity-60" />
+                )}
+                <span>{student.studentNumber}</span>
+              </button>
+            ) : (
+              <p className="font-mono text-xs text-muted-foreground">
+                No Student ID
+              </p>
+            )}
           </div>
         </div>
 
         {/* Contact details */}
-        <div className="grid grid-cols-1 gap-2.5 rounded-xl border bg-muted/10 p-3">
+        <div className="grid grid-cols-1 gap-2 rounded-xl border bg-muted/10 p-3">
           <div className="flex items-center gap-2.5 text-xs">
             <div className="rounded-lg bg-primary/10 p-1.5 text-primary">
               <Mail className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground">
                 Email
               </p>
               <p
@@ -171,7 +167,7 @@ export function StudentProfileBentoCard({
               <Phone className="h-3.5 w-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground">
                 Contact Number
               </p>
               <p className="truncate font-medium text-foreground/90">
@@ -182,7 +178,7 @@ export function StudentProfileBentoCard({
         </div>
 
         {/* Quick redirect actions */}
-        <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 pt-0.5 sm:grid-cols-2">
           {canAccessIir && student.iirId && (
             <Button
               variant="outline"
