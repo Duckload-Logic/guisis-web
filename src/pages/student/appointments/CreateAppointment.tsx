@@ -21,14 +21,16 @@ import {
   useAvailableSlots,
   useCategories,
 } from "@/features/appointments/hooks";
-import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
+import {
+  useSubmitAppointment,
+} from "@/features/appointments/hooks/useAppointments";
 import {
   TimeSlot,
   CreateAppointmentRequest,
   AvailableTimeSlotView,
 } from "@/features/appointments/types";
 import { toISODateString } from "@/utils/dateTime";
-import { usePageMetadata } from "@/context";
+import { usePageMetadata, useToast } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +45,7 @@ interface BackupSchedule {
 
 export default function CreateAppointment() {
   const navigate = useNavigate();
+  const { triggerToast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -143,12 +146,18 @@ export default function CreateAppointment() {
 
     submitAppointment(payload, {
       onSuccess: () => {
+        triggerToast(
+          "Appointment booked successfully! Awaiting counselor review.",
+        );
         navigate("/student/appointments");
       },
       onError: (error: any) => {
         if (error.message?.includes("IIR profile")) {
+          triggerToast("Please complete your IIR profile first.");
           navigate("/iir-form");
+          return;
         }
+        triggerToast(error.message || "Failed to book appointment.");
       },
     });
   };
@@ -505,8 +514,15 @@ export default function CreateAppointment() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Selected Schedule Pill */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className={cn(
+                    "text-[11px] font-semibold",
+                    "text-muted-foreground",
+                  )}
+                >
                   Primary Schedule
                 </span>
                 {formattedDate && selectedTime?.time ? (
@@ -529,8 +545,15 @@ export default function CreateAppointment() {
               </div>
 
               {/* Concern Category */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className={cn(
+                    "text-[11px] font-semibold",
+                    "text-muted-foreground",
+                  )}
+                >
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
@@ -544,8 +567,18 @@ export default function CreateAppointment() {
 
               {/* Backup Schedules Summary */}
               {filledBackupCount > 0 && (
-                <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                  <span className="text-[11px] font-semibold text-muted-foreground">
+                <div
+                  className={cn(
+                    "rounded-xl border border-border/70",
+                    "bg-muted/30 p-3",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "text-[11px] font-semibold",
+                      "text-muted-foreground",
+                    )}
+                  >
                     Backup Options ({filledBackupCount})
                   </span>
                   <div className="mt-1.5 space-y-1 text-xs">

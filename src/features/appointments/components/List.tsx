@@ -587,12 +587,13 @@ export default function AppointmentList({
               size="sm"
               onClick={(event) => handleViewClick(apt, event)}
               className={cn(
-                "h-7 gap-1 rounded-xl border-primary/20 bg-primary/10",
-                "px-2.5 text-[10px] font-bold uppercase text-primary",
-                "hover:bg-primary hover:text-white",
+                "h-8 min-h-[32px] gap-1.5 rounded-xl border-primary/20",
+                "bg-primary/10 px-3 text-[11px] font-bold uppercase",
+                "text-primary shadow-xs transition-all",
+                "hover:bg-primary hover:text-white active:scale-95",
               )}
             >
-              <Eye size={12} />
+              <Eye className="h-3.5 w-3.5" />
               View
             </Button>
           </div>
