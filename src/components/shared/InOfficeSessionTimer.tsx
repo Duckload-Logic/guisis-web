@@ -104,9 +104,7 @@ export const InOfficeSessionTimer: React.FC<InOfficeSessionTimerProps> = ({
 
   if (isNotStarted) {
     return (
-      <div
-        className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm"
-      >
+      <div className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div

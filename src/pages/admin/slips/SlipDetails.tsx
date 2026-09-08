@@ -207,8 +207,7 @@ export default function SlipDetails() {
     slip?.status?.name?.toLowerCase() === "pending" ||
     slip?.status?.name?.toLowerCase() === "for revision";
 
-  const isApproved =
-    slip?.status?.name?.toLowerCase() === "approved";
+  const isApproved = slip?.status?.name?.toLowerCase() === "approved";
 
   const formatDateShort = (dateStr?: string) => {
     if (!dateStr) return "N/A";
@@ -752,9 +751,7 @@ export default function SlipDetails() {
                               "bg-green-600 hover:bg-green-700",
                           )}
                         >
-                          {slip.ticket.isVerified
-                            ? "Claimed"
-                            : "Pending Claim"}
+                          {slip.ticket.isVerified ? "Claimed" : "Pending Claim"}
                         </Badge>
                       </div>
 

@@ -65,8 +65,8 @@
     --primary-foreground: 0 0% 100%;
     --primary-dark: 0 100% 18%;
 
-    --secondary: 38 95% 20%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 45 95% 55%;
+    --secondary-foreground: 0 0% 7%;
 
     /* Softer muted tones */
     --muted: 210 12% 90%;
