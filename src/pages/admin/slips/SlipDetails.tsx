@@ -5,6 +5,7 @@ import {
   useUpdateSlipStatus,
   useGetSlipAttachments,
   useClaimTicket,
+  useStartSlip,
 } from "@/features/slips/hooks";
 import {
   CheckCircle2,
@@ -42,6 +43,7 @@ import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { usePageMetadata, useToast } from "@/context";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
+import { InOfficeSessionTimer } from "@/components/shared/InOfficeSessionTimer";
 import { cn } from "@/lib/utils";
 import { parseAuditTrail } from "@/utils/auditTrail";
 import { formatProcessDuration } from "@/utils/dateTime";
@@ -65,8 +67,24 @@ export default function SlipDetails() {
   const [showCorPreview, setShowCorPreview] = useState(false);
 
   const claimTicketMutation = useClaimTicket();
+  const startSlipMutation = useStartSlip();
   const isClaiming = claimTicketMutation.isPending;
   const { triggerToast } = useToast();
+
+  const handleStartSession = async (offsetMinutes: number = 0) => {
+    if (!id) return;
+    try {
+      await startSlipMutation.mutateAsync({ id, offsetMinutes });
+      triggerToast(
+        offsetMinutes > 0
+          ? `✓ Session started with +${offsetMinutes}m simulated!`
+          : "✓ In-office validation session started!",
+      );
+      refetch();
+    } catch (error: any) {
+      triggerToast(error.message || "Failed to start session");
+    }
+  };
 
   const handleVerifyTicket = () => {
     if (!slip?.ticket?.ticketCode) return;
@@ -648,6 +666,49 @@ export default function SlipDetails() {
                   )}
                 </div>
               )}
+
+              {slip.startedAt && !slip.completedAt && (
+                <div className="mb-4">
+                  <InOfficeSessionTimer
+                    startedAt={slip.startedAt}
+                    completedAt={slip.completedAt}
+                    title="In-Office Document Validation"
+                    subtitle="Validating absence reason & physical documents"
+                    studentName={fullName}
+                    studentNumber={slip.studentNumber}
+                    onStart={(offset) => handleStartSession(offset)}
+                    isPending={startSlipMutation.isPending}
+                  />
+                </div>
+              )}
+
+              {!slip.startedAt && isPending && (
+                <div className="mb-4">
+                  <InOfficeSessionTimer
+                    startedAt={null}
+                    completedAt={null}
+                    title="In-Office Document Validation"
+                    subtitle="Validating absence reason & physical documents"
+                    studentName={fullName}
+                    studentNumber={slip.studentNumber}
+                    onStart={(offset) => handleStartSession(offset)}
+                    isPending={startSlipMutation.isPending}
+                  />
+                </div>
+              )}
+
+              {slip.completedAt && (
+                <div className="mb-4">
+                  <InOfficeSessionTimer
+                    startedAt={slip.startedAt}
+                    completedAt={slip.completedAt}
+                    title="In-Office Document Validation"
+                    studentName={fullName}
+                    studentNumber={slip.studentNumber}
+                  />
+                </div>
+              )}
+
               {isPending ? (
                 <div className="flex flex-col gap-3">
                   <Button

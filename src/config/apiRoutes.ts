@@ -36,6 +36,7 @@ export const API_ROUTES = Object.freeze({
       categories: "/slips/lookups/categories",
     }),
     updateStatus: (id: string) => `/slips/id/${id}/status`,
+    start: (id: string) => `/slips/id/${id}/start`,
     claimTicket: "/slips/tickets/claim",
     ticketByCode: (code: string) => `/slips/tickets/${code}`,
   }),

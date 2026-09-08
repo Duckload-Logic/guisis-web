@@ -670,7 +670,7 @@ function MobileSettingsContent({
                   </div>
 
                   <div className="text-left">
-                    <p className="text-sm font-bold">{r.name}</p>
+                    <p className="text-sm font-bold">{r.name.toUpperCase()}</p>
 
                     <p className="text-[10px] text-muted-foreground">
                       Switch to {r.name.toLowerCase()} view

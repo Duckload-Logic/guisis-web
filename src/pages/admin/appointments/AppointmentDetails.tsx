@@ -47,6 +47,7 @@ import { parseAuditTrail } from "@/utils/auditTrail";
 import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
 import RescheduleModal from "@/features/appointments/components/RescheduleModal";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
+import { InOfficeSessionTimer } from "@/components/shared/InOfficeSessionTimer";
 import { cn } from "@/lib/utils";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
 
@@ -116,11 +117,17 @@ export default function AppointmentDetails() {
     setIsStartConfirming(true);
   };
 
-  const handleConfirmStartAppointment = async () => {
+  const handleConfirmStartAppointment = async (
+    offsetMinutes: number = 0,
+  ) => {
     if (!id) return;
     try {
-      await startAppointmentMutation.mutateAsync(id);
-      triggerToast("✓ On-site appointment session started!");
+      await startAppointmentMutation.mutateAsync({ id, offsetMinutes });
+      triggerToast(
+        offsetMinutes > 0
+          ? `✓ Session started with +${offsetMinutes}m simulated!`
+          : "✓ On-site appointment session started!",
+      );
       setIsStartConfirming(false);
     } catch {
       triggerToast("Failed to start appointment session");
@@ -980,70 +987,54 @@ export default function AppointmentDetails() {
                   !appointment.startedAt &&
                   (appointment.status?.name === "Scheduled" ||
                     appointment.status?.name === "Rescheduled") && (
-                    <Button
-                      onClick={handleStartAppointment}
-                      disabled={startAppointmentMutation.isPending}
-                      className={cn(
-                        "group/start h-11 w-full items-center justify-between",
-                        "rounded-xl border border-emerald-500/30 bg-emerald-600 text-white shadow-sm",
-                        "transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md",
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Play className="h-4 w-4 fill-white" />
-                        <span className="text-xs font-bold tracking-wider">
-                          Start Appointment (On-Site)
-                        </span>
-                      </div>
-                      <Clock3 className="h-4 w-4 opacity-80" />
-                    </Button>
+                    <InOfficeSessionTimer
+                      startedAt={null}
+                      completedAt={null}
+                      title="Counseling Session"
+                      studentName={fullName}
+                      studentNumber={appointment.studentNumber}
+                      onStart={(offset) => {
+                        if (!offset) {
+                          handleStartAppointment();
+                        } else {
+                          handleConfirmStartAppointment(offset);
+                        }
+                      }}
+                      isPending={startAppointmentMutation.isPending}
+                    />
                   )}
 
                 {appointment?.startedAt && !appointment?.completedAt && (
-                  <div className="flex flex-col gap-3 rounded-xl border border-success-foreground/30 bg-success-background p-4 text-success-foreground shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-bold">
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-foreground opacity-75"></span>
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success-foreground"></span>
-                        </span>
-                        <span>Session In Progress</span>
-                      </div>
-                      <span className="font-mono text-[11px] opacity-90">
-                        Started: {format12HourTime(appointment.startedAt)}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        onClick={() => handleActionClick("Complete")}
-                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-700"
-                      >
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        Complete Session
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleActionClick("Cancel")}
-                        className={cn(
-                          "h-9 gap-1.5 rounded-lg border-destructive/30",
-                          "text-destructive hover:bg-destructive/10",
-                          "text-xs font-bold transition-all",
-                        )}
-                      >
-                        <XCircle className="h-3.5 w-3.5" />
-                        Cancel Session
-                      </Button>
-                    </div>
-                  </div>
+                  <InOfficeSessionTimer
+                    startedAt={appointment.startedAt}
+                    completedAt={appointment.completedAt}
+                    title="Counseling Session"
+                    studentName={fullName}
+                    studentNumber={appointment.studentNumber}
+                    onStart={(offset) =>
+                      handleConfirmStartAppointment(offset)
+                    }
+                    onComplete={() => handleActionClick("Complete")}
+                    onCancel={() => handleActionClick("Cancel")}
+                    isPending={startAppointmentMutation.isPending}
+                  />
                 )}
 
                 {allowedActions.length > 0 ? (
                   <div className="flex flex-col gap-3">
-                    {allowedActions.map((action) => (
-                      <Button
+                    {allowedActions
+                      .filter((action) => {
+                        if (
+                          appointment?.startedAt &&
+                          !appointment?.completedAt &&
+                          (action === "Complete" || action === "Cancel")
+                        ) {
+                          return false;
+                        }
+                        return true;
+                      })
+                      .map((action) => (
+                        <Button
                         key={action}
                         onClick={() => handleActionClick(action)}
                         className={cn(
@@ -1231,7 +1222,7 @@ export default function AppointmentDetails() {
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleConfirmStartAppointment}
+                onClick={() => handleConfirmStartAppointment(0)}
                 disabled={startAppointmentMutation.isPending}
                 className="rounded-xl bg-emerald-600 font-bold text-white shadow-md hover:bg-emerald-700"
               >

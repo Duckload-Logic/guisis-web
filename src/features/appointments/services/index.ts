@@ -304,17 +304,19 @@ export async function PostCancelAppointment(
 /**
  * Start an appointment session on-site (Admin/Counselor only)
  * @param id - Appointment ID
+ * @param offsetMinutes - Fast-forward offset in minutes (staging only)
  * @param config - Axios config
  * @returns Success message
  */
 export async function PostStartAppointment(
   id: string,
+  offsetMinutes: number = 0,
   config?: AxiosConfigWithMeta,
 ) {
   try {
     const response = await apiClient.post(
       API_ROUTES.appointments.start(id),
-      {},
+      { offsetMinutes },
       config,
     );
     return response.data;
