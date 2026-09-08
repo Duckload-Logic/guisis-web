@@ -296,8 +296,11 @@ export default function AppointmentDetails() {
                 {whenDate
                   ? format(whenDate, "EEEE, MMMM d, yyyy")
                   : "Date TBD"}
-                <span className="font-normal text-muted-foreground"> at </span>
-                <span className="font-mono text-primary">
+                <span className="font-semibold text-muted-foreground">
+                  {" "}
+                  at{" "}
+                </span>
+                <span className="font-bold text-primary">
                   {format12HourTime(
                     appointment?.timeSlot?.time || "",
                   ) || "TBD"}
@@ -442,7 +445,10 @@ export default function AppointmentDetails() {
                 </CardHeader>
                 <CardContent className="space-y-6 pt-5">
                   {auditEntries.map((entry, idx) => (
-                    <div key={idx} className="group flex items-start gap-4">
+                    <div
+                      key={idx}
+                      className="group flex items-start gap-4"
+                    >
                       <div className="relative mt-1">
                         <div
                           className={cn(
@@ -607,7 +613,10 @@ export default function AppointmentDetails() {
         </div>
       </div>
 
-      <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+      <Dialog
+        open={isCancelModalOpen}
+        onOpenChange={setIsCancelModalOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Cancel Appointment</DialogTitle>
@@ -655,4 +664,3 @@ export default function AppointmentDetails() {
     </>
   );
 }
-

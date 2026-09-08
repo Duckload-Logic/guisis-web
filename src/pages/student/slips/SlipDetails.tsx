@@ -2,12 +2,7 @@ import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -123,9 +118,7 @@ export default function SlipDetails() {
 
   const isEditable = slip?.status?.name === "For Revision";
 
-  const absenceDate = slip?.dateOfAbsence
-    ? new Date(slip.dateOfAbsence)
-    : null;
+  const absenceDate = slip?.dateOfAbsence ? new Date(slip.dateOfAbsence) : null;
   const monthStr = absenceDate
     ? absenceDate.toLocaleDateString("en-US", { month: "short" })
     : "—";
@@ -157,9 +150,7 @@ export default function SlipDetails() {
               <span className="text-xs font-bold uppercase tracking-wider">
                 {monthStr}
               </span>
-              <span className="text-2xl font-black leading-none">
-                {dayStr}
-              </span>
+              <span className="text-2xl font-black leading-none">{dayStr}</span>
             </div>
 
             <div className="space-y-1">
@@ -191,15 +182,12 @@ export default function SlipDetails() {
                   "sm:text-xl",
                 )}
               >
-                Absence on{" "}
-                {absenceDate
-                  ? formatDate(absenceDate)
-                  : "Date TBD"}
-                <span className="font-normal text-muted-foreground">
+                Absence on {absenceDate ? formatDate(absenceDate) : "Date TBD"}
+                <span className="font-semibold text-muted-foreground">
                   {" "}
                   • Needed:{" "}
                 </span>
-                <span className="font-mono text-primary">
+                <span className="font-bold text-primary">
                   {slip?.dateNeeded ? formatDate(slip.dateNeeded) : "TBD"}
                 </span>
               </h2>
@@ -275,9 +263,7 @@ export default function SlipDetails() {
                       "border-border/60 bg-muted/20 p-3.5",
                     )}
                   >
-                    <Clock
-                      className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-                    />
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
                       <p
                         className={cn(
@@ -342,9 +328,7 @@ export default function SlipDetails() {
                     Supporting Documents
                   </CardTitle>
                   <span
-                    className={cn(
-                      "text-xs font-medium text-muted-foreground",
-                    )}
+                    className={cn("text-xs font-medium text-muted-foreground")}
                   >
                     {attachments.length} files attached
                   </span>
@@ -378,7 +362,10 @@ export default function SlipDetails() {
                 </CardHeader>
                 <CardContent className="space-y-6 pt-5">
                   {auditEntries.map((entry, idx) => (
-                    <div key={idx} className="group flex items-start gap-4">
+                    <div
+                      key={idx}
+                      className="group flex items-start gap-4"
+                    >
                       <div className="relative mt-1">
                         <div
                           className={cn(
@@ -448,9 +435,7 @@ export default function SlipDetails() {
                 )}
               >
                 <CardHeader
-                  className={cn(
-                    "border-b border-border/60 bg-muted/20 p-4",
-                  )}
+                  className={cn("border-b border-border/60 bg-muted/20 p-4")}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -600,9 +585,7 @@ export default function SlipDetails() {
                 >
                   <span className="text-muted-foreground">Submitted On</span>
                   <span className="font-medium text-foreground">
-                    {slip?.createdAt
-                      ? formatDate(slip.createdAt)
-                      : "—"}
+                    {slip?.createdAt ? formatDate(slip.createdAt) : "—"}
                   </span>
                 </div>
                 <div
@@ -628,4 +611,3 @@ export default function SlipDetails() {
     </>
   );
 }
-
