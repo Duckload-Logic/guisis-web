@@ -21,7 +21,9 @@ import {
   useAvailableSlots,
   useCategories,
 } from "@/features/appointments/hooks";
-import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
+import {
+  useSubmitAppointment,
+} from "@/features/appointments/hooks/useAppointments";
 import {
   TimeSlot,
   CreateAppointmentRequest,
@@ -104,6 +106,19 @@ export default function CreateAppointment() {
     setSelectedTime({ id: slot.id, time: slot.time });
   };
 
+  const handleClearBackup = (indexToClear: number) => {
+    setBackupSchedules((prev) => {
+      const next = [...prev];
+      for (let i = indexToClear; i < next.length; i++) {
+        next[i] = { date: undefined, timeSlot: undefined };
+      }
+      return next;
+    });
+    if (activeBackupTab > indexToClear) {
+      setActiveBackupTab(indexToClear);
+    }
+  };
+
   const handleSubmit = () => {
     if (!isFormValid || !selectedDate || !selectedTime) return;
 
@@ -153,7 +168,11 @@ export default function CreateAppointment() {
   ).length;
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+    <div
+      className={cn(
+        "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8",
+      )}
+    >
       {/* Schedule Context Banner (Replaces intrusive popup) */}
       <div
         className={cn(
@@ -214,7 +233,12 @@ export default function CreateAppointment() {
                 </div>
 
                 {/* Time slot sub-column */}
-                <div className="border-t border-border/60 pt-4 md:col-span-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+                <div
+                  className={cn(
+                    "border-t border-border/60 pt-4 md:col-span-6",
+                    "md:border-l md:border-t-0 md:pl-6 md:pt-0",
+                  )}
+                >
                   <SlotSelector
                     selectedDate={selectedDate}
                     selectedTime={selectedTime}
@@ -258,7 +282,10 @@ export default function CreateAppointment() {
                 isTextarea
                 required
                 maxChars={MAX_REASON_LENGTH}
-                info="This note is confidential and read by the guidance counselor."
+                info={
+                  "This note is confidential and read by the " +
+                  "guidance counselor."
+                }
               />
             </CardContent>
           </Card>
@@ -299,23 +326,52 @@ export default function CreateAppointment() {
                 </p>
 
                 {/* Tab Selector */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
+                <div
+                  className={cn(
+                    "flex flex-wrap items-center gap-2 border-b",
+                    "border-border/60 pb-3",
+                  )}
+                >
                   {[0, 1, 2].map((idx) => {
                     const opt = backupSchedules[idx];
                     const isComplete = !!opt.date && !!opt.timeSlot;
                     const isTabActive = activeBackupTab === idx;
+                    const isPrecedingEmpty =
+                      idx > 0 &&
+                      (!backupSchedules[idx - 1].date ||
+                        !backupSchedules[idx - 1].timeSlot);
 
                     return (
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => setActiveBackupTab(idx)}
+                        disabled={isPrecedingEmpty}
+                        onClick={() => {
+                          if (!isPrecedingEmpty) {
+                            setActiveBackupTab(idx);
+                          }
+                        }}
+                        title={
+                          isPrecedingEmpty
+                            ? `Complete Option ${idx} first`
+                            : undefined
+                        }
                         className={cn(
                           "flex items-center gap-1.5 rounded-xl px-3 py-1.5",
                           "text-xs font-semibold transition-all",
-                          isTabActive
-                            ? "border border-primary/40 bg-primary/10 text-primary shadow-sm"
-                            : "border border-border/70 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                          isPrecedingEmpty &&
+                            "cursor-not-allowed opacity-40 hover:bg-muted/30",
+                          !isPrecedingEmpty &&
+                            (isTabActive
+                              ? cn(
+                                  "border border-primary/40 bg-primary/10",
+                                  "text-primary shadow-sm",
+                                )
+                              : cn(
+                                  "border border-border/70 bg-muted/30",
+                                  "text-muted-foreground",
+                                  "hover:bg-muted/60 hover:text-foreground",
+                                )),
                         )}
                       >
                         <span>Option {idx + 1}</span>
@@ -341,6 +397,16 @@ export default function CreateAppointment() {
                             date: d,
                             timeSlot: undefined,
                           };
+                          for (
+                            let i = activeBackupTab + 1;
+                            i < next.length;
+                            i++
+                          ) {
+                            next[i] = {
+                              date: undefined,
+                              timeSlot: undefined,
+                            };
+                          }
                           return next;
                         });
                       }}
@@ -353,7 +419,11 @@ export default function CreateAppointment() {
                       className="w-full border-0 p-0 shadow-none"
                     />
                   </div>
-                  <div className="md:col-span-6 md:border-l md:border-border/60 md:pl-6">
+                  <div
+                    className={cn(
+                      "md:col-span-6 md:border-l md:border-border/60 md:pl-6",
+                    )}
+                  >
                     {activeBackup.date ? (
                       <div className="space-y-3">
                         <SlotSelector
@@ -376,24 +446,26 @@ export default function CreateAppointment() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            setBackupSchedules((prev) => {
-                              const next = [...prev];
-                              next[activeBackupTab] = {
-                                date: undefined,
-                                timeSlot: undefined,
-                              };
-                              return next;
-                            });
-                          }}
-                          className="h-8 text-xs text-muted-foreground hover:text-destructive"
+                          onClick={() => handleClearBackup(activeBackupTab)}
+                          className={cn(
+                            "h-8 text-xs text-muted-foreground",
+                            "hover:text-destructive",
+                          )}
                         >
                           Clear Option {activeBackupTab + 1}
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex min-h-[220px] flex-col items-center justify-center rounded-xl border border-dashed border-border/70 p-4 text-center">
-                        <Clock className="mb-1.5 h-6 w-6 text-muted-foreground/50" />
+                      <div
+                        className={cn(
+                          "flex min-h-[220px] flex-col items-center",
+                          "justify-center rounded-xl border border-dashed",
+                          "border-border/70 p-4 text-center",
+                        )}
+                      >
+                        <Clock
+                          className="mb-1.5 h-6 w-6 text-muted-foreground/50"
+                        />
                         <p className="text-xs font-medium text-foreground">
                           Select a date on the calendar for Option{" "}
                           {activeBackupTab + 1}
@@ -411,14 +483,23 @@ export default function CreateAppointment() {
         <div className="space-y-4 lg:sticky lg:top-6 lg:col-span-4">
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-3">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              <CardTitle
+                className={cn(
+                  "text-sm font-bold uppercase tracking-wider",
+                  "text-muted-foreground",
+                )}
+              >
                 Appointment Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Selected Schedule Pill */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Primary Schedule
                 </span>
                 {formattedDate && selectedTime?.time ? (
@@ -441,8 +522,12 @@ export default function CreateAppointment() {
               </div>
 
               {/* Concern Category */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
@@ -456,8 +541,12 @@ export default function CreateAppointment() {
 
               {/* Backup Schedules Summary */}
               {filledBackupCount > 0 && (
-                <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                  <span className="text-[11px] font-semibold text-muted-foreground">
+                <div
+                  className="rounded-xl border border-border/70 bg-muted/30 p-3"
+                >
+                  <span
+                    className="text-[11px] font-semibold text-muted-foreground"
+                  >
                     Backup Options ({filledBackupCount})
                   </span>
                   <div className="mt-1.5 space-y-1 text-xs">
@@ -466,7 +555,10 @@ export default function CreateAppointment() {
                       return (
                         <div
                           key={idx}
-                          className="flex items-center justify-between text-muted-foreground"
+                          className={cn(
+                            "flex items-center justify-between",
+                            "text-muted-foreground",
+                          )}
                         >
                           <span>
                             Opt {idx + 1}:{" "}
@@ -475,7 +567,9 @@ export default function CreateAppointment() {
                               day: "numeric",
                             })}
                           </span>
-                          <span className="font-mono text-[11px] text-foreground">
+                          <span
+                            className="font-mono text-[11px] text-foreground"
+                          >
                             {b.timeSlot.time}
                           </span>
                         </div>
@@ -548,7 +642,9 @@ export default function CreateAppointment() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting}
-                className="w-full rounded-xl py-5 text-sm font-semibold shadow-sm"
+                className={cn(
+                  "w-full rounded-xl py-5 text-sm font-semibold shadow-sm",
+                )}
               >
                 {isSubmitting ? "Booking Appointment..." : "Book Appointment"}
               </Button>
