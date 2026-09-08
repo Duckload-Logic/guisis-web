@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
@@ -619,7 +620,11 @@ export function SlipList({
           {columns.map((column, index) => (
             <th
               key={index}
-              className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
+              className={cn(
+                "px-3 py-3 text-left text-[11px] font-bold uppercase",
+                "tracking-[0.14em]",
+                column.className,
+              )}
             >
               {typeof column.header === "string" ? (
                 column.header
@@ -631,19 +636,49 @@ export function SlipList({
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, rowIndex) => (
+        {Array.from({ length: 6 }).map((_, rowIndex) => (
           <tr
             key={rowIndex}
             className="animate-pulse border-b border-border/60"
           >
-            {columns.map((_, columnIndex) => (
-              <td
-                key={columnIndex}
-                className="px-4 py-3"
-              >
-                <Skeleton className="h-4 w-24 rounded" />
-              </td>
-            ))}
+            {/* Student Name */}
+            <td className="w-[28%] px-3 py-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+                <div className="min-w-0 space-y-1.5">
+                  <Skeleton className="h-4 w-32 rounded-md" />
+                  <Skeleton className="h-3 w-20 rounded-md" />
+                </div>
+              </div>
+            </td>
+            {/* Absence Date */}
+            <td className="w-[18%] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-16 rounded-md" />
+              </div>
+            </td>
+            {/* Date Needed */}
+            <td className="w-[18%] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-16 rounded-md" />
+              </div>
+            </td>
+            {/* Category */}
+            <td className="w-[18%] px-3 py-3">
+              <Skeleton className="h-5 w-24 rounded-md" />
+            </td>
+            {/* Status */}
+            <td className="w-[16%] min-w-[120px] px-3 py-3">
+              <Skeleton className="h-6 w-20 rounded-xl" />
+            </td>
+            {/* Action */}
+            <td className="w-[12%] min-w-[90px] px-3 py-3 text-right">
+              <div className="flex justify-end">
+                <Skeleton className="h-7 w-16 rounded-xl" />
+              </div>
+            </td>
           </tr>
         ))}
       </tbody>
@@ -715,57 +750,154 @@ export function SlipList({
           )}
         </div>
 
-        <div
-          className={cn(
-            "flex flex-col gap-3 xl:flex-row xl:items-center",
-            "xl:justify-between",
-          )}
-        >
-          <div className="flex flex-1 flex-wrap items-center gap-3">
-            <div className="w-full sm:w-64">
+        <div className="flex flex-col gap-3">
+          {/* Top Row: Search + Export CSV */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 sm:flex-row sm:items-center",
+              "sm:justify-between",
+            )}
+          >
+            <div className="w-full sm:max-w-md">
               <SearchInput
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
-                placeholder="Search name, email, or ID..."
+                placeholder="Search name, email, or student number..."
                 hasHeader={false}
               />
             </div>
 
-            <div className="w-full sm:w-44">
-              <SelectField
-                label=""
-                options={categoryOptions}
-                value={currentCategory}
-                onChange={(val) => {
-                  const v = String(val);
-                  handleCategoryChange(
-                    !val || v === "" || v === "undefined" ? "all" : v,
-                  );
-                }}
-                labelKey="displayName"
-                buttonClassName={cn(
-                  "h-10 w-full justify-between rounded-xl border",
-                  "border-border/70 bg-background/50 px-3 text-xs",
-                  "font-semibold shadow-sm",
-                  currentCategory !== "all" && "border-primary text-primary",
+            {!isLoading && slips.length > 0 && (
+              <button
+                onClick={() =>
+                  exportToCSV(visibleSlips, slipExportColumns, "admission-slips")
+                }
+                disabled={visibleSlips.length === 0}
+                className={cn(
+                  "flex h-9 items-center justify-center rounded-xl border",
+                  "border-red-800/30 bg-white/60 px-3 text-xs font-semibold",
+                  "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
                 )}
-              />
+              >
+                <svg
+                  className="mr-1.5 h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Export CSV
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Row: Quick Status Pills + Category Selector + Clear */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 border-t border-border/50 pt-3",
+              "lg:flex-row lg:items-center lg:justify-between",
+            )}
+          >
+            {/* Status Pills */}
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-1.5 overflow-x-auto",
+                "py-0.5",
+              )}
+            >
+              {dropdownOptions.map((status) => {
+                const isSelected =
+                  String(selectedStatus?.id) === String(status.id);
+                const serverCountObj = statusCounts?.find(
+                  (sc) => String(sc.id) === String(status.id),
+                );
+                const count = serverCountObj
+                  ? serverCountObj.count
+                  : dynamicStatMap[String(status.id)] || 0;
+
+                return (
+                  <button
+                    key={String(status.id)}
+                    type="button"
+                    onClick={() => {
+                      if (String(status.id) === "0") {
+                        const allStatus = statuses.find(
+                          (s) => String(s.id) === "0",
+                        ) || {
+                          id: 0,
+                          name: "All Statuses",
+                        };
+                        onStatusChange(allStatus as unknown as SlipStatus);
+                      } else {
+                        onStatusChange(status);
+                      }
+                      onPageChange(1);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5",
+                      "text-xs font-semibold select-none transition-all",
+                      isSelected
+                        ? "border border-primary/40 bg-primary/10 " +
+                            "text-primary shadow-sm"
+                        : "border border-border/70 bg-card " +
+                            "text-muted-foreground hover:bg-muted/60 " +
+                            "hover:text-foreground",
+                    )}
+                  >
+                    <span>{status.name}</span>
+                    {String(status.id) !== "0" && (
+                      <Badge
+                        variant={isSelected ? "default" : "secondary"}
+                        className={cn(
+                          "h-4 min-w-4 rounded-full px-1 text-[10px]",
+                          isSelected && "bg-primary text-primary-foreground",
+                        )}
+                      >
+                        {count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="w-full sm:w-40">
-              <SelectField
-                label=""
-                options={dropdownOptions}
-                value={selectedStatus?.id}
-                onChange={(val) => {
-                  const v = String(val);
-                  if (
-                    !val ||
-                    v === "" ||
-                    v === "undefined" ||
-                    v === "0" ||
-                    v === "all"
-                  ) {
+            {/* Secondary Selector (Category) + Reset */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-[160px]">
+                <SelectField
+                  label=""
+                  options={categoryOptions}
+                  value={currentCategory}
+                  onChange={(val) => {
+                    const v = String(val);
+                    handleCategoryChange(
+                      !val || v === "" || v === "undefined" ? "all" : v,
+                    );
+                  }}
+                  labelKey="displayName"
+                  buttonClassName={cn(
+                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                    "shadow-none",
+                    currentCategory !== "all" && "border-primary text-primary",
+                  )}
+                />
+              </div>
+
+              {(currentCategory !== "all" ||
+                String(selectedStatus?.id) !== "0") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    handleCategoryChange("all");
                     const allStatus =
                       statuses.find((s) => String(s.id) === "0") ||
                       ({
@@ -774,80 +906,17 @@ export function SlipList({
                       } as unknown as SlipStatus);
                     onStatusChange(allStatus);
                     onPageChange(1);
-                    return;
-                  }
-                  const status = statuses.find((s) => String(s.id) === v);
-                  if (status) {
-                    onStatusChange(status);
-                    onPageChange(1);
-                  }
-                }}
-                labelKey="displayName"
-                buttonClassName={cn(
-                  "h-10 w-full justify-between rounded-xl border",
-                  "border-border/70 bg-background/50 px-3 text-xs",
-                  "font-semibold shadow-sm",
-                  String(selectedStatus?.id) !== "0" &&
-                    "border-primary text-primary",
-                )}
-              />
-            </div>
-
-            {(currentCategory !== "all" ||
-              String(selectedStatus?.id) !== "0") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  handleCategoryChange("all");
-                  const allStatus =
-                    statuses.find((s) => String(s.id) === "0") ||
-                    ({
-                      id: 0,
-                      name: "All Statuses",
-                    } as unknown as SlipStatus);
-                  onStatusChange(allStatus);
-                  onPageChange(1);
-                }}
-                className={cn(
-                  "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
-                  "hover:text-foreground",
-                )}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-
-          {!isLoading && slips.length > 0 && (
-            <button
-              onClick={() =>
-                exportToCSV(visibleSlips, slipExportColumns, "admission-slips")
-              }
-              disabled={visibleSlips.length === 0}
-              className={cn(
-                "flex h-10 items-center self-start rounded-xl border",
-                "border-red-800/30 bg-white/50 px-3 text-xs font-semibold",
-                "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
-                "disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto",
+                  }}
+                  className={cn(
+                    "h-8 rounded-xl px-2 text-xs font-semibold text-muted-foreground",
+                    "hover:text-foreground",
+                  )}
+                >
+                  Reset
+                </Button>
               )}
-            >
-              <svg
-                className="mr-1.5 h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-              Export CSV
-            </button>
-          )}
+            </div>
+          </div>
         </div>
       </div>
 

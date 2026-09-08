@@ -578,7 +578,12 @@ export default function ReviewSlips() {
   });
 
   return (
-    <div className="animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2 duration-500 sm:px-6 md:px-8">
+    <div
+      className={cn(
+        "animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2",
+        "duration-500 sm:px-6 md:px-8",
+      )}
+    >
       <style>{`
         @keyframes scan {
           0% { top: 0%; }
@@ -625,7 +630,10 @@ export default function ReviewSlips() {
       )}
 
       <SlipList
-        className="animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-500 [animation-delay:150ms]"
+        className={cn(
+          "animate-in fade-in slide-in-from-bottom-4 fill-mode-both",
+          "duration-500 [animation-delay:150ms]",
+        )}
         slips={slips}
         isLoading={isLoading}
         onViewClick={handleViewSlip}
