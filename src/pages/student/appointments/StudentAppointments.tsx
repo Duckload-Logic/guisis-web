@@ -29,6 +29,7 @@ import {
 } from "@/features/appointments/hooks/useAppointments";
 import { Pagination } from "@/components/shared";
 import { Spinner } from "@/components/shared/Spinner";
+import { SelectField } from "@/components/ui/select-field";
 import { format12HourTime } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -561,35 +562,33 @@ export default function StudentAppointments() {
           })}
         </div>
 
-        {/* Compact Sort Selector */}
+        {/* Compact Sort Selector using SelectField */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-          <select
-            aria-label="Sort appointments"
-            value={`${selectedSort}-${selectedOrder}`}
-            onChange={(e) => {
-              const [sort, order] = e.target.value.split("-") as [
-                string,
-                SortOrder,
-              ];
-              setSelectedSort(sort);
-              setSelectedOrder(order);
-              setCurrentPage(1);
-            }}
-            disabled={isAppointmentsLoading}
-            className={cn(
-              "h-8 rounded-xl border border-border/70 bg-card px-2.5 py-1",
-              "text-xs font-medium text-foreground transition-colors",
-              "focus:border-primary focus:outline-none focus:ring-1",
-              "focus:ring-primary disabled:opacity-50",
-            )}
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.displayName}
-              </option>
-            ))}
-          </select>
+          <ArrowUpDown
+            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+          />
+          <div className="w-[185px] sm:w-[200px]">
+            <SelectField
+              options={SORT_OPTIONS}
+              value={`${selectedSort}-${selectedOrder}`}
+              onChange={(val) => {
+                const [sort, order] = String(val).split("-") as [
+                  string,
+                  SortOrder,
+                ];
+                setSelectedSort(sort);
+                setSelectedOrder(order);
+                setCurrentPage(1);
+              }}
+              labelKey="displayName"
+              enabled={!isAppointmentsLoading}
+              buttonClassName={cn(
+                "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                "shadow-none",
+              )}
+            />
+          </div>
         </div>
       </div>
 
