@@ -121,9 +121,7 @@ export function SupportChatWidget() {
     if (!container) return;
 
     const isNearBottom =
-      container.scrollHeight -
-        container.scrollTop -
-        container.clientHeight <=
+      container.scrollHeight - container.scrollTop - container.clientHeight <=
       SCROLL_THRESHOLD_PX;
 
     const currentLen = messages.length;
@@ -201,7 +199,7 @@ export function SupportChatWidget() {
         <div
           className={cn(
             "flex shrink-0 items-center justify-between bg-primary px-4 py-3",
-            "text-primary-foreground shadow-xs",
+            "shadow-xs text-primary-foreground",
           )}
         >
           <div className="flex items-center gap-2">
@@ -385,7 +383,10 @@ export function SupportChatWidget() {
                 );
 
                 return (
-                  <div key={msg.id} className="flex flex-col">
+                  <div
+                    key={msg.id}
+                    className="flex flex-col"
+                  >
                     {showDateDivider && (
                       <div className="my-2.5 flex items-center justify-center">
                         <span
@@ -427,10 +428,10 @@ export function SupportChatWidget() {
                           "cursor-pointer select-none",
                           isMe
                             ? "rounded-tr-none bg-primary " +
-                              "text-primary-foreground shadow-xs"
+                                "shadow-xs text-primary-foreground"
                             : "rounded-tl-none border " +
-                              "border-glass-border/60 bg-muted " +
-                              "text-foreground",
+                                "border-glass-border/60 bg-muted" +
+                                "text-foreground",
                         )}
                         title={formattedDate}
                       >
@@ -439,10 +440,12 @@ export function SupportChatWidget() {
                         </p>
                       </div>
                       {activeMessageId === msg.id && (
-                        <span className={cn(
-                          "animate-in fade-in mt-1 px-1 text-[9px]",
-                          "text-muted-foreground duration-150",
-                        )}>
+                        <span
+                          className={cn(
+                            "animate-in fade-in mt-1 px-1 text-[9px]",
+                            "text-muted-foreground duration-150",
+                          )}
+                        >
                           {formattedDate}
                         </span>
                       )}
@@ -472,7 +475,7 @@ export function SupportChatWidget() {
                       type="button"
                       onClick={() =>
                         setMessage((prev) =>
-                          prev ? `${prev} - ${topic}` : topic
+                          prev ? `${prev} - ${topic}` : topic,
                         )
                       }
                       className={cn(
@@ -589,7 +592,10 @@ export function SupportChatWidget() {
                 );
 
                 return (
-                  <div key={msg.id} className="flex flex-col">
+                  <div
+                    key={msg.id}
+                    className="flex flex-col"
+                  >
                     {showDateDivider && (
                       <div className="my-2.5 flex items-center justify-center">
                         <span
@@ -631,10 +637,10 @@ export function SupportChatWidget() {
                           "cursor-pointer select-none",
                           isMe
                             ? "rounded-tr-none bg-primary " +
-                              "text-primary-foreground shadow-xs"
+                                "shadow-xs text-primary-foreground"
                             : "rounded-tl-none border " +
-                              "border-glass-border/60 bg-muted " +
-                              "text-foreground",
+                                "border-glass-border/60 bg-muted" +
+                                "text-foreground",
                         )}
                         title={formattedDate}
                       >
@@ -660,10 +666,12 @@ export function SupportChatWidget() {
                       </div>
 
                       {activeMessageId === msg.id && (
-                        <span className={cn(
-                          "animate-in fade-in mt-1 px-1 text-[9px]",
-                          "text-muted-foreground duration-150",
-                        )}>
+                        <span
+                          className={cn(
+                            "animate-in fade-in mt-1 px-1 text-[9px]",
+                            "text-muted-foreground duration-150",
+                          )}
+                        >
                           {formattedDate}
                         </span>
                       )}
@@ -677,9 +685,12 @@ export function SupportChatWidget() {
 
           {/* Floating New Messages Button */}
           {showScrollBottom && (
-            <div className={cn(
-              "absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5",
-            )}>
+            <div
+              className={cn(
+                "absolute bottom-4 right-4 z-20 flex flex-col",
+                "items-end gap-1.5",
+              )}
+            >
               {newMessagesCount > 0 && (
                 <Button
                   type="button"
@@ -687,7 +698,7 @@ export function SupportChatWidget() {
                   onClick={scrollToBottom}
                   className={cn(
                     "h-7 gap-1 rounded-full bg-blue-600 px-2.5 text-[11px]",
-                    "text-white shadow-lg animate-bounce",
+                    "animate-bounce text-white shadow-lg",
                   )}
                 >
                   <ChevronDown className="h-3 w-3" />
@@ -715,9 +726,9 @@ export function SupportChatWidget() {
           <form
             onSubmit={handleSendMessage}
             className={cn(
-            "shrink-0 space-y-1.5 border-t border-glass-border",
-            "bg-card/40 p-2.5 sm:p-3",
-          )}
+              "shrink-0 space-y-1.5 border-t border-glass-border",
+              "bg-card/40 p-2.5 sm:p-3",
+            )}
           >
             <div className="flex items-end gap-2">
               <div className="relative min-w-0 flex-1">
@@ -741,17 +752,19 @@ export function SupportChatWidget() {
                 type="submit"
                 disabled={!message.trim() || isOverWordLimit}
                 size="icon"
-                className="h-9 w-9 shrink-0 rounded-xl text-white shadow-xs"
+                className="shadow-xs h-9 w-9 shrink-0 rounded-xl text-white"
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4 shrink-0" />
               </Button>
             </div>
 
-            <div className={cn(
-              "flex items-center justify-between px-1 text-[10px]",
-              "text-muted-foreground",
-            )}>
+            <div
+              className={cn(
+                "flex items-center justify-between px-1 text-[10px]",
+                "text-muted-foreground",
+              )}
+            >
               <span>Enter ↵ to send • Shift + Enter for new line</span>
               <span
                 className={cn(
@@ -819,13 +832,16 @@ export function SupportChatWidget() {
                   >
                     {/* Accessibility Settings Item */}
                     <div className="group relative">
-                      <span className={cn(
-                        "pointer-events-none absolute right-full top-1/2 mr-3",
-                        "-translate-y-1/2 whitespace-nowrap rounded",
-                        "bg-slate-900/90 px-2 py-1 text-xs font-medium",
-                        "text-white opacity-0 shadow transition-opacity",
-                        "duration-150 group-hover:opacity-100",
-                      )}>
+                      <span
+                        className={cn(
+                          "pointer-events-none absolute right-full",
+                          "top-1/2 mr-3",
+                          "-translate-y-1/2 whitespace-nowrap rounded",
+                          "bg-slate-900/90 px-2 py-1 text-xs font-medium",
+                          "text-white opacity-0 shadow transition-opacity",
+                          "duration-150 group-hover:opacity-100",
+                        )}
+                      >
                         Accessibility Settings
                       </span>
                       <button
@@ -850,13 +866,16 @@ export function SupportChatWidget() {
 
                     {/* Text to Speech Item */}
                     <div className="group relative">
-                      <span className={cn(
-                        "pointer-events-none absolute right-full top-1/2 mr-3",
-                        "-translate-y-1/2 whitespace-nowrap rounded",
-                        "bg-slate-900/90 px-2 py-1 text-xs font-medium",
-                        "text-white opacity-0 shadow transition-opacity",
-                        "duration-150 group-hover:opacity-100",
-                      )}>
+                      <span
+                        className={cn(
+                          "pointer-events-none absolute right-full",
+                          "top-1/2 mr-3",
+                          "-translate-y-1/2 whitespace-nowrap rounded",
+                          "bg-slate-900/90 px-2 py-1 text-xs font-medium",
+                          "text-white opacity-0 shadow transition-opacity",
+                          "duration-150 group-hover:opacity-100",
+                        )}
+                      >
                         Read Aloud (TTS)
                       </span>
                       <button
@@ -882,13 +901,16 @@ export function SupportChatWidget() {
                     {/* Support Chat Item */}
                     {!isStaff && (
                       <div className="group relative">
-                        <span className={cn(
-                        "pointer-events-none absolute right-full top-1/2 mr-3",
-                        "-translate-y-1/2 whitespace-nowrap rounded",
-                        "bg-slate-900/90 px-2 py-1 text-xs font-medium",
-                        "text-white opacity-0 shadow transition-opacity",
-                        "duration-150 group-hover:opacity-100",
-                      )}>
+                        <span
+                          className={cn(
+                            "pointer-events-none absolute right-full",
+                          "top-1/2 mr-3",
+                            "-translate-y-1/2 whitespace-nowrap rounded",
+                            "bg-slate-900/90 px-2 py-1 text-xs font-medium",
+                            "text-white opacity-0 shadow transition-opacity",
+                            "duration-150 group-hover:opacity-100",
+                          )}
+                        >
                           Support Chat
                         </span>
                         <button
@@ -899,7 +921,7 @@ export function SupportChatWidget() {
                           className={cn(
                             "flex h-12 w-12 items-center justify-center",
                             "rounded-full border border-glass-border",
-                          "bg-background",
+                            "bg-background",
                             "p-0 text-foreground shadow-md transition-all",
                             "duration-200 hover:scale-110 active:scale-95",
                           )}
@@ -925,7 +947,10 @@ export function SupportChatWidget() {
                 )}
                 aria-label="Accessibility & Support Menu"
               >
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence
+                  mode="wait"
+                  initial={false}
+                >
                   {menuExpanded ? (
                     <motion.span
                       key="close"
