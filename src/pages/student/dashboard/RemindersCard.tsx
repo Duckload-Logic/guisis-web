@@ -77,7 +77,7 @@ export function RemindersCard({ reminders }: RemindersCardProps) {
                     "rounded-xl border",
                     isWarning
                       ? "border-warning-foreground/20 " +
-                        "bg-warning-background text-warning-foreground"
+                          "bg-warning-background text-warning-foreground"
                       : isSuccess
                         ? "border-success-foreground/20 " +
                           "bg-success-background text-success-foreground"

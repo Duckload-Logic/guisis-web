@@ -19,7 +19,7 @@ export function ServicesOfferedSection({
     >
       <div
         className={cn(
-          "flex flex-col gap-4 animate-fade-in-up",
+          "animate-fade-in-up flex flex-col gap-4",
           "md:flex-row md:items-end md:justify-between",
         )}
         style={{ animationDelay: "0.13s", animationFillMode: "both" }}
@@ -69,7 +69,7 @@ export function ServicesOfferedSection({
             className={cn(
               "group relative min-h-[110px] overflow-hidden rounded-xl",
               "border border-border bg-background/90 p-3.5 shadow-sm",
-              "transition-all duration-200 animate-fade-in-up",
+              "animate-fade-in-up transition-all duration-200",
               "hover:border-primary/30 hover:shadow-sm",
             )}
             style={{

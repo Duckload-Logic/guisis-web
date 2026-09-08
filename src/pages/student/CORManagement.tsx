@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Upload,
   FileText,
-  Eye,
   AlertCircle,
   CheckCircle2,
   ExternalLink,
@@ -33,6 +32,161 @@ import {
 import { getErrorMessage } from "@/lib/api";
 import { PDFPreview } from "@/components/shared";
 
+interface DropzoneProps {
+  dragActive: boolean;
+  selectedFile: File | null;
+  inputId: string;
+  onDragEnter: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function CORUploadDropzone({
+  dragActive,
+  selectedFile,
+  inputId,
+  onDragEnter,
+  onDragLeave,
+  onDragOver,
+  onDrop,
+  onFileChange,
+}: DropzoneProps) {
+  return (
+    <div
+      className={cn(
+        "group relative cursor-pointer rounded-xl border-2 border-dashed",
+        "p-6 text-center transition-all duration-200 sm:p-8",
+        dragActive
+          ? "scale-[0.99] border-primary bg-primary/10"
+          : "border-border/60 hover:border-primary/50 hover:bg-primary/5",
+        selectedFile ? "border-emerald-500/50 bg-emerald-500/5" : "",
+      )}
+      onDragEnter={onDragEnter}
+      onDragLeave={onDragLeave}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onClick={() => document.getElementById(inputId)?.click()}
+    >
+      <input
+        id={inputId}
+        type="file"
+        className="hidden"
+        onChange={onFileChange}
+        accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+      />
+
+      <AnimatePresence mode="wait">
+        {selectedFile ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="space-y-3"
+          >
+            <div
+              className={cn(
+                "mx-auto flex h-14 w-14 items-center justify-center",
+                "rounded-full bg-emerald-500/15 text-emerald-500",
+              )}
+            >
+              <CheckCircle2 className="h-7 w-7" />
+            </div>
+            <div>
+              <p
+                className={cn(
+                  "mx-auto max-w-[260px] truncate text-sm font-semibold",
+                  "text-foreground",
+                )}
+              >
+                {selectedFile.name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB • Ready to
+                upload
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-3"
+          >
+            <div
+              className={cn(
+                "mx-auto flex h-14 w-14 items-center justify-center",
+                "rounded-full bg-primary/10 text-primary transition-transform",
+                "group-hover:scale-105",
+              )}
+            >
+              <Upload className="h-6 w-6" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                Click to browse or drag file here
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Official PDF or scanned image (Max 5MB)
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function CORGuidelinesCard() {
+  return (
+    <Card className="rounded-xl border border-border bg-muted/20 shadow-sm">
+      <CardHeader className="p-4 pb-2">
+        <h4
+          className={cn(
+            "flex items-center gap-2 text-xs font-bold uppercase",
+            "tracking-wider text-muted-foreground",
+          )}
+        >
+          <AlertCircle className="h-4 w-4 text-warning-foreground" />
+          Upload Guidelines
+        </h4>
+      </CardHeader>
+      <CardContent className="p-4 pt-1">
+        <ul className="space-y-2 text-xs text-muted-foreground">
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+            <span>
+              Filename must include <strong>"COR"</strong>,{" "}
+              <strong>"Registration"</strong>, or{" "}
+              <strong>"Certificate of Registration"</strong>.
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+            <span>
+              Must clearly show your student number, full name, and active
+              academic semester.
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+            <span>
+              Accepted formats: PDF, PNG, JPG, or JPEG up to 5MB in size.
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+            <span>
+              Only official registration certificates from PUP-SIS are verified.
+            </span>
+          </li>
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CORManagement() {
   const { user, refresh } = useAuth();
   const { triggerToast } = useToast();
@@ -44,18 +198,19 @@ export default function CORManagement() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   usePageMetadata(
-    useMemo(() => {
-      return {
+    useMemo(
+      () => ({
         title: "COR Management",
         showSubHeader: true,
         description:
-          "Manage your current academic credentials and " +
-          "verification documents.",
+          "Manage your academic credentials and certificate of " +
+          "registration.",
         isLoading: false,
-        badgeText: "Verified Student",
+        badgeText: "Student Credentials",
         badgeIcon: <ShieldCheck size={16} />,
-      };
-    }, []),
+      }),
+      [],
+    ),
   );
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -78,7 +233,7 @@ export default function CORManagement() {
       }
 
       setSelectedFile(file);
-      triggerToast("COR file selected. You may now confirm the upload.");
+      triggerToast("COR file selected. Click confirm to proceed.");
       return true;
     },
     [triggerToast],
@@ -140,17 +295,15 @@ export default function CORManagement() {
       const status = error.response?.status;
       if (status && status >= 500) {
         triggerToast(
-          "Upload failed due to a server error or timeout. Please " +
-            "check if your COR is updated under the preview, or try " +
-            "again.",
+          "Upload failed due to a server error. Please check your " +
+            "document or try again.",
         );
       } else {
         const errMsg = getErrorMessage(error);
         if (errMsg.includes("couldn't connect to the server")) {
           triggerToast(
-            "Connection failed. If you are on a school/office Wi-Fi " +
-              "or using a VPN, please switch networks " +
-              "(e.g., to mobile data).",
+            "Connection failed. If you are on school Wi-Fi or VPN, " +
+              "please switch networks.",
           );
         } else {
           triggerToast(errMsg);
@@ -166,171 +319,244 @@ export default function CORManagement() {
   const isPdf = corUrl?.toLowerCase().endsWith(".pdf");
 
   return (
-    <div className={cn("mx-auto w-full pb-12", "px-4 sm:px-6 md:px-8")}>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3"></div>
-      <Card
-        className={cn(
-          "flex min-h-[620px] flex-col overflow-hidden rounded-xl",
-          "border-border bg-card shadow-md backdrop-blur-md",
-          "animate-fade-in-up transition-all sm:h-[750px] sm:min-h-0",
-          "duration-300 hover:-translate-y-0.5",
-          "hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]",
-        )}
-        style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-      >
-        <CardHeader
-          className={cn(
-            "shrink-0 border-b border-border/10 bg-muted/20 p-5 sm:p-8",
-          )}
-        >
-          <div
+    <div className="mx-auto w-full px-3 pb-24 sm:px-6 md:px-8">
+      {!corUrl ? (
+        /* State 1: Direct In-Page Upload Dropzone (No Indirection) */
+        <div className="mx-auto max-w-3xl space-y-6 animate-fade-in-up">
+          <Card
             className={cn(
-              "flex flex-col gap-4",
-              "sm:flex-row sm:items-center sm:justify-between",
+              "overflow-hidden rounded-2xl border border-border",
+              "bg-card shadow-sm",
             )}
           >
-            <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  "rounded-2xl bg-primary/10 p-2",
-                  "text-primary sm:p-3",
-                )}
-              >
-                <Eye className="h-5 w-5 sm:h-6 sm:w-6" />
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  <CardTitle className="text-xl font-bold sm:text-2xl">
-                    Document Preview
-                  </CardTitle>
-                  {corUrl &&
-                    (user?.isStudentCorValid ? (
-                      <Badge
-                        className={cn(
-                          "flex items-center gap-1 rounded-full",
-                          "bg-emerald-500 px-3 py-1 text-xs",
-                          "font-semibold text-white hover:bg-emerald-600",
-                        )}
-                      >
-                        <CheckCircle2 size={12} /> Valid COR
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="destructive"
-                        className={cn(
-                          "flex items-center gap-1 rounded-full",
-                          "px-3 py-1 text-xs font-semibold",
-                        )}
-                      >
-                        <AlertCircle size={12} /> Outdated COR
-                      </Badge>
-                    ))}
-                </div>
-                <CardDescription>
-                  Visual inspection of your latest uploaded COR.
-                </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button
-                variant="outline"
-                className="w-full justify-center gap-2 rounded-xl sm:w-auto"
-                onClick={() => setIsUploadModalOpen(true)}
-              >
-                <Upload size={16} />
-                {corUrl ? "Upload New COR" : "Upload COR"}
-              </Button>
-              {corUrl && (
-                <Button
-                  variant="outline"
+            <CardHeader
+              className="border-b border-border/40 bg-muted/20 p-5 sm:p-6"
+            >
+              <div className="flex items-center gap-4">
+                <div
                   className={cn(
-                    "w-full justify-center gap-2",
-                    "rounded-xl sm:w-auto",
+                    "flex h-12 w-12 shrink-0 items-center justify-center",
+                    "rounded-2xl border border-primary/20 bg-primary/10",
+                    "text-primary",
                   )}
-                  asChild
                 >
-                  <a
-                    href={`${import.meta.env.VITE_API_BASE_URL}` + `${corUrl}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <ExternalLink size={16} /> Open Full View
-                  </a>
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent
-          className={cn(
-            "relative min-h-[420px] flex-1 overflow-hidden bg-muted/30 p-0",
-            "sm:min-h-0",
-          )}
-        >
-          {corUrl ? (
-            isPdf ? (
-              <PDFPreview
-                url={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
-                className={cn(
-                  "h-full min-h-[420px] w-full",
-                  "border-none sm:min-h-0",
-                )}
-                title="COR PDF Preview"
-              />
-            ) : (
-              <div
-                className={cn(
-                  "flex min-h-[420px] w-full items-start justify-center",
-                  "overflow-auto p-2 sm:h-full sm:min-h-0 sm:items-center sm:p-8",
-                )}
-              >
-                <img
-                  src={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
-                  alt="COR Preview"
-                  className={cn(
-                    "block h-auto w-full max-w-full rounded-xl object-contain",
-                    "shadow-md sm:max-h-full sm:w-auto",
-                  )}
-                />
+                  <Upload className="h-6 w-6" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold text-foreground">
+                    Upload Certificate of Registration
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
+                    Upload your official COR from PUP-SIS to verify your active
+                    enrollment status.
+                  </CardDescription>
+                </div>
               </div>
-            )
-          ) : (
-            <div
+            </CardHeader>
+
+            <CardContent className="space-y-6 p-5 sm:p-6">
+              <CORUploadDropzone
+                dragActive={dragActive}
+                selectedFile={selectedFile}
+                inputId="cor-direct-upload"
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                onFileChange={handleFileChange}
+              />
+
+              {selectedFile && (
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    variant="outline"
+                    className="flex-1 rounded-xl"
+                    onClick={() => setSelectedFile(null)}
+                    disabled={isUploading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 rounded-xl shadow-md"
+                    onClick={handleUpload}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                    )}
+                    Confirm & Upload COR
+                  </Button>
+                </div>
+              )}
+
+              <CORGuidelinesCard />
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* State 2: Dual-Pane Operational Workbench */
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Left Pane: Status, Student Metadata, and Actions */}
+          <div className="space-y-6 lg:col-span-4">
+            <Card className="rounded-xl border border-border bg-card shadow-sm">
+              <CardHeader className="p-5 pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base font-bold text-foreground">
+                    Academic Status
+                  </CardTitle>
+                  {user?.isStudentCorValid ? (
+                    <Badge
+                      className={cn(
+                        "flex items-center gap-1 rounded-full px-2.5 py-0.5",
+                        "bg-emerald-500 text-[11px] font-semibold text-white",
+                      )}
+                    >
+                      <CheckCircle2 className="h-3 w-3" /> Valid Term
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="destructive"
+                      className={cn(
+                        "flex items-center gap-1 rounded-full px-2.5 py-0.5",
+                        "text-[11px] font-semibold",
+                      )}
+                    >
+                      <AlertCircle className="h-3 w-3" /> Needs Update
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription className="text-xs leading-relaxed">
+                  {user?.isStudentCorValid
+                    ? "Your certificate is verified for the current semester."
+                    : "Your certificate is outdated. Please upload your " +
+                      "latest COR."}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4 p-5 pt-1">
+                <div
+                  className={cn(
+                    "divide-y divide-border rounded-xl border border-border",
+                    "bg-muted/20 text-xs",
+                  )}
+                >
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-muted-foreground">Student No:</span>
+                    <span className="font-semibold text-foreground">
+                      {user?.studentNumber || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-muted-foreground">Student Name:</span>
+                    <span className="font-semibold text-foreground">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3">
+                    <span className="text-muted-foreground">Account:</span>
+                    <span
+                      className={cn(
+                        "max-w-[160px] truncate font-medium text-foreground",
+                      )}
+                    >
+                      {user?.email}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-1">
+                  <Button
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setIsUploadModalOpen(true);
+                    }}
+                    className="w-full gap-2 rounded-xl"
+                  >
+                    <Upload className="h-4 w-4" /> Replace / Update COR
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 rounded-xl"
+                    asChild
+                  >
+                    <a
+                      href={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4" /> Open Full View
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <CORGuidelinesCard />
+          </div>
+
+          {/* Right Pane: Document Viewer */}
+          <div className="lg:col-span-8">
+            <Card
               className={cn(
-                "flex h-full w-full flex-col items-center",
-                "justify-center gap-4 p-12 text-center",
-                "text-muted-foreground",
+                "flex flex-col overflow-hidden rounded-xl border border-border",
+                "bg-card shadow-sm",
               )}
             >
-              <div className="rounded-full bg-muted p-8 opacity-20">
-                <FileText size={80} />
-              </div>
-              <div className="max-w-md space-y-4">
-                <div>
-                  <h3 className="mb-2 text-xl font-bold text-foreground">
-                    No COR Uploaded Yet
-                  </h3>
-                  <p className="text-sm">
-                    You haven't uploaded your Certificate of Registration for
-                    the current term. Please upload one to verify.
-                  </p>
+              <CardHeader
+                className="border-b border-border/40 bg-muted/20 px-5 py-3.5"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold text-foreground">
+                      Document Preview
+                    </h3>
+                  </div>
+                  <span
+                    className={cn(
+                      "text-[11px] font-medium uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    {isPdf ? "PDF Document" : "Image File"}
+                  </span>
                 </div>
-                <Button
-                  onClick={() => setIsUploadModalOpen(true)}
-                  className={cn(
-                    "gap-2 rounded-xl",
-                    "shadow-lg shadow-primary/20",
-                  )}
-                >
-                  <Upload size={16} /> Upload COR
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </CardHeader>
 
+              <CardContent className="h-[680px] p-0">
+                {isPdf ? (
+                  <PDFPreview
+                    url={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
+                    className="h-full w-full border-none"
+                    title="COR PDF Preview"
+                  />
+                ) : (
+                  <div
+                    className={cn(
+                      "flex h-full w-full items-center justify-center",
+                      "overflow-auto p-4 sm:p-8",
+                    )}
+                  >
+                    <img
+                      src={`${import.meta.env.VITE_API_BASE_URL}${corUrl}`}
+                      alt="COR Preview"
+                      className={cn(
+                        "block max-h-full max-w-full rounded-xl object-contain",
+                        "shadow-md",
+                      )}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Replacement Modal (Only triggered when replacing an existing COR) */}
       <Dialog
         open={isUploadModalOpen}
         onOpenChange={(open) => {
@@ -342,125 +568,42 @@ export default function CORManagement() {
       >
         <DialogContent
           className={cn(
-            "max-w-2xl rounded-2xl border-border bg-card p-6 shadow-xl",
+            "max-w-xl rounded-2xl border-border bg-card p-6 shadow-xl",
           )}
         >
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              Upload Certificate of Registration
+            <DialogTitle className="text-lg font-bold text-foreground">
+              Update Certificate of Registration
             </DialogTitle>
-            <DialogDescription>
-              Upload a scanned copy or clear photo of your latest COR to verify
-              your academic status.
+            <DialogDescription className="text-xs text-muted-foreground">
+              Upload your latest COR to replace your current verified document.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <div
-              className={cn(
-                "group relative cursor-pointer rounded-xl border-2",
-                "border-dashed p-6 text-center sm:p-10",
-                "transition-all duration-300",
-                dragActive
-                  ? "scale-95 border-primary bg-primary/10"
-                  : "border-border/30 hover:border-primary/50 " +
-                      "hover:bg-primary/5",
-                selectedFile ? "border-green-500/50 bg-green-500/5" : "",
-              )}
+          <div className="space-y-4">
+            <CORUploadDropzone
+              dragActive={dragActive}
+              selectedFile={selectedFile}
+              inputId="cor-modal-upload"
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              onClick={() => document.getElementById("cor-upload")?.click()}
-            >
-              <input
-                id="cor-upload"
-                type="file"
-                className="hidden"
-                onChange={handleFileChange}
-                accept={
-                  ".pdf,.png,.jpg,.jpeg,application/pdf," +
-                  "image/png,image/jpeg"
-                }
-              />
-
-              <AnimatePresence mode="wait">
-                {selectedFile ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="space-y-4"
-                  >
-                    <div
-                      className={cn(
-                        "mx-auto flex h-16 w-16 items-center",
-                        "justify-center rounded-full bg-green-500/20",
-                        "text-green-500",
-                      )}
-                    >
-                      <CheckCircle2 size={32} />
-                    </div>
-                    <div>
-                      <p
-                        className={cn(
-                          "mx-auto max-w-[200px] truncate",
-                          "font-bold text-foreground",
-                        )}
-                      >
-                        {selectedFile.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="space-y-4"
-                  >
-                    <div
-                      className={cn(
-                        "mx-auto flex h-16 w-16 items-center",
-                        "justify-center rounded-full bg-primary/10",
-                        "text-primary transition-transform",
-                        "group-hover:scale-110",
-                      )}
-                    >
-                      <Upload size={32} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="font-bold">Click or drag file here</p>
-                      <p className="text-xs text-muted-foreground">
-                        PDF (Max 5MB). Filename must include "COR" or
-                        "Certificate of Registration".
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              onFileChange={handleFileChange}
+            />
 
             {selectedFile && (
               <div className="flex gap-3">
                 <Button
                   variant="outline"
                   className="flex-1 rounded-xl"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedFile(null);
-                  }}
+                  onClick={() => setSelectedFile(null)}
                   disabled={isUploading}
                 >
                   Cancel
                 </Button>
                 <Button
-                  className={cn(
-                    "flex-1 rounded-xl shadow-lg",
-                    "shadow-primary/20",
-                  )}
+                  className="flex-1 rounded-xl shadow-md"
                   onClick={handleUpload}
                   disabled={isUploading}
                 >
@@ -473,80 +616,11 @@ export default function CORManagement() {
                 </Button>
               </div>
             )}
-
-            {/* Upload Guidelines */}
-            <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <h4 className="mb-3 flex items-center gap-2 text-sm font-bold">
-                <AlertCircle
-                  size={16}
-                  className="text-amber-500"
-                />
-                Upload Guidelines
-              </h4>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      "mt-1 h-1 w-1 shrink-0",
-                      "rounded-full bg-primary",
-                    )}
-                  />
-                  <span>
-                    The file name must contain the words "Registration
-                    Certificate", "COR" or "Certificate of Registration".
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      "mt-1 h-1 w-1 shrink-0",
-                      "rounded-full bg-primary",
-                    )}
-                  />
-                  <span>
-                    Ensure all text is readable and the document is not blurry.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      "mt-1 h-1 w-1 shrink-0",
-                      "rounded-full bg-primary",
-                    )}
-                  />
-                  <span>
-                    The document must show your name, student number, and
-                    current term.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      "mt-1 h-1 w-1 shrink-0",
-                      "rounded-full bg-primary",
-                    )}
-                  />
-                  <span>
-                    Uploads are verified by extension, signature, and keywords.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div
-                    className={cn(
-                      "mt-1 h-1 w-1 shrink-0",
-                      "rounded-full bg-primary",
-                    )}
-                  />
-                  <span>
-                    Only official PDF documents generated in PUP-SIS are valid.
-                  </span>
-                </li>
-              </ul>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Uploading Progress Overlay */}
       <AnimatePresence>
         {isUploading && (
           <motion.div
@@ -561,7 +635,7 @@ export default function CORManagement() {
             <div
               className={cn(
                 "flex w-[calc(100%-2rem)] max-w-md flex-col items-center",
-                "gap-6 rounded-2xl border border-border/40 bg-card/85 p-6",
+                "gap-6 rounded-2xl border border-border/40 bg-card/90 p-6",
                 "shadow-2xl backdrop-blur-2xl sm:p-8",
               )}
             >
@@ -574,7 +648,6 @@ export default function CORManagement() {
                 </p>
               </div>
 
-              {/* Progress Bar & Percentage */}
               <div className="w-full space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-foreground">
@@ -586,43 +659,39 @@ export default function CORManagement() {
                 </div>
                 <div
                   className={cn(
-                    "h-2.5 w-full overflow-hidden",
-                    "rounded-full bg-muted/50",
+                    "h-2 w-full overflow-hidden rounded-full bg-muted/50",
                   )}
                 >
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-300",
-                      "bg-gradient-to-r from-primary to-primary/80",
+                      "bg-primary",
                     )}
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               </div>
 
-              {/* Steps Checklist */}
-              <div className="w-full space-y-4 rounded-xl bg-muted/30 p-4">
-                {/* Step 1: File Upload */}
+              <div className="w-full space-y-3 rounded-xl bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-6 w-6 shrink-0",
-                      "items-center justify-center rounded-full",
-                      "text-[10px] font-bold",
+                      "flex h-6 w-6 shrink-0 items-center justify-center",
+                      "rounded-full text-[10px] font-bold",
                       uploadProgress === 100
                         ? "bg-emerald-500/20 text-emerald-500"
                         : "animate-pulse bg-primary/20 text-primary",
                     )}
                   >
                     {uploadProgress === 100 ? (
-                      <CheckCircle2 className="h-4.5 w-4.5" />
+                      <CheckCircle2 className="h-4 w-4" />
                     ) : (
                       "1"
                     )}
                   </div>
                   <span
                     className={cn(
-                      "text-sm font-medium",
+                      "text-xs font-medium",
                       uploadProgress === 100
                         ? "text-emerald-500"
                         : "text-foreground",
@@ -632,13 +701,11 @@ export default function CORManagement() {
                   </span>
                 </div>
 
-                {/* Step 2: OCR Extraction */}
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-6 w-6 shrink-0",
-                      "items-center justify-center rounded-full",
-                      "text-[10px] font-bold",
+                      "flex h-6 w-6 shrink-0 items-center justify-center",
+                      "rounded-full text-[10px] font-bold",
                       uploadProgress < 100
                         ? "bg-muted-foreground/10 text-muted-foreground/50"
                         : "animate-pulse bg-primary/20 text-primary",
@@ -648,7 +715,7 @@ export default function CORManagement() {
                   </div>
                   <span
                     className={cn(
-                      "text-sm font-medium",
+                      "text-xs font-medium",
                       uploadProgress < 100
                         ? "text-muted-foreground/50"
                         : "text-foreground",
@@ -658,13 +725,11 @@ export default function CORManagement() {
                   </span>
                 </div>
 
-                {/* Step 3: Academic setting verification */}
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-6 w-6 shrink-0",
-                      "items-center justify-center rounded-full",
-                      "text-[10px] font-bold",
+                      "flex h-6 w-6 shrink-0 items-center justify-center",
+                      "rounded-full text-[10px] font-bold",
                       uploadProgress < 100
                         ? "bg-muted-foreground/10 text-muted-foreground/50"
                         : "animate-pulse bg-primary/20 text-primary",
@@ -674,13 +739,13 @@ export default function CORManagement() {
                   </div>
                   <span
                     className={cn(
-                      "text-sm font-medium",
+                      "text-xs font-medium",
                       uploadProgress < 100
                         ? "text-muted-foreground/50"
                         : "text-foreground",
                     )}
                   >
-                    Verifying academic setting
+                    Verifying academic settings
                   </span>
                 </div>
               </div>
