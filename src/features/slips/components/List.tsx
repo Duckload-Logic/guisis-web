@@ -6,7 +6,6 @@ import {
   Inbox,
   RotateCcw,
   Tag,
-  User,
   Eye,
 } from "lucide-react";
 
@@ -331,8 +330,8 @@ export function SlipList({
         render: (slip) => {
           const studentName = getSlipStudentName(slip) || "Unnamed Student";
           const initials =
-            `${slip.user?.firstName?.[0] || ""}${slip.user?.lastName?.[0] || ""}`
-              .toUpperCase() || "ST";
+            `${slip.user?.firstName?.[0] || ""}${slip.user?.lastName?.[0] || ""}`.toUpperCase() ||
+            "ST";
           const picUrl = getProfilePictureUrl(slip.user?.profilePicture);
 
           return (
@@ -810,7 +809,11 @@ export function SlipList({
             {!isLoading && slips.length > 0 && (
               <button
                 onClick={() =>
-                  exportToCSV(visibleSlips, slipExportColumns, "admission-slips")
+                  exportToCSV(
+                    visibleSlips,
+                    slipExportColumns,
+                    "admission-slips",
+                  )
                 }
                 disabled={visibleSlips.length === 0}
                 className={cn(
@@ -882,12 +885,12 @@ export function SlipList({
                     }}
                     className={cn(
                       "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5",
-                      "text-xs font-semibold select-none transition-all",
+                      "select-none text-xs font-semibold transition-all",
                       isSelected
                         ? "border border-primary/40 bg-primary/10 " +
                             "text-primary shadow-sm"
                         : "border border-border/70 bg-card " +
-                            "text-muted-foreground hover:bg-muted/60 " +
+                            "text-muted-foreground hover:bg-muted/60" +
                             "hover:text-foreground",
                     )}
                   >

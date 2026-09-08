@@ -6,7 +6,6 @@ import {
   Eye,
   EyeOff,
   RotateCcw,
-  User,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
@@ -434,8 +433,8 @@ export default function AppointmentList({
           const studentName =
             getAppointmentStudentName(apt) || "Unnamed Student";
           const initials =
-            `${apt.user?.firstName?.[0] || ""}${apt.user?.lastName?.[0] || ""}`
-              .toUpperCase() || "ST";
+            `${apt.user?.firstName?.[0] || ""}${apt.user?.lastName?.[0] || ""}`.toUpperCase() ||
+            "ST";
           const picUrl = getProfilePictureUrl(apt.user?.profilePicture);
 
           return (
@@ -1015,12 +1014,12 @@ export default function AppointmentList({
                     }}
                     className={cn(
                       "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5",
-                      "text-xs font-semibold select-none transition-all",
+                      "select-none text-xs font-semibold transition-all",
                       isSelected
                         ? "border border-primary/40 bg-primary/10 " +
                             "text-primary shadow-sm"
                         : "border border-border/70 bg-card " +
-                            "text-muted-foreground hover:bg-muted/60 " +
+                            "text-muted-foreground hover:bg-muted/60" +
                             "hover:text-foreground",
                     )}
                   >
