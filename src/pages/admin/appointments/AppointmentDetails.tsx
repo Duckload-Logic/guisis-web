@@ -145,6 +145,15 @@ export default function AppointmentDetails() {
         .join(" ")
     : "";
 
+  const handleCopyId = () => {
+    if (!appointment?.id) return;
+    navigator.clipboard.writeText(appointment.id);
+    setHasCopiedId(true);
+    setTimeout(() => setHasCopiedId(false), 2000);
+  };
+
+  const urgencyInfo = getAppointmentUrgency(appointment);
+
   usePageMetadata(
     useMemo(
       () => ({
@@ -153,9 +162,63 @@ export default function AppointmentDetails() {
         badgeText: "Admin Management",
         badgeIcon: <Calendar className="h-4 w-4" />,
         isLoading: isLoading && !appointment,
-        headerActions: null,
+        headerActions: appointment ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyId}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border border-border/70",
+                "bg-muted/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground",
+                "transition-colors hover:border-primary/40 hover:text-foreground",
+              )}
+              title="Click to copy full ID"
+            >
+              {hasCopiedId ? (
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              <span>APT-{appointment.id?.substring(0, 8)}</span>
+            </button>
+            {appointment.status && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
+                  STATUS_COLORS[getStatusColorKey(appointment.status.name)],
+                )}
+              >
+                {appointment.status.name}
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
+                urgencyInfo.className,
+              )}
+            >
+              {urgencyInfo.label} Urgency
+            </Badge>
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
+                "font-medium text-foreground/80",
+              )}
+            >
+              <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
+              Turnaround:{" "}
+              {formatProcessDuration(
+                appointment.startedAt,
+                appointment.completedAt,
+              )}
+            </Badge>
+          </div>
+        ) : null,
       }),
-      [appointment, fullName, isLoading],
+      [appointment, fullName, hasCopiedId, isLoading, urgencyInfo],
     ),
   );
 
@@ -179,7 +242,6 @@ export default function AppointmentDetails() {
 
   if (!appointment) return null;
 
-  const urgencyInfo = getAppointmentUrgency(appointment);
   const isPending = appointment.status?.name === "Pending";
   const isScheduled =
     appointment.status?.name === "Scheduled" ||
@@ -188,13 +250,6 @@ export default function AppointmentDetails() {
   const needsSignificantNote = isCompleted && !appointment.hasSignificantNote;
   const isSessionActive =
     Boolean(appointment.startedAt) && !appointment.completedAt;
-
-  const handleCopyId = () => {
-    if (!appointment.id) return;
-    navigator.clipboard.writeText(appointment.id);
-    setHasCopiedId(true);
-    setTimeout(() => setHasCopiedId(false), 2000);
-  };
 
   const handleConfirmStartAppointment = async (offsetMinutes = 0) => {
     if (!id) return;
@@ -341,86 +396,6 @@ export default function AppointmentDetails() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
-      {/* Top Navigation & Context Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/admin/appointments")}
-            className="h-9 w-9 rounded-xl p-0 hover:bg-muted"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
-                Appointment Details
-              </h1>
-              {appointment.id && (
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  className={cn(
-                    "flex items-center gap-1 rounded-md border border-border/70",
-                    "bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-muted-foreground",
-                    "transition-colors hover:border-primary/40 hover:text-foreground",
-                  )}
-                  title="Click to copy full ID"
-                >
-                  {hasCopiedId ? (
-                    <Check className="h-3 w-3 text-emerald-600" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                  <span>APT-{appointment.id.substring(0, 8)}</span>
-                </button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Requested {formatDate(appointment.createdAt || "")}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {appointment.status && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
-                STATUS_COLORS[getStatusColorKey(appointment.status.name)],
-              )}
-            >
-              {appointment.status.name}
-            </Badge>
-          )}
-          <Badge
-            variant="outline"
-            className={cn(
-              "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
-              urgencyInfo.className,
-            )}
-          >
-            {urgencyInfo.label} Urgency
-          </Badge>
-          <Badge
-            variant="outline"
-            className={cn(
-              "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
-              "font-medium text-foreground/80",
-            )}
-          >
-            <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
-            Turnaround:{" "}
-            {formatProcessDuration(
-              appointment.startedAt,
-              appointment.completedAt,
-            )}
-          </Badge>
-        </div>
-      </div>
-
       {/* Significant Note Banner */}
       {needsSignificantNote && (
         <div

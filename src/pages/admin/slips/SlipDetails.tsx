@@ -120,14 +120,76 @@ export default function SlipDetails() {
         .join(" ")
     : "";
 
-  usePageMetadata({
-    title: "Admission Slip Details",
-    description: `Reviewing submission for ${fullName || "Student"}`,
-    badgeText: isAssistant ? "Assistant Review" : "Admin Management",
-    badgeIcon: <Clock3 className="h-4 w-4" />,
-    isLoading: isLoading && !slip,
-    headerActions: null,
-  });
+  const handleCopyId = () => {
+    if (!slip?.id) return;
+    navigator.clipboard.writeText(slip.id);
+    setHasCopiedId(true);
+    setTimeout(() => setHasCopiedId(false), 2000);
+  };
+
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "Admission Slip Details",
+        description: `Reviewing submission for ${fullName || "Student"}`,
+        badgeText: isAssistant ? "Assistant Review" : "Admin Management",
+        badgeIcon: <Clock3 className="h-4 w-4" />,
+        isLoading: isLoading && !slip,
+        headerActions: slip ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyId}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border border-border/70",
+                "bg-muted/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground",
+                "transition-colors hover:border-primary/40 hover:text-foreground",
+              )}
+              title="Click to copy full ID"
+            >
+              {hasCopiedId ? (
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              <span>SLIP-{slip.id?.substring(0, 8)}</span>
+            </button>
+            {slip.status && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
+                  STATUS_COLORS[getStatusColorKey(slip.status.name)],
+                )}
+              >
+                {slip.status.name}
+              </Badge>
+            )}
+            {slip.category && (
+              <Badge
+                variant="secondary"
+                className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary"
+              >
+                {slip.category.name}
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
+                "font-medium text-foreground/80",
+              )}
+            >
+              <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
+              Turnaround:{" "}
+              {formatProcessDuration(slip.startedAt, slip.completedAt)}
+            </Badge>
+          </div>
+        ) : null,
+      }),
+      [fullName, hasCopiedId, isAssistant, isLoading, slip],
+    ),
+  );
 
   if (isError || (!slip && !isLoading)) {
     return (
@@ -150,13 +212,6 @@ export default function SlipDetails() {
   }
 
   if (!slip) return null;
-
-  const handleCopyId = () => {
-    if (!slip.id) return;
-    navigator.clipboard.writeText(slip.id);
-    setHasCopiedId(true);
-    setTimeout(() => setHasCopiedId(false), 2000);
-  };
 
   const handleActionClick = (type: ActionType) => {
     setActionType(type);
@@ -214,81 +269,6 @@ export default function SlipDetails() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
-      {/* Top Navigation & Context Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(slipsBasePath)}
-            className="h-9 w-9 rounded-xl p-0 hover:bg-muted"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
-                Admission Slip Details
-              </h1>
-              {slip.id && (
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  className={cn(
-                    "flex items-center gap-1 rounded-md border border-border/70",
-                    "bg-muted/40 px-2 py-0.5 font-mono text-[11px] text-muted-foreground",
-                    "transition-colors hover:border-primary/40 hover:text-foreground",
-                  )}
-                  title="Click to copy full ID"
-                >
-                  {hasCopiedId ? (
-                    <Check className="h-3 w-3 text-emerald-600" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                  <span>SLIP-{slip.id.substring(0, 8)}</span>
-                </button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Submitted {formatDate(slip.createdAt || "")}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {slip.status && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
-                STATUS_COLORS[getStatusColorKey(slip.status.name)],
-              )}
-            >
-              {slip.status.name}
-            </Badge>
-          )}
-          {slip.category && (
-            <Badge
-              variant="secondary"
-              className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary"
-            >
-              {slip.category.name}
-            </Badge>
-          )}
-          <Badge
-            variant="outline"
-            className={cn(
-              "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
-              "font-medium text-foreground/80",
-            )}
-          >
-            <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
-            Turnaround:{" "}
-            {formatProcessDuration(slip.startedAt, slip.completedAt)}
-          </Badge>
-        </div>
-      </div>
 
       {/* Significant Note Banner */}
       {needsSignificantNote && !isAssistant && (
