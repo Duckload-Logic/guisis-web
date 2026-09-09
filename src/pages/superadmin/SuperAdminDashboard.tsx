@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Users,
   Fingerprint,
@@ -21,6 +22,7 @@ import {
 import { usePageMetadata } from "@/context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useLogStats,
   useM2MClients,
@@ -260,26 +262,161 @@ export default function SuperAdminDashboard() {
     };
   }, [services, logStats, uptimeValue]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[400px] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className={
-              "h-12 w-12 animate-spin rounded-full border-4 " +
-              "border-primary border-t-transparent"
-            }
-          />
-          <p className="animate-pulse text-sm text-muted-foreground">
-            Synchronizing command interface...
-          </p>
-        </div>
+function SuperAdminDashboardSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-[1700px] space-y-6">
+      {/* Top Bento Metrics */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <div className="mt-3 space-y-2">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-7 w-20" />
+                <Skeleton className="h-3 w-36" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-    );
+
+      {/* Middle Section: Subsystems & Telemetry */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="col-span-1 xl:col-span-2">
+          <CardHeader
+            className="flex flex-row items-center justify-between"
+          >
+            <div className="space-y-1">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-3 w-64" />
+            </div>
+            <Skeleton className="h-5 w-24 rounded-full" />
+          </CardHeader>
+          <CardContent
+            className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex flex-col justify-between rounded-xl border",
+                  "border-border/60 p-3.5",
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <Skeleton className="h-8 w-8 rounded-lg" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader className="space-y-1">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-3 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+            <div
+              className={cn(
+                "mt-6 space-y-2 rounded-xl border border-border/60 p-3.5",
+              )}
+            >
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bottom Section: Feed & Shortcuts */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="col-span-1 xl:col-span-2">
+          <CardHeader
+            className="flex flex-row items-center justify-between"
+          >
+            <div className="space-y-1">
+              <Skeleton className="h-5 w-44" />
+              <Skeleton className="h-3 w-60" />
+            </div>
+            <Skeleton className="h-8 w-24 rounded-xl" />
+          </CardHeader>
+          <CardContent className="divide-y divide-border/60 space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex justify-between py-3 first:pt-0"
+              >
+                <div className="flex-1 space-y-1.5 pr-4">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader className="space-y-1">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-3 w-44" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex items-center justify-between rounded-xl border",
+                  "border-border/60 p-3.5",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-36" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-4" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+  if (isLoading) {
+    return <SuperAdminDashboardSkeleton />;
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1700px] space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="mx-auto w-full max-w-[1700px] space-y-6"
+    >
       {/* Alert Banner for pending M2M approvals */}
       {pendingM2M.length > 0 && (
         <div
@@ -644,42 +781,45 @@ export default function SuperAdminDashboard() {
                 colorClass: "bg-indigo-500/10 text-indigo-500",
               },
             ].map((shortcut) => (
-              <div
+              <button
+                type="button"
                 key={shortcut.title}
                 onClick={() => navigate(shortcut.link)}
                 className={cn(
-                  "flex items-center justify-between rounded-xl border p-3.5",
-                  "cursor-pointer border-border/60 bg-card transition-all",
-                  "hover:border-primary/40 hover:bg-muted/30 hover:shadow-sm",
+                  "flex w-full items-center justify-between rounded-xl",
+                  "border border-border/60 bg-card p-3.5 text-left",
+                  "transition-all hover:border-primary/40 hover:bg-muted/30",
+                  "hover:shadow-sm active:scale-[0.98] min-h-[48px]",
                 )}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-lg",
+                      "flex h-10 w-10 shrink-0 items-center justify-center",
+                      "rounded-lg",
                       shortcut.colorClass,
                     )}
                   >
                     <shortcut.icon size={20} />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-foreground">
                       {shortcut.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="truncate text-xs text-muted-foreground">
                       {shortcut.desc}
                     </p>
                   </div>
                 </div>
                 <ArrowRight
                   size={16}
-                  className="text-muted-foreground/60"
+                  className="shrink-0 text-muted-foreground/60"
                 />
-              </div>
+              </button>
             ))}
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }

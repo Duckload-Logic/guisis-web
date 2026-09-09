@@ -17,9 +17,11 @@ import {
   ShieldAlert,
   Paperclip,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +53,94 @@ import { useCreateNote } from "@/features/notes/hooks/useNotes";
 import type { SignificantNoteFormData } from "@/features/notes/validation/noteSchema";
 
 type ActionType = "approve" | "reject" | "revision" | null;
+
+function SlipDetailsSkeleton({
+  slipsBasePath,
+}: {
+  slipsBasePath: string;
+}) {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className={cn(
+        "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12",
+        "animate-in fade-in duration-300 sm:px-6 md:px-8",
+      )}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(slipsBasePath)}
+          className="h-9 gap-1.5 rounded-xl border-border/70"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to List
+        </Button>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-7 w-28 rounded-full" />
+          <Skeleton className="h-7 w-20 rounded-full" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-4">
+          <Card className="space-y-4 rounded-2xl border border-border/70 p-5">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 rounded-2xl" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-4 w-3/4 rounded" />
+                <Skeleton className="h-3 w-1/2 rounded" />
+              </div>
+            </div>
+            <div className="space-y-2 border-t border-border/50 pt-3">
+              <Skeleton className="h-3 w-full rounded" />
+              <Skeleton className="h-3 w-4/5 rounded" />
+              <Skeleton className="h-3 w-2/3 rounded" />
+            </div>
+            <Skeleton className="h-9 w-full rounded-xl" />
+          </Card>
+
+          <Card className="space-y-3 rounded-2xl border border-border/70 p-5">
+            <Skeleton className="h-4 w-1/2 rounded" />
+            <Skeleton className="h-9 w-full rounded-xl" />
+            <div className="flex gap-2">
+              <Skeleton className="h-9 flex-1 rounded-xl" />
+              <Skeleton className="h-9 flex-1 rounded-xl" />
+            </div>
+          </Card>
+        </div>
+
+        <div className="space-y-6 lg:col-span-8">
+          <Card className="space-y-5 rounded-2xl border border-border/70 p-6">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-5 w-44 rounded" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+            </div>
+          </Card>
+
+          <Card className="space-y-4 rounded-2xl border border-border/70 p-6">
+            <Skeleton className="h-5 w-32 rounded" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
@@ -247,7 +337,9 @@ export default function SlipDetails() {
     );
   }
 
-  if (!slip) return null;
+  if (isLoading || !slip) {
+    return <SlipDetailsSkeleton slipsBasePath={slipsBasePath} />;
+  }
 
   const handleActionClick = (type: ActionType) => {
     setActionType(type);
@@ -304,7 +396,15 @@ export default function SlipDetails() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={cn(
+        "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12",
+        "sm:px-6 md:px-8",
+      )}
+    >
       {/* Significant Note Banner */}
       {needsSignificantNote && (
         <div
@@ -351,7 +451,12 @@ export default function SlipDetails() {
       {/* 2-Column Sidebar Master-Detail Layout (Jakob's Law) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {/* Left Column: Dossier & Administrative Controls (Col-span 4) */}
-        <div className="space-y-6 lg:col-span-4">
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="space-y-6 lg:col-span-4"
+        >
           <StudentProfileBentoCard
             student={studentData}
             onViewCor={() => setShowCorPreview(true)}
@@ -531,10 +636,15 @@ export default function SlipDetails() {
               )}
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Right Column: Submission Context & Audit History (Col-span 8) */}
-        <div className="space-y-6 lg:col-span-8">
+        <motion.div
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="space-y-6 lg:col-span-8"
+        >
           {/* Submission Context Card */}
           <Card
             className={cn(
@@ -705,7 +815,7 @@ export default function SlipDetails() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
 
       {/* Approve / Reject / Revision Dialog */}
@@ -831,6 +941,6 @@ export default function SlipDetails() {
         fileUrl={slip.studentCorUrl}
         studentName={fullName}
       />
-    </div>
+    </motion.div>
   );
 }

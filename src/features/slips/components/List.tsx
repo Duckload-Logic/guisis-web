@@ -1,12 +1,9 @@
 import { MouseEvent, useMemo, useState, useCallback } from "react";
-import { useLocation } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
   Download,
-  EyeOff,
   Inbox,
-  RotateCcw,
   Tag,
   Eye,
 } from "lucide-react";
@@ -79,13 +76,6 @@ function getSlipStudentName(slip: Slip) {
     .trim();
 }
 
-function getSlipKey(slip: Slip, index: number) {
-  return String(
-    slip.id ||
-      `${slip.studentNumber || slip.user?.studentNumber || "student"}-${slip.dateOfAbsence}-${index}`,
-  );
-}
-
 export function SlipList({
   title = "Admission Slip List",
   searchTerm = "",
@@ -111,12 +101,6 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
-  const location = useLocation();
-  const isAssistantView = location.pathname.startsWith("/assistant");
-
-  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
   const [localCategory, setLocalCategory] = useState<string>("all");
 
   const isServerFiltered = selectedCategoryProp !== undefined;
@@ -176,9 +160,7 @@ export function SlipList({
   }, [slips, categoriesProp, isServerFiltered]);
 
   const baseFilteredSlips = useMemo(() => {
-    return slips.filter((slip, index) => {
-      if (hiddenSlipKeys.has(getSlipKey(slip, index))) return false;
-
+    return slips.filter((slip) => {
       if (isServerFiltered) return true;
 
       const matchesCat =
@@ -186,7 +168,7 @@ export function SlipList({
 
       return matchesCat;
     });
-  }, [slips, hiddenSlipKeys, currentCategory, isServerFiltered]);
+  }, [slips, currentCategory, isServerFiltered]);
 
   const dynamicStatMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -259,24 +241,9 @@ export function SlipList({
     sortKeyNeeded,
   ]);
 
-  const hiddenCount = slips.length - visibleSlips.length;
-
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
-  };
-
-  const hideSlip = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
-    event?.stopPropagation();
-    setHiddenSlipKeys((previous) => {
-      const next = new Set(previous);
-      next.add(getSlipKey(slip, slips.indexOf(slip)));
-      return next;
-    });
-  };
-
-  const restoreHiddenSlips = () => {
-    setHiddenSlipKeys(new Set());
   };
 
   const handleViewClick = (
@@ -453,20 +420,7 @@ export function SlipList({
         ),
         className: "w-[12%] min-w-[90px] px-3 py-3 text-right",
         render: (slip) => (
-          <div className="flex items-center justify-end gap-1">
-            {isAssistantView && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={(event) => hideSlip(slip, event)}
-                className="h-7 w-7 shrink-0 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Hide admission slip"
-                title="Hide"
-              >
-                <EyeOff size={12} />
-              </Button>
-            )}
+          <div className="flex items-center justify-end">
             <Button
               type="button"
               variant="outline"
@@ -503,121 +457,10 @@ export function SlipList({
       onStatusChange,
       handleCategoryChange,
       renderSortableHeader,
-      isAssistantView,
     ],
   );
 
-  const renderMobileItem = (slip: Slip) => (
-    <div
-      key={slip.id || `${slip.studentNumber}-${slip.dateOfAbsence}`}
-      className={cn(
-        "space-y-3 rounded-xl border border-border bg-card p-4",
-        "shadow-md backdrop-blur-xl transition-all duration-200",
-        "active:scale-[0.98]",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
-            {getProfilePictureUrl(slip.user?.profilePicture) ? (
-              <AvatarImage
-                src={getProfilePictureUrl(slip.user?.profilePicture)}
-                alt={getSlipStudentName(slip) || "Student"}
-                className="object-cover"
-              />
-            ) : null}
-            <AvatarFallback
-              className={cn(
-                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
-              )}
-            >
-              {`${slip.user?.firstName?.[0] || ""}${
-                slip.user?.lastName?.[0] || ""
-              }`.toUpperCase() || "ST"}
-            </AvatarFallback>
-          </Avatar>
 
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {getSlipStudentName(slip) || "Unnamed Student"}
-            </p>
-            <p className="line-clamp-1 text-xs text-muted-foreground">
-              {slip.studentNumber ||
-                slip.user?.studentNumber ||
-                "Student record"}
-            </p>
-          </div>
-        </div>
-
-        <span
-          className={cn(
-            "inline-flex min-h-6 shrink-0 items-center whitespace-nowrap rounded-xl border",
-            "px-3 py-1 text-xs font-semibold leading-none shadow-md",
-            "[overflow-wrap:normal] [word-break:normal]",
-            STATUS_COLORS[getStatusColorKey(slip.status?.name)],
-          )}
-        >
-          {slip.status?.name || "-"}
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Absence Date
-          </p>
-          <p className="mt-0.5 font-semibold text-foreground">
-            {formatCompactSlipDate(slip.dateOfAbsence)}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Date Needed
-          </p>
-          <p className="mt-0.5 font-semibold text-foreground">
-            {formatCompactSlipDate(slip.dateNeeded)}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-        <span
-          className={cn(
-            "inline-flex max-w-[160px] items-center gap-1.5 rounded-xl border",
-            "border-border/70 bg-muted/30 px-2.5 py-1 text-[11px] font-medium",
-          )}
-        >
-          <Tag className="h-3 w-3 text-muted-foreground" />
-          <span className="truncate">{slip.category?.name || "-"}</span>
-        </span>
-
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={(event) => hideSlip(slip, event)}
-            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
-          >
-            <EyeOff className="h-3.5 w-3.5" />
-            Hide
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(event) => handleViewClick(slip, event)}
-            className={cn(
-              "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
-              "px-3 text-[11px] font-semibold text-primary",
-            )}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            View
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
 
   const emptyState = (
     <div
@@ -641,9 +484,7 @@ export function SlipList({
 
       <div className="mt-2 space-y-3">
         <p className="max-w-md text-sm text-muted-foreground">
-          {hiddenCount > 0
-            ? "All rows on this page are hidden. Restore hidden rows to show them again."
-            : "No active records match the current filters."}
+          No active records match the current filters.
         </p>
 
         {(currentCategory !== "all" || String(selectedStatus?.id) !== "0") && (
@@ -744,28 +585,6 @@ export function SlipList({
     </table>
   );
 
-  const renderMobileSkeleton = () => (
-    <>
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div
-          key={index}
-          className={cn(
-            "animate-pulse rounded-xl border border-border",
-            "bg-card p-4 shadow-md backdrop-blur-xl",
-          )}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <Skeleton className="h-5 w-36 rounded" />
-            <Skeleton className="h-6 w-16 rounded-xl" />
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
-        </div>
-      ))}
-    </>
-  );
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
@@ -790,21 +609,8 @@ export function SlipList({
                   "text-primary shadow-md",
                 )}
               >
-                {visibleSlips.length} visible / {slips.length} total
+                {visibleSlips.length} / {slips.length} total
               </div>
-
-              {hiddenCount > 0 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={restoreHiddenSlips}
-                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
-                >
-                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                  Restore {hiddenCount}
-                </Button>
-              )}
             </div>
           )}
         </div>
@@ -984,11 +790,9 @@ export function SlipList({
         <Table
           data={visibleSlips}
           columns={columns}
-          renderMobileItem={renderMobileItem}
           isLoading={isLoading}
           emptyState={emptyState}
           renderDesktopSkeleton={renderDesktopSkeleton}
-          renderMobileSkeleton={renderMobileSkeleton}
           containerClassName="px-0 py-0"
           tableClassName="w-full table-fixed"
           onRowClick={onViewClick}

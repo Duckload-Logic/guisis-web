@@ -1,4 +1,5 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ShieldCheck,
   Monitor,
@@ -6,6 +7,7 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
+  ArrowLeft,
 } from "lucide-react";
 import {
   useUserSessions,
@@ -16,6 +18,7 @@ import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import {
@@ -30,8 +33,62 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+function UserSessionsSkeleton() {
+  const navigate = useNavigate();
+  return (
+    <div className="mx-auto w-full max-w-[1200px] space-y-6">
+      <div className="flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/superadmin/users")}
+          className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Users</span>
+        </Button>
+      </div>
+      <div
+        className={cn(
+          "flex items-center gap-4 rounded-[22px] border border-border",
+          "bg-card/60 p-5",
+        )}
+      >
+        <Skeleton className="h-12 w-12 rounded-2xl" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-3 w-56" />
+        </div>
+      </div>
+      <div className="space-y-4">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex flex-col gap-4 rounded-[22px] border border-border",
+              "bg-card/60 p-6 sm:flex-row sm:items-center",
+              "sm:justify-between",
+            )}
+          >
+            <div className="flex items-center gap-5">
+              <Skeleton className="h-14 w-14 rounded-[18px]" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-28 rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function UserSessions() {
   const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
 
   // Fetch user info for the header
   const { data: userData } = useUsers({ search: userId });
@@ -68,20 +125,28 @@ export default function UserSessions() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-32 w-full animate-pulse rounded-2xl bg-white/20"
-          />
-        ))}
-      </div>
-    );
+    return <UserSessionsSkeleton />;
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="mx-auto w-full max-w-[1200px] space-y-6"
+    >
+      <div className="flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/superadmin/users")}
+          className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Users</span>
+        </Button>
+      </div>
       {targetUser && (
         <div
           className={cn(
@@ -248,6 +313,6 @@ export default function UserSessions() {
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
