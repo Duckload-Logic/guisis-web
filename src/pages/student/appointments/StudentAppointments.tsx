@@ -1,40 +1,31 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useUrlState } from "@/hooks";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
-  ArrowDown,
-  ArrowUp,
+  ArrowUpDown,
   Calendar,
-  CalendarClock,
   CalendarX,
+  ChevronRight,
   Plus,
-  Tag,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LAYOUT_STYLES, getStatusColorKey } from "@/config/constants";
-import {
-  Appointment,
-  AppointmentStatus,
-  useAppointments,
-} from "@/features/appointments";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+import { AppointmentStatus, useAppointments } from "@/features/appointments";
 import { useStatuses } from "@/features/appointments/hooks/useLookups";
 import type { StatusCount } from "@/features/appointments/types";
-import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
+import {
+  useAppointmentsStats,
+} from "@/features/appointments/hooks/useAppointments";
 import { Pagination } from "@/components/shared";
-import { Spinner } from "@/components/shared/Spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
-import { format12HourTime, formatDate } from "@/utils/dateTime";
+import { format12HourTime } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
+import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
-
-const GLASS_CARD = LAYOUT_STYLES.CARD;
-const GLASS_INNER = LAYOUT_STYLES.INNER;
-const ACTION_REQUIRED_ALERT = LAYOUT_STYLES.ALERT;
 
 const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
   id: 0,
@@ -42,6 +33,62 @@ const ALL_APPOINTMENT_STATUS: AppointmentStatus = {
 };
 
 type SortOrder = "asc" | "desc";
+
+interface SortOption {
+  id: string;
+  displayName: string;
+  sort: string;
+  order: SortOrder;
+}
+
+const SORT_OPTIONS: SortOption[] = [
+  {
+    id: "whenDate-asc",
+    displayName: "Appointment: Soonest",
+    sort: "whenDate",
+    order: "asc",
+  },
+  {
+    id: "whenDate-desc",
+    displayName: "Appointment: Latest",
+    sort: "whenDate",
+    order: "desc",
+  },
+  {
+    id: "createdAt-desc",
+    displayName: "Requested: Newest",
+    sort: "createdAt",
+    order: "desc",
+  },
+  {
+    id: "createdAt-asc",
+    displayName: "Requested: Oldest",
+    sort: "createdAt",
+    order: "asc",
+  },
+  {
+    id: "category-asc",
+    displayName: "Category: A–Z",
+    sort: "category",
+    order: "asc",
+  },
+  {
+    id: "category-desc",
+    displayName: "Category: Z–A",
+    sort: "category",
+    order: "desc",
+  },
+];
+
+const getEventDateParts = (dateStr?: string) => {
+  if (!dateStr) return { month: "—", day: "—" };
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return { month: "—", day: "—" };
+  return {
+    month: d.toLocaleDateString("en-US", { month: "short" }),
+    day: d.toLocaleDateString("en-US", { day: "numeric" }),
+  };
+};
 
 export default function StudentAppointments() {
   const { user } = useAuth();
@@ -59,10 +106,15 @@ export default function StudentAppointments() {
     "status",
     ALL_APPOINTMENT_STATUS,
   );
-  
-  // Sorting states for table headers
-  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "whenDate");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+
+  const [selectedSort, setSelectedSort] = useUrlState<string>(
+    "sort",
+    "whenDate",
+  );
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
 
   const { data, isLoading: isAppointmentsLoading } = useAppointments({
     isMe: true,
@@ -80,9 +132,13 @@ export default function StudentAppointments() {
   const appointments = data?.appointments || [];
   const statusCounts = appointmentStats || ([] as StatusCount[]);
 
-  // Local sorting calculation supporting category, date requested, and appointment date
+  const totalCount = useMemo(() => {
+    return statusCounts.reduce((sum, item) => sum + (item.count || 0), 0);
+  }, [statusCounts]);
+
+  // Local sorting
   const sortedAppointments = useMemo(() => {
-    let result = [...appointments];
+    const result = [...appointments];
     result.sort((a, b) => {
       if (selectedSort === "category") {
         const catA = (a.appointmentCategory?.name || "").toLowerCase();
@@ -92,7 +148,7 @@ export default function StudentAppointments() {
       }
       if (selectedSort === "createdAt") {
         const dateA = new Date(a.createdAt || 0).getTime();
-        const dateB = new Date(b.createdAt || 0).getTime(); 
+        const dateB = new Date(b.createdAt || 0).getTime();
         return selectedOrder === "asc" ? dateA - dateB : dateB - dateA;
       }
       if (selectedSort === "whenDate") {
@@ -105,7 +161,7 @@ export default function StudentAppointments() {
     return result;
   }, [appointments, selectedSort, selectedOrder]);
 
-  const pageBadgeIcon = useMemo(() => <Calendar className="h-3 w-3" />, []);
+  const pageBadgeIcon = useMemo(() => <Calendar className="h-3.5 w-3.5" />, []);
 
   const hasValidCor = !!user?.studentCorUrl && !!user?.isStudentCorValid;
 
@@ -117,15 +173,13 @@ export default function StudentAppointments() {
         className="h-10 gap-2 rounded-xl shadow-lg shadow-primary/15"
         title={
           !user?.studentCorUrl
-            ? "Please upload your COR in your profile to book an appointment"
+            ? "Upload your COR in your profile to book an appointment"
             : !user?.isStudentCorValid
-              ? "Your COR is invalid or outdated for the current academic term"
+              ? "Your COR is invalid or outdated for current term"
               : ""
         }
         onClick={(e) => {
-          if (!hasValidCor) {
-            e.preventDefault();
-          }
+          if (!hasValidCor) e.preventDefault();
         }}
       >
         {hasValidCor ? (
@@ -144,34 +198,24 @@ export default function StudentAppointments() {
     [user?.studentCorUrl, user?.isStudentCorValid, hasValidCor],
   );
 
-  usePageMetadata({
-    title: "My Appointments",
-    description: "View and manage your counseling appointments",
-    badgeText: "Appointments",
-    badgeIcon: pageBadgeIcon,
-    isLoading: false,
-    headerActions: pageHeaderActions,
-  });
+  usePageMetadata(
+    useMemo(
+      () => ({
+        title: "My Appointments",
+        description: "View and manage your counseling appointments",
+        badgeText: "Appointments",
+        badgeIcon: pageBadgeIcon,
+        headerActions: pageHeaderActions,
+      }),
+      [pageBadgeIcon, pageHeaderActions],
+    ),
+  );
 
   const getStatusColor = (statusName?: string) => {
     const key = getStatusColorKey(statusName);
-
-    switch (key) {
-      case "warning":
-        return "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200";
-      case "info":
-        return "border-sky-300 bg-sky-50 text-sky-700 dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200";
-      case "success":
-        return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200";
-      case "danger":
-        return "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200";
-      case "notice":
-        return "border-violet-300 bg-violet-50 text-violet-700 dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200";
-      case "stale":
-        return "border-slate-300 bg-slate-50 text-slate-700 dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200";
-      default:
-        return "border-border bg-muted/40 text-muted-foreground";
-    }
+    return (
+      STATUS_COLORS[key] || "border-border bg-muted/40 text-muted-foreground"
+    );
   };
 
   const formatCompactDate = (value?: string) => {
@@ -186,106 +230,98 @@ export default function StudentAppointments() {
     });
   };
 
-  const mobileSortOptions = [
-    { id: "whenDate-asc", displayName: "Appointment: soonest" },
-    { id: "whenDate-desc", displayName: "Appointment: latest" },
-    { id: "createdAt-desc", displayName: "Requested: newest" },
-    { id: "createdAt-asc", displayName: "Requested: oldest" },
-    { id: "category-asc", displayName: "Category: A–Z" },
-    { id: "category-desc", displayName: "Category: Z–A" },
-  ];
+  const emptyState = useMemo(() => {
+    const isFiltered = selectedStatus.id !== 0;
 
-
-  const emptyState = useMemo(
-    () => (
-      <div className="px-4 py-10 sm:px-6 sm:py-12">
-        <div
-          className={cn(
-            "mx-auto flex max-w-md flex-col",
-            "items-center text-center",
-          )}
-        >
+    return (
+      <div className="px-4 py-16 text-center">
+        <div className="mx-auto flex max-w-md flex-col items-center">
           <div
             className={cn(
-              "mb-4 flex h-20 w-20 items-center",
-              "justify-center rounded-full",
-              GLASS_INNER,
+              "mb-4 flex h-16 w-16 items-center justify-center rounded-2xl",
+              "border border-border/80 bg-muted/30 text-muted-foreground",
             )}
           >
-            <CalendarX className="h-9 w-9 text-muted-foreground" />
+            <CalendarX className="h-8 w-8" />
           </div>
 
-          <h3 className="mb-2 text-xl font-semibold text-foreground">
-            No appointments found
+          <h3 className="text-base font-semibold text-foreground">
+            {isFiltered
+              ? `No ${selectedStatus.name.toLowerCase()} appointments found`
+              : "No counseling appointments yet"}
           </h3>
 
-          <p className="mb-6 text-sm text-muted-foreground">
-            {selectedStatus.id === 0
-              ? "You haven't scheduled any appointments yet. " +
-                "Book your first counseling session now."
-              : `No ${selectedStatus.name.toLowerCase()} appointments found.`}
+          <p className="mt-1.5 max-w-sm text-xs text-muted-foreground">
+            {isFiltered
+              ? "You do not have any appointments matching this status filter."
+              : "Book a one-on-one session with your guidance counselor to " +
+                "discuss your academic, personal, or career concerns."}
           </p>
 
-          {selectedStatus.id === 0 && (
+          {isFiltered ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedStatus(ALL_APPOINTMENT_STATUS);
+                setCurrentPage(1);
+              }}
+              className="mt-5 rounded-xl text-xs font-semibold"
+            >
+              Clear Status Filter
+            </Button>
+          ) : (
             <Button
               asChild={hasValidCor}
               disabled={!hasValidCor}
-              className="rounded-xl shadow-lg shadow-primary/15"
-              title={
-                !user?.studentCorUrl
-                  ? "Please upload your COR in your profile " +
-                    "to book an appointment"
-                  : !user?.isStudentCorValid
-                    ? "Your COR is invalid or outdated for the " +
-                      "current academic term"
-                    : ""
-              }
+              className="mt-5 gap-2 rounded-xl shadow-lg shadow-primary/15"
               onClick={(e) => {
-                if (!hasValidCor) {
-                  e.preventDefault();
-                }
+                if (!hasValidCor) e.preventDefault();
               }}
             >
               {hasValidCor ? (
                 <Link to="/student/appointments/schedule">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Schedule Appointment
+                  <Plus className="h-4 w-4" />
+                  Schedule First Appointment
                 </Link>
               ) : (
-                <div className="flex items-center">
-                  <Plus className="mr-2 h-4 w-4 opacity-50" />
-                  Schedule Appointment
+                <div className="flex items-center gap-2">
+                  <Plus className="h-4 w-4 opacity-50" />
+                  Schedule First Appointment
                 </div>
               )}
             </Button>
           )}
         </div>
       </div>
-    ),
-    [selectedStatus, hasValidCor, user?.studentCorUrl, user?.isStudentCorValid],
-  );
+    );
+  }, [selectedStatus, hasValidCor, setSelectedStatus, setCurrentPage]);
 
   return (
     <div
       className={cn(
-        "relative isolate mx-auto flex w-full max-w-full flex-col space-y-6",
-        "overflow-x-hidden px-4 sm:px-6 md:px-8"
+        "relative isolate mx-auto flex w-full max-w-6xl flex-col",
+        "space-y-6 px-4 pb-12 sm:px-6 md:px-8",
       )}
     >
+      <AnimationStyles />
+
+      {/* COR Missing / Invalid Alerts */}
       {!user?.studentCorUrl ? (
         <Alert
           variant="destructive"
-          className={ACTION_REQUIRED_ALERT}
+          className="rounded-2xl border-destructive/20 bg-destructive/5"
         >
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="text-base font-medium">
+          <AlertTitle className="text-sm font-semibold">
             Action Required: Missing Certificate of Registration
           </AlertTitle>
-          <AlertDescription className="text-sm">
-            You need to upload your COR before you can book appointments.{" "}
+          <AlertDescription className="text-xs">
+            Upload your valid COR in your profile before booking
+            consultations.{" "}
             <Link
               to="/student/cor-management"
-              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+              className="font-semibold underline hover:opacity-80"
             >
               Go to COR Management
             </Link>
@@ -294,144 +330,247 @@ export default function StudentAppointments() {
       ) : !user?.isStudentCorValid ? (
         <Alert
           variant="destructive"
-          className={ACTION_REQUIRED_ALERT}
+          className="rounded-2xl border-destructive/20 bg-destructive/5"
         >
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="text-base font-medium">
-            Action Required: Invalid or Outdated Certificate of Registration
+          <AlertTitle className="text-sm font-semibold">
+            Action Required: Invalid Certificate of Registration
           </AlertTitle>
-          <AlertDescription className="text-sm">
-            Your uploaded COR is not valid for the current academic term. Please
-            upload your updated COR to proceed.{" "}
+          <AlertDescription className="text-xs">
+            Your uploaded COR is not valid for the current academic term.{" "}
             <Link
               to="/student/cor-management"
-              className="font-semibold underline hover:text-rose-700 dark:hover:text-rose-300"
+              className="font-semibold underline hover:opacity-80"
             >
-              Go to COR Management
+              Upload Updated COR
             </Link>
           </AlertDescription>
         </Alert>
       ) : null}
 
-      <div className="flex flex-col gap-6 animate-fade-in-up">
-        <div className="grid w-full gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-          <SelectField
-            label="Appointment status"
-            options={filterStatuses.map((status) => {
-              const count =
-                status.id === 0
-                  ? statusCounts.reduce((sum, item) => sum + (item.count || 0), 0)
-                  : statusCounts.find((item) => item.id === status.id)?.count || 0;
+      {/* Segmented Filter Tabs & Compact Sort Pill */}
+      <div
+        className={cn(
+          "flex flex-col gap-3 sm:flex-row sm:items-center",
+          "border-b border-border/60 pb-3 sm:justify-between",
+        )}
+      >
+        {/* Horizontal Segmented Status Tabs */}
+        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto">
+          {filterStatuses.map((status) => {
+            const count =
+              status.id === 0
+                ? totalCount
+                : statusCounts.find((s) => s.id === status.id)?.count || 0;
+            const isSelected = selectedStatus.id === status.id;
 
-              return {
-                id: status.id,
-                displayName: status.id === 0 ? "All Statuses" : `${status.name} (${count})`,
-                disabled: status.id !== 0 && count === 0,
-              };
-            })}
-            value={selectedStatus.id}
-            onChange={(value) => {
-              const status = filterStatuses.find((item) => String(item.id) === String(value));
-              if (status) {
-                setSelectedStatus(status);
-                setCurrentPage(1);
-              }
-            }}
-            labelKey="displayName"
-            enabled={!isAppointmentsLoading}
-          />
-          <SelectField
-            label="Sort appointments"
-            options={mobileSortOptions}
-            value={`${selectedSort}-${selectedOrder}`}
-            onChange={(value) => {
-              const [sort, order] = String(value).split("-") as [string, SortOrder];
-              setSelectedSort(sort);
-              setSelectedOrder(order);
-              setCurrentPage(1);
-            }}
-            labelKey="displayName"
-            enabled={!isAppointmentsLoading}
-          />
+            return (
+              <button
+                key={status.id}
+                type="button"
+                onClick={() => {
+                  setSelectedStatus(status);
+                  setCurrentPage(1);
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs",
+                  "select-none font-semibold transition-all",
+                  isSelected
+                    ? "border border-primary/40 bg-primary/10 " +
+                        "text-primary shadow-sm"
+                    : "border border-border/70 bg-card " +
+                        "text-muted-foreground hover:bg-muted/60" +
+                        "hover:text-foreground",
+                )}
+              >
+                <span>{status.name}</span>
+                <Badge
+                  variant={isSelected ? "default" : "secondary"}
+                  className={cn(
+                    "h-4 min-w-4 rounded-full px-1.5 text-[10px]",
+                    isSelected && "bg-primary text-primary-foreground",
+                  )}
+                >
+                  {count}
+                </Badge>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="w-full">
-          {isAppointmentsLoading ? (
-            <div className="flex w-full items-center justify-center p-12">
-              <Spinner size="lg" />
-            </div>
-          ) : sortedAppointments.length === 0 ? (
-            emptyState
-          ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {sortedAppointments.map((appointment) => (
+        {/* Compact Sort Selector using SelectField */}
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <div className="w-[185px] sm:w-[200px]">
+            <SelectField
+              options={SORT_OPTIONS}
+              value={`${selectedSort}-${selectedOrder}`}
+              onChange={(val) => {
+                const [sort, order] = String(val).split("-") as [
+                  string,
+                  SortOrder,
+                ];
+                setSelectedSort(sort);
+                setSelectedOrder(order);
+                setCurrentPage(1);
+              }}
+              labelKey="displayName"
+              enabled={!isAppointmentsLoading}
+              buttonClassName={cn(
+                "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                "shadow-none",
+              )}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Appointment Cards (Single-column vertical feed) */}
+      <div className="w-full">
+        {isAppointmentsLoading ? (
+          <div className="flex flex-col gap-2.5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex items-center justify-between rounded-2xl border",
+                  "border-border/80 bg-card p-4 shadow-sm",
+                )}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                  <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-20 rounded-md" />
+                      <Skeleton className="h-4 w-16 rounded-md" />
+                    </div>
+                    <Skeleton className="h-4 w-40 rounded-md" />
+                    <Skeleton className="h-3 w-56 rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="ml-3 h-5 w-5 shrink-0 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : sortedAppointments.length === 0 ? (
+          emptyState
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {sortedAppointments.map((appointment, idx) => {
+              const dateParts = getEventDateParts(appointment.whenDate);
+              const animDelay = `${Math.min(idx * 0.04, 0.24)}s`;
+
+              return (
                 <button
                   key={appointment.id}
                   type="button"
-                  onClick={() => navigate(`/student/appointments/${appointment.id}`)}
+                  onClick={() =>
+                    navigate(`/student/appointments/${appointment.id}`)
+                  }
+                  style={{
+                    animationDelay: animDelay,
+                    animationFillMode: "both",
+                  }}
                   className={cn(
-                    "w-full rounded-2xl border border-slate-300 bg-white p-5 text-left shadow-md",
-                    "transition-all hover:-translate-y-1 hover:shadow-lg hover:border-slate-400",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    "dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] dark:hover:border-white/20",
+                    "animate-fade-in-up group flex items-center",
+                    "justify-between rounded-2xl border border-border/80",
+                    "bg-card p-4 text-left shadow-sm transition-all",
+                    "hover:-translate-y-0.5 hover:border-primary/40",
+                    "hover:shadow-md focus-visible:outline-none",
+                    "focus-visible:ring-2 focus-visible:ring-primary",
                   )}
-                  aria-label={`View appointment: ${appointment.appointmentCategory?.name || "Uncategorized"}`}
+                  aria-label={`View appointment: ${
+                    appointment.appointmentCategory?.name || "Uncategorized"
+                  }`}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <Badge
-                      variant="outline"
-                      className="border-slate-300 bg-slate-200/60 text-[11px] font-bold text-slate-800 dark:border-white/20 dark:bg-white/10 dark:text-slate-200"
+                  <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                    {/* Event Calendar Date Block */}
+                    <div
+                      className={cn(
+                        "flex h-12 w-12 shrink-0 flex-col items-center",
+                        "justify-center rounded-xl border border-primary/20",
+                        "bg-primary/5 text-primary",
+                      )}
                     >
-                      <Tag className="mr-1.5 h-3 w-3 shrink-0" />
-                      {appointment.appointmentCategory?.name || "Uncategorized"}
-                    </Badge>
+                      <span className="text-[10px] font-bold uppercase">
+                        {dateParts.month}
+                      </span>
+                      <span className="text-base font-extrabold leading-none">
+                        {dateParts.day}
+                      </span>
+                    </div>
+
+                    {/* Content Details */}
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "border-border/70 bg-muted/40 text-[11px]",
+                            "font-semibold text-foreground",
+                          )}
+                        >
+                          {appointment.appointmentCategory?.name ||
+                            "Consultation"}
+                        </Badge>
+                        <span
+                          className={cn(
+                            "font-mono text-xs font-semibold",
+                            "text-foreground",
+                          )}
+                        >
+                          {format12HourTime(appointment.timeSlot?.time || "")}
+                        </span>
+                      </div>
+
+                      <p
+                        className={cn(
+                          "truncate text-xs font-medium text-foreground/90",
+                        )}
+                        title={appointment.reason}
+                      >
+                        {appointment.reason || "No reason specified"}
+                      </p>
+
+                      <p className="text-[10px] text-muted-foreground">
+                        Requested on {formatCompactDate(appointment.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge & Action Indicator */}
+                  <div className="ml-3 flex shrink-0 items-center gap-2">
                     <Badge
                       variant="outline"
                       className={cn(
-                        "px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                        "px-2 py-0.5 text-[10px] font-bold uppercase",
+                        "tracking-wider",
                         getStatusColor(appointment.status?.name),
                       )}
                     >
                       {appointment.status?.name || "Unknown"}
                     </Badge>
-                  </div>
-                  
-                  <p className="mt-4 text-sm font-medium leading-relaxed text-foreground/90">
-                    {appointment.reason}
-                  </p>
-                  
-                  <div className="mt-5 flex flex-col gap-4 border-t border-black/5 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Requested On
-                      </span>
-                      <span className="flex items-center gap-2 text-xs font-medium text-foreground">
-                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        {formatCompactDate(appointment.createdAt)}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Appointment Date
-                      </span>
-                      <span className="flex items-center gap-2 text-xs font-bold text-primary">
-                        <CalendarClock className="h-4 w-4" />
-                        {formatCompactDate(appointment.whenDate)} • {format12HourTime(appointment.timeSlot?.time || "")}
-                      </span>
-                    </div>
+                    <ChevronRight
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground/40 transition-transform",
+                        "group-hover:translate-x-0.5",
+                        "group-hover:text-foreground",
+                      )}
+                    />
                   </div>
                 </button>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+        )}
 
-          <Pagination
-            currentPage={data?.meta?.page || 1}
-            totalPages={data?.meta?.totalPages || 1}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="mt-6"
-          />
-        </div>
+        <Pagination
+          currentPage={data?.meta?.page || 1}
+          totalPages={data?.meta?.totalPages || 1}
+          onPageChange={(page) => setCurrentPage(page)}
+          className="mt-6"
+        />
       </div>
     </div>
   );

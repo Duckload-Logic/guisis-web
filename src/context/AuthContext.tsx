@@ -13,10 +13,12 @@ import { User, UserRole } from "@/features/users/types/user";
 import { resetSessionUIPreferences } from "@/utils/uiPreferences";
 import { DeletePushSubscribe } from "@/features/notifications/services";
 import { isAuthPath } from "@/utils";
+import { FullScreenLoader } from "@/components/shared/FullScreenLoader";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   logout: () => void;
+  isLoggingOut: boolean;
   isLoading: boolean;
   user: User | null;
   activeRole: UserRole | null;
@@ -52,6 +54,7 @@ export const AuthProvider: React.FC<{
   } = useMe({ enabled: !isCallbackPage && (hasSessionFlag || !isAuthPage) });
   const { logout: logoutMutation } = useLogoutMutation();
   const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const [activeRole, setActiveRoleState] = useState<UserRole | null>(() => {
     const saved = localStorage.getItem("active_role");
@@ -138,6 +141,7 @@ export const AuthProvider: React.FC<{
   }, [isError]);
 
   const logout = () => {
+    setIsLoggingOut(true);
     const performLogout = async () => {
       try {
         if (
@@ -189,6 +193,7 @@ export const AuthProvider: React.FC<{
         activeRole,
         setActiveRole,
         logout,
+        isLoggingOut,
         isLoading: isAuthLoading,
         refresh: async () => {
           await refetch();
@@ -199,6 +204,10 @@ export const AuthProvider: React.FC<{
         isDeveloper,
       }}
     >
+      <FullScreenLoader
+        isLoading={isLoggingOut}
+        message="Logging out..."
+      />
       {children}
     </AuthContext.Provider>
   );

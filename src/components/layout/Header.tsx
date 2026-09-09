@@ -65,13 +65,15 @@ export default function Header({
     return (
       <header
         className={cn(
-          "pointer-events-none fixed inset-x-0 top-0 z-[60] flex h-16 items-center justify-between px-3",
-          "border-b border-border/70 bg-background/95 shadow-sm backdrop-blur-xl",
+          "pointer-events-none fixed inset-x-0 top-0 z-[60] flex h-16",
+          "items-center justify-between border-b border-border/70 px-3",
+          "bg-background/95 shadow-sm backdrop-blur-xl",
           "supports-[backdrop-filter]:bg-background/85",
-          "dark:border-white/10 dark:bg-neutral-950/95",
-          "min-[1025px]:inset-x-4 min-[1025px]:top-4 min-[1025px]:h-auto min-[1025px]:border-0 min-[1025px]:bg-transparent min-[1025px]:px-0",
-          "min-[1025px]:shadow-none min-[1025px]:backdrop-blur-none min-[1025px]:supports-[backdrop-filter]:bg-transparent",
-          "min-[1025px]:dark:bg-transparent",
+          "min-[1025px]:inset-x-4 min-[1025px]:top-4 min-[1025px]:h-auto",
+          "min-[1025px]:border-0 min-[1025px]:bg-transparent",
+          "min-[1025px]:px-0 min-[1025px]:shadow-none",
+          "min-[1025px]:backdrop-blur-none",
+          "min-[1025px]:supports-[backdrop-filter]:bg-transparent",
         )}
       >
         <div className="pointer-events-auto flex items-center gap-2 xl:hidden">
@@ -97,29 +99,35 @@ export default function Header({
         <div
           className={cn(
             "pointer-events-auto ml-auto flex items-center gap-1",
-            "min-[1025px]:rounded-xl min-[1025px]:border min-[1025px]:border-border/70",
-            "min-[1025px]:bg-background/85 min-[1025px]:p-1 min-[1025px]:shadow-md",
-            "min-[1025px]:backdrop-blur-xl min-[1025px]:supports-[backdrop-filter]:bg-background/70",
-            "min-[1025px]:dark:border-white/10 min-[1025px]:dark:bg-neutral-900/85",
+            "min-[1025px]:rounded-xl min-[1025px]:border",
+            "min-[1025px]:border-border/70 min-[1025px]:bg-background/85",
+            "min-[1025px]:p-1 min-[1025px]:shadow-md",
+            "min-[1025px]:backdrop-blur-xl",
+            "min-[1025px]:supports-[backdrop-filter]:bg-background/70",
           )}
           aria-label="Account controls"
         >
-          <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+          <ThemeToggle
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+          />
 
           <NotificationBell
             showNotifications={showNotifications}
             setShowNotifications={setShowNotifications}
           />
 
-          <ProfileMenu
-            firstName={user?.firstName}
-            middleName={user?.middleName}
-            lastName={user?.lastName}
-            roleLabel={getRoleLabel()}
-            role={role}
-            profilePath={`/${role}/profile`}
-            onLogout={handleLogout}
-          />
+          <div className="hidden xl:block">
+            <ProfileMenu
+              firstName={user?.firstName}
+              middleName={user?.middleName}
+              lastName={user?.lastName}
+              roleLabel={getRoleLabel()}
+              role={role}
+              profilePath={`/${role}/profile`}
+              onLogout={handleLogout}
+            />
+          </div>
         </div>
       </header>
     );
@@ -246,7 +254,7 @@ export default function Header({
               size="sm"
               className={cn(
                 "hidden font-semibold shadow-sm transition-transform",
-                "hover:-translate-y-0.5 sm:inline-flex gap-1.5",
+                "gap-1.5 hover:-translate-y-0.5 sm:inline-flex",
               )}
               onClick={handleLogin}
             >

@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   ClipboardCheck,
   ClipboardList,
   Clock,
   FileText,
+  HandHeart,
   LayoutDashboard,
+  ShieldCheck,
 } from "lucide-react";
 
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata } from "@/context";
-import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
+import {
+  useAppointmentsStats,
+} from "@/features/appointments/hooks/useAppointments";
 import { useUserIIR } from "@/features/iir/hooks";
 import { useGetSlipStats } from "@/features/slips/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
@@ -23,7 +27,6 @@ import { StatusSummaryCards } from "./dashboard/StatusSummaryCards";
 import {
   guidanceServices,
   studentQuickActions,
-  studentReminders,
 } from "./dashboard/dashboardData";
 import type { StudentStatCard } from "./dashboard/types";
 
@@ -37,16 +40,12 @@ export default function Dashboard() {
     params: { scope: "me" },
   });
 
-  const [isPageLoaded, setIsPageLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsPageLoaded(true);
-  }, []);
-
   const totalSlips = useMemo(
     () =>
-      slipStats?.reduce((sum: number, stat: any) => sum + (stat.count || 0), 0) ||
-      0,
+      slipStats?.reduce(
+        (sum: number, stat: any) => sum + (stat.count || 0),
+        0,
+      ) || 0,
     [slipStats],
   );
 
@@ -59,7 +58,7 @@ export default function Dashboard() {
     [appointmentStats],
   );
 
-  const isLoading = isUserLoading || isIIRLoading || !isPageLoaded;
+  const isLoading = isUserLoading || isIIRLoading;
   const iirProfileStatus = iir?.isSubmitted ? "Complete" : "Pending";
 
   const corStatus = me?.studentCorUrl
@@ -75,35 +74,28 @@ export default function Dashboard() {
         value: totalAppointments,
         subtitle: "scheduled sessions",
         icon: Clock,
-        iconWrap: cn(
-          "bg-slate-500/10 border-slate-500/20",
-          "text-slate-600 dark:text-slate-400",
-        ),
-        href: "/student/appointments",
+        iconWrap:
+          "border-stale-foreground/30 bg-stale-background " +
+          "text-stale-foreground",
       },
       {
         title: "Admission Slip",
         value: totalSlips,
         subtitle: "submitted excuses",
         icon: ClipboardCheck,
-        iconWrap: cn(
-          "bg-emerald-500/10 border-emerald-500/20",
-          "text-emerald-600 dark:text-emerald-400",
-        ),
-        href: "/student/slips",
+        iconWrap:
+          "border-success-foreground/30 bg-success-background " +
+          "text-success-foreground",
       },
       {
         title: "IIR Record",
         value: iirProfileStatus,
         subtitle: iir?.isSubmitted ? "record completed" : "record pending",
         icon: ClipboardList,
-        iconWrap: cn(
-          iir?.isSubmitted
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-            : "bg-rose-500/10 border-rose-500/20 text-rose-600",
-          iir?.isSubmitted ? "dark:text-emerald-400" : "dark:text-rose-400",
-        ),
-        href: "/student/iir",
+        iconWrap: iir?.isSubmitted
+          ? "border-success-foreground/30 bg-success-background " +
+            "text-success-foreground"
+          : "border-destructive/30 bg-destructive/10 text-destructive",
       },
       {
         title: "COR Status",
@@ -114,19 +106,14 @@ export default function Dashboard() {
             : "needs update"
           : "no cor uploaded",
         icon: FileText,
-        iconWrap: cn(
-          me?.studentCorUrl
-            ? me?.isStudentCorValid
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-              : "bg-amber-500/10 border-amber-500/20 text-amber-600"
-            : "bg-slate-500/10 border-slate-500/20 text-slate-600",
-          me?.studentCorUrl
-            ? me?.isStudentCorValid
-              ? "dark:text-emerald-400"
-              : "dark:text-amber-400"
-            : "dark:text-slate-400",
-        ),
-        href: "/student/cor-management",
+        iconWrap: me?.studentCorUrl
+          ? me?.isStudentCorValid
+            ? "border-success-foreground/30 bg-success-background " +
+              "text-success-foreground"
+            : "border-warning-foreground/30 bg-warning-background " +
+              "text-warning-foreground"
+          : "border-stale-foreground/30 bg-stale-background " +
+            "text-stale-foreground",
       },
     ],
     [
@@ -139,14 +126,65 @@ export default function Dashboard() {
     ],
   );
 
+  const dynamicReminders = useMemo(() => {
+    const reminders = [];
+
+    if (!iir?.isSubmitted) {
+      reminders.push({
+        title: "Complete your IIR",
+        description:
+          "Your Individual Inventory Record is pending. Complete it " +
+          "to unlock all guidance services.",
+        icon: ClipboardList,
+        badge: "Required",
+        tone: "warning" as const,
+      });
+    }
+
+    if (!me?.studentCorUrl || !me?.isStudentCorValid) {
+      reminders.push({
+        title: "Update your COR",
+        description: !me?.studentCorUrl
+          ? "No Certificate of Registration uploaded. Submit a copy " +
+            "for enrollment verification."
+          : "Your Certificate of Registration needs renewal or " +
+            "revalidation.",
+        icon: FileText,
+        badge: "Action Needed",
+        tone: "warning" as const,
+      });
+    }
+
+    reminders.push({
+      title: "Check request statuses",
+      description:
+        "Review your appointment schedules and admission slip " +
+        "updates regularly.",
+      icon: ShieldCheck,
+      tone: "default" as const,
+    });
+
+    reminders.push({
+      title: "Reach out when needed",
+      description:
+        "The Guidance Office is here to support your wellbeing and " +
+        "academic progress.",
+      icon: HandHeart,
+      tone: "default" as const,
+    });
+
+    return reminders;
+  }, [iir?.isSubmitted, me?.studentCorUrl, me?.isStudentCorValid]);
+
   const pageMeta = useMemo(
     () => ({
       title: me ? `Welcome back, ${me.firstName}!` : "Welcome back",
       description:
-        "PUP Guidance Services — Supporting your academic and personal growth",
+        "PUP Guidance Services — Supporting your academic and " +
+        "personal growth",
       badgeText: "Student Overview",
       badgeIcon: <LayoutDashboard className="h-4 w-4" />,
-      isLoading,
+      isLoading: false,
       headerStats: (
         <HeaderStats
           totalAppointments={totalAppointments}
@@ -154,30 +192,35 @@ export default function Dashboard() {
         />
       ),
     }),
-    [me, totalAppointments, totalSlips, isLoading],
+    [me, totalAppointments, totalSlips],
   );
 
   usePageMetadata(pageMeta);
-
-  if (isLoading) return null;
 
   return (
     <div
       className={cn(
         "mx-auto flex w-full flex-col",
-        "px-3 pb-28 min-[520px]:px-4 sm:px-6 md:px-7 lg:px-8 lg:pb-24 xl:pb-12",
+        "px-3 pb-28 min-[520px]:px-4 sm:px-6 md:px-7 lg:px-8",
+        "lg:pb-24 xl:pb-12",
       )}
     >
       <AnimationStyles />
 
-      <StatusSummaryCards statCards={statCards} />
+      {/* KPI Overview Strip */}
+      <StatusSummaryCards
+        statCards={statCards}
+        isLoading={isLoading}
+      />
 
-      <ServicesOfferedSection guidanceServices={guidanceServices} />
-
+      {/* Action Center: Quick Actions + Dynamic Reminders */}
       <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
         <QuickActionsSection actions={studentQuickActions} />
-        <RemindersCard reminders={studentReminders} />
+        <RemindersCard reminders={dynamicReminders} />
       </section>
+
+      {/* Tertiary Reference: Services Offered */}
+      <ServicesOfferedSection guidanceServices={guidanceServices} />
     </div>
   );
 }

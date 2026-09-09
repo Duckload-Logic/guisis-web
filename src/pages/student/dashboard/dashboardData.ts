@@ -26,7 +26,8 @@ export const studentQuickActions: StudentDashboardAction[] = [
     icon: CalendarPlus,
     href: "/student/appointments/schedule",
     accent:
-      "from-slate-500/15 to-slate-500/5 text-slate-600 dark:text-slate-400 border-slate-500/20",
+      "from-info-foreground/15 to-info-foreground/5 " +
+      "text-info-foreground border-info-foreground/20",
   },
   {
     title: "Submit Admission Slip",
@@ -34,7 +35,8 @@ export const studentQuickActions: StudentDashboardAction[] = [
     icon: FileText,
     href: "/student/slips/submit",
     accent:
-      "from-emerald-500/15 to-green-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+      "from-success-foreground/15 to-success-foreground/5 " +
+      "text-success-foreground border-success-foreground/20",
   },
   {
     title: "My IIR Profile",
@@ -42,7 +44,8 @@ export const studentQuickActions: StudentDashboardAction[] = [
     icon: User,
     href: "/student/iir",
     accent:
-      "from-rose-500/15 to-red-500/5 text-rose-600 dark:text-rose-400 border-rose-500/20",
+      "from-destructive/15 to-destructive/5 " +
+      "text-destructive border-destructive/20",
   },
   {
     title: "Student FAQs",
@@ -50,7 +53,8 @@ export const studentQuickActions: StudentDashboardAction[] = [
     icon: HelpCircle,
     href: "/student/faqs",
     accent:
-      "from-amber-500/15 to-yellow-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
+      "from-warning-foreground/15 to-warning-foreground/5 " +
+      "text-warning-foreground border-warning-foreground/20",
   },
 ];
 
@@ -61,7 +65,8 @@ export const guidanceServices: GuidanceService[] = [
       "One-on-one guidance support for personal, emotional, or academic concerns.",
     icon: MessagesSquare,
     accent:
-      "from-slate-500/15 to-slate-500/5 text-slate-600 dark:text-slate-400 border-slate-500/20",
+      "from-info-foreground/15 to-info-foreground/5 " +
+      "text-info-foreground border-info-foreground/20",
   },
   {
     title: "Group Guidance Sessions",
@@ -69,7 +74,8 @@ export const guidanceServices: GuidanceService[] = [
       "Student-centered activities and discussions for shared concerns and growth.",
     icon: UserRoundCheck,
     accent:
-      "from-purple-500/15 to-violet-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20",
+      "from-notice-foreground/15 to-notice-foreground/5 " +
+      "text-notice-foreground border-notice-foreground/20",
   },
   {
     title: "Admission Slip Assistance",
@@ -77,7 +83,8 @@ export const guidanceServices: GuidanceService[] = [
       "Support for reviewing and processing student admission or excuse slip requests.",
     icon: FileText,
     accent:
-      "from-emerald-500/15 to-green-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+      "from-success-foreground/15 to-success-foreground/5 " +
+      "text-success-foreground border-success-foreground/20",
   },
   {
     title: "IIR Record Management",
@@ -85,7 +92,8 @@ export const guidanceServices: GuidanceService[] = [
       "Collection and maintenance of student Individual Inventory Record information.",
     icon: ClipboardList,
     accent:
-      "from-rose-500/15 to-red-500/5 text-rose-600 dark:text-rose-400 border-rose-500/20",
+      "from-destructive/15 to-destructive/5 " +
+      "text-destructive border-destructive/20",
   },
   {
     title: "Academic Guidance",
@@ -93,7 +101,8 @@ export const guidanceServices: GuidanceService[] = [
       "Guidance support for academic adjustment, school concerns, and student progress.",
     icon: GraduationCap,
     accent:
-      "from-cyan-500/15 to-teal-500/5 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+      "from-info-foreground/15 to-info-foreground/5 " +
+      "text-info-foreground border-info-foreground/20",
   },
   {
     title: "Career and Wellness Support",
@@ -101,14 +110,16 @@ export const guidanceServices: GuidanceService[] = [
       "Encouragement for goal-setting, wellness, decision-making, and future planning.",
     icon: BriefcaseBusiness,
     accent:
-      "from-amber-500/15 to-yellow-500/5 text-amber-600 dark:text-amber-400 border-amber-500/20",
+      "from-warning-foreground/15 to-warning-foreground/5 " +
+      "text-warning-foreground border-warning-foreground/20",
   },
 ];
 
 export const studentReminders: StudentReminder[] = [
   {
     title: "Complete your IIR",
-    description: "Keep your student record updated before using major services.",
+    description:
+      "Keep your student record updated before using major services.",
     icon: BookOpenCheck,
   },
   {

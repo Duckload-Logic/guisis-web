@@ -1,18 +1,49 @@
+import { useState, useMemo, useEffect, useId } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
   Users,
   FileText,
-  MoreHorizontal,
   Sparkles,
   AlertTriangle,
+  X,
+  ChevronRight,
+  Clock,
+  CheckCircle2,
+  TrendingUp,
+  ArrowUpRight,
+  Ticket,
+  Eye,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useAppointments } from "@/features/appointments/hooks/useAppointments";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import {
+  useAppointments,
+} from "@/features/appointments/hooks/useAppointments";
 import { useAdminDashboard } from "@/features/analytics/hooks";
-import { useQuery } from "@tanstack/react-query";
-import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
+import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ChartContainer,
   ChartTooltip,
@@ -20,18 +51,42 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { usePageMetadata } from "@/context";
-import { DashboardMetrics } from "@/features/counseling/components/DashboardMetrics";
-import { SlipStatusTracker } from "@/features/counseling/components/SlipStatusTracker";
-import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useMemo, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { toISODateString, format12HourTime } from "@/utils";
+import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
+
+const visitorConfig = {
+  visitors: {
+    label: "Visitors",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
+const TIP_QUOTES = [
+  "Data-driven guidance is effective; review student notes before sessions.",
+  "A brief check before consultations fosters calmer, grounded discussions.",
+  "Regular follow-ups turn single appointments into lasting guidance.",
+  "Clear record keeping makes future counseling faster and more accurate.",
+  "Timely updates to case notes help build reliable student histories.",
+  "Prepared counselors create confident and reassuring spaces for students.",
+];
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const todayStr = toISODateString(new Date());
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => toISODateString(today), [today]);
+  const gradientId = useId();
+
+  const formattedToday = useMemo(
+    () =>
+      today.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
+    [today],
+  );
 
   const { data: settings } = useQuery({
     queryKey: ["counselor", "academicSettings"],
@@ -43,9 +98,7 @@ export default function Dashboard() {
     if (!settings) return false;
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
-    if (settings.currentYearEnd < currentYear) {
-      return true;
-    }
+    if (settings.currentYearEnd < currentYear) return true;
     if (currentMonth >= 8 && settings.currentYearStart < currentYear) {
       return true;
     }
@@ -61,28 +114,25 @@ export default function Dashboard() {
     });
 
   const appointments = appointmentData?.appointments || [];
-  const [showDailyTip, setShowDailyTip] = useState(false);
+
+  const sortedAppointments = useMemo(() => {
+    return [...appointments]
+      .slice(0, 6)
+      .sort((a, b) =>
+        (a.timeSlot?.time || "").localeCompare(b.timeSlot?.time || ""),
+      );
+  }, [appointments]);
 
   const { data: slipStats, isLoading: isSlipsLoading } = useGetSlipStats();
   const { data: adminAnalytics, isLoading: isAnalyticsLoading } =
     useAdminDashboard();
 
-  const tipQuotes = useMemo(
-    () => [
-      "Data-driven guidance is effective; check student records before each session.",
-      "A short review before every session helps you guide with more confidence.",
-      "Consistent follow-up turns one-time visits into meaningful student support.",
-      "Clear records make every counseling session faster, smoother, and more effective.",
-      "Small notes today can become valuable guidance insights tomorrow.",
-      "Prepared counselors create calmer, more productive student conversations.",
-    ],
-    [],
-  );
+  const [showDailyTip, setShowDailyTip] = useState(false);
 
   const dailyTip = useMemo(() => {
-    const dayIndex = new Date().getDate() % tipQuotes.length;
-    return tipQuotes[dayIndex];
-  }, [tipQuotes]);
+    const dayIndex = today.getDate() % TIP_QUOTES.length;
+    return TIP_QUOTES[dayIndex];
+  }, [today]);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -94,44 +144,64 @@ export default function Dashboard() {
     }
   }, []);
 
-  const metrics = [
-    {
-      title: "Students",
-      value: adminAnalytics?.totalStudents?.toString() || "0",
-      trend: `+${adminAnalytics?.studentsTrend?.toString() || "0"}`,
-      icon: Users,
-      iconColor: "text-blue-500",
-    },
-    {
-      title: "Significant Notes",
-      value: adminAnalytics?.totalReports?.toString() || "0",
-      trend: `+${adminAnalytics?.reportsTrend?.toString() || "0"}`,
-      icon: FileText,
-      iconColor: "text-emerald-500",
-    },
-    {
-      title: "Consultations",
-      value: adminAnalytics?.totalAppointments?.toString() || "0",
-      trend: `+${adminAnalytics?.appointmentsTrend?.toString() || "0"}`,
-      icon: Calendar,
-      iconColor: "text-purple-500",
-    },
-    {
-      title: "Slips",
-      value: adminAnalytics?.totalSlips?.toString() || "0",
-      trend: `+${adminAnalytics?.slipsTrend?.toString() || "0"}`,
-      icon: FileText,
-      iconColor: "text-amber-500",
-    },
-  ];
+  const pendingSlips = useMemo(() => {
+    return (
+      slipStats?.find((s: any) => s.name?.toLowerCase() === "pending")?.count ||
+      0
+    );
+  }, [slipStats]);
 
-  const visitorData =
-    adminAnalytics?.monthlyVisitors?.map(
-      (v: { month: string; count: number }) => ({
-        name: v.month,
-        visitors: v.count,
-      }),
-    ) || [];
+  const approvedSlips = useMemo(() => {
+    return (
+      slipStats?.find((s: any) => s.name?.toLowerCase() === "approved")
+        ?.count || 0
+    );
+  }, [slipStats]);
+
+  const visitorData = useMemo(() => {
+    return (
+      adminAnalytics?.monthlyVisitors?.map(
+        (v: { month: string; count: number }) => ({
+          name: v.month,
+          visitors: v.count,
+        }),
+      ) || []
+    );
+  }, [adminAnalytics]);
+
+  const kpis = useMemo(
+    () => [
+      {
+        title: "Total Students",
+        value: adminAnalytics?.totalStudents ?? 0,
+        trend: adminAnalytics?.studentsTrend,
+        icon: Users,
+        iconStyle: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      },
+      {
+        title: "Significant Notes",
+        value: adminAnalytics?.totalReports ?? 0,
+        trend: adminAnalytics?.reportsTrend,
+        icon: FileText,
+        iconStyle: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      },
+      {
+        title: "Consultations",
+        value: adminAnalytics?.totalAppointments ?? 0,
+        trend: adminAnalytics?.appointmentsTrend,
+        icon: Calendar,
+        iconStyle: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+      },
+      {
+        title: "Admission Slips",
+        value: adminAnalytics?.totalSlips ?? 0,
+        trend: adminAnalytics?.slipsTrend,
+        icon: Ticket,
+        iconStyle: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      },
+    ],
+    [adminAnalytics],
+  );
 
   const getUserInitials = (user?: {
     firstName?: string;
@@ -151,31 +221,23 @@ export default function Dashboard() {
     );
   };
 
-  const visitorConfig = {
-    visitors: {
-      label: "Visitors",
-      color: "#00A18E",
-    },
-  } satisfies ChartConfig;
-
   usePageMetadata({
     title: "Guidance Dashboard",
     description:
-      "Polytechnic University of the Philippines – Guidance Services Information System",
+      "Polytechnic University of the Philippines – Guidance Services",
     badgeText: "Admin Overview",
     badgeIcon: <Sparkles className="h-3.5 w-3.5" />,
     showDate: true,
-    isLoading: isAppointmentsLoading,
+    isLoading: false,
   });
 
-  if (isAppointmentsLoading || isSlipsLoading || isAnalyticsLoading) {
-    return null;
-  }
-
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
       className={cn(
-        "mx-auto flex w-full flex-col space-y-8",
+        "mx-auto flex w-full flex-col space-y-6 pb-12",
         "px-4 sm:px-6 md:px-8",
       )}
     >
@@ -183,277 +245,586 @@ export default function Dashboard() {
       {isSettingsOutdated && (
         <div
           className={cn(
-            "animate-fade-in-up relative",
-            "overflow-hidden rounded-3xl border border-red-500/20",
-            "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
-            "backdrop-blur-md",
+            "flex flex-col gap-4 rounded-2xl border border-destructive/30",
+            "bg-destructive/10 p-4 backdrop-blur-md transition-all sm:flex-row",
+            "sm:items-center sm:justify-between sm:p-5",
           )}
-          style={{ animationDelay: "0.5s", animationFillMode: "both" }}
         >
-          <div className="flex items-start gap-5">
+          <div className="flex items-start gap-3.5">
             <div
               className={cn(
-                "rounded-2xl bg-red-500 p-3 text-white shadow-lg",
-                "shadow-red-500/20",
+                "rounded-xl bg-destructive p-2.5 text-destructive-foreground",
+                "shrink-0 shadow-sm",
               )}
             >
-              <AlertTriangle size={24} />
+              <AlertTriangle className="h-5 w-5" />
             </div>
-            <div className="flex-1 pr-10">
-              <h4
-                className={cn(
-                  "mb-1 flex items-center gap-2 text-sm font-bold",
-                  "text-red-950 dark:text-red-100",
-                )}
-              >
+            <div>
+              <h4 className="text-sm font-bold text-destructive">
                 Academic Year Out of Date
               </h4>
-              <p
-                className={cn(
-                  "text-sm font-medium leading-relaxed",
-                  "text-red-900/80 dark:text-red-200/80",
-                )}
-              >
-                The active academic year ({settings?.currentYearStart}–
-                {settings?.currentYearEnd}) appears to be outdated. Please
-                update the active term and school year configuration.
+              <p className="mt-0.5 text-xs leading-relaxed text-foreground/80">
+                The current active term ({settings?.currentYearStart}–
+                {settings?.currentYearEnd}) needs review. Update the school year
+                configuration to maintain valid records.
               </p>
-              <button
-                onClick={() => navigate("/admin/academic-settings")}
-                className={cn(
-                  "mt-3 rounded-xl bg-red-500 px-4 py-2 text-xs font-bold",
-                  "text-white transition-all hover:bg-red-600",
-                  "active:scale-[.98]",
-                )}
-              >
-                Configure Settings
-              </button>
             </div>
           </div>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => navigate("/admin/academic-settings")}
+            className="shadow-xs h-9 shrink-0 rounded-xl px-4 font-semibold"
+          >
+            Configure Settings
+          </Button>
         </div>
       )}
 
-      {/* Daily Tip Alert */}
-      {showDailyTip && (
-        <div
-          className={cn(
-            "animate-fade-in-up relative",
-            "overflow-hidden rounded-3xl border border-red-500/20",
-            "bg-gradient-to-r from-red-500/10 to-rose-500/10 p-6",
-            "backdrop-blur-md",
-          )}
-          style={{ animationDelay: "0.5s", animationFillMode: "both" }}
-        >
-          <div className="flex items-start gap-5">
-            <div className="rounded-2xl bg-teal-500 p-3 text-white shadow-lg shadow-teal-500/20">
-              <Sparkles size={24} />
+      {/* Daily Counseling Insight */}
+      <AnimatePresence>
+        {showDailyTip && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className={cn(
+              "relative flex items-center justify-between overflow-hidden",
+              "rounded-2xl border border-glass-border bg-card/60 p-4",
+              "shadow-xs backdrop-blur-xl sm:p-5",
+            )}
+          >
+            <div className="flex items-center gap-3.5 pr-8">
+              <div
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center",
+                  "rounded-xl border border-glass-border bg-primary/10",
+                  "shadow-xs text-primary",
+                )}
+              >
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider",
+                    "text-muted-foreground",
+                  )}
+                >
+                  Daily Counseling Insight
+                </p>
+                <p
+                  className={cn(
+                    "mt-0.5 text-xs font-medium italic text-foreground/90",
+                    "sm:text-sm",
+                  )}
+                >
+                  &ldquo;{dailyTip}&rdquo;
+                </p>
+              </div>
             </div>
-            <div className="flex-1 pr-10">
-              <h4 className="mb-1 flex items-center gap-2 text-sm font-bold text-teal-900 dark:text-teal-100">
-                Daily Counseling Insight
-              </h4>
-              <p className="text-sm font-medium leading-relaxed text-teal-800/80 dark:text-teal-200/80">
-                "{dailyTip}"
-              </p>
-            </div>
-            <button
+
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setShowDailyTip(false)}
               className={cn(
-                "absolute right-4 top-4 rounded-xl p-2 text-teal-900/40",
-                "opacity-0 transition-all hover:bg-teal-500/10",
-                "hover:text-teal-900 group-hover:opacity-100",
-                "dark:text-teal-100/40 dark:hover:text-teal-100",
+                "h-7 w-7 shrink-0 rounded-lg text-muted-foreground",
+                "hover:bg-muted/60 hover:text-foreground",
               )}
+              aria-label="Dismiss daily insight"
             >
-              <MoreHorizontal size={20} />
-            </button>
-          </div>
-          {/* Subtle background decoration */}
-          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-teal-500/5 blur-2xl" />
-        </div>
-      )}
+              <X className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <DashboardMetrics metrics={metrics} />
-        {/* Monthly Visitors Analytics */}
-        <Card
-          className={cn(
-            "overflow-hidden shadow-md backdrop-blur-md",
-            "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
-          )}
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-base font-bold">
-              Monthly Visitors
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4 pt-4">
-            <div className="h-48 w-full">
-              <ChartContainer
-                config={visitorConfig}
-                className="aspect-auto h-full w-full"
+      {/* 4-Card KPI Strip */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isAnalyticsLoading
+          ? Array.from({ length: 4 }).map((_, index) => (
+              <Card
+                key={index}
+                className={cn(
+                  "rounded-2xl border border-glass-border bg-card/50",
+                  "shadow-xs p-5 backdrop-blur-xl",
+                )}
               >
-                <LineChart data={visitorData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="hsl(var(--border))"
-                    opacity={0.5}
-                  />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{
-                      fontSize: 10,
-                      fill: "hsl(var(--muted-foreground))",
-                    }}
-                    dy={10}
-                  />
-                  <YAxis hide={true} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line
-                    isAnimationActive={false}
-                    type="monotone"
-                    dataKey="visitors"
-                    stroke="var(--color-visitors)"
-                    strokeWidth={3}
-                    dot={{
-                      fill: "var(--color-visitors)",
-                      strokeWidth: 2,
-                      r: 4,
-                      stroke: "hsl(var(--background))",
-                    }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                  />
-                </LineChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-24 rounded-md" />
+                  <Skeleton className="h-8 w-8 rounded-xl" />
+                </div>
+                <div className="mt-3 space-y-2">
+                  <Skeleton className="h-7 w-16 rounded-md" />
+                  <Skeleton className="h-3 w-28 rounded-md" />
+                </div>
+              </Card>
+            ))
+          : kpis.map((kpi, index) => {
+              const Icon = kpi.icon;
+              const hasTrend = typeof kpi.trend === "number";
+
+              return (
+                <Card
+                  key={index}
+                  className={cn(
+                    "group relative overflow-hidden rounded-2xl border",
+                    "shadow-xs border-glass-border bg-card/60 p-5",
+                    "backdrop-blur-xl transition-all duration-300",
+                    "hover:-translate-y-0.5 hover:shadow-md",
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={cn(
+                        "text-xs font-semibold text-muted-foreground",
+                      )}
+                    >
+                      {kpi.title}
+                    </span>
+                    <div
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-xl",
+                        "shadow-xs border border-glass-border",
+                        kpi.iconStyle,
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <h3
+                      className={cn(
+                        "text-2xl font-bold tracking-tight text-foreground",
+                      )}
+                    >
+                      {kpi.value.toLocaleString()}
+                    </h3>
+
+                    <div className="mt-1 flex items-center gap-1.5 text-xs">
+                      {hasTrend ? (
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-0.5 rounded-md",
+                            "px-1.5 py-0.5 text-[10px] font-bold",
+                            kpi.trend! >= 0
+                              ? "bg-emerald-500/10 text-emerald-600 " +
+                                  "dark:text-emerald-400"
+                              : "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          <TrendingUp className="h-2.5 w-2.5" />
+                          {kpi.trend! >= 0 ? `+${kpi.trend}` : kpi.trend}
+                        </span>
+                      ) : null}
+                      <span className="text-[11px] text-muted-foreground">
+                        Recorded total
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
       </div>
 
-      <div className="flex flex-col gap-8 xl:flex-row">
-        {/* Main Content: Upcoming Appointments */}
-        <div className="flex-1 space-y-8">
-          <Card
+      {/* Main Workspace (12-Column Split) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left Column: Today's Appointments (8 Cols) */}
+        <Card
+          className={cn(
+            "flex flex-col overflow-hidden rounded-2xl border",
+            "shadow-xs border-glass-border bg-card/60 backdrop-blur-xl",
+            "lg:col-span-8",
+          )}
+        >
+          <CardHeader
             className={cn(
-              "overflow-hidden shadow-md backdrop-blur-md",
-              "animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+              "flex flex-row items-center justify-between border-b",
+              "border-glass-border bg-muted/20 px-6 py-4",
             )}
-            style={{ animationDelay: "0.15s", animationFillMode: "both" }}
           >
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg font-bold">
-                Upcoming Appointments
-              </CardTitle>
-              <button className="text-slate-400 hover:text-slate-600">
-                <MoreHorizontal size={20} />
-              </button>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground">
+                  Today&apos;s Appointments
+                </CardTitle>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-lg border-primary/20 bg-primary/10 px-2",
+                    "py-0.5 text-[10px] font-bold text-primary",
+                  )}
+                >
+                  {formattedToday}
+                </Badge>
+              </div>
+              <CardDescription className="mt-0.5 text-xs text-muted-foreground">
+                Upcoming consultations queued for counseling today
+              </CardDescription>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/admin/appointments")}
+              className="h-8 gap-1.5 rounded-xl px-3 text-xs font-semibold"
+            >
+              <span>View All</span>
+              <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          </CardHeader>
+
+          <CardContent className="flex-1 p-0">
+            {isAppointmentsLoading ? (
+              <div className="space-y-3 p-6">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
                     className={cn(
-                      "bg-slate-50/50 text-[10px] font-bold uppercase",
-                      "tracking-widest text-slate-400 dark:bg-black/20",
+                      "flex items-center justify-between rounded-xl border",
+                      "border-glass-border bg-muted/20 p-3",
                     )}
                   >
-                    <tr>
-                      <th className="px-6 py-4">Name</th>
-                      <th className="px-6 py-4">Category</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {appointments
-                      .slice(0, 5)
-                      .sort((a, b) =>
-                        a.timeSlot.time.localeCompare(b.timeSlot.time),
-                      )
-                      .map((apt) => (
-                        <tr
-                          key={apt.id}
-                          className="group cursor-pointer bg-glass-bg transition-colors"
-                          onClick={() =>
-                            navigate(`/admin/appointments/${apt.id}`)
-                          }
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-28 rounded-md" />
+                        <Skeleton className="h-3 w-20 rounded-md" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-lg" />
+                  </div>
+                ))}
+              </div>
+            ) : sortedAppointments.length === 0 ? (
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center p-12",
+                  "text-center",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-12 w-12 items-center justify-center rounded-2xl",
+                    "border border-glass-border bg-muted/40",
+                    "text-muted-foreground shadow-inner",
+                  )}
+                >
+                  <Calendar className="h-6 w-6 text-primary/70" />
+                </div>
+                <h4 className="mt-3 text-sm font-bold text-foreground">
+                  No appointments scheduled for today
+                </h4>
+                <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+                  Your counseling agenda is clear today. View the master
+                  calendar to review upcoming dates or manage bookings.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin/appointments")}
+                  className="mt-4 h-8 gap-1.5 rounded-xl px-3 text-xs"
+                >
+                  Open Appointments Calendar
+                </Button>
+              </div>
+            ) : (
+              <div className="divide-y divide-glass-border">
+                {sortedAppointments.map((apt) => (
+                  <div
+                    key={apt.id}
+                    onClick={() => navigate(`/admin/appointments/${apt.id}`)}
+                    className={cn(
+                      "group flex flex-col gap-3 p-4 transition-colors",
+                      "cursor-pointer hover:bg-muted/30 sm:flex-row",
+                      "sm:items-center sm:justify-between sm:px-6",
+                    )}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar
+                        className={cn(
+                          "h-9 w-9 shrink-0 rounded-full",
+                          "border border-glass-border",
+                        )}
+                      >
+                        <AvatarImage
+                          src={getProfilePictureUrl(apt.user?.profilePicture)}
+                          alt={getUserFullName(apt.user)}
+                          className="object-cover"
+                        />
+                        <AvatarFallback
+                          className={cn(
+                            "rounded-full bg-primary/10 text-xs font-bold",
+                            "text-primary",
+                          )}
                         >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="size-8 rounded-lg">
-                                <AvatarImage
-                                  src={getProfilePictureUrl(
-                                    apt.user?.profilePicture,
-                                  )}
-                                  alt={getUserFullName(apt.user)}
-                                  className="object-cover"
-                                />
-                                <AvatarFallback className="rounded-lg bg-primary/10 text-[10px] font-bold uppercase text-primary">
-                                  {getUserInitials(apt.user)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                  {getUserFullName(apt.user)}
-                                </p>
-                                <p className="whitespace-nowrap text-[10px] font-medium text-slate-400">
-                                  {apt.user?.studentNumber}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                            {apt.appointmentCategory.name}
-                          </td>
-                          <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-500">
-                            {new Date(apt.whenDate).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-300">
-                            {format12HourTime(apt.timeSlot.time)}
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                {appointments.length === 0 && (
-                  <div className="py-10 text-center text-sm italic text-slate-400">
-                    No upcoming appointments for today
+                          {getUserInitials(apt.user)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="min-w-0">
+                        <p
+                          className={cn(
+                            "truncate text-sm font-semibold text-foreground",
+                            "transition-colors group-hover:text-primary",
+                          )}
+                        >
+                          {getUserFullName(apt.user)}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {apt.user?.studentNumber || "No Student ID"}
+                          {" \u2022 "}
+                          <span className="font-medium text-foreground/75">
+                            {apt.appointmentCategory?.name}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={cn(
+                        "flex items-center justify-between gap-3",
+                        "sm:justify-end",
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "rounded-full border px-2.5 py-0.5 text-[10px]",
+                            "font-bold uppercase tracking-wider",
+                            STATUS_COLORS[getStatusColorKey(apt.status?.name)],
+                          )}
+                        >
+                          {apt.status?.name || "Pending"}
+                        </Badge>
+
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 rounded-lg",
+                            "border border-border/60 bg-muted/40 px-2.5 py-1",
+                            "text-xs font-semibold text-foreground",
+                          )}
+                        >
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          {format12HourTime(apt.timeSlot?.time || "")}
+                        </span>
+                      </div>
+
+                      <div
+                        className={cn(
+                          "flex h-7 w-7 items-center justify-center",
+                          "rounded-lg text-muted-foreground/60",
+                          "transition-colors group-hover:bg-primary/10",
+                          "group-hover:text-primary",
+                        )}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right Column: Slips & Visitors (4 Cols) */}
+        <div className="flex flex-col gap-6 lg:col-span-4">
+          {/* Slip Tracker */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-glass-border",
+              "shadow-xs bg-card/60 backdrop-blur-xl",
+            )}
+          >
+            <CardHeader
+              className={cn(
+                "flex flex-row items-center justify-between border-b",
+                "border-glass-border bg-muted/20 px-5 py-3.5",
+              )}
+            >
+              <CardTitle className="text-sm font-bold text-foreground">
+                Admission Slip Queue
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/admin/slips")}
+                className="h-7 px-2 text-xs font-semibold text-primary"
+              >
+                Manage
+              </Button>
+            </CardHeader>
+
+            <CardContent className="p-5">
+              {isSlipsLoading ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <Skeleton className="h-20 rounded-xl" />
+                  <Skeleton className="h-20 rounded-xl" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className={cn(
+                      "flex flex-col justify-between rounded-xl border",
+                      "border-warning-foreground/30 p-3.5",
+                      "bg-warning-background text-warning-foreground",
+                      "shadow-xs",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={cn(
+                          "text-[11px] font-bold uppercase tracking-wider",
+                        )}
+                      >
+                        Pending
+                      </span>
+                      <Clock className="h-4 w-4" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold">
+                      {pendingSlips.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "flex flex-col justify-between rounded-xl border",
+                      "border-success-foreground/30 p-3.5",
+                      "bg-success-background text-success-foreground",
+                      "shadow-xs",
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={cn(
+                          "text-[11px] font-bold uppercase tracking-wider",
+                        )}
+                      >
+                        Approved
+                      </span>
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <p className="mt-2 text-2xl font-bold">
+                      {approvedSlips.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                onClick={() => navigate("/admin/slips")}
+                className={cn(
+                  "mt-4 h-10 w-full gap-2 rounded-xl bg-primary",
+                  "font-semibold text-primary-foreground shadow-sm",
+                  "hover:bg-primary/90",
+                )}
+              >
+                <Eye className="h-4 w-4" />
+                Review Slips Queue
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Monthly Visitors Activity */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-glass-border",
+              "shadow-xs bg-card/60 backdrop-blur-xl",
+            )}
+          >
+            <CardHeader
+              className={cn(
+                "border-b border-glass-border bg-muted/20 px-5 py-3.5",
+              )}
+            >
+              <CardTitle className="text-sm font-bold text-foreground">
+                Monthly Activity Trend
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Visitor touchpoints across recent months
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="p-5">
+              <div className="h-44 w-full">
+                {isAnalyticsLoading ? (
+                  <Skeleton className="h-full w-full rounded-xl" />
+                ) : visitorData.length > 0 ? (
+                  <ChartContainer
+                    config={visitorConfig}
+                    className="aspect-auto h-full w-full"
+                  >
+                    <AreaChart
+                      data={visitorData}
+                      margin={{ top: 8, right: 4, left: 4, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id={gradientId}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-visitors)"
+                            stopOpacity={0.35}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="var(--color-visitors)"
+                            stopOpacity={0.0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="hsl(var(--border))"
+                        opacity={0.4}
+                      />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{
+                          fontSize: 10,
+                          fill: "hsl(var(--muted-foreground))",
+                        }}
+                        dy={6}
+                      />
+                      <YAxis hide={true} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Area
+                        type="monotone"
+                        dataKey="visitors"
+                        stroke="var(--color-visitors)"
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill={`url(#${gradientId})`}
+                      />
+                    </AreaChart>
+                  </ChartContainer>
+                ) : (
+                  <div
+                    className={cn(
+                      "flex h-full flex-col items-center justify-center",
+                      "text-center text-xs text-muted-foreground",
+                    )}
+                  >
+                    No visitor records available
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Sidebar: Slips & Analytics */}
-        <div
-          className="animate-fade-in-up w-full space-y-8 xl:w-96"
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
-        >
-          {/* Slip Status Tracker */}
-          <SlipStatusTracker
-            stats={{
-              pending:
-                slipStats?.find(
-                  (slip: any) => slip.name.toLowerCase() === "pending",
-                )?.count || 0,
-              approvedToday:
-                slipStats?.find(
-                  (slip: any) => slip.name.toLowerCase() === "approved",
-                )?.count || 0,
-              rejectedToday:
-                slipStats?.find(
-                  (slip: any) => slip.name.toLowerCase() === "rejected",
-                )?.count || 0,
-            }}
-          />
-        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

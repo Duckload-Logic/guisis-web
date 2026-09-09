@@ -12,23 +12,15 @@ export const ROLE_ROUTES = {
 // Admission Slip status
 export const STATUS_COLORS: Record<string, string> = {
   warning:
-    "border-amber-300 bg-amber-50 text-amber-700 " +
-    "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200",
+    "border-warning-foreground/30 bg-warning-background text-warning-foreground",
   danger:
-    "border-rose-300 bg-rose-50 text-rose-700 " +
-    "dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200",
+    "border-danger-foreground/30 bg-danger-background text-danger-foreground",
   success:
-    "border-emerald-300 bg-emerald-50 text-emerald-700 " +
-    "dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200",
-  info:
-    "border-sky-300 bg-sky-50 text-sky-700 " +
-    "dark:border-sky-400/30 dark:bg-sky-400/10 dark:text-sky-200",
-  stale:
-    "border-slate-300 bg-slate-50 text-slate-700 " +
-    "dark:border-slate-400/30 dark:bg-slate-400/10 dark:text-slate-200",
+    "border-success-foreground/30 bg-success-background text-success-foreground",
+  info: "border-info-foreground/30 bg-info-background text-info-foreground",
+  stale: "border-stale-foreground/30 bg-stale-background text-stale-foreground",
   notice:
-    "border-violet-300 bg-violet-50 text-violet-700 " +
-    "dark:border-violet-400/30 dark:bg-violet-400/10 dark:text-violet-200",
+    "border-notice-foreground/30 bg-notice-background text-notice-foreground",
 } as const;
 
 /**
@@ -130,14 +122,11 @@ export const CACHE_TIMING = {
 // Shared layout style utilities for student and admin modules
 export const LAYOUT_STYLES = {
   CARD:
-    "overflow-hidden rounded-xl border border-border bg-card " +
-    "shadow-md",
-  INNER:
-    "border border-border/55 bg-muted/40 shadow-md",
+    "overflow-hidden rounded-xl border border-border bg-card " + "shadow-md",
+  INNER: "border border-border/55 bg-muted/40 shadow-md",
   ALERT:
-    "animate-fade-in-up rounded-xl border border-rose-400/45 " +
-    "bg-rose-50/80 px-5 py-4 text-rose-600 " +
-    "shadow-[0_10px_26px_rgba(244,63,94,0.08)] backdrop-blur-xl " +
-    "dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400 " +
+    "animate-fade-in-up rounded-xl border border-destructive/30 " +
+    "bg-destructive/10 px-5 py-4 text-destructive " +
+    "shadow-sm backdrop-blur-xl " +
     "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
 } as const;

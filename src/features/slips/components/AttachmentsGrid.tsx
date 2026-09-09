@@ -96,10 +96,12 @@ function AttachmentIcon({ kind }: { kind: AttachmentKind }) {
       className={cn(
         "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border",
         kind === "image"
-          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          ? "border-success-foreground/20 bg-success-background " +
+              "text-success-foreground"
           : kind === "pdf"
             ? "border-primary/20 bg-primary/10 text-primary"
-            : "border-slate-500/20 bg-slate-500/10 text-slate-600 dark:text-slate-400",
+            : "border-stale-foreground/20 bg-stale-background " +
+              "text-stale-foreground",
       )}
     >
       {kind === "image" ? (
@@ -324,8 +326,13 @@ function AttachmentItem({
 export function AttachmentsGrid({ slipId, files }: AttachmentsGridProps) {
   const [selectedFile, setSelectedFile] = useState<SlipAttachment | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const { downloadAttachment, downloadingAttachmentId, downloadProgress, error, clearError } =
-    useDownloadAttachment();
+  const {
+    downloadAttachment,
+    downloadingAttachmentId,
+    downloadProgress,
+    error,
+    clearError,
+  } = useDownloadAttachment();
 
   const normalizedFiles = useMemo(() => files || [], [files]);
 

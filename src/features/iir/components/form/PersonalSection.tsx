@@ -141,8 +141,7 @@ export const PersonalSection = forwardRef<
     initialStudentNumber.current === null &&
     studentInfo?.personalInfo?.studentNumber
   ) {
-    initialStudentNumber.current =
-      studentInfo.personalInfo.studentNumber;
+    initialStudentNumber.current = studentInfo.personalInfo.studentNumber;
   }
 
   const performUniquenessCheck = useCallback(
@@ -547,8 +546,6 @@ export const PersonalSection = forwardRef<
     const filteredSchema: FieldValidationSchema = {};
     let targetFields = PERSONAL_SUBSTEP_FIELDS[activeStep] || [];
 
-
-
     targetFields.forEach((field) => {
       if (runtimeSchema[field]) {
         filteredSchema[field] = runtimeSchema[field];
@@ -564,8 +561,7 @@ export const PersonalSection = forwardRef<
 
     if (activeStep === 1) {
       const num = studentInfo?.personalInfo?.studentNumber || "";
-      const isOriginal =
-        isEditMode && num === initialStudentNumber.current;
+      const isOriginal = isEditMode && num === initialStudentNumber.current;
       if (!isOriginal) {
         const isValidFormat = isValidStudentNumber(num);
         if (isValidFormat) {
@@ -695,12 +691,8 @@ export const PersonalSection = forwardRef<
       });
       clearError(fieldPath);
     } catch (error: any) {
-      console.error(
-        "[PersonalSection] {handlePhotoUpload}:",
-        error,
-      );
-      const msg =
-        error?.message || "Unable to process the selected 2x2 photo.";
+      console.error("[PersonalSection] {handlePhotoUpload}:", error);
+      const msg = error?.message || "Unable to process the selected 2x2 photo.";
       if (triggerToast) {
         triggerToast(msg);
       }
@@ -827,14 +819,19 @@ export const PersonalSection = forwardRef<
               </div>
 
               {/* PROFILE PICTURE GUIDELINES */}
-              <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+              <div
+                className={cn(
+                  "mt-6 rounded-xl border border-info-foreground/30",
+                  "bg-info-background p-4 text-info-foreground",
+                )}
+              >
                 <div className="mb-3 flex items-center gap-2">
-                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200">
+                  <Info className="h-5 w-5 text-info-foreground" />
+                  <h4 className="font-semibold text-info-foreground">
                     Profile Picture Requirements
                   </h4>
                 </div>
-                <p className="mb-4 text-sm text-blue-800 dark:text-blue-300">
+                <p className="mb-4 text-sm text-info-foreground">
                   Please upload a <strong>formal 2x2 picture</strong>. Ensure
                   you are wearing appropriate professional or school attire
                   against a plain background. Avoid selfies, heavy filters, or
@@ -842,28 +839,58 @@ export const PersonalSection = forwardRef<
                 </p>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="flex flex-col items-center rounded-lg border border-emerald-200 bg-white/60 p-3 shadow-sm dark:border-emerald-800/50 dark:bg-emerald-950/40">
-                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center rounded-lg border",
+                      "border-success-foreground/30 bg-card/60 p-3 shadow-sm",
+                    )}
+                  >
+                    <h5
+                      className={cn(
+                        "mb-2 flex items-center gap-2 text-sm font-semibold",
+                        "text-success-foreground",
+                      )}
+                    >
                       <CheckCircle2 className="h-4 w-4 shrink-0" /> Upload this
                     </h5>
-                    <div className="overflow-hidden rounded border border-emerald-200 shadow-sm dark:border-emerald-800">
+                    <div
+                      className={cn(
+                        "overflow-hidden rounded border",
+                        "border-success-foreground/30 shadow-sm",
+                      )}
+                    >
                       <img
                         src={formalImage}
                         alt="Formal 2x2 Example"
-                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                        className="h-32 w-32 object-cover"
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center rounded-lg border border-red-200 bg-white/60 p-3 shadow-sm dark:border-red-800/50 dark:bg-red-950/40">
-                    <h5 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center rounded-lg border",
+                      "border-destructive/20 bg-destructive/5 p-3 shadow-sm",
+                    )}
+                  >
+                    <h5
+                      className={cn(
+                        "mb-2 flex items-center gap-2 text-sm font-semibold",
+                        "text-destructive",
+                      )}
+                    >
                       <X className="h-4 w-4 shrink-0" /> Do Not Upload
                     </h5>
-                    <div className="overflow-hidden rounded border border-red-200 shadow-sm dark:border-red-800">
+                    <div
+                      className={cn(
+                        "overflow-hidden rounded border",
+                        "border-destructive/20 shadow-sm",
+                      )}
+                    >
                       <img
                         src={notFormalImage}
                         alt="Non-Formal Example"
-                        className="h-32 w-32 object-cover mix-blend-multiply dark:mix-blend-normal"
+                        className="h-32 w-32 object-cover"
                       />
                     </div>
                   </div>
@@ -949,7 +976,6 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.studentNumber",
                 )}
-
               />
             </div>
             <div className="md:col-span-3">
@@ -1055,7 +1081,6 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.gender",
                 )}
-
               />
             </div>
             <div className="md:col-span-2">
@@ -1144,133 +1169,129 @@ export const PersonalSection = forwardRef<
                   runtimeSchema,
                   "student.personalInfo.dateOfBirth",
                 )}
-
                 maxDate={new Date()}
               />
             </div>
-              <>
-                <div className="md:col-span-3">
-                  <FormField
-                    label="Place of Birth"
-                    value={studentInfo?.personalInfo?.placeOfBirth || ""}
-                    onChange={(val: any) =>
-                      handleInputChange(
-                        "student.personalInfo.placeOfBirth",
-                        val,
-                      )
-                    }
-                    error={errors["student.personalInfo.placeOfBirth"]}
-                    placeholder="City/Municipality, Province"
-                    noSpecialCharacters={true}
-                    required={isFieldRequired(
-                      runtimeSchema,
-                      "student.personalInfo.placeOfBirth",
-                    )}
-                  />
-                </div>
+            <>
+              <div className="md:col-span-3">
+                <FormField
+                  label="Place of Birth"
+                  value={studentInfo?.personalInfo?.placeOfBirth || ""}
+                  onChange={(val: any) =>
+                    handleInputChange("student.personalInfo.placeOfBirth", val)
+                  }
+                  error={errors["student.personalInfo.placeOfBirth"]}
+                  placeholder="City/Municipality, Province"
+                  noSpecialCharacters={true}
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.placeOfBirth",
+                  )}
+                />
+              </div>
 
-                <div className="md:col-span-2">
-                  <FormField
-                    label="High School GWA"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.highSchoolGWA || ""}
-                    onChange={(val: any) =>
-                      handleInputChange(
-                        "student.personalInfo.highSchoolGWA",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      )
-                    }
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.highSchoolGWA;
-                      handleInputChange(
-                        "student.personalInfo.highSchoolGWA",
-                        val === "" || val == null ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.highSchoolGWA");
-                    }}
-                    error={errors["student.personalInfo.highSchoolGWA"]}
-                    placeholder="90.5"
-                    required={isFieldRequired(
-                      runtimeSchema,
+              <div className="md:col-span-2">
+                <FormField
+                  label="High School GWA"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.highSchoolGWA || ""}
+                  onChange={(val: any) =>
+                    handleInputChange(
                       "student.personalInfo.highSchoolGWA",
-                    )}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <FormField
-                    label="Height (m)"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.heightM || ""}
-                    onChange={(val: any) => {
-                      handleInputChange(
-                        "student.personalInfo.heightM",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      );
-                    }}
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.heightM;
-                      handleInputChange(
-                        "student.personalInfo.heightM",
-                        val === "" ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.heightM");
-                    }}
-                    error={errors["student.personalInfo.heightM"]}
-                    placeholder="1.5"
-                    required={isFieldRequired(
-                      runtimeSchema,
+                      String(val).replace(/[^0-9.]/g, ""),
+                    )
+                  }
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.highSchoolGWA;
+                    handleInputChange(
+                      "student.personalInfo.highSchoolGWA",
+                      val === "" || val == null ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.highSchoolGWA");
+                  }}
+                  error={errors["student.personalInfo.highSchoolGWA"]}
+                  placeholder="90.5"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.highSchoolGWA",
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  label="Height (m)"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.heightM || ""}
+                  onChange={(val: any) => {
+                    handleInputChange(
                       "student.personalInfo.heightM",
-                    )}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <FormField
-                    label="Weight (kg.)"
-                    type="text"
-                    inputMode="decimal"
-                    value={studentInfo?.personalInfo?.weightKg || ""}
-                    onChange={(val: any) => {
-                      handleInputChange(
-                        "student.personalInfo.weightKg",
-                        String(val).replace(/[^0-9.]/g, ""),
-                      );
-                    }}
-                    onBlur={() => {
-                      const val = studentInfo?.personalInfo?.weightKg;
-                      handleInputChange(
-                        "student.personalInfo.weightKg",
-                        val === "" ? null : Number(val),
-                      );
-                      handleFieldBlur("student.personalInfo.weightKg");
-                    }}
-                    error={errors["student.personalInfo.weightKg"]}
-                    placeholder="65"
-                    required={isFieldRequired(
-                      runtimeSchema,
+                      String(val).replace(/[^0-9.]/g, ""),
+                    );
+                  }}
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.heightM;
+                    handleInputChange(
+                      "student.personalInfo.heightM",
+                      val === "" ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.heightM");
+                  }}
+                  error={errors["student.personalInfo.heightM"]}
+                  placeholder="1.5"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.heightM",
+                  )}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormField
+                  label="Weight (kg.)"
+                  type="text"
+                  inputMode="decimal"
+                  value={studentInfo?.personalInfo?.weightKg || ""}
+                  onChange={(val: any) => {
+                    handleInputChange(
                       "student.personalInfo.weightKg",
-                    )}
-                  />
-                </div>
+                      String(val).replace(/[^0-9.]/g, ""),
+                    );
+                  }}
+                  onBlur={() => {
+                    const val = studentInfo?.personalInfo?.weightKg;
+                    handleInputChange(
+                      "student.personalInfo.weightKg",
+                      val === "" ? null : Number(val),
+                    );
+                    handleFieldBlur("student.personalInfo.weightKg");
+                  }}
+                  error={errors["student.personalInfo.weightKg"]}
+                  placeholder="65"
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.weightKg",
+                  )}
+                />
+              </div>
 
-                <div className="md:col-span-6">
-                  <SelectField
-                    formStyle
-                    label="Complexion"
-                    options={COMPLEXIONS.map((c) => ({ id: c, name: c }))}
-                    value={studentInfo?.personalInfo?.complexion || ""}
-                    onChange={(val: any) =>
-                      handleInputChange("student.personalInfo.complexion", val)
-                    }
-                    error={getFieldError("student.personalInfo.complexion")}
-                    required={isFieldRequired(
-                      runtimeSchema,
-                      "student.personalInfo.complexion",
-                    )}
-                  />
-                </div>
-              </>
+              <div className="md:col-span-6">
+                <SelectField
+                  formStyle
+                  label="Complexion"
+                  options={COMPLEXIONS.map((c) => ({ id: c, name: c }))}
+                  value={studentInfo?.personalInfo?.complexion || ""}
+                  onChange={(val: any) =>
+                    handleInputChange("student.personalInfo.complexion", val)
+                  }
+                  error={getFieldError("student.personalInfo.complexion")}
+                  required={isFieldRequired(
+                    runtimeSchema,
+                    "student.personalInfo.complexion",
+                  )}
+                />
+              </div>
+            </>
           </div>
         </SectionContainer>
       )}

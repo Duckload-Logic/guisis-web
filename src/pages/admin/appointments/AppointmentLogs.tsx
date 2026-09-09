@@ -167,7 +167,7 @@ export default function AppointmentLogs() {
       "date and status filters",
     badgeText: "Audit Trail",
     badgeIcon: <Calendar className="h-4 w-4" />,
-    isLoading: isPageLoading,
+    isLoading: false,
   });
 
   const currentSelectedStatus = useMemo(() => {
@@ -239,7 +239,7 @@ return (
           <AppointmentList
             title="Session Archives"
             appointments={appointments}
-            isLoading={isLoading}
+            isLoading={isLoading || isStatsLoading}
             onViewClick={handleViewAppointment}
             searchTerm={searchTerm}
             onSearchChange={(value: string) => {

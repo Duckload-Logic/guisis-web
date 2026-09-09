@@ -1,31 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  useAppointment,
-  useStatuses,
-  useUpdateAppointment,
-  useStartAppointment,
-} from "@/features/appointments/hooks";
-import {
-  User,
-  FileText,
   Calendar,
   CheckCircle,
   XCircle,
   AlertCircle,
   Clock3,
   CalendarRange,
-  ShieldUser,
   ArrowLeft,
-  Building2,
-  Fingerprint,
   MessageSquare,
   StickyNote,
   Play,
+  Copy,
+  Check,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -36,6 +27,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  useAppointment,
+  useStatuses,
+  useUpdateAppointment,
+  useStartAppointment,
+} from "@/features/appointments/hooks";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import {
   format12HourTime,
@@ -47,18 +44,17 @@ import { parseAuditTrail } from "@/utils/auditTrail";
 import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
 import RescheduleModal from "@/features/appointments/components/RescheduleModal";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
+import { InOfficeSessionTimer } from "@/components/shared/InOfficeSessionTimer";
+import { StudentProfileBentoCard } from "@/components/shared/StudentProfileBentoCard";
 import { cn } from "@/lib/utils";
-import { getProfilePictureUrl } from "@/lib/profilePicture";
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
-
   if (!raw) {
     return {
       label: "Medium",
-      description: "Default priority when no urgency level is provided.",
-      className:
-        "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+      description: "Default priority for consultation.",
+      className: STATUS_COLORS.warning,
     };
   }
 
@@ -69,38 +65,33 @@ function getAppointmentUrgency(appointment?: any) {
   if (normalized.includes("critical")) {
     return {
       label: "Critical",
-      description:
-        "Immediate attention required due to critical nature of concern.",
+      description: "Immediate guidance attention required.",
       className:
-        "border-red-700/25 bg-red-700/10 text-red-700 " +
-        "dark:text-red-400 font-extrabold animate-pulse",
+        "border-destructive/30 bg-destructive/15 text-destructive " +
+        "font-extrabold animate-pulse",
     };
   }
 
   if (normalized.includes("high") || normalized.includes("urgent")) {
     return {
       label: "High",
-      description:
-        "Prioritize this student concern during review and scheduling.",
-      className:
-        "border-red-500/25 bg-red-500/10 text-red-700 dark:text-red-300",
+      description: "Prioritize this student concern.",
+      className: STATUS_COLORS.danger,
     };
   }
 
   if (normalized.includes("low")) {
     return {
       label: "Low",
-      description: "Can be handled through the regular appointment queue.",
-      className:
-        "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+      description: "Standard appointment queue.",
+      className: STATUS_COLORS.success,
     };
   }
 
   return {
     label: "Medium",
-    description: "Standard guidance priority for regular processing.",
-    className:
-      "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    description: "Standard guidance priority.",
+    className: STATUS_COLORS.warning,
   };
 }
 
@@ -114,27 +105,13 @@ export default function AppointmentDetails() {
   const { triggerToast } = useToast();
 
   const [isStartConfirming, setIsStartConfirming] = useState(false);
-
-  const handleStartAppointment = () => {
-    if (!id) return;
-    setIsStartConfirming(true);
-  };
-
-  const handleConfirmStartAppointment = async () => {
-    if (!id) return;
-    try {
-      await startAppointmentMutation.mutateAsync(id);
-      triggerToast("✓ On-site appointment session started!");
-      setIsStartConfirming(false);
-    } catch {
-      triggerToast("Failed to start appointment session");
-      setIsStartConfirming(false);
-    }
-  };
-
-  const auditEntries = useMemo(() => {
-    return parseAuditTrail(appointment?.adminNotes);
-  }, [appointment?.adminNotes]);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [showCorPreview, setShowCorPreview] = useState(false);
+  const [hasCopiedId, setHasCopiedId] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    type: string;
+    requiresMessage: boolean;
+  } | null>(null);
 
   const [selectedSchedule, setSelectedSchedule] = useState<{
     date: string;
@@ -152,12 +129,9 @@ export default function AppointmentDetails() {
     }
   }, [appointment]);
 
-  const [pendingAction, setPendingAction] = useState<{
-    type: string;
-    requiresMessage: boolean;
-  } | null>(null);
-  const [showReschedule, setShowReschedule] = useState(false);
-  const [showCorPreview, setShowCorPreview] = useState(false);
+  const auditEntries = useMemo(() => {
+    return parseAuditTrail(appointment?.adminNotes);
+  }, [appointment?.adminNotes]);
 
   const fullName = appointment
     ? [
@@ -171,14 +145,14 @@ export default function AppointmentDetails() {
         .join(" ")
     : "";
 
-  const initials = appointment?.user
-    ? `${appointment.user.firstName?.[0] || ""}${appointment.user.lastName?.[0] || ""}`.toUpperCase() ||
-      "ST"
-    : "ST";
+  const handleCopyId = () => {
+    if (!appointment?.id) return;
+    navigator.clipboard.writeText(appointment.id);
+    setHasCopiedId(true);
+    setTimeout(() => setHasCopiedId(false), 2000);
+  };
 
-  const studentProfilePictureUrl = getProfilePictureUrl(
-    appointment?.user?.profilePicture,
-  );
+  const urgencyInfo = getAppointmentUrgency(appointment);
 
   usePageMetadata(
     useMemo(
@@ -188,39 +162,79 @@ export default function AppointmentDetails() {
         badgeText: "Admin Management",
         badgeIcon: <Calendar className="h-4 w-4" />,
         isLoading: isLoading && !appointment,
-        headerActions: null,
+        headerActions: appointment ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyId}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border border-border/70",
+                "bg-muted/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground",
+                "transition-colors hover:border-primary/40 hover:text-foreground",
+              )}
+              title="Click to copy full ID"
+            >
+              {hasCopiedId ? (
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+              <span>APT-{appointment.id?.substring(0, 8)}</span>
+            </button>
+            {appointment.status && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
+                  STATUS_COLORS[getStatusColorKey(appointment.status.name)],
+                )}
+              >
+                {appointment.status.name}
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
+                urgencyInfo.className,
+              )}
+            >
+              {urgencyInfo.label} Urgency
+            </Badge>
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
+                "font-medium text-foreground/80",
+              )}
+            >
+              <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
+              Turnaround:{" "}
+              {formatProcessDuration(
+                appointment.startedAt,
+                appointment.completedAt,
+              )}
+            </Badge>
+          </div>
+        ) : null,
       }),
-      [appointment],
+      [appointment, fullName, hasCopiedId, isLoading, urgencyInfo],
     ),
   );
 
-  if (isError) {
+  if (isError || (!appointment && !isLoading)) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
         <p className="font-medium text-destructive">
-          Error loading appointment
+          {isError ? "Error loading appointment" : "Appointment not found"}
         </p>
         <Button
           onClick={() => navigate("/admin/appointments")}
           variant="outline"
+          className="rounded-xl"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to List
-        </Button>
-      </div>
-    );
-  }
-
-  if (!appointment && !isLoading) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">Appointment not found</p>
-        <Button
-          onClick={() => navigate("/admin/appointments")}
-          variant="outline"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to List
+          Back to Appointments
         </Button>
       </div>
     );
@@ -228,68 +242,29 @@ export default function AppointmentDetails() {
 
   if (!appointment) return null;
 
-  const urgencyInfo = getAppointmentUrgency(appointment);
+  const isPending = appointment.status?.name === "Pending";
+  const isScheduled =
+    appointment.status?.name === "Scheduled" ||
+    appointment.status?.name === "Rescheduled";
+  const isCompleted = appointment.status?.name === "Completed";
+  const needsSignificantNote = isCompleted && !appointment.hasSignificantNote;
+  const isSessionActive =
+    Boolean(appointment.startedAt) && !appointment.completedAt;
 
-  const getAllowedActions = (statusName: string): string[] => {
-    switch (statusName) {
-      case "Pending":
-        return ["Approve", "Reject"];
-      case "Scheduled":
-        return ["Reschedule", "Cancel", "Complete", "No-show"];
-      case "Rescheduled":
-        return ["Reschedule", "Cancel", "Complete", "No-show"];
-      default:
-        return [];
+  const handleConfirmStartAppointment = async (offsetMinutes = 0) => {
+    if (!id) return;
+    try {
+      await startAppointmentMutation.mutateAsync({ id, offsetMinutes });
+      triggerToast(
+        offsetMinutes > 0
+          ? `✓ Session started with +${offsetMinutes}m simulated!`
+          : "✓ On-site appointment session started!",
+      );
+      setIsStartConfirming(false);
+    } catch {
+      triggerToast("Failed to start appointment session");
+      setIsStartConfirming(false);
     }
-  };
-
-  const allowedActions = getAllowedActions(appointment.status?.name || "");
-
-  const actionColor = (action: string): string => {
-    switch (action) {
-      case "Approve":
-        return "bg-green-600 hover:bg-green-700 text-white";
-      case "Reject":
-        return "bg-red-600 hover:bg-red-700 text-white";
-      case "Cancel":
-        return "bg-orange-600 hover:bg-orange-700 text-white";
-      case "Complete":
-        return "bg-blue-600 hover:bg-blue-700 text-white";
-      case "No-show":
-        return "bg-gray-600 hover:bg-gray-700 text-white";
-      case "Reschedule":
-        return "bg-purple-600 hover:bg-purple-700 text-white";
-      default:
-        return "bg-primary hover:bg-primary/90 text-primary-foreground";
-    }
-  };
-
-  const actionIcon = (action: string) => {
-    switch (action) {
-      case "Approve":
-        return <CheckCircle className="h-4 w-4" />;
-      case "Reject":
-        return <XCircle className="h-4 w-4" />;
-      case "Cancel":
-        return <AlertCircle className="h-4 w-4" />;
-      case "Complete":
-        return <CheckCircle className="h-4 w-4" />;
-      case "No-show":
-        return <Clock3 className="h-4 w-4" />;
-      case "Reschedule":
-        return <CalendarRange className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const handleActionClick = (action: string) => {
-    if (action === "Reschedule") {
-      setShowReschedule(true);
-      return;
-    }
-    const requiresMessage = ["Reject", "Cancel", "No-show"].includes(action);
-    setPendingAction({ type: action, requiresMessage });
   };
 
   const getStatusIdByAction = (action: string): number | undefined => {
@@ -316,17 +291,25 @@ export default function AppointmentDetails() {
     return statusMap[action];
   };
 
+  const handleActionClick = (action: string) => {
+    if (action === "Reschedule") {
+      setShowReschedule(true);
+      return;
+    }
+    const requiresMessage = ["Reject", "Cancel", "No-show"].includes(action);
+    setPendingAction({ type: action, requiresMessage });
+  };
+
   const handleConfirmAction = async (message?: string): Promise<boolean> => {
     if (!pendingAction) return false;
     const statusId = getStatusIdByAction(pendingAction.type);
     if (!statusId) return false;
 
-    const payload: any = { status: { id: statusId } };
+    const payload: any = {
+      status: { id: statusId },
+      adminNotes: message || "",
+    };
 
-    payload.adminNotes = message || "";
-
-    // Always send the current schedule so the backend does not
-    // misdetect a schedule change and trigger the reschedule guard.
     if (pendingAction.type === "Approve" && selectedSchedule) {
       payload.whenDate = selectedSchedule.date;
       payload.timeSlot = { id: selectedSchedule.timeSlotId };
@@ -344,9 +327,6 @@ export default function AppointmentDetails() {
     }
   };
 
-  const isCompleted = appointment.status?.name === "Completed";
-  const needsSignificantNote = isCompleted && !appointment.hasSignificantNote;
-
   const handleRescheduleConfirm = async (
     newDate: string,
     newTimeSlotId: number,
@@ -358,7 +338,7 @@ export default function AppointmentDetails() {
         data: {
           whenDate: newDate,
           timeSlot: { id: newTimeSlotId },
-          status: { id: 6 }, // Rescheduled status ID
+          status: { id: 6 },
           adminNotes: reason,
         } as any,
       });
@@ -369,882 +349,491 @@ export default function AppointmentDetails() {
     }
   };
 
-  return (
-    <>
-      <div
-        className={cn(
-          "mx-auto flex w-full flex-col space-y-8 pb-12",
-          "px-4 sm:px-6 md:px-8",
-        )}
-      >
-        {needsSignificantNote && (
-          <div
-            className={cn(
-              "animate-fade-in-up flex flex-col items-center",
-              "justify-between gap-4 rounded-xl border border-primary/20",
-              "bg-primary/10 p-6 shadow-md backdrop-blur-xl",
-              "sm:flex-row",
-            )}
-            style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="rounded-2xl border border-primary/30 bg-primary/20 p-3">
-                <StickyNote className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-tight text-foreground">
-                  Record Significant Note
-                </h3>
-                <p className="text-xs font-medium text-muted-foreground">
-                  This completed appointment requires a significant note for the
-                  student's records.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() =>
-                navigate(
-                  `/admin/student-records/${appointment.iirId}?addNote=true&appointmentId=${appointment.id}`,
-                )
-              }
-              className={cn(
-                "h-11 rounded-xl bg-primary px-6 font-bold text-white",
-                "shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5",
-                "hover:bg-primary/90 hover:shadow-xl",
-              )}
-            >
-              Add Note Now
-            </Button>
-          </div>
-        )}
+  const studentData = {
+    firstName: appointment.user?.firstName,
+    middleName: appointment.user?.middleName,
+    lastName: appointment.user?.lastName,
+    email: appointment.user?.email,
+    studentNumber: appointment.studentNumber || appointment.user?.studentNumber,
+    contactNumber: appointment.contactNumber,
+    profilePicture: appointment.user?.profilePicture,
+    iirId: appointment.iirId,
+    studentCorUrl: appointment.studentCorUrl,
+  };
 
-        {/* Top Row: Identity & Information (Wave 1) */}
+  const scheduleOptions = [
+    {
+      title: "Primary Schedule",
+      date: appointment.whenDate,
+      slot: appointment.timeSlot,
+    },
+    appointment.preferredDate1 && appointment.preferredTimeSlot1
+      ? {
+          title: "Backup Option 1",
+          date: appointment.preferredDate1,
+          slot: appointment.preferredTimeSlot1,
+        }
+      : null,
+    appointment.preferredDate2 && appointment.preferredTimeSlot2
+      ? {
+          title: "Backup Option 2",
+          date: appointment.preferredDate2,
+          slot: appointment.preferredTimeSlot2,
+        }
+      : null,
+    appointment.preferredDate3 && appointment.preferredTimeSlot3
+      ? {
+          title: "Backup Option 3",
+          date: appointment.preferredDate3,
+          slot: appointment.preferredTimeSlot3,
+        }
+      : null,
+  ].filter(Boolean) as {
+    title: string;
+    date: string;
+    slot: { id: number; time: string };
+  }[];
+
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8">
+      {/* Significant Note Banner */}
+      {needsSignificantNote && (
         <div
-          className="animate-fade-in-up grid grid-cols-1 gap-6 lg:grid-cols-3"
-          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
+          className={cn(
+            "flex flex-col items-center justify-between gap-4 rounded-2xl",
+            "border border-primary/25 bg-primary/10 p-5 shadow-sm sm:flex-row",
+          )}
         >
-          {/* Identity Card */}
+          <div className="flex items-center gap-3.5">
+            <div className="rounded-xl border border-primary/30 bg-primary/20 p-2.5">
+              <StickyNote className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">
+                Record Significant Note
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                This completed appointment requires a consultation note in the
+                student's records.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() =>
+              navigate(
+                `/admin/student-records/${appointment.iirId}?addNote=true&appointmentId=${appointment.id}`,
+              )
+            }
+            className="h-10 rounded-xl bg-primary px-5 text-xs font-bold text-white shadow-sm hover:bg-primary/90"
+          >
+            Add Note Now
+          </Button>
+        </div>
+      )}
+
+      {/* 2-Column Sidebar Master-Detail Layout (Jakob's Law) */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* Left Column: Dossier & Controls (Col-span 4) */}
+        <div className="space-y-6 lg:col-span-4">
+          <StudentProfileBentoCard
+            student={studentData}
+            onViewCor={() => setShowCorPreview(true)}
+            canAccessIir={true}
+          />
+
+          {/* Administrative Controls Card */}
           <Card
             className={cn(
-              "group relative overflow-hidden",
-              "border-border bg-glass-bg shadow-md lg:col-span-1",
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardContent
-              className={cn(
-                "relative z-10 flex flex-col items-center",
-                "space-y-4 p-6 text-center",
-              )}
-            >
-              <Avatar
-                className={cn(
-                  "relative z-10 h-20 w-20 border-2",
-                  "border-border shadow-md",
-                )}
-              >
-                <AvatarImage
-                  src={studentProfilePictureUrl}
-                  alt={fullName || "Student profile picture"}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted/50 text-2xl font-bold uppercase text-foreground/80">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="space-y-1">
-                <h2 className="text-lg font-bold leading-tight tracking-tight text-foreground/90">
-                  {fullName}
-                </h2>
-                <p className="text-xs font-medium italic text-muted-foreground">
-                  {appointment.user?.email}
-                </p>
-              </div>
-
-              <div className="grid w-full grid-cols-1 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={cn(
-                    "group/btn w-full gap-2 rounded-xl border-primary/20",
-                    "bg-primary/5 font-bold text-primary transition-all",
-                    "duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-white",
-                  )}
-                  onClick={() =>
-                    navigate(`/admin/student-records/${appointment.iirId}`)
-                  }
-                >
-                  <User className="h-3.5 w-3.5" />
-                  Access Record
-                </Button>
-                {appointment.studentCorUrl && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "group/btn w-full gap-2 rounded-xl border-primary/20",
-                      "bg-primary/5 font-bold text-primary transition-all",
-                      "duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-white",
-                    )}
-                    onClick={() => setShowCorPreview(true)}
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    View COR
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* General Information Card */}
-          <Card className="border-border bg-glass-bg shadow-md lg:col-span-2">
-            <CardHeader
-              className={cn(
-                "flex flex-row items-center justify-between",
-                "border-b bg-muted/5 p-5 sm:p-6",
-              )}
-            >
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
               <CardTitle
                 className={cn(
-                  "flex items-center gap-2.5 text-lg font-bold",
-                  "tracking-tight",
+                  "flex items-center gap-2 text-xs font-bold uppercase",
+                  "tracking-wider text-muted-foreground",
                 )}
               >
-                <ShieldUser className="h-5 w-5 text-primary" />
-                Personal Profile
+                <CalendarRange className="h-4 w-4 text-primary" />
+                Administrative Controls
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-5 sm:p-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                <div className="group space-y-2 transition-all duration-300">
-                  <p
-                    className={cn(
-                      "text-[10px] font-bold uppercase",
-                      "text-muted-foreground/60 transition-colors",
-                      "group-hover:text-primary",
-                    )}
-                  >
-                    Student Number
-                  </p>
-                  <div
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl",
-                      "border bg-muted/15 p-3 shadow-inner transition-all",
-                      "group-hover:border-primary/20",
-                    )}
-                  >
-                    <Fingerprint className="h-4 w-4 text-primary/60" />
-                    <p className="text-base font-bold text-foreground/80">
-                      {appointment?.studentNumber || "N/A"}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="group space-y-2 transition-all duration-300">
-                  <p
-                    className={cn(
-                      "text-[10px] font-bold uppercase",
-                      "text-muted-foreground/60 transition-colors",
-                      "group-hover:text-primary",
-                    )}
-                  >
-                    Student email
-                  </p>
-                  <div
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl",
-                      "border bg-muted/15 p-3 shadow-inner transition-all",
-                      "group-hover:border-primary/20",
-                    )}
-                  >
-                    <Building2 className="h-4 w-4 text-primary/60" />
-                    <p className="truncate text-base font-bold text-foreground/80">
-                      {appointment.user?.email || "N/A"}
-                    </p>
-                  </div>
-                </div>
+            <CardContent className="space-y-4 p-5">
+              {/* In-Office Session Timer */}
+              {isScheduled && !appointment.startedAt && (
+                <InOfficeSessionTimer
+                  startedAt={null}
+                  completedAt={null}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => {
+                    if (!offset) {
+                      setIsStartConfirming(true);
+                    } else {
+                      handleConfirmStartAppointment(offset);
+                    }
+                  }}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
 
-                <div className="group space-y-2 transition-all duration-300">
-                  <p
+              {isSessionActive && (
+                <InOfficeSessionTimer
+                  startedAt={appointment.startedAt}
+                  completedAt={appointment.completedAt}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => handleConfirmStartAppointment(offset)}
+                  onComplete={() => handleActionClick("Complete")}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
+
+              {/* Lifecycle Actions */}
+              {isPending && (
+                <div className="space-y-2.5">
+                  <Button
+                    onClick={() => handleActionClick("Approve")}
                     className={cn(
-                      "text-[10px] font-bold uppercase",
-                      "text-muted-foreground/60 transition-colors",
-                      "group-hover:text-primary",
+                      "h-10 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
+                      "shadow-sm transition-all hover:bg-emerald-700",
                     )}
                   >
-                    Urgency Level
-                  </p>
-                  <div
+                    <CheckCircle className="h-4 w-4" />
+                    Approve Selected Schedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Reject")}
                     className={cn(
-                      "flex items-start gap-3 rounded-xl border p-3",
-                      "shadow-inner transition-all group-hover:border-primary/20",
-                      urgencyInfo.className,
+                      "h-9 w-full gap-2 rounded-xl border-destructive/30 text-xs",
+                      "font-semibold text-destructive hover:bg-destructive/10",
                     )}
                   >
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-base font-bold">{urgencyInfo.label}</p>
-                      <p className="mt-0.5 text-[11px] font-medium leading-4 opacity-80">
-                        {urgencyInfo.description}
-                      </p>
-                    </div>
-                  </div>
+                    <XCircle className="h-4 w-4" />
+                    Reject Consultation Request
+                  </Button>
                 </div>
-              </div>
+              )}
+
+              {isScheduled && !isSessionActive && (
+                <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Reschedule")}
+                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                  >
+                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
+                    Reschedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("No-show")}
+                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                  >
+                    <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                    Mark No-show
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Cancel")}
+                    className={cn(
+                      "col-span-2 h-9 gap-2 rounded-xl border-destructive/30 text-xs",
+                      "font-semibold text-destructive hover:bg-destructive/10",
+                    )}
+                  >
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    Cancel Appointment
+                  </Button>
+                </div>
+              )}
+
+              {isCompleted && (
+                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
+                  <CheckCircle className="mx-auto h-7 w-7 text-emerald-600/80" />
+                  <p className="mt-2 text-xs font-bold text-foreground/80">
+                    Consultation Completed
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    All session actions have concluded.
+                  </p>
+                </div>
+              )}
+
+              {!isPending && !isScheduled && !isCompleted && (
+                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
+                  <ShieldAlert className="mx-auto h-7 w-7 text-muted-foreground/60" />
+                  <p className="mt-2 text-xs font-bold text-muted-foreground">
+                    Appointment is {appointment.status?.name}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Content Row: Session Details & Actions (Wave 2) */}
-        <div
-          className="animate-fade-in-up grid grid-cols-1 gap-6 pb-12 lg:grid-cols-12"
-          style={{ animationDelay: "0.15s", animationFillMode: "both" }}
-        >
-          {/* Left: Session Details (Col-span 8) */}
-          <div className="space-y-6 lg:col-span-8">
-            <Card className="h-full overflow-hidden border-border bg-glass-bg shadow-md">
-              <CardHeader
-                className={cn(
-                  "flex flex-row items-center justify-between",
-                  "border-b bg-muted/5 p-5 sm:p-6",
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-2.5">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold tracking-tight">
-                      Session Context
-                    </CardTitle>
-                    <p className="font-mono text-[10px] text-muted-foreground">
-                      ID: {appointment.id?.substring(0, 8)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {appointment?.status && (
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-[10px] font-bold",
-                        "shadow-sm",
-                        STATUS_COLORS[
-                          getStatusColorKey(appointment.status.name)
-                        ],
-                      )}
-                    >
-                      {appointment.status.name}
-                    </Badge>
-                  )}
-                  <Badge
-                    variant="secondary"
-                    className={cn(
-                      "rounded-full border border-primary/20 bg-primary/10 px-3",
-                      "py-1 text-[10px] font-bold text-primary",
-                    )}
-                  >
-                    {appointment.appointmentCategory.name}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-[10px] font-bold",
-                      "shadow-sm",
-                      urgencyInfo.className,
-                    )}
-                  >
-                    Urgency: {urgencyInfo.label}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400"
-                  >
-                    <Clock3 className="mr-1 inline h-3 w-3" />
-                    Turnaround:{" "}
-                    {formatProcessDuration(
-                      appointment.startedAt,
-                      appointment.completedAt,
-                    )}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6 p-5 sm:p-6">
-                {/* Reason for Appointment Section */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-lg border border-primary/20 bg-primary/10 p-1.5">
-                      <MessageSquare className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/70">
-                      Reason for Appointment
-                    </h3>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "rounded-xl border bg-muted/15 p-5 shadow-inner",
-                    )}
-                  >
-                    <p className="text-sm font-medium italic leading-relaxed text-foreground/80">
-                      "{appointment.reason || "No specific reason provided."}"
-                    </p>
-                  </div>
-                </div>
-
-                {/* Schedule Options */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "rounded-lg border border-primary/20",
-                        "bg-primary/10 p-1.5",
-                      )}
-                    >
-                      <CalendarRange className="h-4 w-4 text-primary" />
-                    </div>
-                    <h3
-                      className={cn(
-                        "text-xs font-bold uppercase",
-                        "tracking-wider text-foreground/70",
-                      )}
-                    >
-                      {appointment.status?.name === "Pending"
-                        ? "Select Schedule Option to Approve"
-                        : "Scheduled Date & Time"}
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {/* Primary Option */}
-                    <button
-                      type="button"
-                      disabled={appointment.status?.name !== "Pending"}
-                      onClick={() =>
-                        setSelectedSchedule({
-                          date: appointment.whenDate,
-                          timeSlotId: appointment.timeSlot.id,
-                          timeSlotTime: appointment.timeSlot.time,
-                        })
-                      }
-                      className={cn(
-                        "group relative rounded-xl border p-4 text-left",
-                        "transition-all",
-                        selectedSchedule?.date === appointment.whenDate &&
-                          selectedSchedule?.timeSlotId ===
-                            appointment.timeSlot.id
-                          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
-                          : cn(
-                              "border-border bg-muted/5",
-                              "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
-                            ),
-                        appointment.status?.name !== "Pending" &&
-                          cn(
-                            "cursor-default opacity-90",
-                            "hover:translate-y-0 hover:border-border hover:bg-muted/5",
-                          ),
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={cn(
-                            "text-[10px] font-bold uppercase",
-                            "tracking-wider text-primary/80",
-                          )}
-                        >
-                          Primary Schedule
-                        </span>
-                        {selectedSchedule?.date === appointment.whenDate &&
-                          selectedSchedule?.timeSlotId ===
-                            appointment.timeSlot.id && (
-                            <span className="h-2 w-2 rounded-full bg-primary" />
-                          )}
-                      </div>
-                      <p className="mt-2 text-sm font-bold text-foreground">
-                        {formatDate(appointment.whenDate)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {format12HourTime(appointment.timeSlot.time)}
-                      </p>
-                    </button>
-
-                    {/* Backup 1 */}
-                    {appointment.preferredDate1 &&
-                      appointment.preferredTimeSlot1 && (
-                        <button
-                          type="button"
-                          disabled={appointment.status?.name !== "Pending"}
-                          onClick={() =>
-                            setSelectedSchedule({
-                              date: appointment.preferredDate1!,
-                              timeSlotId: appointment.preferredTimeSlot1!.id,
-                              timeSlotTime:
-                                appointment.preferredTimeSlot1!.time,
-                            })
-                          }
-                          className={cn(
-                            "group relative rounded-xl border p-4 text-left",
-                            "transition-all",
-                            selectedSchedule?.date ===
-                              appointment.preferredDate1 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot1?.id
-                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
-                              : cn(
-                                  "border-border bg-muted/5",
-                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
-                                ),
-                            appointment.status?.name !== "Pending" &&
-                              cn(
-                                "cursor-default opacity-90",
-                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
-                              ),
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={cn(
-                                "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70",
-                              )}
-                            >
-                              Backup Option 1
-                            </span>
-                            {selectedSchedule?.date ===
-                              appointment.preferredDate1 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot1?.id && (
-                                <span
-                                  className={cn(
-                                    "h-2 w-2 rounded-full bg-primary",
-                                  )}
-                                />
-                              )}
-                          </div>
-                          <p className="mt-2 text-sm font-bold text-foreground">
-                            {formatDate(appointment.preferredDate1)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format12HourTime(
-                              appointment.preferredTimeSlot1.time,
-                            )}
-                          </p>
-                        </button>
-                      )}
-
-                    {/* Backup 2 */}
-                    {appointment.preferredDate2 &&
-                      appointment.preferredTimeSlot2 && (
-                        <button
-                          type="button"
-                          disabled={appointment.status?.name !== "Pending"}
-                          onClick={() =>
-                            setSelectedSchedule({
-                              date: appointment.preferredDate2!,
-                              timeSlotId: appointment.preferredTimeSlot2!.id,
-                              timeSlotTime:
-                                appointment.preferredTimeSlot2!.time,
-                            })
-                          }
-                          className={cn(
-                            "group relative rounded-xl border p-4 text-left",
-                            "transition-all",
-                            selectedSchedule?.date ===
-                              appointment.preferredDate2 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot2?.id
-                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
-                              : cn(
-                                  "border-border bg-muted/5",
-                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
-                                ),
-                            appointment.status?.name !== "Pending" &&
-                              cn(
-                                "cursor-default opacity-90",
-                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
-                              ),
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={cn(
-                                "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70",
-                              )}
-                            >
-                              Backup Option 2
-                            </span>
-                            {selectedSchedule?.date ===
-                              appointment.preferredDate2 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot2?.id && (
-                                <span
-                                  className={cn(
-                                    "h-2 w-2 rounded-full bg-primary",
-                                  )}
-                                />
-                              )}
-                          </div>
-                          <p className="mt-2 text-sm font-bold text-foreground">
-                            {formatDate(appointment.preferredDate2)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format12HourTime(
-                              appointment.preferredTimeSlot2.time,
-                            )}
-                          </p>
-                        </button>
-                      )}
-
-                    {/* Backup 3 */}
-                    {appointment.preferredDate3 &&
-                      appointment.preferredTimeSlot3 && (
-                        <button
-                          type="button"
-                          disabled={appointment.status?.name !== "Pending"}
-                          onClick={() =>
-                            setSelectedSchedule({
-                              date: appointment.preferredDate3!,
-                              timeSlotId: appointment.preferredTimeSlot3!.id,
-                              timeSlotTime:
-                                appointment.preferredTimeSlot3!.time,
-                            })
-                          }
-                          className={cn(
-                            "group relative rounded-xl border p-4 text-left",
-                            "transition-all",
-                            selectedSchedule?.date ===
-                              appointment.preferredDate3 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot3?.id
-                              ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary hover:-translate-y-0.5"
-                              : cn(
-                                  "border-border bg-muted/5",
-                                  "hover:-translate-y-0.5 hover:border-primary/20 hover:bg-muted/10",
-                                ),
-                            appointment.status?.name !== "Pending" &&
-                              cn(
-                                "cursor-default opacity-90",
-                                "hover:translate-y-0 hover:border-border hover:bg-muted/5",
-                              ),
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={cn(
-                                "text-[10px] font-bold uppercase",
-                                "tracking-wider text-muted-foreground/70",
-                              )}
-                            >
-                              Backup Option 3
-                            </span>
-                            {selectedSchedule?.date ===
-                              appointment.preferredDate3 &&
-                              selectedSchedule?.timeSlotId ===
-                                appointment.preferredTimeSlot3?.id && (
-                                <span
-                                  className={cn(
-                                    "h-2 w-2 rounded-full bg-primary",
-                                  )}
-                                />
-                              )}
-                          </div>
-                          <p className="mt-2 text-sm font-bold text-foreground">
-                            {formatDate(appointment.preferredDate3)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format12HourTime(
-                              appointment.preferredTimeSlot3.time,
-                            )}
-                          </p>
-                        </button>
-                      )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right: Actions & Timeline (Col-span 4) */}
-          <div className="space-y-6 lg:col-span-4">
-            <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
-              <CardHeader className="border-b bg-muted/5 p-5">
-                <CardTitle className="flex items-center gap-2.5 text-base font-bold tracking-tight">
-                  <ShieldUser className="h-4 w-4 text-primary" />
-                  Administrative Controls
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-5 space-y-3">
-                {appointment &&
-                  !appointment.startedAt &&
-                  (appointment.status?.name === "Scheduled" ||
-                    appointment.status?.name === "Rescheduled") && (
-                    <Button
-                      onClick={handleStartAppointment}
-                      disabled={startAppointmentMutation.isPending}
-                      className={cn(
-                        "group/start h-11 w-full items-center justify-between",
-                        "rounded-xl border border-emerald-500/30 bg-emerald-600 text-white shadow-sm",
-                        "transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-500 hover:shadow-md",
-                      )}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Play className="h-4 w-4 fill-white" />
-                        <span className="text-xs font-bold tracking-wider">
-                          Start Appointment (On-Site)
-                        </span>
-                      </div>
-                      <Clock3 className="h-4 w-4 opacity-80" />
-                    </Button>
-                  )}
-
-                {appointment?.startedAt && !appointment?.completedAt && (
-                  <div className="flex flex-col gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-bold text-xs">
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                        </span>
-                        <span>Session In Progress</span>
-                      </div>
-                      <span className="font-mono text-[11px] opacity-90">
-                        Started: {format12HourTime(appointment.startedAt)}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        onClick={() => handleActionClick("Complete")}
-                        className="h-9 gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all"
-                      >
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        Complete Session
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleActionClick("Cancel")}
-                        className="h-9 gap-1.5 rounded-lg border-red-500/30 text-red-600 hover:bg-red-500/10 dark:text-red-400 font-bold text-xs transition-all"
-                      >
-                        <XCircle className="h-3.5 w-3.5" />
-                        Cancel Session
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {allowedActions.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {allowedActions.map((action) => (
-                      <Button
-                        key={action}
-                        onClick={() => handleActionClick(action)}
-                        className={cn(
-                          actionColor(action),
-                          "group/action h-11 w-full items-center justify-between",
-                          "rounded-xl border border-white/10 px-4 shadow-sm",
-                          "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          {actionIcon(action)}
-                          <span className="text-xs font-bold">{action}</span>
-                        </div>
-                        <ArrowLeft
-                          className={cn(
-                            "h-3.5 w-3.5 -translate-x-1.5 rotate-180 opacity-0",
-                            "transition-all duration-300",
-                            "group-hover/action:translate-x-0 group-hover/action:opacity-100",
-                          )}
-                        />
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    className={cn(
-                      "space-y-3 rounded-xl border border-dashed py-8 text-center",
-                    )}
-                  >
-                    <div className="mx-auto w-fit rounded-full border border-primary/20 bg-primary/10 p-3">
-                      <CheckCircle className="h-6 w-6 text-primary/60" />
-                    </div>
-                    <p className="text-xs font-bold italic text-muted-foreground/60">
-                      All set! No pending tasks.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-border bg-glass-bg shadow-md">
-              <CardHeader className="border-b bg-muted/5 p-5">
+        {/* Right Column: Context & Audit History (Col-span 8) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Consultation Request Context Card */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
+            )}
+          >
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+              <div className="flex items-center justify-between">
                 <CardTitle
                   className={cn(
-                    "flex items-center gap-2 text-[10px] font-bold",
-                    "uppercase tracking-wider text-muted-foreground",
+                    "flex items-center gap-2 text-xs font-bold uppercase",
+                    "tracking-wider text-muted-foreground",
                   )}
                 >
-                  <Clock3 className="h-3.5 w-3.5" />
-                  Audit Trail
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                  Consultation Request Context
                 </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 p-5">
-                {auditEntries.map((entry, idx) => (
-                  <div
-                    key={idx}
-                    className="group flex items-start gap-4"
-                  >
-                    <div className="relative mt-1">
-                      <div
-                        className={cn(
-                          "relative z-10 h-3.5 w-3.5 shrink-0",
-                          "rounded-full border-2",
-                          entry.status.toUpperCase().includes("RESCHEDULED")
-                            ? "border-amber-500 bg-background shadow-sm"
-                            : entry.status.toUpperCase().includes("APPROVED") ||
-                                entry.status.toUpperCase().includes("COMPLETED")
-                              ? "border-emerald-500 bg-background shadow-sm"
-                              : entry.status
-                                    .toUpperCase()
-                                    .includes("REJECTED") ||
-                                  entry.status
-                                    .toUpperCase()
-                                    .includes("CANCELLED")
-                                ? "border-red-500 bg-background shadow-sm"
-                                : "border-primary bg-background shadow-sm",
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
-                          "-translate-x-1/2 group-last:hidden",
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-foreground/80">
-                        {entry.status}
-                      </p>
-                      {entry.timestamp && (
-                        <p className="text-[10px] text-muted-foreground">
-                          {entry.timestamp}
-                        </p>
-                      )}
-                      {entry.remarks && (
-                        <p
-                          className={cn(
-                            "text-xs text-muted-foreground",
-                            "whitespace-pre-wrap",
-                          )}
-                        >
-                          {entry.remarks}
-                        </p>
-                      )}
-                      {entry.details && (
-                        <p
-                          className={cn(
-                            "text-[11px] font-medium",
-                            "text-amber-600 dark:text-amber-400",
-                          )}
-                        >
-                          {entry.details}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <Badge
+                  variant="secondary"
+                  className="rounded-lg border border-primary/20 bg-primary/10 text-xs font-bold text-primary"
+                >
+                  {appointment.appointmentCategory.name}
+                </Badge>
+              </div>
+            </CardHeader>
 
-                <div className="group flex items-start gap-4">
+            <CardContent className="space-y-5 p-5">
+              {/* Reason description box */}
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Reason for Consultation
+                </p>
+                <div className="rounded-xl border bg-muted/10 p-4">
+                  <p className="text-sm font-medium italic leading-relaxed text-foreground/90">
+                    "{appointment.reason || "No specific reason provided."}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Schedule options / Selected schedule */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {isPending
+                      ? "Select Schedule Option to Approve"
+                      : "Confirmed Consultation Schedule"}
+                  </p>
+                  {isPending && (
+                    <span className="text-[10px] italic text-muted-foreground">
+                      Click a slot to set approval target
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {scheduleOptions.map((opt, idx) => {
+                    const isSelected =
+                      selectedSchedule?.date === opt.date &&
+                      selectedSchedule?.timeSlotId === opt.slot.id;
+
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={!isPending}
+                        onClick={() =>
+                          setSelectedSchedule({
+                            date: opt.date,
+                            timeSlotId: opt.slot.id,
+                            timeSlotTime: opt.slot.time,
+                          })
+                        }
+                        className={cn(
+                          "group relative flex flex-col justify-between rounded-xl",
+                          "border p-3.5 text-left transition-all duration-200",
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
+                            : "border-border/80 bg-muted/10 hover:border-primary/30 hover:bg-muted/20",
+                          !isPending && "cursor-default hover:border-border/80",
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                            {opt.title}
+                          </span>
+                          {isSelected && (
+                            <span className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-sm font-bold text-foreground">
+                            {formatDate(opt.date)}
+                          </p>
+                          <p className="font-mono text-xs text-muted-foreground">
+                            {format12HourTime(opt.slot.time)}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Audit Trail & History Card */}
+          <Card
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/70",
+              "shadow-sm backdrop-blur-xl",
+            )}
+          >
+            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+              <CardTitle
+                className={cn(
+                  "flex items-center gap-2 text-xs font-bold uppercase",
+                  "tracking-wider text-muted-foreground",
+                )}
+              >
+                <Clock3 className="h-4 w-4 text-primary" />
+                Audit Trail & History
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-5">
+              {auditEntries.map((entry, idx) => (
+                <div
+                  key={idx}
+                  className="group flex items-start gap-3.5"
+                >
                   <div className="relative mt-1">
                     <div
                       className={cn(
-                        "relative z-10 h-3.5 w-3.5 shrink-0",
-                        "rounded-full border-2 border-primary",
-                        "bg-background shadow-sm",
+                        "relative z-10 h-3 w-3 shrink-0 rounded-full border-2",
+                        entry.status.toUpperCase().includes("RESCHEDULED")
+                          ? "border-amber-500 bg-background shadow-sm"
+                          : entry.status.toUpperCase().includes("APPROVED") ||
+                              entry.status.toUpperCase().includes("COMPLETED")
+                            ? "border-emerald-500 bg-background shadow-sm"
+                            : entry.status.toUpperCase().includes("REJECTED") ||
+                                entry.status.toUpperCase().includes("CANCELLED")
+                              ? "border-destructive bg-background shadow-sm"
+                              : "border-primary bg-background shadow-sm",
                       )}
                     />
+                    <div className="absolute left-1/2 top-3 h-full w-0.5 -translate-x-1/2 bg-border/60 group-last:hidden" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-foreground/80">
-                      Request Initialized
-                    </p>
-                    <p
-                      className={cn(
-                        "w-fit rounded-full border bg-muted/30",
-                        "px-2 py-0.5 text-[9px] font-bold",
-                        "text-muted-foreground/60",
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-foreground">
+                        {entry.status}
+                      </p>
+                      {entry.timestamp && (
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          {entry.timestamp}
+                        </span>
                       )}
-                    >
-                      {formatDate(appointment.createdAt || "")}
-                    </p>
+                    </div>
+                    {entry.remarks && (
+                      <p className="rounded-lg border bg-muted/20 p-2.5 text-xs text-foreground/85">
+                        {entry.remarks}
+                      </p>
+                    )}
+                    {entry.details && (
+                      <p className="text-[11px] font-medium text-amber-600">
+                        {entry.details}
+                      </p>
+                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              ))}
 
-        <ActionConfirmModal
-          isOpen={!!pendingAction}
-          onClose={() => setPendingAction(null)}
-          onConfirm={handleConfirmAction}
-          action={pendingAction?.type || ""}
-          requiresMessage={pendingAction?.requiresMessage || false}
-        />
-
-        {showReschedule && (
-          <RescheduleModal
-            isOpen={showReschedule}
-            onClose={() => setShowReschedule(false)}
-            onConfirm={handleRescheduleConfirm}
-            currentDate={appointment.whenDate}
-            currentTimeSlotId={appointment.timeSlot.id}
-          />
-        )}
-
-        <AlertDialog
-          open={isStartConfirming}
-          onOpenChange={setIsStartConfirming}
-        >
-          <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
-            <AlertDialogHeader>
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <Play className="h-5 w-5 fill-current" />
+              <div className="group flex items-start gap-3.5">
+                <div className="relative mt-1">
+                  <div className="relative z-10 h-3 w-3 shrink-0 rounded-full border-2 border-primary bg-background shadow-sm" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-foreground">
+                      Request Initialized
+                    </p>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {formatDate(appointment.createdAt || "")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Initial appointment submission received.
+                  </p>
+                </div>
               </div>
-              <AlertDialogTitle className="text-xl font-bold">
-                Start On-Site Counseling Session
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-sm font-medium leading-relaxed text-muted-foreground">
-                Confirm student <strong className="text-foreground">{fullName || "the student"}</strong> is present in the office to start the counseling session? This will begin tracking session duration.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
-              <AlertDialogCancel className="rounded-xl font-bold">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleConfirmStartAppointment}
-                disabled={startAppointmentMutation.isPending}
-                className="rounded-xl bg-emerald-600 font-bold text-white hover:bg-emerald-700 shadow-md"
-              >
-                {startAppointmentMutation.isPending ? "Starting..." : "Start Session"}
-              </AlertDialogAction>
-            </div>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* COR Preview Modal */}
-        <CORPreviewDialog
-          isOpen={showCorPreview}
-          onClose={() => setShowCorPreview(false)}
-          fileUrl={appointment.studentCorUrl}
-          studentName={fullName}
-        />
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </>
+
+      {/* Confirmation & Modal Dialogs */}
+      <ActionConfirmModal
+        isOpen={Boolean(pendingAction)}
+        onClose={() => setPendingAction(null)}
+        onConfirm={handleConfirmAction}
+        action={pendingAction?.type || ""}
+        requiresMessage={pendingAction?.requiresMessage || false}
+      />
+
+      {showReschedule && (
+        <RescheduleModal
+          isOpen={showReschedule}
+          onClose={() => setShowReschedule(false)}
+          onConfirm={handleRescheduleConfirm}
+          currentDate={appointment.whenDate}
+          currentTimeSlotId={appointment.timeSlot.id}
+        />
+      )}
+
+      <AlertDialog
+        open={isStartConfirming}
+        onOpenChange={setIsStartConfirming}
+      >
+        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+          <AlertDialogHeader>
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+              <Play className="h-5 w-5 fill-current" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold">
+              Start Consultation Session
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground">
+              Confirm student{" "}
+              <strong className="text-foreground">{fullName}</strong> is present
+              in the office to begin tracking session duration.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
+            <AlertDialogCancel className="rounded-xl font-semibold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleConfirmStartAppointment(0)}
+              disabled={startAppointmentMutation.isPending}
+              className="rounded-xl bg-emerald-600 font-semibold text-white shadow-sm hover:bg-emerald-700"
+            >
+              {startAppointmentMutation.isPending
+                ? "Starting..."
+                : "Start Session"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <CORPreviewDialog
+        isOpen={showCorPreview}
+        onClose={() => setShowCorPreview(false)}
+        fileUrl={appointment.studentCorUrl}
+        studentName={fullName}
+      />
+    </div>
   );
 }

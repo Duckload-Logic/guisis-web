@@ -34,7 +34,7 @@ const buttonVariants = cva(
         ),
         ghost: cn(
           "border-transparent bg-transparent text-muted-foreground shadow-none",
-          "hover:bg-accent hover:text-accent-foreground hover:shadow-md",
+          "hover:bg-accent hover:text-foreground",
         ),
         link: cn(
           "border-transparent bg-transparent p-0 text-primary shadow-none",

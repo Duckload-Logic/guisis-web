@@ -9,7 +9,7 @@ interface AuthHeaderProps {
 export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
   return (
     <div className="flex w-full flex-col text-left">
-      {/* Removed the outer backgrounds, absolute gradients, and padding 
+      {/* Removed the outer backgrounds, absolute gradients, and padding
         so it blends perfectly into the parent grid panel in Login.tsx
       */}
       <div className="relative z-10 flex h-full flex-col justify-center">
@@ -40,11 +40,11 @@ export default function AuthHeader({ title, subtitle }: AuthHeaderProps) {
           User Portal
         </div>
 
-        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="max-w-sm text-4xl font-bold tracking-tight text-foreground">
           {title}
         </h1>
 
-        <p className="mt-4 max-w-md text-base leading-7 text-slate-600 dark:text-slate-300">
+        <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
           {subtitle}
         </p>
 

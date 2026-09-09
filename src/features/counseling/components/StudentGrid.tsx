@@ -1,12 +1,11 @@
-import { useCallback, useMemo, useRef, type MouseEvent } from "react";
+import { useCallback, useMemo, type MouseEvent } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  Download,
   Eye,
   LayoutGrid,
   List,
-  Search,
-  X,
 } from "lucide-react";
 
 import { Spinner } from "@/components/shared";
@@ -21,7 +20,6 @@ import { Table } from "@/components/shared/Table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
-import { Input } from "@/components/ui/input";
 import SearchInput from "@/components/form/SearchInput";
 import { getIIRTwoByTwoPhoto } from "@/features/iir/utils/twoByTwoPhoto";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
@@ -242,11 +240,6 @@ export default function StudentGrid({
 
   const renderSortableHeader = (label: string, sortKey: StudentSortKey) => {
     const isActive = selectedSort === sortKey;
-    const Icon = isActive
-      ? selectedOrder === "desc"
-        ? ArrowDown
-        : ArrowUp
-      : ArrowUp;
 
     return (
       <button
@@ -258,21 +251,26 @@ export default function StudentGrid({
           );
         }}
         className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2 py-1 outline-none",
+          "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
           isActive
-            ? "text-[#800000] dark:text-red-400"
+            ? "text-primary"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
-        {label}
-        <Icon
-          className={cn(
-            "h-3.5 w-3.5 shrink-0",
-            isActive ? "opacity-100" : "opacity-40",
-          )}
-          strokeWidth={isActive ? 2.5 : 2}
-        />
+        <span>{label}</span>
+        {isActive &&
+          (selectedOrder === "desc" ? (
+            <ArrowDown
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ) : (
+            <ArrowUp
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ))}
       </button>
     );
   };
@@ -327,8 +325,12 @@ export default function StudentGrid({
       type="button"
       variant="outline"
       onClick={onExportCSV}
-      className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary shadow-md"
+      className={cn(
+        "h-10 gap-2 rounded-xl border-primary/30 px-4",
+        "shadow-xs text-sm font-semibold text-primary",
+      )}
     >
+      <Download className="h-4 w-4" />
       Export CSV
     </Button>
   );
@@ -337,10 +339,10 @@ export default function StudentGrid({
     {
       header: (
         <div className="flex w-full items-center justify-start pl-2">
-          {renderSortableHeader("Student Name", "lastName")}
+          {renderSortableHeader("Student", "lastName")}
         </div>
       ),
-      className: "w-[25%] min-w-[240px] px-2 py-3",
+      className: "w-[38%] min-w-[260px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <div className="flex items-center gap-3 pl-2">
           <div
@@ -360,12 +362,19 @@ export default function StudentGrid({
             <p className="truncate text-sm font-bold text-foreground">
               {getStudentName(student) || "Unnamed Student"}
             </p>
+            <p className="truncate text-xs text-muted-foreground">
+              <span className="font-semibold text-primary/70">
+                {student.studentNumber}
+              </span>
+              {" • "}
+              <span>{student.email}</span>
+            </p>
             {!student.isCompleted && (
               <span
                 className={cn(
-                  "mt-0.5 inline-block rounded bg-amber-500/10",
+                  "mt-0.5 inline-block rounded bg-warning-background",
                   "px-1.5 py-0.5 text-[9px] font-bold uppercase",
-                  "text-amber-700 dark:text-amber-300",
+                  "text-warning-foreground",
                 )}
               >
                 Expedited
@@ -377,52 +386,16 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="flex w-full items-center justify-start">
-          {renderSortableHeader("Student Number", "studentId")}
-        </div>
-      ),
-      className: "w-[15%] min-w-[170px] px-2 py-3",
-      render: (student: IIRProfileView) => (
-        <span className="px-2 text-xs font-bold uppercase text-primary/60">
-          {student.studentNumber}
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Program
         </span>
       ),
-    },
-    {
-      header: (
-        <div className="flex w-full items-center justify-start">
-          <span className="px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Email Address
-          </span>
-        </div>
-      ),
-      className: "w-[22%] min-w-[240px] px-2 py-3",
-      render: (student: IIRProfileView) => (
-        <span className="block truncate px-2 text-sm font-medium text-foreground/80">
-          {student.email}
-        </span>
-      ),
-    },
-    {
-      header: (
-        <div className="w-full pr-1">
-          <SelectField
-            label=""
-            options={programOptions}
-            value={selectedProgramId}
-            onChange={(val) => setSelectedProgramId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedProgramId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
-      ),
-      className: "w-[14%] min-w-[180px] px-2 py-3",
+      className: "w-[16%] min-w-[140px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <span className="px-2 text-sm font-semibold text-primary/80">
           {student.program.code}
@@ -431,24 +404,16 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-1">
-          <SelectField
-            label=""
-            options={yearLevelOptions}
-            value={selectedYearLevelId}
-            onChange={(val) => setSelectedYearLevelId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedYearLevelId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Year Level
+        </span>
       ),
-      className: "w-[12%] min-w-[160px] px-2 py-3",
+      className: "w-[16%] min-w-[130px] px-2 py-3",
       render: (student: IIRProfileView) => {
         const yrName =
           yearLevels
@@ -463,24 +428,16 @@ export default function StudentGrid({
     },
     {
       header: (
-        <div className="w-full pr-4">
-          <SelectField
-            label=""
-            options={statusOptions}
-            value={selectedStatusId}
-            onChange={(val) => setSelectedStatusId(String(val))}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              selectedStatusId === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000] dark:text-red-400",
-            )}
-          />
-        </div>
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Status
+        </span>
       ),
-      className: "w-[12%] min-w-[170px] px-2 py-3",
+      className: "w-[16%] min-w-[130px] px-2 py-3",
       render: (student: IIRProfileView) => (
         <div className="px-2">
           <span
@@ -492,6 +449,37 @@ export default function StudentGrid({
           >
             {student.status?.name || "Unknown"}
           </span>
+        </div>
+      ),
+    },
+    {
+      header: (
+        <span
+          className={cn(
+            "text-[11px] font-bold uppercase tracking-[0.14em]",
+            "text-muted-foreground",
+          )}
+        >
+          Action
+        </span>
+      ),
+      className: "w-[14%] min-w-[100px] px-2 py-3 text-right",
+      render: (student: IIRProfileView) => (
+        <div className="flex items-center justify-end px-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(event) => handleViewClick(student, event)}
+            className={cn(
+              "h-7 gap-1 rounded-xl border-primary/20 bg-primary/10",
+              "px-2.5 text-[10px] font-bold uppercase text-primary",
+              "hover:bg-primary hover:text-white",
+            )}
+          >
+            <Eye size={12} />
+            View
+          </Button>
         </div>
       ),
     },
@@ -536,9 +524,9 @@ export default function StudentGrid({
               {!student.isCompleted && (
                 <span
                   className={cn(
-                    "mt-0.5 inline-block rounded bg-amber-500/10 px-1.5",
-                    "py-0.5 text-[8px] font-bold uppercase",
-                    "text-amber-700 dark:text-amber-300",
+                    "mt-0.5 inline-block rounded bg-warning-background",
+                    "px-1.5 py-0.5 text-[8px] font-bold uppercase",
+                    "text-warning-foreground",
                   )}
                 >
                   Expedited
@@ -587,81 +575,92 @@ export default function StudentGrid({
 
   return (
     <div className="min-w-0 max-w-full space-y-6">
-      {viewMode === "list" ? (
-        <div className="bg-glass-bg/50 flex flex-col items-center justify-between gap-4 rounded-xl border border-glass-border px-4 py-3 shadow-md backdrop-blur-glass sm:flex-row">
-          <div className="w-full sm:max-w-md">{renderSearchInput(false)}</div>
-          <div className="flex shrink-0 items-center gap-3">
+      <div
+        className={cn(
+          "bg-glass-bg/50 flex flex-col gap-4 rounded-xl",
+          "border border-glass-border p-4 shadow-md backdrop-blur-glass",
+        )}
+      >
+        <div
+          className={cn(
+            "flex flex-col justify-between gap-4",
+            "2xl:flex-row 2xl:items-end",
+          )}
+        >
+          <div className="flex flex-1 flex-wrap items-end gap-3">
+            <div className="w-full md:w-[260px] xl:w-[280px]">
+              {renderSearchInput(true)}
+            </div>
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
+              <SelectField
+                label="Program"
+                options={programOptions}
+                value={selectedProgramId}
+                onChange={(val) => setSelectedProgramId(String(val))}
+                labelKey="displayName"
+                enabled={!isStudentsLoading}
+              />
+            </div>
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
+              <SelectField
+                label="Year Level"
+                options={yearLevelOptions}
+                value={selectedYearLevelId}
+                onChange={(val) => setSelectedYearLevelId(String(val))}
+                labelKey="displayName"
+                enabled={!isStudentsLoading}
+              />
+            </div>
+            <div className="w-full min-w-[175px] sm:w-[190px] xl:flex-1">
+              <SelectField
+                label="Status"
+                options={statusOptions}
+                value={selectedStatusId}
+                onChange={(val) => setSelectedStatusId(String(val))}
+                labelKey="displayName"
+                enabled={!isStudentsLoading}
+              />
+            </div>
+            {viewMode === "tile" && (
+              <>
+                <div className="w-full min-w-[155px] sm:w-[170px] xl:flex-1">
+                  <SelectField
+                    label="Sort By"
+                    options={sortOptions}
+                    value={selectedSort}
+                    onChange={(val) =>
+                      setSelectedSort(String(val) as StudentSortKey)
+                    }
+                    labelKey="displayName"
+                    enabled={!isStudentsLoading}
+                  />
+                </div>
+                <div className="w-full min-w-[155px] sm:w-[170px] xl:flex-1">
+                  <SelectField
+                    label="Order"
+                    options={orderOptions}
+                    value={selectedOrder}
+                    onChange={(val) =>
+                      setSelectedOrder(val as StudentSortOrder)
+                    }
+                    labelKey="displayName"
+                    enabled={!isStudentsLoading}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <div
+            className={cn(
+              "flex w-full shrink-0 items-center justify-end gap-3 pb-[1px]",
+              "2xl:w-auto",
+            )}
+          >
             {exportButton}
             {viewToggle}
           </div>
         </div>
-      ) : (
-        <div className="bg-glass-bg/50 flex flex-col gap-4 rounded-xl border border-glass-border px-4 py-4 shadow-md backdrop-blur-glass">
-          <div className="flex flex-col justify-between gap-4 2xl:flex-row 2xl:items-end">
-            <div className="flex flex-1 flex-wrap items-end gap-3">
-              <div className="w-full md:w-[260px] xl:w-[300px]">
-                {renderSearchInput(true)}
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <SelectField
-                  label="Program"
-                  options={programOptions}
-                  value={selectedProgramId}
-                  onChange={(val) => setSelectedProgramId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <SelectField
-                  label="Year Level"
-                  options={yearLevelOptions}
-                  value={selectedYearLevelId}
-                  onChange={(val) => setSelectedYearLevelId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <SelectField
-                  label="Status"
-                  options={statusOptions}
-                  value={selectedStatusId}
-                  onChange={(val) => setSelectedStatusId(String(val))}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <SelectField
-                  label="Sort By"
-                  options={sortOptions}
-                  value={selectedSort}
-                  onChange={(val) =>
-                    setSelectedSort(String(val) as StudentSortKey)
-                  }
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-              <div className="w-full sm:w-[150px] xl:flex-1">
-                <SelectField
-                  label="Order"
-                  options={orderOptions}
-                  value={selectedOrder}
-                  onChange={(val) => setSelectedOrder(val as StudentSortOrder)}
-                  labelKey="displayName"
-                  enabled={!isStudentsLoading}
-                />
-              </div>
-            </div>
-            <div className="flex w-full shrink-0 items-center justify-end gap-3 pb-[1px] 2xl:w-auto">
-              {exportButton}
-              {viewToggle}
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
       {sortedVisibleStudents.length === 0 ? (
         <div className="space-y-4 rounded-xl border border-glass-border bg-glass-bg p-8 text-center shadow-md backdrop-blur-glass">
@@ -792,9 +791,8 @@ export default function StudentGrid({
                       <div className="mt-1 flex justify-center">
                         <span
                           className={cn(
-                            "rounded bg-amber-500/10 px-1.5 py-0.5",
-                            "text-[8px] font-bold uppercase",
-                            "text-amber-700 dark:text-amber-300",
+                            "rounded bg-warning-background px-1.5 py-0.5",
+                            "text-[8px] font-bold uppercase text-warning-foreground",
                           )}
                         >
                           Expedited
@@ -909,7 +907,7 @@ export default function StudentGrid({
             columns={columns}
             renderMobileItem={renderMobileItem}
             isLoading={false}
-            tableClassName="min-w-[72rem]"
+            tableClassName="min-w-[48rem]"
             onRowClick={(student) => onViewClick(student)}
           />
         </div>

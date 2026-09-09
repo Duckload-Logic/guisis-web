@@ -59,7 +59,8 @@ export default function InfoNavigation({
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 "group relative shrink-0 whitespace-nowrap",
-                "px-4 py-2.5 text-xs font-bold transition-all duration-300 sm:px-6 sm:py-3 sm:font-medium sm:text-sm",
+                "px-4 py-2.5 text-xs font-bold transition-all duration-300",
+                "sm:px-6 sm:py-3 sm:text-sm sm:font-medium",
                 // Responsive Shape: Pill on mobile, Tab on desktop
                 "rounded-full sm:rounded-none sm:rounded-t-xl sm:border-l-2 sm:border-r-2 sm:border-t-2",
                 isActive
@@ -72,13 +73,13 @@ export default function InfoNavigation({
                       "bg-muted/80 text-muted-foreground hover:bg-muted sm:border-transparent sm:bg-muted sm:opacity-70",
                     ),
                 isTabDisabled &&
-                  "pointer-events-none cursor-not-allowed bg-neutral-200/50 opacity-30 dark:bg-neutral-800/50",
+                  "pointer-events-none cursor-not-allowed bg-muted/50 opacity-30",
               )}
             >
               <div
                 className={cn(
                   "flex items-center justify-center transition-colors",
-                  isActive ? "gap-2" : "gap-0"
+                  isActive ? "gap-2" : "gap-0",
                 )}
               >
                 <tab.icon

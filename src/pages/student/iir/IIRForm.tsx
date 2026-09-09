@@ -7,7 +7,7 @@ import { GetAcademicSettings } from "@/features/student-core/services/academicSe
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata, useToast } from "@/context";
-import { useIIRProfile, useIIRStatus, useUserIIR } from "@/features/iir/hooks";
+import { useIIRProfile, useIIRStatus } from "@/features/iir/hooks";
 import {
   useGetIIRDraft,
   useIIRFormSave,
@@ -98,6 +98,10 @@ export default function IIRForm() {
     return saved ? JSON.parse(saved) : [1];
   });
   const currentIndex = activeSections.findIndex((s) => s.id === currentSection);
+  const nextSectionItem =
+    currentIndex < activeSections.length - 1
+      ? activeSections[currentIndex + 1]
+      : undefined;
   const [localFormData, setLocalFormData] = useState<IIRFormType | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -117,8 +121,7 @@ export default function IIRForm() {
   const isCompleted = statusData?.isCompleted ?? false;
 
   const profileId =
-    editIirId ||
-    (isSubmitted && !isCompleted ? statusData?.id : undefined);
+    editIirId || (isSubmitted && !isCompleted ? statusData?.id : undefined);
   const { data: profileData, isLoading: isLoadingProfile } = useIIRProfile(
     profileId || "",
   );
@@ -271,9 +274,7 @@ export default function IIRForm() {
 
       if (profileId && !profileData) return;
 
-      const sourceData = profileId
-        ? profileData || draft
-        : draft;
+      const sourceData = profileId ? profileData || draft : draft;
       const initializedData = initializeFormData(
         sourceData ?? null,
         EMPTY_IIR_FORM,
@@ -289,8 +290,7 @@ export default function IIRForm() {
         initializedData,
       );
       if (savedPhoto) {
-        initializedData.student.personalInfo.twoByTwoPhotoDataUrl =
-          savedPhoto;
+        initializedData.student.personalInfo.twoByTwoPhotoDataUrl = savedPhoto;
       }
       setLocalFormData(initializedData);
       setIsInitializing(false);
@@ -354,11 +354,7 @@ export default function IIRForm() {
   const handleRestoreDraft = () => {
     if (draftData) {
       const savedPhoto = getIIRTwoByTwoPhoto(
-        getTwoByTwoPhotoIdentityFromForm(
-          draftData,
-          (me as any)?.id,
-          profileId,
-        ),
+        getTwoByTwoPhotoIdentityFromForm(draftData, (me as any)?.id, profileId),
         draftData,
       );
       const restoredDraft = {
@@ -385,7 +381,7 @@ export default function IIRForm() {
       profileData ?? null,
       EMPTY_IIR_FORM,
       me,
-      { preserveBasicInfoFromSource: !!profileId }
+      { preserveBasicInfoFromSource: !!profileId },
     );
     setLocalFormData(baselineData);
     setShowDraftPrompt(false);
@@ -469,13 +465,20 @@ export default function IIRForm() {
     );
     if (!validation.isValid) {
       markAllTouched();
-      const raw = validation.errors || {};
-      const total = Object.keys(raw).length;
-      if (total > 0) {
-        setGroupedErrors(groupErrorsBySection(raw));
-        setTotalErrors(total);
-        setIsErrorModalOpen(true);
-      }
+      sectionRefs[currentSection]?.current?.validate?.(stepToValidate);
+      triggerToast("Please complete the required fields in this section.");
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector(
+          '[aria-invalid="true"], .border-destructive, [data-invalid="true"]',
+        ) as HTMLElement | null;
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          firstErrorEl.focus?.();
+        }
+      }, 50);
       return;
     }
 
@@ -605,10 +608,7 @@ export default function IIRForm() {
           );
           await UploadIIRTwoByTwoPhoto(fileToUpload);
         } catch (uploadErr) {
-          console.error(
-            "[IIRForm] {UploadIIRTwoByTwoPhoto}:",
-            uploadErr,
-          );
+          console.error("[IIRForm] {UploadIIRTwoByTwoPhoto}:", uploadErr);
         }
       }
 
@@ -1108,6 +1108,7 @@ export default function IIRForm() {
                     isEditMode={isEditMode}
                     onReset={() => setShowResetConfirm(true)}
                     isNextBlocked={isPhotoStepBlocked}
+                    nextSectionTitle={nextSectionItem?.title}
                     nextBlockedMessage={
                       showPhotoValidationWarning || isPhotoStepBlocked
                         ? PHOTO_REQUIRED_MESSAGE

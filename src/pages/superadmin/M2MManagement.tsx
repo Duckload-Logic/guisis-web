@@ -153,15 +153,14 @@ export default function M2MManagement() {
       value: activeClients.length,
       icon: ShieldCheck,
       iconClass:
-        "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 " +
-        "border-emerald-500/20",
+        "border-success-foreground/20 bg-success-background " +
+        "text-success-foreground",
     },
     {
       label: "Revoked Clients",
       value: revokedClients.length,
       icon: Ban,
-      iconClass:
-        "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+      iconClass: "bg-destructive/10 text-destructive border-destructive/20",
     },
     {
       label: "Total Clients",
@@ -330,7 +329,7 @@ export default function M2MManagement() {
                         "overflow-hidden rounded-2xl border border-glass-border",
                         "bg-glass-bg p-5 shadow-sm backdrop-blur-xl",
                         "transition-all duration-300 hover:border-primary/40",
-                        "hover:shadow-xl dark:border-white/10",
+                        "hover:shadow-xl",
                         !client.isActive && "opacity-75 grayscale-[0.2]",
                       )}
                     >
@@ -356,10 +355,11 @@ export default function M2MManagement() {
                                   "backdrop-blur-md transition-transform",
                                   "group-hover:scale-105",
                                   client.isActive
-                                    ? "border-emerald-500/20 bg-emerald-500/10 " +
-                                        "text-emerald-600 dark:text-emerald-400"
-                                    : "border-red-500/20 bg-red-500/10 " +
-                                        "text-red-600 dark:text-red-400",
+                                    ? "border-success-foreground/20 " +
+                                        "bg-success-background" +
+                                        "text-success-foreground"
+                                    : "border-destructive/20 bg-destructive/10 " +
+                                        "text-destructive",
                                 )}
                               >
                                 <Fingerprint className="h-5 w-5" />
@@ -382,7 +382,7 @@ export default function M2MManagement() {
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
                               className={cn(
-                                "h-8 w-8 min-h-0 shrink-0 rounded-xl",
+                                "h-8 min-h-0 w-8 shrink-0 rounded-xl",
                                 "text-muted-foreground transition-colors",
                                 "hover:bg-primary/10 hover:text-primary",
                               )}
@@ -399,16 +399,16 @@ export default function M2MManagement() {
                               className={cn(
                                 "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                                 client.isActive
-                                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                                  : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300",
+                                  ? "border-success-foreground/30 bg-success-background text-success-foreground"
+                                  : "border-destructive/30 bg-destructive/10 text-destructive",
                               )}
                             >
                               <span
                                 className={cn(
                                   "mr-1.5 inline-block h-1.5 w-1.5 rounded-full",
                                   client.isActive
-                                    ? "animate-pulse bg-emerald-500"
-                                    : "bg-red-500",
+                                    ? "animate-pulse bg-success-foreground"
+                                    : "bg-destructive",
                                 )}
                               />
                               {client.isActive ? "Active" : "Revoked"}
@@ -419,8 +419,8 @@ export default function M2MManagement() {
                               className={cn(
                                 "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                                 client.isVerified
-                                  ? "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                                  : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                                  ? "border-info-foreground/30 bg-info-background text-info-foreground"
+                                  : "border-warning-foreground/30 bg-warning-background text-warning-foreground",
                               )}
                             >
                               {client.isVerified
@@ -434,8 +434,8 @@ export default function M2MManagement() {
                                 className={cn(
                                   "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                                   client.hasPersonalInfoAccess
-                                    ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
-                                    : "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
+                                    ? "border-notice-foreground/30 bg-notice-background text-notice-foreground"
+                                    : "border-stale-foreground/30 bg-stale-background text-stale-foreground",
                                 )}
                               >
                                 {client.hasPersonalInfoAccess
@@ -572,8 +572,11 @@ export default function M2MManagement() {
                                         );
                                       }}
                                       className={cn(
-                                        "h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold",
-                                        "border-purple-500/30 text-purple-700 hover:bg-purple-500/10 dark:text-purple-300",
+                                        "h-8 min-h-0 gap-1.5 rounded-xl px-3",
+                                        "text-xs font-semibold",
+                                        "border-notice-foreground/30",
+                                        "text-notice-foreground",
+                                        "hover:bg-notice-background",
                                       )}
                                       title="Manage PII Access"
                                     >
@@ -711,18 +714,18 @@ export default function M2MManagement() {
               <div className="space-y-4">
                 <div
                   className={
-                    "rounded-xl border border-amber-500/20 " +
-                    "bg-amber-500/10 p-4"
+                    "rounded-xl border border-warning-foreground/30 " +
+                    "bg-warning-background p-4"
                   }
                 >
                   <div className="flex items-start gap-2">
                     <AlertTriangle
-                      className={
-                        "mt-0.5 h-5 w-5 flex-shrink-0 " +
-                        "text-amber-600 dark:text-amber-400"
-                      }
-                    />
-                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                  className={cn(
+                    "mt-0.5 h-5 w-5 flex-shrink-0",
+                    "text-warning-foreground",
+                  )}
+                />
+                    <p className="text-sm text-warning-foreground">
                       Copy this secret now. You will not be able to retrieve it
                       later. If you lose it, you must rotate the secret.
                     </p>
@@ -742,9 +745,8 @@ export default function M2MManagement() {
                     <code
                       className={
                         "block overflow-x-auto whitespace-nowrap " +
-                        "rounded-xl border border-white/20" +
-                        "bg-white/60 p-3 font-mono text-xs" +
-                        "dark:border-white/10 dark:bg-white/[0.04]"
+                        "rounded-xl border border-border" +
+                        "bg-card/60 p-3 font-mono text-xs"
                       }
                     >
                       {showSecret ? createdSecret : "•".repeat(48)}
@@ -832,7 +834,7 @@ export default function M2MManagement() {
           open={!!rotateTarget}
           onOpenChange={(open) => !open && setRotateTarget(null)}
         >
-          <AlertDialogContent className="backdrop-blur-2xl dark:border-white/10 sm:max-w-md">
+          <AlertDialogContent className="backdrop-blur-2xl sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <RefreshCw className="h-4 w-4 text-amber-500" />

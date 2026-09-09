@@ -155,7 +155,7 @@ export default function SlipLogs() {
       "date and status filters",
     badgeText: "Audit Trail",
     badgeIcon: <Calendar className="h-4 w-4" />,
-    isLoading: isPageLoading,
+    isLoading: false,
   });
 
   return (
@@ -220,7 +220,7 @@ export default function SlipLogs() {
           <SlipList
             title="Submission Details"
             slips={slips}
-            isLoading={isLoading}
+            isLoading={isLoading || isStatsLoading}
             onViewClick={handleViewSlip}
             searchTerm={searchTerm}
             onSearchChange={(value: string) => {

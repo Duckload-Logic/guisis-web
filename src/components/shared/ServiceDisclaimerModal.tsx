@@ -76,7 +76,10 @@ export default function ServiceDisclaimerModal({
                     "rounded-xl border border-primary/20 bg-primary/10 text-primary",
                   )}
                 >
-                  <ShieldAlert className="h-5 w-5" aria-hidden="true" />
+                  <ShieldAlert
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  />
                 </div>
 
                 <div className="min-w-0 space-y-1.5">
@@ -136,7 +139,7 @@ export default function ServiceDisclaimerModal({
             <div
               className={cn(
                 "mt-4 overflow-hidden rounded-xl border border-border",
-                "bg-muted/30 dark:bg-muted/20",
+                "bg-muted/30",
               )}
             >
               <section

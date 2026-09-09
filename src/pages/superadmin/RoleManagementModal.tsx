@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { UserAccount } from "@/features/system-admin/types";
+import { cn } from "@/lib/utils";
 
 interface RoleManagementModalProps {
   user: UserAccount | null;
@@ -72,7 +73,11 @@ export function RoleManagementModal({
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
     >
-      <DialogContent className="dark:bg-neutral-900/92 border-white/20 bg-card backdrop-blur-2xl dark:border-white/10 sm:max-w-[425px]">
+      <DialogContent
+        className={cn(
+          "border-border bg-card backdrop-blur-2xl sm:max-w-[425px]",
+        )}
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Manage User Roles</DialogTitle>

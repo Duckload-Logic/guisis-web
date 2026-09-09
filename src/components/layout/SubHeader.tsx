@@ -31,7 +31,7 @@ export default function SubHeader({
       <div
         className={cn(
           "relative flex min-w-0 flex-col gap-5 lg:flex-row lg:items-end",
-          "lg:justify-between border-l-[4px] border-primary pl-4 sm:pl-5",
+          "border-l-[4px] border-primary pl-4 sm:pl-5 lg:justify-between",
         )}
       >
         <div className="min-w-0 space-y-3">
@@ -41,7 +41,6 @@ export default function SubHeader({
                 "inline-flex h-7 items-center gap-2 rounded-full border",
                 "border-border/70 bg-muted/40 px-3 text-[11px] font-semibold",
                 "leading-none text-muted-foreground shadow-sm backdrop-blur-md",
-                "dark:border-white/10 dark:bg-white/[0.05]",
               )}
             >
               {badgeIcon}

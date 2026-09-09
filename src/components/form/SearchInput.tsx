@@ -3,7 +3,6 @@ import { useRef, useState, useEffect } from "react";
 import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 const ICON_SIZE = 20;
 
@@ -73,7 +72,10 @@ export default function SearchInput({
       )}
       <div className="relative w-full">
         <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 shrink-0 text-muted-foreground opacity-70"
+          className={cn(
+            "pointer-events-none absolute left-3 top-1/2 h-4 w-4",
+            "shrink-0 -translate-y-1/2 text-muted-foreground opacity-70",
+          )}
         />
         <Input
           ref={inputRef}
@@ -82,11 +84,12 @@ export default function SearchInput({
           value={localValue}
           onChange={(e) => handleChange(e.target.value)}
           className={cn(
-            "hover:border-glass-border/60 h-11 bg-muted/60 py-2.5 pl-10 pr-11",
-            "text-sm font-medium text-foreground shadow-md outline-none",
-            "transition-all duration-200 placeholder:text-muted-foreground/70",
-            "focus:border-primary/50 focus:bg-glass-bg focus:ring-2 focus:ring-primary/5",
-            "dark:focus:bg-glass-bg/40 dark:bg-muted/20",
+            "h-11 bg-muted/40 py-2.5 pl-10 pr-11 text-sm font-medium",
+            "text-foreground shadow-md outline-none transition-all",
+            "duration-200 hover:border-glass-border/60",
+            "placeholder:text-muted-foreground/70",
+            "focus:border-primary/50 focus:bg-glass-bg focus:ring-2",
+            "focus:ring-primary/5",
             error ? "border-destructive/50 ring-destructive/5" : "",
           )}
         />
@@ -99,12 +102,17 @@ export default function SearchInput({
             }}
             onClick={handleClear}
             className={cn(
-              "absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-7 w-7 min-h-0 shrink-0 items-center justify-center rounded-full p-0",
-              "text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors",
+              "absolute right-2 top-1/2 z-10 flex h-7 min-h-0 w-7",
+              "shrink-0 -translate-y-1/2 items-center justify-center",
+              "rounded-full p-0 text-muted-foreground transition-colors",
+              "hover:bg-muted/80 hover:text-foreground",
             )}
             aria-label="Clear search"
           >
-            <X className="h-4 w-4 shrink-0 text-current" strokeWidth={2.5} />
+            <X
+              className="h-4 w-4 shrink-0 text-current"
+              strokeWidth={2.5}
+            />
           </button>
         )}
       </div>

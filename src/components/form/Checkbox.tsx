@@ -41,7 +41,7 @@ export default function Checkbox({
             className={cn(
               "peer absolute z-10 h-full w-full opacity-0",
               disabled
-                ? "cursor-not-allowed pointer-events-none"
+                ? "pointer-events-none cursor-not-allowed"
                 : "cursor-pointer",
               className,
             )}
@@ -53,7 +53,6 @@ export default function Checkbox({
               } border border-border bg-muted transition-all duration-200`,
               "peer-checked:border-primary peer-checked:bg-primary",
               "peer-hover:border-primary",
-              "dark:border-white/10 dark:border-white/30 dark:bg-white/[0.04]",
               disabled && "opacity-50",
             )}
           />
@@ -72,7 +71,7 @@ export default function Checkbox({
             "select-none text-sm font-medium",
             "text-foreground transition-colors duration-200",
             disabled
-              ? "opacity-50 cursor-not-allowed pointer-events-none"
+              ? "pointer-events-none cursor-not-allowed opacity-50"
               : "cursor-pointer group-hover/checkbox:text-primary",
           )}
         >

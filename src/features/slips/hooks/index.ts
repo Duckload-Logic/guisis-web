@@ -7,6 +7,7 @@ export {
   useGetSlipStats,
   useSlipLogs,
   useGetSlipById,
+  useStartSlip,
 } from "./useSlips";
 
 export { useGetSlipStatuses, useGetSlipCategories } from "./useLookups";

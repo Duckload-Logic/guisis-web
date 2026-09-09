@@ -1,5 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { GetAllSlips, GetMySlips, slipService } from "../services";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  GetAllSlips,
+  GetMySlips,
+  PostStartSlip,
+  slipService,
+} from "../services";
 import { QUERY_KEYS } from "@/config/queryKeys";
 import { CACHE_TIMING } from "@/config/constants";
 import { useMe } from "@/features/users/hooks/useMe";
@@ -130,5 +135,29 @@ export function useGetSlipById(id: string) {
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
     enabled: !!id,
+  });
+}
+
+/**
+ * Hook to start slip validation duration on-site
+ */
+export function useStartSlip() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: string | { id: string; offsetMinutes?: number }) => {
+      if (typeof params === "string") {
+        return PostStartSlip(params, 0);
+      }
+      return PostStartSlip(params.id, params.offsetMinutes ?? 0);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.slips.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.slips.stats,
+      });
+    },
   });
 }

@@ -124,7 +124,12 @@ export const useStartAppointment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => PostStartAppointment(id),
+    mutationFn: (params: string | { id: string; offsetMinutes?: number }) => {
+      if (typeof params === "string") {
+        return PostStartAppointment(params, 0);
+      }
+      return PostStartAppointment(params.id, params.offsetMinutes ?? 0);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.appointments.all,
@@ -177,4 +182,3 @@ export function useCancelAppointment() {
     },
   });
 }
-

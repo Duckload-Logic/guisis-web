@@ -39,28 +39,38 @@ export function MetricCard({
             <div className="flex min-w-0 items-center gap-3">
               <div
                 className={cn(
-                  "shrink-0 rounded-xl bg-white/50 p-2 shadow-inner dark:bg-black/30",
+                  "shrink-0 rounded-xl bg-muted/50 p-2 shadow-inner",
                   iconColor,
                 )}
               >
                 <Icon size={20} />
               </div>
-              <span className="min-w-0 whitespace-normal break-words text-sm font-medium capitalize leading-snug text-slate-500 dark:text-slate-400">
+              <span
+                className={cn(
+                  "min-w-0 whitespace-normal break-words text-sm font-medium",
+                  "capitalize leading-snug text-muted-foreground",
+                )}
+              >
                 {title}
               </span>
             </div>
 
             <div className="min-w-0 space-y-1">
-              <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-3xl font-bold tracking-tight text-foreground">
                 {value}
               </h3>
               <div className="flex min-w-0 flex-wrap items-center gap-2">
                 {trend && (
-                  <span className="shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 text-xs font-bold text-emerald-500">
+                  <span
+                    className={cn(
+                      "shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5",
+                      "text-xs font-bold text-emerald-500",
+                    )}
+                  >
                     {trend}
                   </span>
                 )}
-                <span className="min-w-0 text-xs text-slate-400 dark:text-slate-500">
+                <span className="min-w-0 text-xs text-muted-foreground">
                   {period}
                 </span>
               </div>

@@ -310,13 +310,17 @@ function CalendarContent({
           type="button"
           onClick={handlePrevMonth}
           className={cn(
-            "flex h-10 w-10 min-h-0 shrink-0 items-center justify-center rounded-lg p-0",
+            "flex h-10 min-h-0 w-10 shrink-0 items-center",
+            "justify-center rounded-lg p-0",
             "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
             "[overflow-wrap:normal] [word-break:normal]",
           )}
           aria-label="Previous month"
         >
-          <span aria-hidden="true" className="text-2xl font-semibold leading-none">
+          <span
+            aria-hidden="true"
+            className="text-2xl font-semibold leading-none"
+          >
             ‹
           </span>
         </button>
@@ -329,13 +333,17 @@ function CalendarContent({
           type="button"
           onClick={handleNextMonth}
           className={cn(
-            "flex h-10 w-10 min-h-0 shrink-0 items-center justify-center rounded-lg p-0",
+            "flex h-10 min-h-0 w-10 shrink-0 items-center",
+            "justify-center rounded-lg p-0",
             "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
             "[overflow-wrap:normal] [word-break:normal]",
           )}
           aria-label="Next month"
         >
-          <span aria-hidden="true" className="text-2xl font-semibold leading-none">
+          <span
+            aria-hidden="true"
+            className="text-2xl font-semibold leading-none"
+          >
             ›
           </span>
         </button>
@@ -355,7 +363,10 @@ function CalendarContent({
 
         <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {emptyDays.map((_, idx) => (
-            <div key={`empty-${idx}`} className="aspect-square w-full" />
+            <div
+              key={`empty-${idx}`}
+              className="aspect-square w-full"
+            />
           ))}
 
           {days.map((day) => {
@@ -376,15 +387,14 @@ function CalendarContent({
                 "leading-none transition-all sm:max-w-[3rem] sm:text-sm",
               "[overflow-wrap:normal] [word-break:normal] " +
                 "focus:outline-none focus:ring-1 focus:ring-primary/50",
-              isDisabled &&
-                "cursor-not-allowed",
+              isDisabled && "cursor-not-allowed",
               isDisabled &&
                 !isHolidayDate &&
                 "bg-transparent text-muted-foreground/35",
               isDisabled &&
                 isHolidayDate &&
-                "border border-dashed border-amber-500/40 bg-amber-500/5 " +
-                "text-amber-600/40 dark:text-amber-400/40",
+                "border border-dashed border-warning-foreground/40 " +
+                  "bg-warning-background text-warning-foreground/40",
               !isDisabled &&
                 isSelected &&
                 `${occupiedDayColor} text-primary-foreground shadow`,
@@ -396,8 +406,9 @@ function CalendarContent({
                 !isSelected &&
                 !isToday &&
                 (isHolidayDate
-                  ? "border border-dashed border-amber-500 bg-amber-500/5 " +
-                    "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  ? "border border-dashed border-warning-foreground " +
+                    "bg-warning-background text-warning-foreground " +
+                    "hover:bg-warning-foreground/10"
                   : "bg-transparent text-foreground hover:bg-muted/80"),
             );
 
@@ -454,7 +465,10 @@ function CalendarContent({
       {displayLegends.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-4 sm:mt-8 sm:gap-3">
           {displayLegends.map(({ color, label }) => (
-            <div key={label} className="flex items-center gap-2 text-xs">
+            <div
+              key={label}
+              className="flex items-center gap-2 text-xs"
+            >
               <div className={cn("size-3 rounded-full border", color)} />
               <span>{label}</span>
             </div>

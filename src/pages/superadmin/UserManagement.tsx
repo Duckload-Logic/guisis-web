@@ -64,14 +64,26 @@ import { useUrlState } from "@/hooks";
 type SortOrder = "asc" | "desc";
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useUrlState<"users" | "whitelist">("tab", "users");
+  const [activeTab, setActiveTab] = useUrlState<"users" | "whitelist">(
+    "tab",
+    "users",
+  );
   const [page, setPage] = useUrlState("page", 1);
   const [search, setSearch] = useUrlState("q", "");
 
-  const [roleFilter, setRoleFilter] = useUrlState<number | undefined>("role", undefined);
+  const [roleFilter, setRoleFilter] = useUrlState<number | undefined>(
+    "role",
+    undefined,
+  );
   const [statusFilter, setStatusFilter] = useUrlState<string>("status", "all");
-  const [selectedSort, setSelectedSort] = useUrlState<string>("sort", "userName");
-  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>("order", "asc");
+  const [selectedSort, setSelectedSort] = useUrlState<string>(
+    "sort",
+    "userName",
+  );
+  const [selectedOrder, setSelectedOrder] = useUrlState<SortOrder>(
+    "order",
+    "asc",
+  );
 
   const [userToToggle, setUserToToggle] = useState<UserAccount | null>(null);
   const [userToManageRoles, setUserToManageRoles] =
@@ -295,11 +307,6 @@ export default function UserManagement() {
 
   const renderSortableHeader = (label: string, sortKey: string) => {
     const isActive = selectedSort === sortKey;
-    const Icon = isActive
-      ? selectedOrder === "desc"
-        ? ArrowDown
-        : ArrowUp
-      : ArrowUp;
 
     return (
       <button
@@ -312,21 +319,26 @@ export default function UserManagement() {
           setPage(1);
         }}
         className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl px-2 py-1 outline-none",
+          "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
           "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
           isActive
-            ? "text-[#800000]"
+            ? "text-primary"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
-        {label}
-        <Icon
-          className={cn(
-            "h-3.5 w-3.5 shrink-0",
-            isActive ? "opacity-100" : "opacity-40",
-          )}
-          strokeWidth={isActive ? 2.5 : 2}
-        />
+        <span>{label}</span>
+        {isActive &&
+          (selectedOrder === "desc" ? (
+            <ArrowDown
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ) : (
+            <ArrowUp
+              className="h-3 w-3 shrink-0"
+              strokeWidth={2.5}
+            />
+          ))}
       </button>
     );
   };
@@ -379,24 +391,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={roleOptions}
-              value={roleFilter === undefined ? "all" : roleFilter}
-              onChange={(val) => {
-                setRoleFilter(val === "all" ? undefined : Number(val));
-                setPage(1);
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Role
+            </span>
           </div>
         ),
         className: "w-[25%] p-0",
@@ -419,25 +422,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={statusOptions}
-              value={statusFilter}
-              onChange={(val) => {
-                const v = String(val);
-                setStatusFilter(!val || v === "undefined" ? "all" : v);
-                setPage(1);
-              }}
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                statusFilter === "all"
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Status
+            </span>
           </div>
         ),
         className: "w-[15%] p-0",
@@ -491,11 +484,14 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "!h-8 !w-8 rounded-full text-muted-foreground !p-0",
+                    "!h-8 !w-8 rounded-full !p-0 text-muted-foreground",
                     "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreHorizontal size={18} className="shrink-0" />
+                  <MoreHorizontal
+                    size={18}
+                    className="shrink-0"
+                  />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -555,23 +551,15 @@ export default function UserManagement() {
       },
       {
         header: (
-          <div className="w-full px-3 py-3">
-            <SelectField
-              label=""
-              options={roleOptions}
-              value={roleFilter === undefined ? "all" : roleFilter}
-              onChange={(val) =>
-                setRoleFilter(val === "all" ? undefined : Number(val))
-              }
-              labelKey="displayName"
-              buttonClassName={cn(
-                "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-                "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-                roleFilter === undefined
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-[#800000]",
+          <div className="flex w-full items-center justify-start px-3 py-3">
+            <span
+              className={cn(
+                "text-[11px] font-bold uppercase tracking-[0.14em]",
+                "text-muted-foreground",
               )}
-            />
+            >
+              Roles
+            </span>
           </div>
         ),
         className: "w-[30%] p-0",
@@ -630,11 +618,14 @@ export default function UserManagement() {
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "h-8 w-8 rounded-full text-muted-foreground !p-0",
+                    "h-8 w-8 rounded-full !p-0 text-muted-foreground",
                     "hover:bg-muted hover:text-foreground focus:outline-none focus:ring-0",
                   )}
                 >
-                  <MoreHorizontal size={18} className="shrink-0" />
+                  <MoreHorizontal
+                    size={18}
+                    className="shrink-0"
+                  />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -678,10 +669,10 @@ export default function UserManagement() {
   const renderMobileUserItem = (user: UserAccount) => (
     <div
       key={user.id}
-      className="block w-full rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
             {user.firstName[0]}
             {user.lastName[0]}
@@ -690,16 +681,25 @@ export default function UserManagement() {
             <p className="truncate text-sm font-bold text-foreground">
               {user.firstName} {user.lastName}
             </p>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {user.email}
+            </p>
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+            >
               <MoreHorizontal size={18} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 rounded-xl bg-card">
+          <DropdownMenuContent
+            align="end"
+            className="w-48 rounded-xl bg-card"
+          >
             {menuActions(user)?.map((item: any) => (
               <DropdownMenuItem
                 key={item.id}
@@ -718,14 +718,24 @@ export default function UserManagement() {
           <Badge
             key={role.id}
             variant="outline"
-            className={cn("rounded-full px-2.5 text-[10px]", getRoleBadgeColor(role.name))}
+            className={cn(
+              "rounded-full px-2.5 text-[10px]",
+              getRoleBadgeColor(role.name),
+            )}
           >
             {role.name}
           </Badge>
         ))}
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
-        <span>Status: <strong className={user.isActive ? "text-emerald-500" : "text-red-500"}>{user.isActive ? "Active" : "Blocked"}</strong></span>
+        <span>
+          Status:{" "}
+          <strong
+            className={user.isActive ? "text-emerald-500" : "text-destructive"}
+          >
+            {user.isActive ? "Active" : "Blocked"}
+          </strong>
+        </span>
         <span>Joined: {formatDate(user.createdAt)}</span>
       </div>
     </div>
@@ -734,20 +744,31 @@ export default function UserManagement() {
   const renderMobileWhitelistItem = (entry: WhitelistEntry) => (
     <div
       key={entry.email}
-      className="block w-full rounded-2xl border border-border/70 bg-card p-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04]"
+      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-foreground">{entry.email}</p>
-          <p className="text-xs text-muted-foreground">Whitelisted: {formatDate(entry.createdAt)}</p>
+          <p className="truncate text-sm font-bold text-foreground">
+            {entry.email}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Whitelisted: {formatDate(entry.createdAt)}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+            >
               <MoreHorizontal size={18} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 rounded-xl bg-card">
+          <DropdownMenuContent
+            align="end"
+            className="w-48 rounded-xl bg-card"
+          >
             <DropdownMenuItem
               className="cursor-pointer gap-2 text-foreground focus:bg-muted focus:text-primary"
               onClick={() => {
@@ -774,7 +795,10 @@ export default function UserManagement() {
           <Badge
             key={role.id}
             variant="outline"
-            className={cn("rounded-full px-2.5 text-[10px]", getRoleBadgeColor(role.name))}
+            className={cn(
+              "rounded-full px-2.5 text-[10px]",
+              getRoleBadgeColor(role.name),
+            )}
           >
             {role.name}
           </Badge>
@@ -786,7 +810,7 @@ export default function UserManagement() {
   return (
     <div className="mx-auto w-full max-w-[1700px] space-y-6">
       {/* Tabs */}
-      <div className="flex border-b border-white/10 pb-1 overflow-x-auto whitespace-nowrap">
+      <div className="flex overflow-x-auto whitespace-nowrap border-b border-white/10 pb-1">
         <button
           onClick={() => {
             setActiveTab("users");
@@ -819,26 +843,94 @@ export default function UserManagement() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="w-full sm:max-w-md">
-          <SearchInput
-            hasHeader={false}
-            placeholder="Search by name or email..."
-            className="h-10 rounded-xl"
-            searchTerm={search}
-            onSearchChange={(e) => {
-              setSearch(e);
-              setPage(1);
-            }}
-          />
+      <div
+        className={cn(
+          "flex flex-col gap-3 xl:flex-row xl:items-center",
+          "xl:justify-between",
+        )}
+      >
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="w-full sm:w-64">
+            <SearchInput
+              hasHeader={false}
+              placeholder="Search by name or email..."
+              className="h-10 rounded-xl"
+              searchTerm={search}
+              onSearchChange={(e) => {
+                setSearch(e);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div className="w-full sm:w-44">
+            <SelectField
+              label=""
+              options={roleOptions}
+              value={roleFilter === undefined ? "all" : roleFilter}
+              onChange={(val) => {
+                setRoleFilter(val === "all" ? undefined : Number(val));
+                setPage(1);
+              }}
+              labelKey="displayName"
+              buttonClassName={cn(
+                "h-10 w-full justify-between rounded-xl border",
+                "border-border/70 bg-background/50 px-3 text-xs font-semibold",
+                "shadow-sm",
+                roleFilter !== undefined && "border-primary text-primary",
+              )}
+            />
+          </div>
+
+          {activeTab === "users" && (
+            <div className="w-full sm:w-36">
+              <SelectField
+                label=""
+                options={statusOptions}
+                value={statusFilter}
+                onChange={(val) => {
+                  const v = String(val);
+                  setStatusFilter(!val || v === "undefined" ? "all" : v);
+                  setPage(1);
+                }}
+                labelKey="displayName"
+                buttonClassName={cn(
+                  "h-10 w-full justify-between rounded-xl border",
+                  "border-border/70 bg-background/50 px-3 text-xs font-semibold",
+                  "shadow-sm",
+                  statusFilter !== "all" && "border-primary text-primary",
+                )}
+              />
+            </div>
+          )}
+
+          {(roleFilter !== undefined ||
+            (activeTab === "users" && statusFilter !== "all")) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setRoleFilter(undefined);
+                setStatusFilter("all");
+                setPage(1);
+              }}
+              className={cn(
+                "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
+                "hover:text-foreground",
+              )}
+            >
+              Clear
+            </Button>
+          )}
         </div>
 
         <div className="flex shrink-0 items-center">
           <Button
             onClick={() => setIsWhitelistOpen(true)}
             className={cn(
-              "h-10 w-full sm:w-auto rounded-xl bg-primary text-primary-foreground",
-              "hover:brightness-115 flex items-center justify-center gap-2 shadow-sm",
+              "flex h-10 w-full items-center justify-center gap-2 rounded-xl",
+              "hover:brightness-115 bg-primary text-primary-foreground shadow-sm",
+              "sm:w-auto",
             )}
           >
             <UserPlus size={16} />
@@ -848,8 +940,13 @@ export default function UserManagement() {
       </div>
 
       {activeTab === "users" ? (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10 px-0 sm:px-6">
+        <Card
+          className={cn(
+            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
+            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+          )}
+        >
+          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -899,7 +996,7 @@ export default function UserManagement() {
           </CardContent>
 
           {data && data.meta.totalPages > 1 && (
-            <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+            <div className="border-t border-border/50 bg-muted/20">
               <Pagination
                 currentPage={page}
                 totalPages={data.meta.totalPages}
@@ -910,8 +1007,13 @@ export default function UserManagement() {
           )}
         </Card>
       ) : (
-        <Card className="overflow-hidden rounded-2xl border-0 bg-transparent shadow-none sm:border sm:border-border/70 sm:bg-white sm:shadow-sm dark:sm:border-white/10 dark:sm:bg-neutral-950/40">
-          <CardHeader className="border-b border-border/50 pb-4 dark:border-white/10 px-0 sm:px-6">
+        <Card
+          className={cn(
+            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
+            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+          )}
+        >
+          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">

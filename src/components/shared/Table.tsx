@@ -48,7 +48,7 @@ export function Table<T>({
   if (isLoading) {
     if (variant === "list" && renderListItem) {
       return (
-        <div className="min-w-0 divide-y divide-border/60 dark:divide-white/10">
+        <div className="min-w-0 divide-y divide-border/60">
           {Array.from({ length: loadingRows }).map((_, idx) => (
             <div
               key={idx}
@@ -90,7 +90,7 @@ export function Table<T>({
                 )}
               >
                 <thead>
-                  <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+                  <tr className="border-b border-border/70 text-muted-foreground">
                     {columns.map((col, idx) => (
                       <th
                         key={idx}
@@ -108,7 +108,7 @@ export function Table<T>({
                   {Array.from({ length: loadingRows }).map((_, rIdx) => (
                     <tr
                       key={rIdx}
-                      className="animate-pulse border-b border-border/60 dark:border-white/10"
+                      className="animate-pulse border-b border-border/60"
                     >
                       {columns.map((_, cIdx) => (
                         <td
@@ -134,9 +134,8 @@ export function Table<T>({
                   <div
                     key={idx}
                     className={cn(
-                      "animate-pulse rounded-xl border border-border/70",
+                      "animate-pulse rounded-xl border border-border",
                       "bg-card p-4 shadow-md backdrop-blur-xl",
-                      "dark:border-white/10 dark:bg-white/[0.035]",
                     )}
                   >
                     <div className="flex min-w-0 items-center justify-between gap-3">
@@ -177,7 +176,6 @@ export function Table<T>({
                   className={cn(
                     "border-b border-border/70",
                     "text-muted-foreground",
-                    "dark:border-white/10"
                   )}
                 >
                   {columns.map((col, idx) => (
@@ -199,14 +197,14 @@ export function Table<T>({
                 <tr
                   className={cn(
                     "border-0 bg-transparent",
-                    "hover:bg-transparent"
+                    "hover:bg-transparent",
                   )}
                 >
                   <td
                     colSpan={columns.length}
                     className={cn(
-                      "p-0 border-0 bg-transparent",
-                      "hover:bg-transparent"
+                      "border-0 bg-transparent p-0",
+                      "hover:bg-transparent",
                     )}
                   >
                     {emptyState}
@@ -216,9 +214,7 @@ export function Table<T>({
             </table>
           </div>
           {hasMobileRenderer && (
-            <div className="block xl:hidden">
-              {emptyState}
-            </div>
+            <div className="block xl:hidden">{emptyState}</div>
           )}
         </>
       );
@@ -228,7 +224,7 @@ export function Table<T>({
 
   if (variant === "list" && renderListItem) {
     return (
-      <div className="min-w-0 divide-y divide-border/60 border-y border-border/60 dark:divide-white/10 dark:border-white/10">
+      <div className="min-w-0 divide-y divide-border/60 border-y border-border/60">
         {data.map((item, idx) => renderListItem(item, idx))}
       </div>
     );
@@ -251,7 +247,7 @@ export function Table<T>({
             )}
           >
             <thead>
-              <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+              <tr className="border-b border-border/70 text-muted-foreground">
                 {columns.map((col, idx) => (
                   <th
                     key={idx}
@@ -276,10 +272,9 @@ export function Table<T>({
                   <tr
                     key={idx}
                     className={cn(
-                      "border-b border-border/60 bg-background/70 last:border-0",
-                      "transition-colors duration-200 dark:border-white/10 dark:bg-white/[0.025]",
-                      clickable &&
-                        "cursor-pointer hover:bg-muted/50 dark:hover:bg-white/[0.06]",
+                      "border-b border-border/60 bg-card last:border-0",
+                      "transition-colors duration-200",
+                      clickable && "cursor-pointer hover:bg-muted/50",
                       typeof rowClassName === "function"
                         ? rowClassName(item, idx)
                         : rowClassName,

@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileUp, CheckCircle2, X, AlertCircle, Check, Info } from "lucide-react";
+import {
+  FileUp,
+  CheckCircle2,
+  X,
+  AlertCircle,
+  Check,
+  Info,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/context";
 import { cn } from "@/lib/utils";
@@ -31,8 +38,9 @@ export function UploadSection({
   const [dragActive, setDragActive] = useState(false);
   const { triggerToast } = useToast();
 
-  const isMedical = showMedicalGuidelines || title.toLowerCase().includes("medical");
-  
+  const isMedical =
+    showMedicalGuidelines || title.toLowerCase().includes("medical");
+
   const isID = /\bid\b/i.test(title);
 
   const validateFiles = (files: FileList | null): File[] => {
@@ -101,7 +109,9 @@ export function UploadSection({
                   {optional ? "Optional" : "Required"}
                 </Badge>
               </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p
+                                className="mt-0.5 text-xs text-muted-foreground"
+                              >
                 {description}
               </p>
             </div>
@@ -152,12 +162,13 @@ export function UploadSection({
                 key={`${file.name}-${index}`}
                 className={cn(
                   "flex items-center justify-between rounded-md border",
-                  "border-green-200/50 bg-green-50/50 p-2.5",
-                  "dark:border-green-900/40 dark:bg-green-950/20",
+                  "border-success-foreground/30 bg-success-background p-2.5",
                 )}
               >
                 <div className="flex min-w-0 items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                  <CheckCircle2
+                    className="h-4 w-4 shrink-0 text-success-foreground"
+                  />
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium text-foreground">
                       {file.name}
@@ -167,12 +178,12 @@ export function UploadSection({
                 <button
                   onClick={() => onFileRemove(index)}
                   className={cn(
-                    "shrink-0 rounded p-0.5 transition-colors hover:bg-red-100/50",
-                    "dark:hover:bg-red-950/30",
+                    "shrink-0 rounded p-0.5 text-destructive",
+                    "transition-colors hover:bg-destructive/10",
                   )}
                   aria-label="Remove file"
                 >
-                  <X className="h-3.5 w-3.5 text-red-500" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             ))}
@@ -186,14 +197,32 @@ export function UploadSection({
 export function UploadIDGuidelines() {
   return (
     <div className="mb-6">
-      <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-900 shadow-sm dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-200">
-        <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+      <div
+        className={cn(
+          "flex items-start gap-3 rounded-xl border",
+          "border-info-foreground/30 bg-info-background p-4",
+          "text-info-foreground shadow-sm",
+        )}
+      >
+        <Info
+                                  className={cn(
+                      "mt-0.5 h-5 w-5 shrink-0",
+                      "text-info-foreground",
+                    )}
+                                />
         <div className="text-sm">
-          <p className="font-semibold mb-1">Important requirements for ID upload:</p>
-          <ul className="list-inside list-disc space-y-0.5 text-blue-800 dark:text-blue-300">
-            <li>Must be a photocopy of the parent&apos;s valid ID with their signature.</li>
+          <p className="mb-1 font-semibold">
+            Important requirements for ID upload:
+          </p>
+          <ul className="list-inside list-disc space-y-0.5 text-info-foreground">
+            <li>
+              Must be a photocopy of the parent&apos;s valid ID with their
+              signature.
+            </li>
             <li>Ensure the photo and text are clear and well-lit.</li>
-            <li>All text, especially the name and ID number, must be readable.</li>
+            <li>
+              All text, especially the name and ID number, must be readable.
+            </li>
             <li>Avoid camera flash glare, shadows, or cropped edges.</li>
           </ul>
         </div>
@@ -208,13 +237,17 @@ export function UploadGuidelines() {
       <div className="flex flex-col gap-2 rounded-xl border border-amber-200 bg-[#FFF9E5] p-4 text-amber-900 shadow-sm">
         <div className="flex items-center gap-3">
           <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
-          <p className="text-sm font-bold">
-            Medical Certificate Requirements:
-          </p>
+          <p className="text-sm font-bold">Medical Certificate Requirements:</p>
         </div>
-        <ul className="ml-8 list-disc text-xs space-y-1 font-medium text-amber-800">
-          <li>Must be signed by the University nurse before submitting in the system.</li>
-          <li>Doctor&apos;s signature and PRC License Number must be clearly visible.</li>
+        <ul className="ml-8 list-disc space-y-1 text-xs font-medium text-amber-800">
+          <li>
+            Must be signed by the University nurse before submitting in the
+            system.
+          </li>
+          <li>
+            Doctor&apos;s signature and PRC License Number must be clearly
+            visible.
+          </li>
         </ul>
       </div>
 
@@ -231,7 +264,8 @@ export function UploadGuidelines() {
             />
           </div>
           <div className="bg-white p-4 text-center text-xs font-semibold text-muted-foreground">
-            Incomplete certificate without visible signature and PRC License Number.
+            Incomplete certificate without visible signature and PRC License
+            Number.
           </div>
         </Card>
 
@@ -247,7 +281,8 @@ export function UploadGuidelines() {
             />
           </div>
           <div className="bg-white p-4 text-center text-xs font-semibold text-muted-foreground">
-            Complete certificate with the doctor's signature and PRC License Number.
+            Complete certificate with the doctor's signature and PRC License
+            Number.
           </div>
         </Card>
       </div>

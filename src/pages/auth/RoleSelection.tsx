@@ -87,21 +87,25 @@ export default function RoleSelection() {
                 key={role.id}
                 onClick={() => handleRoleSelect(role)}
                 className={cn(
-                  "group cursor-pointer overflow-hidden rounded-xl border-white/20 bg-white/40",
-                  "backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/50",
-                  "hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:border-white/10 dark:bg-white/[0.02]",
+                  "group cursor-pointer overflow-hidden rounded-xl",
+                  "border border-border bg-card/60 backdrop-blur-xl",
+                  "transition-all duration-300 hover:-translate-y-1",
+                  "hover:border-primary/50 hover:shadow-lg",
                 )}
               >
                 <CardContent className="flex flex-col items-center p-8">
                   <div
                     className={cn(
-                      "mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br shadow-inner",
+                      "mb-6 flex h-16 w-16 items-center justify-center",
+                      "rounded-2xl bg-gradient-to-br shadow-inner",
                       colors,
                     )}
                   >
                     {icon}
                   </div>
-                  <h3 className="mb-2 text-xl font-bold">{role.name}</h3>
+                  <h3 className="mb-2 text-xl font-bold">
+                    {role.name.toUpperCase()}
+                  </h3>
                   <p className="mb-6 text-sm text-muted-foreground">
                     Access {role.name.toLowerCase()} tools and management.
                   </p>
@@ -118,7 +122,10 @@ export default function RoleSelection() {
           <Button
             variant="ghost"
             onClick={logout}
-            className="rounded-full text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+            className={cn(
+              "rounded-full text-muted-foreground",
+              "hover:bg-destructive/10 hover:text-destructive",
+            )}
           >
             <LogOut className="mr-2 h-4 w-4" /> Not your account? Logout
           </Button>

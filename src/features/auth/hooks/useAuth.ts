@@ -3,6 +3,7 @@
  * Handles login and logout with bootstrapper integration
  */
 
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PostLogin, LoginPayload, GetLogoutURL } from "../services/index";
 import { QUERY_KEYS } from "@/config/queryKeys";
@@ -49,7 +50,10 @@ export function useLogin() {
  * @returns Logout function and state
  */
 export function useLogout() {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const logout = () => {
+    setIsLoggingOut(true);
     // Clear local session state and reset session-scoped UI preferences.
     resetSessionUIPreferences();
     localStorage.removeItem("session_active");
@@ -58,6 +62,6 @@ export function useLogout() {
 
   return {
     logout,
-    isLoggingOut: false,
+    isLoggingOut,
   };
 }

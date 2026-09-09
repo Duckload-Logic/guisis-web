@@ -1,20 +1,24 @@
 import { MouseEvent, useMemo, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
+  Download,
   EyeOff,
   Inbox,
   RotateCcw,
   Tag,
-  User,
   Eye,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { formatDate } from "@/utils/dateTime";
 import { SearchInput } from "@/components/form";
 import { SelectField } from "@/components/ui/select-field";
@@ -107,6 +111,9 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
+  const location = useLocation();
+  const isAssistantView = location.pathname.startsWith("/assistant");
+
   const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
     () => new Set(),
   );
@@ -129,23 +136,20 @@ export function SlipList({
   const sortKeyName = useMemo(
     () =>
       sortOptions?.find(
-        (o) =>
-          /name|student/i.test(o.id) || /name|student/i.test(o.name),
+        (o) => /name|student/i.test(o.id) || /name|student/i.test(o.name),
       )?.id || "studentName",
     [sortOptions],
   );
   const sortKeyAbsence = useMemo(
     () =>
-      sortOptions?.find(
-        (o) => /absence/i.test(o.id) || /absence/i.test(o.name),
-      )?.id || "dateOfAbsence",
+      sortOptions?.find((o) => /absence/i.test(o.id) || /absence/i.test(o.name))
+        ?.id || "dateOfAbsence",
     [sortOptions],
   );
   const sortKeyNeeded = useMemo(
     () =>
-      sortOptions?.find(
-        (o) => /needed/i.test(o.id) || /needed/i.test(o.name),
-      )?.id || "dateNeeded",
+      sortOptions?.find((o) => /needed/i.test(o.id) || /needed/i.test(o.name))
+        ?.id || "dateNeeded",
     [sortOptions],
   );
 
@@ -178,8 +182,7 @@ export function SlipList({
       if (isServerFiltered) return true;
 
       const matchesCat =
-        currentCategory === "all" ||
-        slip.category?.name === currentCategory;
+        currentCategory === "all" || slip.category?.name === currentCategory;
 
       return matchesCat;
     });
@@ -196,8 +199,7 @@ export function SlipList({
 
     baseFilteredSlips.forEach((slip) => {
       if (slip.status?.id) {
-        map[String(slip.status.id)] =
-          (map[String(slip.status.id)] || 0) + 1;
+        map[String(slip.status.id)] = (map[String(slip.status.id)] || 0) + 1;
       }
     });
 
@@ -234,12 +236,10 @@ export function SlipList({
         const right = getSlipStudentName(b).toLowerCase();
         const res = left.localeCompare(right);
         return selectedOrder === "asc" ? res : -res;
-        
       } else if (selectedSort === sortKeyAbsence) {
         const left = new Date(a.dateOfAbsence || 0).getTime();
         const right = new Date(b.dateOfAbsence || 0).getTime();
         return selectedOrder === "asc" ? left - right : right - left;
-        
       } else if (selectedSort === sortKeyNeeded) {
         const left = new Date(a.dateNeeded || 0).getTime();
         const right = new Date(b.dateNeeded || 0).getTime();
@@ -250,13 +250,13 @@ export function SlipList({
 
     return filtered;
   }, [
-    baseFilteredSlips, 
-    selectedStatus, 
-    selectedSort, 
-    selectedOrder, 
-    sortKeyName, 
-    sortKeyAbsence, 
-    sortKeyNeeded
+    baseFilteredSlips,
+    selectedStatus,
+    selectedSort,
+    selectedOrder,
+    sortKeyName,
+    sortKeyAbsence,
+    sortKeyNeeded,
   ]);
 
   const hiddenCount = slips.length - visibleSlips.length;
@@ -279,7 +279,10 @@ export function SlipList({
     setHiddenSlipKeys(new Set());
   };
 
-  const handleViewClick = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
+  const handleViewClick = (
+    slip: Slip,
+    event?: MouseEvent<HTMLButtonElement>,
+  ) => {
     event?.stopPropagation();
     onViewClick(slip);
   };
@@ -287,77 +290,88 @@ export function SlipList({
   const renderSortableHeader = useCallback(
     (label: string, sortKey: string) => {
       const isActive = selectedSort === sortKey;
-      const Icon = isActive
-        ? selectedOrder === "desc"
-          ? ArrowDown
-          : ArrowUp
-        : ArrowUp;
-
       return (
         <button
           type="button"
           onClick={() => {
             onSortChange?.(sortKey);
             onOrderChange?.(
-              isActive && selectedOrder === "asc" ? "desc" : "asc"
+              isActive && selectedOrder === "asc" ? "desc" : "asc",
             );
             onPageChange(1);
           }}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-xl px-2 py-1",
-            "whitespace-nowrap outline-none",
-            "text-[11px] font-bold uppercase tracking-[0.14em]",
-            "transition-colors",
+            "inline-flex items-center gap-1.5 whitespace-nowrap outline-none",
+            "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors",
             isActive
-              ? "text-[#800000]"
-              : "text-muted-foreground hover:text-foreground"
+              ? "text-primary"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
-          {label}
-          <Icon
-            className={cn(
-              "h-3.5 w-3.5 shrink-0",
-              isActive ? "opacity-100" : "opacity-40"
-            )}
-            strokeWidth={isActive ? 2.5 : 2}
-          />
+          <span>{label}</span>
+          {isActive &&
+            (selectedOrder === "desc" ? (
+              <ArrowDown
+                className="h-3 w-3 shrink-0"
+                strokeWidth={2.5}
+              />
+            ) : (
+              <ArrowUp
+                className="h-3 w-3 shrink-0"
+                strokeWidth={2.5}
+              />
+            ))}
         </button>
       );
     },
-    [
-      selectedSort,
-      selectedOrder,
-      onSortChange,
-      onOrderChange,
-      onPageChange,
-    ]
+    [selectedSort, selectedOrder, onSortChange, onOrderChange, onPageChange],
   );
 
   const columns = useMemo<Column<Slip>[]>(
     () => [
       {
         header: renderSortableHeader("Student Name", sortKeyName),
-        className: "w-[28%] px-3 py-3", 
-        render: (slip) => (
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "relative flex h-10 w-10 shrink-0 items-center justify-center",
-                "overflow-hidden rounded-xl border border-primary/20 bg-glass-bg/50",
-              )}
-            >
-              <User className="h-4/5 w-4/5 text-primary/80" />
+        className: "w-[28%] px-3 py-3",
+        render: (slip) => {
+          const studentName = getSlipStudentName(slip) || "Unnamed Student";
+          const initials =
+            `${slip.user?.firstName?.[0] || ""}${slip.user?.lastName?.[0] || ""}`.toUpperCase() ||
+            "ST";
+          const picUrl = getProfilePictureUrl(slip.user?.profilePicture);
+
+          return (
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+                {picUrl ? (
+                  <AvatarImage
+                    src={picUrl}
+                    alt={studentName}
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={cn(
+                    "rounded-xl bg-primary/10 text-xs font-bold",
+                    "text-primary",
+                  )}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 space-y-0.5">
+                <p className="truncate text-sm font-bold text-foreground">
+                  {studentName}
+                </p>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {slip.studentNumber ||
+                    slip.user?.studentNumber ||
+                    "Student record"}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0 space-y-0.5">
-              <p className="truncate text-sm font-bold text-foreground">
-                {getSlipStudentName(slip) || "Unnamed Student"}
-              </p>
-              <p className="truncate text-[11px] text-muted-foreground">
-                {slip.studentNumber || slip.user?.studentNumber || "Student record"}
-              </p>
-            </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         header: renderSortableHeader("Absence Date", sortKeyAbsence),
@@ -385,83 +399,90 @@ export function SlipList({
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={categoryOptions}
-            value={currentCategory}
-            onChange={(val) => {
-              const v = String(val);
-              handleCategoryChange(
-                !val || v === "" || v === "undefined" ? "all" : v,
-              );
-            }}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              currentCategory === "all"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Category
+          </span>
         ),
         className: "w-[18%] px-3 py-3",
         render: (slip) => (
-          <span className="text-sm font-semibold text-[#800000]">
+          <span className="text-sm font-semibold text-primary">
             {slip.category?.name || "-"}
           </span>
         ),
       },
       {
         header: (
-          <SelectField
-            label=""
-            options={dropdownOptions}
-            value={selectedStatus?.id}
-            onChange={(val) => {
-              const v = String(val);
-              if (
-                !val ||
-                v === "" ||
-                v === "undefined" ||
-                v === "0" ||
-                v === "all"
-              ) {
-                const allStatus = statuses.find(
-                  (s) => String(s.id) === "0",
-                ) || ({ id: 0, name: "All Statuses" } as unknown as SlipStatus);
-                onStatusChange(allStatus);
-                onPageChange(1);
-                return;
-              }
-              const status = statuses.find((s) => String(s.id) === v);
-              if (status) {
-                onStatusChange(status);
-                onPageChange(1);
-              }
-            }}
-            labelKey="displayName"
-            buttonClassName={cn(
-              "h-auto w-full justify-start gap-1.5 rounded-xl border-0 bg-transparent px-2 py-1 shadow-none outline-none hover:bg-muted/70 focus:border-0 focus:ring-0",
-              "text-[11px] font-bold uppercase tracking-[0.14em] transition-colors whitespace-nowrap",
-              String(selectedStatus?.id) === "0"
-                ? "text-muted-foreground hover:text-foreground"
-                : "text-[#800000]",
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
             )}
-          />
+          >
+            Status
+          </span>
         ),
-        className: "w-[18%] px-3 py-3",
+        className: "w-[16%] min-w-[120px] px-3 py-3",
         render: (slip) => (
           <span
             className={cn(
               "inline-block rounded-xl border px-2.5 py-0.5",
               "text-[10px] font-bold uppercase shadow-md",
               STATUS_COLORS[getStatusColorKey(slip.status?.name)] ||
-                "bg-gray-200 text-gray-700 border-gray-300",
+                "border-gray-300 bg-gray-200 text-gray-700",
             )}
           >
             {slip.status?.name || "-"}
           </span>
+        ),
+      },
+      {
+        header: (
+          <span
+            className={cn(
+              "text-[11px] font-bold uppercase tracking-[0.14em]",
+              "text-muted-foreground",
+            )}
+          >
+            Action
+          </span>
+        ),
+        className: "w-[12%] min-w-[90px] px-3 py-3 text-right",
+        render: (slip) => (
+          <div className="flex items-center justify-end gap-1">
+            {isAssistantView && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={(event) => hideSlip(slip, event)}
+                className="h-7 w-7 shrink-0 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Hide admission slip"
+                title="Hide"
+              >
+                <EyeOff size={12} />
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(event) => handleViewClick(slip, event)}
+              className={cn(
+                "h-8 min-h-[32px] gap-1.5 rounded-xl border-primary/20",
+                "bg-primary/10 px-3 text-[11px] font-bold uppercase",
+                "text-primary shadow-xs transition-all",
+                "hover:bg-primary hover:text-white active:scale-95",
+              )}
+            >
+              <Eye className="h-3.5 w-3.5" />
+              View
+            </Button>
+          </div>
         ),
       },
     ],
@@ -482,6 +503,7 @@ export function SlipList({
       onStatusChange,
       handleCategoryChange,
       renderSortableHeader,
+      isAssistantView,
     ],
   );
 
@@ -489,22 +511,42 @@ export function SlipList({
     <div
       key={slip.id || `${slip.studentNumber}-${slip.dateOfAbsence}`}
       className={cn(
-        "space-y-3 rounded-xl border border-border/70 bg-card p-4",
-        "shadow-md backdrop-blur-xl transition-all duration-200 active:scale-[0.98]",
-        "dark:border-white/10 dark:bg-white/[0.04]",
+        "space-y-3 rounded-xl border border-border bg-card p-4",
+        "shadow-md backdrop-blur-xl transition-all duration-200",
+        "active:scale-[0.98]",
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <User className="h-4 w-4 text-primary" />
-            <span className="truncate">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+            {getProfilePictureUrl(slip.user?.profilePicture) ? (
+              <AvatarImage
+                src={getProfilePictureUrl(slip.user?.profilePicture)}
+                alt={getSlipStudentName(slip) || "Student"}
+                className="object-cover"
+              />
+            ) : null}
+            <AvatarFallback
+              className={cn(
+                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
+              )}
+            >
+              {`${slip.user?.firstName?.[0] || ""}${
+                slip.user?.lastName?.[0] || ""
+              }`.toUpperCase() || "ST"}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
               {getSlipStudentName(slip) || "Unnamed Student"}
-            </span>
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {slip.studentNumber ||
+                slip.user?.studentNumber ||
+                "Student record"}
+            </p>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-            {slip.studentNumber || slip.user?.studentNumber || "Student record"}
-          </p>
         </div>
 
         <span
@@ -520,7 +562,7 @@ export function SlipList({
       </div>
 
       <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Absence Date
           </p>
@@ -529,7 +571,7 @@ export function SlipList({
           </p>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2 dark:border-white/10 dark:bg-white/[0.035]">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Date Needed
           </p>
@@ -604,20 +646,19 @@ export function SlipList({
             : "No active records match the current filters."}
         </p>
 
-        {(currentCategory !== "all" ||
-          String(selectedStatus?.id) !== "0") && (
+        {(currentCategory !== "all" || String(selectedStatus?.id) !== "0") && (
           <div className="pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => {
                 handleCategoryChange("all");
-                const allStatus = statuses.find(
-                  (s) => String(s.id) === "0"
-                ) || ({
-                  id: 0,
-                  name: "All Statuses",
-                } as unknown as SlipStatus);
+                const allStatus =
+                  statuses.find((s) => String(s.id) === "0") ||
+                  ({
+                    id: 0,
+                    name: "All Statuses",
+                  } as unknown as SlipStatus);
                 onStatusChange(allStatus);
                 onPageChange(1);
               }}
@@ -634,31 +675,69 @@ export function SlipList({
   const renderDesktopSkeleton = () => (
     <table className="w-full border-collapse text-sm">
       <thead>
-        <tr className="border-b border-border/70 text-muted-foreground dark:border-white/10">
+        <tr className="border-b border-border/70 text-muted-foreground">
           {columns.map((column, index) => (
             <th
               key={index}
-              className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
+              className={cn(
+                "px-3 py-3 text-left text-[11px] font-bold uppercase",
+                "tracking-[0.14em]",
+                column.className,
+              )}
             >
-              {typeof column.header === "string" ? column.header : <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />}
+              {typeof column.header === "string" ? (
+                column.header
+              ) : (
+                <div className="h-4 w-20 animate-pulse rounded bg-muted/50" />
+              )}
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, rowIndex) => (
+        {Array.from({ length: 6 }).map((_, rowIndex) => (
           <tr
             key={rowIndex}
-            className="animate-pulse border-b border-border/60 dark:border-white/10"
+            className="animate-pulse border-b border-border/60"
           >
-            {columns.map((_, columnIndex) => (
-              <td
-                key={columnIndex}
-                className="px-4 py-3"
-              >
-                <Skeleton className="h-4 w-24 rounded" />
-              </td>
-            ))}
+            {/* Student Name */}
+            <td className="w-[28%] px-3 py-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
+                <div className="min-w-0 space-y-1.5">
+                  <Skeleton className="h-4 w-32 rounded-md" />
+                  <Skeleton className="h-3 w-20 rounded-md" />
+                </div>
+              </div>
+            </td>
+            {/* Absence Date */}
+            <td className="w-[18%] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-16 rounded-md" />
+              </div>
+            </td>
+            {/* Date Needed */}
+            <td className="w-[18%] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-16 rounded-md" />
+              </div>
+            </td>
+            {/* Category */}
+            <td className="w-[18%] px-3 py-3">
+              <Skeleton className="h-5 w-24 rounded-md" />
+            </td>
+            {/* Status */}
+            <td className="w-[16%] min-w-[120px] px-3 py-3">
+              <Skeleton className="h-6 w-20 rounded-xl" />
+            </td>
+            {/* Action */}
+            <td className="w-[12%] min-w-[90px] px-3 py-3 text-right">
+              <div className="flex justify-end">
+                <Skeleton className="h-7 w-16 rounded-xl" />
+              </div>
+            </td>
           </tr>
         ))}
       </tbody>
@@ -671,9 +750,8 @@ export function SlipList({
         <div
           key={index}
           className={cn(
-            "animate-pulse rounded-xl border border-border/70",
+            "animate-pulse rounded-xl border border-border",
             "bg-card p-4 shadow-md backdrop-blur-xl",
-            "dark:border-white/10 dark:bg-white/[0.035]",
           )}
         >
           <div className="flex items-center justify-between gap-3">
@@ -691,15 +769,16 @@ export function SlipList({
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
-      <div className="flex flex-col gap-6 rounded-2xl border border-border/70 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col gap-6 rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 text-left">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            {title}
-          </h2>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Student details, absence date, and date needed are shown in one compact table.
-          </p>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {title}
+            </h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Student details, absence date, and date needed are shown in one
+              compact table.
+            </p>
           </div>
 
           {!isLoading && slips.length > 0 && (
@@ -730,35 +809,178 @@ export function SlipList({
           )}
         </div>
 
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-1 flex-col gap-1.5 w-full md:max-w-[240px] lg:max-w-sm">
-            <label className={cn("text-sm font-medium", "text-neutral-700 dark:text-neutral-300")}>
-              Search
-            </label>
-            <SearchInput
-              searchTerm={searchTerm}
-              onSearchChange={handleSearchChange}
-              placeholder="Search by name, email, or student number..."
-              hasHeader={false}
-            />
+        <div className="flex flex-col gap-3">
+          {/* Top Row: Search + Export CSV */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 sm:flex-row sm:items-center",
+              "sm:justify-between",
+            )}
+          >
+            <div className="w-full sm:max-w-md">
+              <SearchInput
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+                placeholder="Search name, email, or student number..."
+                hasHeader={false}
+              />
+            </div>
+
+            {!isLoading && slips.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  exportToCSV(
+                    visibleSlips,
+                    slipExportColumns,
+                    "admission-slips",
+                  )
+                }
+                disabled={visibleSlips.length === 0}
+                className={cn(
+                  "h-9 gap-1.5 rounded-xl border-border/70 bg-card px-3",
+                  "text-xs font-semibold shadow-xs transition-all",
+                  "hover:bg-muted/60 hover:text-foreground",
+                )}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export CSV
+              </Button>
+            )}
           </div>
 
-          {!isLoading && slips.length > 0 && (
-            <button
-              onClick={() => exportToCSV(visibleSlips, slipExportColumns, "admission-slips")}
-              disabled={visibleSlips.length === 0}
-              className="flex h-8 items-center self-start rounded-lg border border-red-800/30 bg-white/50 px-3 text-[11px] font-semibold text-red-800 shadow-sm transition-colors hover:bg-red-800/10 disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto"
+          {/* Bottom Row: Quick Status Pills + Category Selector + Clear */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 border-t border-border/50 pt-3",
+              "lg:flex-row lg:items-center lg:justify-between",
+            )}
+          >
+            {/* Status Pills */}
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-1.5 overflow-x-auto",
+                "py-0.5",
+              )}
             >
-              <svg className="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export CSV
-            </button>
-          )}
+              {isLoading && dropdownOptions.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-8 w-24 rounded-xl"
+                    />
+                  ))
+                : dropdownOptions.map((status) => {
+                const isSelected =
+                  String(selectedStatus?.id) === String(status.id);
+                const serverCountObj = statusCounts?.find(
+                  (sc) => String(sc.id) === String(status.id),
+                );
+                const count = serverCountObj
+                  ? serverCountObj.count
+                  : dynamicStatMap[String(status.id)] || 0;
+
+                return (
+                  <button
+                    key={String(status.id)}
+                    type="button"
+                    onClick={() => {
+                      if (String(status.id) === "0") {
+                        const allStatus = statuses.find(
+                          (s) => String(s.id) === "0",
+                        ) || {
+                          id: 0,
+                          name: "All Statuses",
+                        };
+                        onStatusChange(allStatus as unknown as SlipStatus);
+                      } else {
+                        onStatusChange(status);
+                      }
+                      onPageChange(1);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5",
+                      "select-none text-xs font-semibold transition-all",
+                      isSelected
+                        ? "border border-primary/40 bg-primary/10 " +
+                            "text-primary shadow-sm"
+                        : "border border-border/70 bg-card " +
+                            "text-muted-foreground hover:bg-muted/60" +
+                            "hover:text-foreground",
+                    )}
+                  >
+                    <span>{status.name}</span>
+                    {String(status.id) !== "0" && (
+                      <Badge
+                        variant={isSelected ? "default" : "secondary"}
+                        className={cn(
+                          "h-4 min-w-4 rounded-full px-1 text-[10px]",
+                          isSelected && "bg-primary text-primary-foreground",
+                        )}
+                      >
+                        {count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Secondary Selector (Category) + Reset */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-[160px]">
+                <SelectField
+                  label=""
+                  options={categoryOptions}
+                  value={currentCategory}
+                  onChange={(val) => {
+                    const v = String(val);
+                    handleCategoryChange(
+                      !val || v === "" || v === "undefined" ? "all" : v,
+                    );
+                  }}
+                  labelKey="displayName"
+                  buttonClassName={cn(
+                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                    "shadow-none",
+                    currentCategory !== "all" && "border-primary text-primary",
+                  )}
+                />
+              </div>
+
+              {(currentCategory !== "all" ||
+                String(selectedStatus?.id) !== "0") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    handleCategoryChange("all");
+                    const allStatus =
+                      statuses.find((s) => String(s.id) === "0") ||
+                      ({
+                        id: 0,
+                        name: "All Statuses",
+                      } as unknown as SlipStatus);
+                    onStatusChange(allStatus);
+                    onPageChange(1);
+                  }}
+                  className={cn(
+                    "h-8 rounded-xl px-2 text-xs font-semibold text-muted-foreground",
+                    "hover:text-foreground",
+                  )}
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm dark:border-white/10 dark:bg-neutral-950/40">
+      <div className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <Table
           data={visibleSlips}
           columns={columns}
@@ -771,7 +993,7 @@ export function SlipList({
           tableClassName="w-full table-fixed"
           onRowClick={onViewClick}
         />
-        <div className="border-t border-border/50 bg-slate-50/50 dark:bg-transparent">
+        <div className="border-t border-border/50 bg-muted/20">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -779,7 +1001,6 @@ export function SlipList({
           />
         </div>
       </div>
-      
     </div>
   );
 }
