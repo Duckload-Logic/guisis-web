@@ -11,15 +11,12 @@ import {
 
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata } from "@/context";
-import {
-  useAppointmentsStats,
-} from "@/features/appointments/hooks/useAppointments";
+import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointments";
 import { useUserIIR } from "@/features/iir/hooks";
 import { useGetSlipStats } from "@/features/slips/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
 
-import { HeaderStats } from "./dashboard/HeaderStats";
 import { QuickActionsSection } from "./dashboard/QuickActionsSection";
 import { RemindersCard } from "./dashboard/RemindersCard";
 import { ServicesOfferedSection } from "./dashboard/ServicesOfferedSection";
@@ -185,14 +182,8 @@ export default function Dashboard() {
       badgeText: "Student Overview",
       badgeIcon: <LayoutDashboard className="h-4 w-4" />,
       isLoading: false,
-      headerStats: (
-        <HeaderStats
-          totalAppointments={totalAppointments}
-          totalSlips={totalSlips}
-        />
-      ),
     }),
-    [me, totalAppointments, totalSlips],
+    [me],
   );
 
   usePageMetadata(pageMeta);

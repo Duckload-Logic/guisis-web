@@ -27,22 +27,31 @@ export default function Landing() {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    if (isProd) window.open(loginUrl, "_self");
-    else navigate(loginUrl);
+    if (isProd) {
+      window.location.assign(loginUrl);
+    } else {
+      navigate(loginUrl);
+    }
   };
 
   const faqs = [
     {
       q: "How do I log in to GuiSIS?",
-      a: "You must use your official university credentials via the integrated Identity Provider (IDP) login option.",
+      a:
+        "You must use your official university credentials via the " +
+        "integrated Identity Provider (IDP) login option.",
     },
     {
       q: "Can I request guidance support off-campus?",
-      a: "Yes, the portal allows you to book appointments and request admission slips directly online.",
+      a:
+        "Yes, the portal allows you to book appointments and request " +
+        "admission slips directly online.",
     },
     {
       q: "How do I create an account?",
-      a: "You don't need to manually create one. Just use your official university credentials via the integrated IDP.",
+      a:
+        "You don't need to manually create one. Just use your official " +
+        "university credentials via the integrated IDP.",
     },
   ];
 
@@ -56,26 +65,32 @@ export default function Landing() {
         className="relative space-y-12 pb-12"
       >
         {/* Ambient Background Accents */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 -z-10",
+            "overflow-hidden",
+          )}
+        >
           <div
             className={cn(
-              "absolute -left-[10%] top-[10%] h-[50rem] w-[50rem]",
-              "rounded-full bg-primary/10 blur-[100px]",
+              "hidden sm:block absolute -left-[10%] top-[10%]",
+              "h-[35rem] w-[35rem] rounded-full bg-primary/10 blur-[80px]",
             )}
           />
           <div
             className={cn(
-              "absolute -right-[10%] top-[40%] h-[40rem] w-[40rem]",
-              "rounded-full bg-secondary/15 blur-[100px]",
+              "absolute -right-[10%] top-[40%] h-[25rem] w-[25rem]",
+              "rounded-full bg-secondary/15 blur-[60px]",
             )}
           />
           <div
             className={cn(
-              "absolute left-[20%] top-[80%] h-[45rem] w-[45rem]",
-              "rounded-full bg-primary/5 blur-[100px]",
+              "hidden sm:block absolute left-[20%] top-[80%]",
+              "h-[30rem] w-[30rem] rounded-full bg-primary/5 blur-[80px]",
             )}
           />
         </div>
+
         {/* Asymmetric Hero Section */}
         <section
           className={cn(
@@ -85,8 +100,8 @@ export default function Landing() {
           )}
         >
           <div
-          className="bg-grid pointer-events-none absolute inset-0 opacity-60"
-        />
+            className="bg-grid pointer-events-none absolute inset-0 opacity-60"
+          />
           <div
             className={cn(
               "pointer-events-none absolute inset-0 bg-gradient-to-br",
@@ -98,17 +113,37 @@ export default function Landing() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative z-10 w-full px-6 py-12 sm:px-12 lg:w-3/5 lg:py-24"
+            className={cn(
+              "relative z-10 w-full px-6 py-12 sm:px-12",
+              "lg:w-3/5 lg:py-24",
+            )}
           >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary shadow-sm backdrop-blur-sm">
+            <div
+              className={cn(
+                "mb-6 inline-flex items-center gap-2 rounded-full border",
+                "border-primary/20 bg-primary/5 px-3 py-1 text-xs",
+                "font-semibold uppercase tracking-widest text-primary",
+                "shadow-sm backdrop-blur-sm",
+              )}
+            >
               <ShieldCheck className="h-4 w-4" />
               Official Portal for PUP-Taguig GuiSIS
             </div>
-            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <h1
+              className={cn(
+                "text-4xl font-extrabold leading-[1.1] tracking-tight",
+                "text-foreground sm:text-5xl lg:text-6xl",
+              )}
+            >
               Guidance & Support <br />
               <span className="text-primary">Modernized.</span>
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
+            <p
+              className={cn(
+                "mt-6 max-w-lg text-lg leading-relaxed",
+                "text-muted-foreground",
+              )}
+            >
               Built exclusively for Polytechnic University of the Philippines –
               Taguig. Access counseling appointments, admission slips, and
               mental health resources securely.
@@ -116,7 +151,10 @@ export default function Landing() {
             <div className="mt-8 flex flex-wrap gap-4">
               <Button
                 size="lg"
-                className="gap-2 font-semibold shadow-md transition-transform hover:-translate-y-0.5"
+                className={cn(
+                  "gap-2 font-semibold shadow-md transition-transform",
+                  "hover:-translate-y-0.5",
+                )}
                 onClick={handleLogin}
               >
                 Login <ArrowRight className="h-4 w-4" />
@@ -126,7 +164,9 @@ export default function Landing() {
                 variant="outline"
                 className="font-semibold"
                 onClick={() =>
-                  document.getElementById("features")?.scrollIntoView()
+                  document.getElementById("features")?.scrollIntoView({
+                    behavior: "smooth",
+                  })
                 }
               >
                 Explore Features
@@ -139,12 +179,33 @@ export default function Landing() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="relative z-10 flex h-full w-full flex-col justify-center gap-4 p-6 sm:p-12 lg:w-2/5 lg:pl-0"
+            className={cn(
+              "relative z-10 flex h-full w-full flex-col justify-center",
+              "gap-4 p-6 sm:p-12 lg:w-2/5 lg:pl-0",
+            )}
           >
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("features")?.scrollIntoView({
+                    behavior: "smooth",
+                  })
+                }
+                className={cn(
+                  "col-span-2 text-left rounded-xl border border-border",
+                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
+                  "transition-all hover:border-primary/40",
+                  "hover:-translate-y-0.5 cursor-pointer",
+                )}
+              >
                 <div className="mb-3 flex items-center gap-4">
-                  <div className="rounded-lg bg-secondary/15 p-2.5 text-secondary-foreground">
+                  <div
+                    className={cn(
+                      "rounded-lg bg-secondary/15 p-2.5",
+                      "text-secondary-foreground",
+                    )}
+                  >
                     <Calendar className="h-5 w-5 text-foreground" />
                   </div>
                   <h3 className="font-semibold">Quick Scheduling</h3>
@@ -152,20 +213,53 @@ export default function Landing() {
                 <p className="text-sm text-muted-foreground">
                   Book appointments instantly without falling in line.
                 </p>
-              </div>
-              <div className="rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("features")?.scrollIntoView({
+                    behavior: "smooth",
+                  })
+                }
+                className={cn(
+                  "text-left rounded-xl border border-border",
+                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
+                  "transition-all hover:border-primary/40",
+                  "hover:-translate-y-0.5 cursor-pointer",
+                )}
+              >
                 <FileText className="mb-3 h-6 w-6 text-primary" />
                 <h3 className="text-sm font-semibold">Admission Slips</h3>
-              </div>
-              <div className="rounded-xl border border-border bg-background/80 p-6 shadow-sm backdrop-blur-md transition-all hover:border-primary/30">
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  document.getElementById("support")?.scrollIntoView({
+                    behavior: "smooth",
+                  })
+                }
+                className={cn(
+                  "text-left rounded-xl border border-border",
+                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
+                  "transition-all hover:border-primary/40",
+                  "hover:-translate-y-0.5 cursor-pointer",
+                )}
+              >
                 <MessageSquare className="mb-3 h-6 w-6 text-secondary" />
                 <h3 className="text-sm font-semibold">Direct Support</h3>
-              </div>
+              </button>
             </div>
           </motion.div>
         </section>
 
-        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div
+          className={cn(
+            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
+            "bg-gradient-to-r from-transparent via-border to-transparent",
+          )}
+        />
 
         {/* About Section */}
         <section
@@ -177,25 +271,40 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
-            className="grid items-center gap-10 rounded-2xl border border-border bg-muted/30 p-8 shadow-sm transition-all hover:border-primary/30 sm:p-12 lg:grid-cols-2"
+            className={cn(
+              "grid items-center gap-10 rounded-2xl border border-border",
+              "bg-muted/30 p-8 shadow-sm transition-all",
+              "hover:border-primary/30 sm:p-12 lg:grid-cols-2",
+            )}
           >
             <div className="max-w-lg space-y-6">
-              <div className="mb-2 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+              <div
+                className={cn(
+                  "mb-2 inline-flex rounded-xl bg-primary/10 p-3",
+                  "text-primary",
+                )}
+              >
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <h2 className="text-3xl font-bold tracking-tight">
                 The gateway for guidance and support.
               </h2>
               <p className="text-base leading-relaxed text-muted-foreground">
-                Built for the Polytechnic University of the Philippines Taguig,
-                GuiSIS is designed to support students with secure access to
-                academic guidance, counseling services, and official resources.
+                Built for the Polytechnic University of the Philippines
+                Taguig, GuiSIS is designed to support students with secure
+                access to academic guidance, counseling services, and
+                official resources.
               </p>
             </div>
 
             <div className="w-full max-w-md space-y-8 lg:ml-auto">
               <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-foreground">
+                <h3
+                  className={cn(
+                    "flex items-center gap-2 text-xl font-bold",
+                    "text-foreground",
+                  )}
+                >
                   <div className="h-2 w-2 rounded-full bg-primary" />
                   Secure by default
                 </h3>
@@ -205,7 +314,12 @@ export default function Landing() {
                 </p>
               </div>
               <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-xl font-bold text-foreground">
+                <h3
+                  className={cn(
+                    "flex items-center gap-2 text-xl font-bold",
+                    "text-foreground",
+                  )}
+                >
                   <div className="h-2 w-2 rounded-full bg-secondary" />
                   Easy navigation
                 </h3>
@@ -218,7 +332,12 @@ export default function Landing() {
           </motion.div>
         </section>
 
-        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div
+          className={cn(
+            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
+            "bg-gradient-to-r from-transparent via-border to-transparent",
+          )}
+        />
 
         {/* Feature Bento Grid */}
         <section
@@ -226,7 +345,9 @@ export default function Landing() {
           className="scroll-mt-24 py-12"
         >
           <div className="mb-10">
-            <h2 className="text-3xl font-bold tracking-tight">Core Services</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Core Services
+            </h2>
             <p className="mt-2 text-muted-foreground">
               Everything you need, securely authenticated.
             </p>
@@ -238,19 +359,35 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5 }}
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md md:col-span-2"
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border",
+                "border-border bg-card p-8 shadow-sm transition-all",
+                "hover:border-primary/40 hover:shadow-md md:col-span-2",
+              )}
             >
-              <div className="absolute right-0 top-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl transition-all group-hover:bg-primary/10" />
+              <div
+                className={cn(
+                  "absolute right-0 top-0 -mr-20 -mt-20 h-64 w-64",
+                  "rounded-full bg-primary/5 blur-3xl transition-all",
+                  "group-hover:bg-primary/10",
+                )}
+              />
               <div className="relative z-10">
-                <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                <div
+                  className={cn(
+                    "mb-4 inline-flex rounded-xl bg-primary/10 p-3",
+                    "text-primary",
+                  )}
+                >
                   <Calendar className="h-6 w-6" />
                 </div>
                 <h3 className="mb-3 text-2xl font-bold">
                   Counseling Appointments
                 </h3>
                 <p className="max-w-md leading-relaxed text-muted-foreground">
-                  Manage your mental health journey. Request, track, and follow
-                  up on guidance appointments through a streamlined dashboard.
+                  Manage your mental health journey. Request, track, and
+                  follow up on guidance appointments through a streamlined
+                  dashboard.
                 </p>
               </div>
             </motion.div>
@@ -260,11 +397,26 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-secondary/40 hover:shadow-md"
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border",
+                "border-border bg-card p-8 shadow-sm transition-all",
+                "hover:border-secondary/40 hover:shadow-md",
+              )}
             >
-              <div className="absolute bottom-0 right-0 -mb-10 -mr-10 h-40 w-40 rounded-full bg-secondary/10 blur-2xl transition-all group-hover:bg-secondary/20" />
+              <div
+                className={cn(
+                  "absolute bottom-0 right-0 -mb-10 -mr-10 h-40 w-40",
+                  "rounded-full bg-secondary/10 blur-2xl transition-all",
+                  "group-hover:bg-secondary/20",
+                )}
+              />
               <div className="relative z-10">
-                <div className="mb-4 inline-flex rounded-xl bg-secondary/15 p-3 text-secondary-foreground">
+                <div
+                  className={cn(
+                    "mb-4 inline-flex rounded-xl bg-secondary/15 p-3",
+                    "text-secondary-foreground",
+                  )}
+                >
                   <FileText className="h-6 w-6" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold">Admission Slips</h3>
@@ -279,10 +431,19 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border",
+                "border-border bg-card p-8 shadow-sm transition-all",
+                "hover:border-primary/40 hover:shadow-md",
+              )}
             >
               <div className="relative z-10">
-                <div className="mb-4 inline-flex rounded-xl bg-muted p-3 text-foreground">
+                <div
+                  className={cn(
+                    "mb-4 inline-flex rounded-xl bg-muted p-3",
+                    "text-foreground",
+                  )}
+                >
                   <Lock className="h-6 w-6" />
                 </div>
                 <h3 className="mb-3 text-xl font-bold">SSO Integration</h3>
@@ -298,26 +459,46 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm transition-all hover:border-primary/40 hover:shadow-md md:col-span-2"
+              className={cn(
+                "group relative overflow-hidden rounded-2xl border",
+                "border-border bg-card p-8 shadow-sm transition-all",
+                "hover:border-primary/40 hover:shadow-md md:col-span-2",
+              )}
             >
-              <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl transition-all group-hover:bg-primary/10" />
+              <div
+                className={cn(
+                  "absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64",
+                  "rounded-full bg-primary/5 blur-3xl transition-all",
+                  "group-hover:bg-primary/10",
+                )}
+              />
               <div className="relative z-10">
-                <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+                <div
+                  className={cn(
+                    "mb-4 inline-flex rounded-xl bg-primary/10 p-3",
+                    "text-primary",
+                  )}
+                >
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <h3 className="mb-3 text-2xl font-bold">
                   Direct Communication
                 </h3>
                 <p className="max-w-md leading-relaxed text-muted-foreground">
-                  Reach out to the guidance office anytime. Safe, private, and
-                  recorded for your peace of mind.
+                  Reach out to the guidance office anytime. Safe, private,
+                  and recorded for your peace of mind.
                 </p>
               </div>
             </motion.div>
           </div>
         </section>
 
-        <div className="animate-divider-in mx-auto h-px w-3/4 max-w-3xl bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div
+          className={cn(
+            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
+            "bg-gradient-to-r from-transparent via-border to-transparent",
+          )}
+        />
 
         {/* Contact & FAQ Split */}
         <section
@@ -329,7 +510,9 @@ export default function Landing() {
             className="scroll-mt-24 space-y-6"
           >
             <div>
-              <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
+              <h2 className="text-2xl font-bold">
+                Frequently Asked Questions
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Need help? We've got you covered.
               </p>
@@ -342,10 +525,15 @@ export default function Landing() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="group rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30"
+                  className={cn(
+                    "group rounded-xl border border-border bg-card p-5",
+                    "transition-all hover:border-primary/30",
+                  )}
                 >
                   <div className="flex gap-4">
-                    <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <HelpCircle
+                      className="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                    />
                     <div>
                       <h4 className="text-sm font-semibold">{faq.q}</h4>
                       <p className="mt-1.5 text-sm text-muted-foreground">
@@ -370,7 +558,12 @@ export default function Landing() {
             )}
           >
             <div>
-              <div className="mb-6 inline-flex rounded-xl bg-primary/10 p-3 text-primary">
+              <div
+                className={cn(
+                  "mb-6 inline-flex rounded-xl bg-primary/10 p-3",
+                  "text-primary",
+                )}
+              >
                 <LifeBuoy className="h-6 w-6" />
               </div>
               <h2 className="mb-2 text-2xl font-bold">Still need help?</h2>
@@ -379,7 +572,11 @@ export default function Landing() {
               </p>
 
               <div className="mt-8 space-y-5">
-                <div className="flex items-center gap-4 border-b border-border pb-4">
+                <div
+                  className={cn(
+                    "flex items-center gap-4 border-b border-border pb-4",
+                  )}
+                >
                   <Mail className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Tech Support</p>
@@ -403,9 +600,9 @@ export default function Landing() {
             <Button
               className="mt-8 w-full gap-2"
               variant="outline"
-              onClick={() =>
-                (window.location.href = "mailto:supportguisis@gmail.com")
-              }
+              onClick={() => {
+                window.location.href = "mailto:supportguisis@gmail.com";
+              }}
             >
               Email Support <ChevronRight className="h-4 w-4" />
             </Button>
