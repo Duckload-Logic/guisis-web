@@ -720,11 +720,11 @@ export default function M2MManagement() {
                 >
                   <div className="flex items-start gap-2">
                     <AlertTriangle
-                  className={cn(
-                    "mt-0.5 h-5 w-5 flex-shrink-0",
-                    "text-warning-foreground",
-                  )}
-                />
+                      className={cn(
+                        "mt-0.5 h-5 w-5 flex-shrink-0",
+                        "text-warning-foreground",
+                      )}
+                    />
                     <p className="text-sm text-warning-foreground">
                       Copy this secret now. You will not be able to retrieve it
                       later. If you lose it, you must rotate the secret.
