@@ -20,7 +20,7 @@ import {
   useAppointmentsStats,
 } from "@/features/appointments/hooks/useAppointments";
 import { Pagination } from "@/components/shared";
-import { Spinner } from "@/components/shared/Spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
 import { format12HourTime } from "@/utils/dateTime";
 import { useAuth, usePageMetadata } from "@/context";
@@ -426,16 +426,37 @@ export default function StudentAppointments() {
         </div>
       </div>
 
-      {/* Appointment Cards (Clean 2-column agenda passes) */}
+      {/* Appointment Cards (Single-column vertical feed) */}
       <div className="w-full">
         {isAppointmentsLoading ? (
-          <div className="flex w-full items-center justify-center p-16">
-            <Spinner size="lg" />
+          <div className="flex flex-col gap-2.5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "flex items-center justify-between rounded-2xl border",
+                  "border-border/80 bg-card p-4 shadow-sm",
+                )}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3.5">
+                  <Skeleton className="h-12 w-12 shrink-0 rounded-xl" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-20 rounded-md" />
+                      <Skeleton className="h-4 w-16 rounded-md" />
+                    </div>
+                    <Skeleton className="h-4 w-40 rounded-md" />
+                    <Skeleton className="h-3 w-56 rounded-md" />
+                  </div>
+                </div>
+                <Skeleton className="ml-3 h-5 w-5 shrink-0 rounded-full" />
+              </div>
+            ))}
           </div>
         ) : sortedAppointments.length === 0 ? (
           emptyState
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-2.5">
             {sortedAppointments.map((appointment, idx) => {
               const dateParts = getEventDateParts(appointment.whenDate);
               const animDelay = `${Math.min(idx * 0.04, 0.24)}s`;

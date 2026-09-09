@@ -19,6 +19,8 @@ export interface StudentReminder {
   title: string;
   description: string;
   icon: LucideIcon;
+  badge?: string;
+  tone?: "warning" | "success" | "info" | "default";
 }
 
 export interface StudentStatCard {
@@ -27,5 +29,4 @@ export interface StudentStatCard {
   subtitle: string;
   icon: LucideIcon;
   iconWrap: string;
-  href?: string;
 }

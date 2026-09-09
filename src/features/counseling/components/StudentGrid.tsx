@@ -1,5 +1,12 @@
 import { useCallback, useMemo, type MouseEvent } from "react";
-import { ArrowDown, ArrowUp, Eye, LayoutGrid, List } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Download,
+  Eye,
+  LayoutGrid,
+  List,
+} from "lucide-react";
 
 import { Spinner } from "@/components/shared";
 import {
@@ -318,8 +325,12 @@ export default function StudentGrid({
       type="button"
       variant="outline"
       onClick={onExportCSV}
-      className="h-10 rounded-xl border-primary/30 px-4 text-sm font-semibold text-primary shadow-md"
+      className={cn(
+        "h-10 gap-2 rounded-xl border-primary/30 px-4",
+        "shadow-xs text-sm font-semibold text-primary",
+      )}
     >
+      <Download className="h-4 w-4" />
       Export CSV
     </Button>
   );

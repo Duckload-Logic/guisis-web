@@ -51,7 +51,10 @@ export function ReportModal({
 
   const getStudentName = (item: any) => {
     const firstName =
-      item.user?.firstName || item.userFirstName || item.student?.firstName || "";
+      item.user?.firstName ||
+      item.userFirstName ||
+      item.student?.firstName ||
+      "";
     const lastName =
       item.user?.lastName || item.userLastName || item.student?.lastName || "";
 
@@ -651,7 +654,7 @@ export function ReportModal({
             Close
           </Button>
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={handleExportCSV}
             className="flex items-center gap-2"
             disabled={filteredData.length === 0}

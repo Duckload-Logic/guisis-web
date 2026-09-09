@@ -3,18 +3,20 @@ import {
   ArrowDown,
   ArrowUp,
   CalendarX,
+  Download,
   Eye,
   EyeOff,
   RotateCcw,
-  User,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { format12HourTime } from "@/utils/dateTime";
 import { SearchInput } from "@/components/form";
 import { SelectField } from "@/components/ui/select-field";
@@ -428,16 +430,45 @@ export default function AppointmentList({
           </div>
         ),
         className: "min-w-[220px] p-0",
-        render: (apt) => (
-          <div className="space-y-0.5 px-3 py-3">
-            <p className="font-semibold text-foreground">
-              {getAppointmentStudentName(apt) || "Unnamed Student"}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              {apt.studentNumber || apt.user?.email || "Student record"}
-            </p>
-          </div>
-        ),
+        render: (apt) => {
+          const studentName =
+            getAppointmentStudentName(apt) || "Unnamed Student";
+          const initials =
+            `${apt.user?.firstName?.[0] || ""}${apt.user?.lastName?.[0] || ""}`.toUpperCase() ||
+            "ST";
+          const picUrl = getProfilePictureUrl(apt.user?.profilePicture);
+
+          return (
+            <div className="flex items-center gap-3 px-3 py-3">
+              <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+                {picUrl ? (
+                  <AvatarImage
+                    src={picUrl}
+                    alt={studentName}
+                    className="object-cover"
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={cn(
+                    "rounded-xl bg-primary/10 text-xs font-bold",
+                    "text-primary",
+                  )}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="min-w-0 space-y-0.5">
+                <p className="truncate font-semibold text-foreground">
+                  {studentName}
+                </p>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {apt.studentNumber || apt.user?.email || "Student record"}
+                </p>
+              </div>
+            </div>
+          );
+        },
       },
       {
         header: (
@@ -557,12 +588,13 @@ export default function AppointmentList({
               size="sm"
               onClick={(event) => handleViewClick(apt, event)}
               className={cn(
-                "h-7 gap-1 rounded-xl border-primary/20 bg-primary/10",
-                "px-2.5 text-[10px] font-bold uppercase text-primary",
-                "hover:bg-primary hover:text-white",
+                "h-8 min-h-[32px] gap-1.5 rounded-xl border-primary/20",
+                "bg-primary/10 px-3 text-[11px] font-bold uppercase",
+                "text-primary shadow-xs transition-all",
+                "hover:bg-primary hover:text-white active:scale-95",
               )}
             >
-              <Eye size={12} />
+              <Eye className="h-3.5 w-3.5" />
               View
             </Button>
           </div>
@@ -603,16 +635,34 @@ export default function AppointmentList({
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <User className="h-4 w-4 text-primary" />
-            <span className="truncate">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
+            {getProfilePictureUrl(apt.user?.profilePicture) ? (
+              <AvatarImage
+                src={getProfilePictureUrl(apt.user?.profilePicture)}
+                alt={getAppointmentStudentName(apt) || "Student"}
+                className="object-cover"
+              />
+            ) : null}
+            <AvatarFallback
+              className={cn(
+                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
+              )}
+            >
+              {`${apt.user?.firstName?.[0] || ""}${
+                apt.user?.lastName?.[0] || ""
+              }`.toUpperCase() || "ST"}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">
               {getAppointmentStudentName(apt) || "Unnamed Student"}
-            </span>
+            </p>
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {apt.appointmentCategory?.name}
+            </p>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-            {apt.appointmentCategory?.name}
-          </p>
         </div>
 
         <Badge
@@ -738,7 +788,11 @@ export default function AppointmentList({
           {columns.map((column, index) => (
             <th
               key={index}
-              className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em]"
+              className={cn(
+                "px-3 py-3 text-left text-[11px] font-bold uppercase",
+                "tracking-[0.14em]",
+                column.className,
+              )}
             >
               {typeof column.header === "string" ? (
                 column.header
@@ -750,19 +804,53 @@ export default function AppointmentList({
         </tr>
       </thead>
       <tbody>
-        {Array.from({ length: 5 }).map((_, rowIndex) => (
+        {Array.from({ length: 6 }).map((_, rowIndex) => (
           <tr
             key={rowIndex}
             className="animate-pulse border-b border-border/60"
           >
-            {columns.map((_, columnIndex) => (
-              <td
-                key={columnIndex}
-                className="px-4 py-3"
-              >
-                <Skeleton className="h-4 w-24 rounded" />
-              </td>
-            ))}
+            {/* Student Name */}
+            <td className="min-w-[220px] px-3 py-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-4 w-32 rounded-md" />
+                  <Skeleton className="h-3 w-24 rounded-md" />
+                </div>
+              </div>
+            </td>
+            {/* Date Requested */}
+            <td className="min-w-[155px] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-28 rounded-md" />
+              </div>
+            </td>
+            {/* Appointment Date */}
+            <td className="min-w-[165px] px-3 py-3">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24 rounded-md" />
+                <Skeleton className="h-3 w-16 rounded-md" />
+              </div>
+            </td>
+            {/* Category */}
+            <td className="min-w-[160px] px-3 py-3">
+              <Skeleton className="h-6 w-28 rounded-xl" />
+            </td>
+            {/* Status */}
+            <td className="min-w-[130px] px-3 py-3">
+              <Skeleton className="h-6 w-20 rounded-xl" />
+            </td>
+            {/* Urgency */}
+            <td className="min-w-[110px] px-3 py-3">
+              <Skeleton className="h-6 w-16 rounded-xl" />
+            </td>
+            {/* Action */}
+            <td className="min-w-[100px] px-3 py-3 text-right">
+              <div className="flex justify-end">
+                <Skeleton className="h-7 w-16 rounded-xl" />
+              </div>
+            </td>
           </tr>
         ))}
       </tbody>
@@ -835,153 +923,188 @@ export default function AppointmentList({
           )}
         </div>
 
-        <div
-          className={cn(
-            "flex flex-col gap-3 xl:flex-row xl:items-center",
-            "xl:justify-between",
-          )}
-        >
-          <div className="flex flex-1 flex-wrap items-center gap-3">
-            <div className="w-full sm:w-60">
+        <div className="flex flex-col gap-3">
+          {/* Top Row: Search + Export CSV */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 sm:flex-row sm:items-center",
+              "sm:justify-between",
+            )}
+          >
+            <div className="w-full sm:max-w-md">
               <SearchInput
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
-                placeholder="Search name, email, or ID..."
+                placeholder="Search name, email, or student number..."
                 hasHeader={false}
               />
             </div>
 
-            <div className="w-full sm:w-40">
-              <SelectField
-                label=""
-                options={categoryOptions}
-                value={currentCategory}
-                onChange={(val) =>
-                  handleCategoryChange(val ? String(val) : "all")
+            {!isLoading && appointments.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  exportToCSV(
+                    visibleAppointments,
+                    appointmentExportColumns,
+                    "appointments",
+                  )
                 }
-                labelKey="displayName"
-                enabled={!isLoading}
-                buttonClassName={cn(
-                  "h-10 w-full justify-between rounded-xl border",
-                  "border-border/70 bg-background/50 px-3 text-xs",
-                  "font-semibold shadow-sm",
-                  currentCategory !== "all" && "border-primary text-primary",
+                disabled={visibleAppointments.length === 0}
+                className={cn(
+                  "h-9 gap-1.5 rounded-xl border-border/70 bg-card px-3",
+                  "text-xs font-semibold shadow-xs transition-all",
+                  "hover:bg-muted/60 hover:text-foreground",
                 )}
-              />
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export CSV
+              </Button>
+            )}
+          </div>
+
+          {/* Bottom Row: Quick Status Pills + Selectors + Clear */}
+          <div
+            className={cn(
+              "flex flex-col gap-2.5 border-t border-border/50 pt-3",
+              "lg:flex-row lg:items-center lg:justify-between",
+            )}
+          >
+            {/* Status Pills */}
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-1.5 overflow-x-auto",
+                "py-0.5",
+              )}
+            >
+              {isLoading && dropdownOptions.length === 0
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="h-8 w-24 rounded-xl"
+                    />
+                  ))
+                : dropdownOptions.map((status) => {
+                const isSelected = selectedStatus?.id === status.id;
+                const serverCountObj = statusCounts?.find(
+                  (sc) => sc.id === status.id,
+                );
+                const count = serverCountObj
+                  ? serverCountObj.count
+                  : dynamicStatMap[status.id] || 0;
+
+                return (
+                  <button
+                    key={status.id}
+                    type="button"
+                    onClick={() => {
+                      if (status.id === 0) {
+                        const allStatus = statuses.find((s) => s.id === 0) || {
+                          id: 0,
+                          name: "All Statuses",
+                        };
+                        onStatusChange(allStatus as AppointmentStatus);
+                      } else {
+                        onStatusChange(status);
+                      }
+                      onPageChange(1);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-xl px-2.5 py-1.5",
+                      "select-none text-xs font-semibold transition-all",
+                      isSelected
+                        ? "border border-primary/40 bg-primary/10 " +
+                            "text-primary shadow-sm"
+                        : "border border-border/70 bg-card " +
+                            "text-muted-foreground hover:bg-muted/60" +
+                            "hover:text-foreground",
+                    )}
+                  >
+                    <span>{status.name}</span>
+                    {status.id !== 0 && (
+                      <Badge
+                        variant={isSelected ? "default" : "secondary"}
+                        className={cn(
+                          "h-4 min-w-4 rounded-full px-1 text-[10px]",
+                          isSelected && "bg-primary text-primary-foreground",
+                        )}
+                      >
+                        {count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="w-full sm:w-36">
-              <SelectField
-                label=""
-                options={dropdownOptions}
-                value={selectedStatus?.id}
-                onChange={(val) => {
-                  if (!val || String(val) === "all" || String(val) === "0") {
+            {/* Secondary Selectors (Category, Urgency) + Clear */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-[145px]">
+                <SelectField
+                  label=""
+                  options={categoryOptions}
+                  value={currentCategory}
+                  onChange={(val) =>
+                    handleCategoryChange(val ? String(val) : "all")
+                  }
+                  labelKey="displayName"
+                  enabled={!isLoading}
+                  buttonClassName={cn(
+                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                    "shadow-none",
+                    currentCategory !== "all" && "border-primary text-primary",
+                  )}
+                />
+              </div>
+
+              <div className="w-[130px]">
+                <SelectField
+                  label=""
+                  options={urgencyOptions}
+                  value={currentUrgency}
+                  onChange={(val) =>
+                    handleUrgencyChange(val ? String(val) : "all")
+                  }
+                  labelKey="displayName"
+                  enabled={!isLoading}
+                  buttonClassName={cn(
+                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "rounded-xl border-border/70 bg-card hover:bg-muted/40",
+                    "shadow-none",
+                    currentUrgency !== "all" && "border-primary text-primary",
+                  )}
+                />
+              </div>
+
+              {(currentCategory !== "all" ||
+                selectedStatus?.id !== 0 ||
+                currentUrgency !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    handleCategoryChange("all");
                     const allStatus = statuses.find((s) => s.id === 0) || {
                       id: 0,
                       name: "All Statuses",
                     };
                     onStatusChange(allStatus as AppointmentStatus);
+                    handleUrgencyChange("all");
                     onPageChange(1);
-                    return;
-                  }
-                  const status = statuses.find(
-                    (s) => String(s.id) === String(val),
-                  );
-                  if (status) {
-                    onStatusChange(status);
-                    onPageChange(1);
-                  }
-                }}
-                labelKey="displayName"
-                enabled={!isLoading}
-                buttonClassName={cn(
-                  "h-10 w-full justify-between rounded-xl border",
-                  "border-border/70 bg-background/50 px-3 text-xs",
-                  "font-semibold shadow-sm",
-                  selectedStatus?.id !== 0 && "border-primary text-primary",
-                )}
-              />
-            </div>
-
-            <div className="w-full sm:w-32">
-              <SelectField
-                label=""
-                options={urgencyOptions}
-                value={currentUrgency}
-                onChange={(val) =>
-                  handleUrgencyChange(val ? String(val) : "all")
-                }
-                labelKey="displayName"
-                enabled={!isLoading}
-                buttonClassName={cn(
-                  "h-10 w-full justify-between rounded-xl border",
-                  "border-border/70 bg-background/50 px-3 text-xs",
-                  "font-semibold shadow-sm",
-                  currentUrgency !== "all" && "border-primary text-primary",
-                )}
-              />
-            </div>
-
-            {(currentCategory !== "all" ||
-              selectedStatus?.id !== 0 ||
-              currentUrgency !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  handleCategoryChange("all");
-                  const allStatus = statuses.find((s) => s.id === 0) || {
-                    id: 0,
-                    name: "All Statuses",
-                  };
-                  onStatusChange(allStatus as AppointmentStatus);
-                  handleUrgencyChange("all");
-                  onPageChange(1);
-                }}
-                className={cn(
-                  "h-10 rounded-xl px-2.5 text-xs text-muted-foreground",
-                  "hover:text-foreground",
-                )}
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-
-          {!isLoading && appointments.length > 0 && (
-            <button
-              onClick={() =>
-                exportToCSV(
-                  visibleAppointments,
-                  appointmentExportColumns,
-                  "appointments",
-                )
-              }
-              disabled={visibleAppointments.length === 0}
-              className={cn(
-                "flex h-10 items-center self-start rounded-xl border",
-                "border-red-800/30 bg-white/50 px-3 text-xs font-semibold",
-                "text-red-800 shadow-sm transition-colors hover:bg-red-800/10",
-                "disabled:cursor-not-allowed disabled:opacity-50 xl:self-auto",
+                  }}
+                  className={cn(
+                    "h-8 rounded-xl px-2 text-xs font-semibold text-muted-foreground",
+                    "hover:text-foreground",
+                  )}
+                >
+                  Reset
+                </Button>
               )}
-            >
-              <svg
-                className="mr-1.5 h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-              Export CSV
-            </button>
-          )}
+            </div>
+          </div>
         </div>
       </div>
 

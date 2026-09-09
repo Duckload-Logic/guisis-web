@@ -170,7 +170,7 @@ export default function ReviewSlips() {
     };
   }, []);
 
-  const { data: slipStats } = useGetSlipStats({
+  const { data: slipStats, isLoading: isStatsLoading } = useGetSlipStats({
     params: {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -533,7 +533,7 @@ export default function ReviewSlips() {
     navigate(`${slipsBasePath}/${slip.id}`);
   };
 
-  const isPageLoading = isStatusesLoading;
+  const isPageLoading = isStatusesLoading || isStatsLoading;
 
   const headerActions = useMemo(
     () => (
@@ -573,12 +573,17 @@ export default function ReviewSlips() {
       "Review submissions, filter the queue, and process student requests.",
     badgeText: "Slip Management",
     badgeIcon: useMemo(() => <FileText className="h-4 w-4" />, []),
-    isLoading: isPageLoading,
+    isLoading: false,
     headerActions,
   });
 
   return (
-    <div className="animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2 duration-500 sm:px-6 md:px-8">
+    <div
+      className={cn(
+        "animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2",
+        "duration-500 sm:px-6 md:px-8",
+      )}
+    >
       <style>{`
         @keyframes scan {
           0% { top: 0%; }
@@ -625,9 +630,12 @@ export default function ReviewSlips() {
       )}
 
       <SlipList
-        className="animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-500 [animation-delay:150ms]"
+        className={cn(
+          "animate-in fade-in slide-in-from-bottom-4 fill-mode-both",
+          "duration-500 [animation-delay:150ms]",
+        )}
         slips={slips}
-        isLoading={isLoading}
+        isLoading={isLoading || isPageLoading}
         onViewClick={handleViewSlip}
         searchTerm={searchTerm}
         onSearchChange={(value: string) => {
