@@ -5,8 +5,6 @@ import {
   CalendarX,
   Download,
   Eye,
-  EyeOff,
-  RotateCcw,
 } from "lucide-react";
 
 import { Pagination, Table, Column } from "@/components/shared";
@@ -162,10 +160,6 @@ export default function AppointmentList({
   totalPages,
   className,
 }: AppointmentListProps) {
-  const [hiddenAppointmentIds, setHiddenAppointmentIds] = useState<Set<string>>(
-    () => new Set(),
-  );
-
   const [localCategory, setLocalCategory] = useState<string>("all");
   const [localUrgency, setLocalUrgency] = useState<string>("all");
 
@@ -263,8 +257,6 @@ export default function AppointmentList({
 
   const baseFilteredAppointments = useMemo(() => {
     return appointments.filter((appointment) => {
-      if (hiddenAppointmentIds.has(String(appointment.id))) return false;
-
       if (isServerFiltered) return true;
 
       const matchesCat =
@@ -278,7 +270,6 @@ export default function AppointmentList({
     });
   }, [
     appointments,
-    hiddenAppointmentIds,
     currentCategory,
     currentUrgency,
     isServerFiltered,
@@ -349,27 +340,9 @@ export default function AppointmentList({
     sortKeyAppointment,
   ]);
 
-  const hiddenCount = appointments.length - visibleAppointments.length;
-
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
-  };
-
-  const hideAppointment = (
-    appointment: Appointment,
-    event?: MouseEvent<HTMLButtonElement>,
-  ) => {
-    event?.stopPropagation();
-    setHiddenAppointmentIds((previous) => {
-      const next = new Set(previous);
-      next.add(String(appointment.id));
-      return next;
-    });
-  };
-
-  const restoreHiddenAppointments = () => {
-    setHiddenAppointmentIds(new Set());
   };
 
   const handleViewClick = (
@@ -704,15 +677,6 @@ export default function AppointmentList({
         <UrgencyCapsule appointment={apt} />
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={(event) => hideAppointment(apt, event)}
-            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
-          >
-            <EyeOff className="h-3.5 w-3.5" />
-            Hide
-          </Button>
-          <Button
             variant="outline"
             size="sm"
             onClick={(event) => handleViewClick(apt, event)}
@@ -750,9 +714,7 @@ export default function AppointmentList({
           No appointments found
         </h3>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          {hiddenCount > 0
-            ? "All rows on this page are hidden. Restore hidden rows to show them again."
-            : "No active records match the current filters."}
+          No active records match the current filters.
         </p>
 
         {(currentCategory !== "all" ||
@@ -903,22 +865,8 @@ export default function AppointmentList({
                   "text-primary shadow-md",
                 )}
               >
-                {visibleAppointments.length} visible / {appointments.length}{" "}
-                total
+                {visibleAppointments.length} / {appointments.length} total
               </div>
-
-              {hiddenCount > 0 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={restoreHiddenAppointments}
-                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
-                >
-                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                  Restore {hiddenCount}
-                </Button>
-              )}
             </div>
           )}
         </div>

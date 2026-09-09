@@ -1,12 +1,9 @@
 import { MouseEvent, useMemo, useState, useCallback } from "react";
-import { useLocation } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
   Download,
-  EyeOff,
   Inbox,
-  RotateCcw,
   Tag,
   Eye,
 } from "lucide-react";
@@ -79,13 +76,6 @@ function getSlipStudentName(slip: Slip) {
     .trim();
 }
 
-function getSlipKey(slip: Slip, index: number) {
-  return String(
-    slip.id ||
-      `${slip.studentNumber || slip.user?.studentNumber || "student"}-${slip.dateOfAbsence}-${index}`,
-  );
-}
-
 export function SlipList({
   title = "Admission Slip List",
   searchTerm = "",
@@ -111,12 +101,6 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
-  const location = useLocation();
-  const isAssistantView = location.pathname.startsWith("/assistant");
-
-  const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
   const [localCategory, setLocalCategory] = useState<string>("all");
 
   const isServerFiltered = selectedCategoryProp !== undefined;
@@ -176,9 +160,7 @@ export function SlipList({
   }, [slips, categoriesProp, isServerFiltered]);
 
   const baseFilteredSlips = useMemo(() => {
-    return slips.filter((slip, index) => {
-      if (hiddenSlipKeys.has(getSlipKey(slip, index))) return false;
-
+    return slips.filter((slip) => {
       if (isServerFiltered) return true;
 
       const matchesCat =
@@ -186,7 +168,7 @@ export function SlipList({
 
       return matchesCat;
     });
-  }, [slips, hiddenSlipKeys, currentCategory, isServerFiltered]);
+  }, [slips, currentCategory, isServerFiltered]);
 
   const dynamicStatMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -259,24 +241,9 @@ export function SlipList({
     sortKeyNeeded,
   ]);
 
-  const hiddenCount = slips.length - visibleSlips.length;
-
   const handleSearchChange = (value: string) => {
     onSearchChange?.(value);
     onPageChange(1);
-  };
-
-  const hideSlip = (slip: Slip, event?: MouseEvent<HTMLButtonElement>) => {
-    event?.stopPropagation();
-    setHiddenSlipKeys((previous) => {
-      const next = new Set(previous);
-      next.add(getSlipKey(slip, slips.indexOf(slip)));
-      return next;
-    });
-  };
-
-  const restoreHiddenSlips = () => {
-    setHiddenSlipKeys(new Set());
   };
 
   const handleViewClick = (
@@ -453,20 +420,7 @@ export function SlipList({
         ),
         className: "w-[12%] min-w-[90px] px-3 py-3 text-right",
         render: (slip) => (
-          <div className="flex items-center justify-end gap-1">
-            {isAssistantView && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={(event) => hideSlip(slip, event)}
-                className="h-7 w-7 shrink-0 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Hide admission slip"
-                title="Hide"
-              >
-                <EyeOff size={12} />
-              </Button>
-            )}
+          <div className="flex items-center justify-end">
             <Button
               type="button"
               variant="outline"
@@ -503,7 +457,6 @@ export function SlipList({
       onStatusChange,
       handleCategoryChange,
       renderSortableHeader,
-      isAssistantView,
     ],
   );
 
@@ -594,15 +547,6 @@ export function SlipList({
 
         <div className="flex items-center gap-2">
           <Button
-            size="sm"
-            variant="ghost"
-            onClick={(event) => hideSlip(slip, event)}
-            className="h-8 gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-muted-foreground"
-          >
-            <EyeOff className="h-3.5 w-3.5" />
-            Hide
-          </Button>
-          <Button
             variant="outline"
             size="sm"
             onClick={(event) => handleViewClick(slip, event)}
@@ -641,9 +585,7 @@ export function SlipList({
 
       <div className="mt-2 space-y-3">
         <p className="max-w-md text-sm text-muted-foreground">
-          {hiddenCount > 0
-            ? "All rows on this page are hidden. Restore hidden rows to show them again."
-            : "No active records match the current filters."}
+          No active records match the current filters.
         </p>
 
         {(currentCategory !== "all" || String(selectedStatus?.id) !== "0") && (
@@ -790,21 +732,8 @@ export function SlipList({
                   "text-primary shadow-md",
                 )}
               >
-                {visibleSlips.length} visible / {slips.length} total
+                {visibleSlips.length} / {slips.length} total
               </div>
-
-              {hiddenCount > 0 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={restoreHiddenSlips}
-                  className="h-8 rounded-xl px-3 text-[11px] font-semibold shadow-md"
-                >
-                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                  Restore {hiddenCount}
-                </Button>
-              )}
             </div>
           )}
         </div>

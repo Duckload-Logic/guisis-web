@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUrlState } from "@/hooks";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -578,10 +579,13 @@ export default function ReviewSlips() {
   });
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
       className={cn(
-        "animate-in fade-in mx-auto flex w-full flex-col space-y-6 px-4 py-2",
-        "duration-500 sm:px-6 md:px-8",
+        "mx-auto flex w-full flex-col space-y-6 px-4 py-2",
+        "sm:px-6 md:px-8",
       )}
     >
       <style>{`
@@ -607,27 +611,32 @@ export default function ReviewSlips() {
         }
       `}</style>
 
-      {dateRange.isExtended && (
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-xl border",
-            "border-warning-foreground/30 bg-warning-background p-4",
-            "text-warning-foreground",
-            "animate-in fade-in slide-in-from-top-4 duration-500",
-          )}
-        >
-          <Calendar className="h-5 w-5 shrink-0 text-warning-foreground" />
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">
-              Nearing Next Month's Requests Included
-            </p>
-            <p className="mt-0.5 text-xs opacity-90">
-              Today is the last week of the month. Active requests for the first
-              week of next month are automatically included below.
-            </p>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {dateRange.isExtended && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, y: -8 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              "flex items-center gap-3 rounded-xl border",
+              "border-warning-foreground/30 bg-warning-background p-4",
+              "text-warning-foreground",
+            )}
+          >
+            <Calendar className="h-5 w-5 shrink-0 text-warning-foreground" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">
+                Nearing Next Month's Requests Included
+              </p>
+              <p className="mt-0.5 text-xs opacity-90">
+                Today is the last week of the month. Active requests for the
+                first week of next month are automatically included below.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <SlipList
         className={cn(
@@ -1056,6 +1065,6 @@ export default function ReviewSlips() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 }
