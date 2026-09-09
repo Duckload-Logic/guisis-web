@@ -174,7 +174,7 @@ export default function AnalyticsOverview() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Card key={i}>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="space-y-4 p-6">
                 <Skeleton className="h-10 w-10 rounded-2xl bg-muted/60" />
                 <div className="space-y-2">
                   <Skeleton className="h-3 w-24 bg-muted/60" />
@@ -193,14 +193,14 @@ export default function AnalyticsOverview() {
               <Skeleton className="h-9 w-64 rounded-xl bg-muted/60" />
             </div>
           </CardHeader>
-          <CardContent className="flex items-center justify-center h-[320px]">
+          <CardContent className="flex h-[320px] items-center justify-center">
             <Skeleton className="h-full w-full rounded-xl bg-muted/60" />
           </CardContent>
         </Card>
 
         {/* Bottom Rows Skeleton */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2 min-h-[420px]">
+          <Card className="min-h-[420px] lg:col-span-2">
             <CardHeader className="space-y-2">
               <Skeleton className="h-6 w-36 bg-muted/60" />
               <Skeleton className="h-4 w-48 bg-muted/60" />
@@ -292,25 +292,23 @@ export default function AnalyticsOverview() {
                 "bg-muted/20 p-1 sm:flex sm:w-auto",
               )}
             >
-              {(["daily", "weekly", "monthly", "yearly"] as const).map(
-                (r) => (
-                  <Button
-                    key={r}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setRange(r)}
-                    className={cn(
-                      "h-10 rounded-xl px-2 text-xs font-semibold capitalize",
-                      "transition-all duration-300 sm:h-9 sm:px-5 sm:text-sm",
-                      range === r
-                        ? "bg-secondary text-secondary-foreground shadow-xs"
-                        : "text-muted-foreground hover:bg-white/5",
-                    )}
-                  >
-                    {r}
-                  </Button>
-                ),
-              )}
+              {(["daily", "weekly", "monthly", "yearly"] as const).map((r) => (
+                <Button
+                  key={r}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    "h-10 rounded-xl px-2 text-xs font-semibold capitalize",
+                    "transition-all duration-300 sm:h-9 sm:px-5 sm:text-sm",
+                    range === r
+                      ? "shadow-xs bg-secondary text-secondary-foreground"
+                      : "text-muted-foreground hover:bg-white/5",
+                  )}
+                >
+                  {r}
+                </Button>
+              ))}
             </div>
           </CardHeader>
           <CardContent>
@@ -319,7 +317,7 @@ export default function AnalyticsOverview() {
                 <div
                   className={
                     "absolute inset-0 z-10 flex items-center " +
-                    "justify-center rounded-xl bg-background/50 " +
+                    "justify-center rounded-xl bg-background/50" +
                     "backdrop-blur-[2px]"
                   }
                 >

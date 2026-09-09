@@ -13,6 +13,8 @@ import {
   Inbox,
   CheckCheck,
   Copy,
+  PanelLeftClose,
+  PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
   Sparkles,
@@ -46,6 +48,7 @@ const STACK_TIME_THRESHOLD_MS = 2 * 60 * 1000;
 const DEFAULT_SIDEBAR_WIDTH = 320;
 const MIN_SIDEBAR_WIDTH = 260;
 const MAX_SIDEBAR_WIDTH = 480;
+const COLLAPSED_SIDEBAR_WIDTH = 48;
 const SIDEBAR_WIDTH_STORAGE_KEY = "guisis_support_sidebar_width";
 
 const CANNED_RESPONSES = [
@@ -141,7 +144,8 @@ export function SupportManagement() {
     totalPages: number;
   } | null>(null);
 
-  const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+  const [selectedGroupKey, setSelectedGroupKey] =
+    useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "unread" | "open" | "closed"
   >("all");
@@ -157,6 +161,7 @@ export function SupportManagement() {
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [newMessagesCount, setNewMessagesCount] = useState(0);
   const [showContextPanel, setShowContextPanel] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -439,7 +444,10 @@ export function SupportManagement() {
     };
 
     fetchGroupMessages();
-    const interval = setInterval(fetchGroupMessages, MESSAGES_POLL_INTERVAL_MS);
+    const interval = setInterval(
+      fetchGroupMessages,
+      MESSAGES_POLL_INTERVAL_MS,
+    );
     return () => clearInterval(interval);
   }, [selectedGroup]);
 
@@ -587,40 +595,148 @@ export function SupportManagement() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
         className={cn(
-          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col overflow-hidden",
-          "rounded-2xl border border-glass-border bg-card/60 shadow-md",
-          "backdrop-blur-xl md:h-[calc(100vh-11rem)] md:min-h-[580px]",
-          "md:flex-row",
+          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col",
+          "overflow-hidden rounded-2xl border border-glass-border",
+          "bg-card/60 shadow-md backdrop-blur-xl",
+          "md:h-[calc(100vh-11rem)] md:min-h-[580px] md:flex-row",
         )}
       >
         {/* Left Panel: Tickets List */}
         <div
-          style={!isMobile ? { width: `${sidebarWidth}px` } : undefined}
+          id="active-conversations-panel"
+          style={
+            !isMobile
+              ? {
+                  width: `${
+                    isSidebarCollapsed
+                      ? COLLAPSED_SIDEBAR_WIDTH
+                      : sidebarWidth
+                  }px`,
+                }
+              : undefined
+          }
           className={cn(
-            "flex w-full shrink-0 flex-col border-b border-glass-border",
+            "flex w-full shrink-0 flex-col overflow-hidden border-b",
+            "border-glass-border",
+            !isResizing && "transition-[width] duration-200 ease-out",
             "md:border-b-0",
-            selectedGroupKey ? "hidden md:flex" : "flex flex-1",
+            isSidebarCollapsed && !isMobile && "md:border-r",
+            isSidebarCollapsed && !isMobile
+              ? "hidden md:flex md:flex-none"
+              : selectedGroupKey
+                ? "hidden md:flex"
+                : "flex flex-1",
           )}
         >
-          <div className="border-b border-glass-border p-3 sm:p-4">
-            <div className="flex items-center justify-between">
-              <h2 className={cn(
-                "flex items-center gap-2 text-xs font-bold sm:text-sm",
-              )}>
-                <MessageSquare className="h-4 w-4 text-primary" />
-                Active Conversations
-              </h2>
-              {meta ? (
-                <Badge
-                  variant="outline"
+          {!isMobile && isSidebarCollapsed && (
+            <motion.div
+              key="collapsed-conversations-rail"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
+              onClick={() => setIsSidebarCollapsed(false)}
+              className={cn(
+                "flex h-full w-full cursor-pointer flex-col",
+                "items-center py-3 select-none hover:bg-muted/10",
+                "transition-colors",
+              )}
+              title="Click to expand active conversations"
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSidebarCollapsed(false);
+                }}
+                className={cn(
+                  "h-8 w-8 rounded-lg border border-glass-border",
+                  "text-muted-foreground transition-colors",
+                  "hover:bg-primary/10 hover:text-primary",
+                  "focus-visible:ring-2 focus-visible:ring-primary",
+                )}
+                aria-label="Show active conversations"
+                aria-controls="active-conversations-panel"
+                aria-expanded={false}
+                title="Show active conversations"
+              >
+                <PanelLeftOpen className="h-4 w-4" />
+              </Button>
+
+              <div className="mt-3 h-px w-6 bg-glass-border" />
+              <MessageSquare
+                className="mt-3 h-4 w-4 text-muted-foreground/70"
+                aria-hidden="true"
+              />
+              {unreadCount > 0 && (
+                <span
                   className={cn(
-                    "rounded-lg border-primary/20 bg-primary/10 px-2 py-0.5",
-                    "text-[10px] font-bold text-primary",
+                    "mt-2 flex h-5 min-w-5 items-center justify-center",
+                    "rounded-full bg-primary px-1 text-[9px] font-bold",
+                    "text-primary-foreground",
                   )}
+                  title={`${unreadCount} unread conversation${
+                    unreadCount === 1 ? "" : "s"
+                  }`}
                 >
-                  {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
-                </Badge>
-              ) : null}
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </motion.div>
+          )}
+
+          <div
+            className={cn(
+              "border-b border-glass-border p-3 sm:p-4",
+              isSidebarCollapsed && !isMobile && "hidden",
+            )}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h2
+                className={cn(
+                  "flex min-w-0 items-center gap-2 text-xs font-bold",
+                  "sm:text-sm",
+                )}
+              >
+                <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
+                <span className="truncate">Active Conversations</span>
+              </h2>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {meta ? (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-lg border-primary/20 bg-primary/10",
+                      "px-2 py-0.5 text-[10px] font-bold text-primary",
+                    )}
+                  >
+                    {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
+                  </Badge>
+                ) : null}
+                {!isMobile && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSidebarCollapsed(true)}
+                    className={cn(
+                      "h-7 gap-1 rounded-lg border border-glass-border",
+                      "px-2 text-[10px] font-semibold",
+                      "text-muted-foreground transition-colors",
+                      "hover:bg-primary/10 hover:text-primary",
+                      "focus-visible:ring-2 focus-visible:ring-primary",
+                    )}
+                    aria-label="Hide active conversations"
+                    aria-controls="active-conversations-panel"
+                    aria-expanded={true}
+                    title="Hide active conversations"
+                  >
+                    <PanelLeftClose className="h-3.5 w-3.5" />
+                    Hide
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Search */}
@@ -641,7 +757,7 @@ export function SupportManagement() {
                   "py-1.5 pl-8 pr-7 text-xs text-foreground shadow-inner",
                   "placeholder:text-muted-foreground/70",
                   "focus:outline-none focus:ring-1",
-                            "focus:ring-primary",
+                  "focus:ring-primary",
                 )}
               />
               {searchQuery && (
@@ -737,7 +853,12 @@ export function SupportManagement() {
           </div>
 
           {/* Ticket Cards List */}
-          <div className="flex-1 divide-y divide-glass-border overflow-y-auto">
+          <div
+            className={cn(
+              "flex-1 divide-y divide-glass-border overflow-y-auto",
+              isSidebarCollapsed && !isMobile && "hidden",
+            )}
+          >
             {isLoadingTickets && filteredGroups.length === 0 ? (
               <div className="space-y-3 p-3">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -755,9 +876,11 @@ export function SupportManagement() {
                 ))}
               </div>
             ) : filteredGroups.length === 0 ? (
-              <div className={cn(
-                "flex flex-col items-center justify-center p-8 text-center",
-              )}>
+              <div
+                className={cn(
+                  "flex flex-col items-center justify-center p-8 text-center",
+                )}
+              >
                 <div
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-xl",
@@ -770,9 +893,11 @@ export function SupportManagement() {
                 <p className="mt-2.5 text-xs font-semibold text-foreground">
                   No conversations found
                 </p>
-                <p className={cn(
-                  "mt-0.5 max-w-[200px] text-[11px] text-muted-foreground",
-                )}>
+                <p
+                  className={cn(
+                    "mt-0.5 max-w-[200px] text-[11px] text-muted-foreground",
+                  )}
+                >
                   {searchQuery
                     ? "Try adjusting your search keywords."
                     : "No tickets match the selected status filter."}
@@ -899,18 +1024,22 @@ export function SupportManagement() {
                           </div>
                         )}
                         {latestTicket.lastMessage && (
-                          <div className={cn(
-                            "mt-1 truncate text-xs font-normal italic",
-                            "text-muted-foreground",
-                          )}>
+                          <div
+                            className={cn(
+                              "mt-1 truncate text-xs font-normal italic",
+                              "text-muted-foreground",
+                            )}
+                          >
                             {latestTicket.lastMessage}
                           </div>
                         )}
 
-                        <div className={cn(
-                          "mt-2 flex items-center justify-between",
-                          "text-[10px] text-muted-foreground",
-                        )}>
+                        <div
+                          className={cn(
+                            "mt-2 flex items-center justify-between",
+                            "text-[10px] text-muted-foreground",
+                          )}
+                        >
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatRelativeTime(latestTicket.updatedAt)}
@@ -925,40 +1054,48 @@ export function SupportManagement() {
           </div>
 
           {/* Pagination */}
-          {meta && meta.totalPages > 1 && (
-            <div
-              className={cn(
-                "flex items-center justify-between border-t",
-                "border-glass-border px-3 py-2 text-xs",
-              )}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                disabled={page === 1}
-                className="h-7 rounded-lg px-2.5 text-xs font-semibold"
+          {(!isSidebarCollapsed || isMobile) &&
+            meta &&
+            meta.totalPages > 1 && (
+              <div
+                className={cn(
+                  "flex items-center justify-between border-t",
+                  "border-glass-border px-3 py-2 text-xs",
+                )}
               >
-                Previous
-              </Button>
-              <span className="text-[11px] font-medium text-muted-foreground">
-                Page {page} of {meta.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(p + 1, meta.totalPages))}
-                disabled={page === meta.totalPages}
-                className="h-7 rounded-lg px-2.5 text-xs font-semibold"
-              >
-                Next
-              </Button>
-            </div>
-          )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={page === 1}
+                  className="h-7 rounded-lg px-2.5 text-xs font-semibold"
+                >
+                  Previous
+                </Button>
+                <span
+                  className={cn(
+                    "text-[11px] font-medium text-muted-foreground",
+                  )}
+                >
+                  Page {page} of {meta.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setPage((p) => Math.min(p + 1, meta.totalPages))
+                  }
+                  disabled={page === meta.totalPages}
+                  className="h-7 rounded-lg px-2.5 text-xs font-semibold"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
         </div>
 
         {/* Draggable Divider (Jakob's, Fitts's, & Tesler's Law) */}
-        {!isMobile && (
+        {!isMobile && !isSidebarCollapsed && (
           <div
             onMouseDown={handleMouseDownResize}
             onDoubleClick={handleResetSidebarWidth}
@@ -1027,9 +1164,10 @@ export function SupportManagement() {
                       <>
                         <div
                           className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center",
-                            "overflow-hidden rounded-full border",
-                            "border-glass-border bg-muted sm:h-9 sm:w-9",
+                            "flex h-8 w-8 shrink-0 items-center",
+                            "justify-center overflow-hidden rounded-full",
+                            "border border-glass-border bg-muted",
+                            "sm:h-9 sm:w-9",
                           )}
                         >
                           {latestTicket?.profilePicture ? (
@@ -1052,15 +1190,19 @@ export function SupportManagement() {
                         </div>
                         <div className="min-w-0">
                           <h3
-                            className="truncate text-xs font-bold sm:text-sm"
+                            className={cn(
+                              "truncate text-xs font-bold sm:text-sm",
+                            )}
                           >
                             {headerName}
                           </h3>
                           {headerEmail && (
-                            <p className={cn(
-                              "truncate text-[10px] text-muted-foreground",
-                              "sm:text-xs",
-                            )}>
+                            <p
+                              className={cn(
+                                "truncate text-[10px] text-muted-foreground",
+                                "sm:text-xs",
+                              )}
+                            >
                               {headerEmail}
                             </p>
                           )}
@@ -1082,7 +1224,10 @@ export function SupportManagement() {
                       )}
                     >
                       <CheckCircle className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Mark as </span>Resolved
+                      <span className="hidden sm:inline">
+                        Mark as{" "}
+                      </span>
+                      Resolved
                     </Button>
                   ) : (
                     <Badge
@@ -1227,10 +1372,12 @@ export function SupportManagement() {
                                 )}
                                 title={formattedFullDate}
                               >
-                                <p className={cn(
+                                <p
+                                  className={cn(
                                     "whitespace-pre-wrap break-words",
                                     "leading-relaxed",
-                                  )}>
+                                  )}
+                                >
                                   {msg.message}
                                 </p>
                               </div>
@@ -1259,11 +1406,14 @@ export function SupportManagement() {
                                 )}
                               </div>
 
-                              {activeMessageId === msg.id && (
-                                <span className={cn(
-                                    "animate-in fade-in mt-0.5 px-1 text-[9px]",
-                                    "text-muted-foreground duration-150",
-                                  )}>
+                               {activeMessageId === msg.id && (
+                                <span
+                                  className={cn(
+                                    "animate-in fade-in mt-0.5 px-1",
+                                    "text-[9px] text-muted-foreground",
+                                    "duration-150",
+                                  )}
+                                >
                                   {formattedFullDate}
                                 </span>
                               )}
@@ -1286,7 +1436,9 @@ export function SupportManagement() {
                               "text-muted-foreground",
                             )}
                           >
-                            <CheckCircle className="h-3 w-3 text-emerald-500" />
+                            <CheckCircle
+                              className="h-3 w-3 text-emerald-500"
+                            />
                             Ticket Resolved
                           </span>
                           <div
@@ -1301,10 +1453,12 @@ export function SupportManagement() {
 
               {/* Floating New Messages or Scroll Bottom Button */}
               {showScrollBottom && (
-                <div className={cn(
-                  "absolute bottom-24 right-6 z-20 flex flex-col",
-                  "items-end gap-2",
-                )}>
+                <div
+                  className={cn(
+                    "absolute bottom-24 right-6 z-20 flex flex-col",
+                    "items-end gap-2",
+                  )}
+                >
                   {newMessagesCount > 0 && (
                     <Button
                       type="button"
@@ -1312,8 +1466,8 @@ export function SupportManagement() {
                       onClick={scrollToBottom}
                       className={cn(
                         "h-8 gap-1.5 rounded-full bg-blue-600 px-3 text-xs",
-                        "text-white shadow-lg transition-all hover:bg-blue-700",
-                        "active:scale-95 animate-bounce",
+                        "text-white shadow-lg transition-all",
+                        "hover:bg-blue-700 active:scale-95 animate-bounce",
                       )}
                     >
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -1325,9 +1479,9 @@ export function SupportManagement() {
                     size="icon"
                     onClick={scrollToBottom}
                     className={cn(
-                      "h-8 w-8 rounded-full bg-primary text-primary-foreground",
-                      "shadow-lg transition-all hover:bg-primary/90",
-                      "active:scale-95",
+                      "h-8 w-8 rounded-full bg-primary",
+                      "text-primary-foreground shadow-lg transition-all",
+                      "hover:bg-primary/90 active:scale-95",
                     )}
                     aria-label="Scroll to bottom"
                   >
@@ -1338,18 +1492,24 @@ export function SupportManagement() {
 
               {/* Bottom Input with Canned Responses */}
               {activeTicket ? (
-                <div className={cn(
-                  "border-t border-glass-border bg-card/40 p-2.5 sm:p-3",
-                )}>
+                <div
+                  className={cn(
+                    "border-t border-glass-border bg-card/40 p-2.5 sm:p-3",
+                  )}
+                >
                   {/* Canned Quick Reply Chips */}
-                  <div className={cn(
-                    "mb-2 flex items-center gap-1.5 overflow-x-auto pb-1",
-                    "scrollbar-none",
-                  )}>
-                    <span className={cn(
-                      "flex shrink-0 items-center gap-1 text-[10px]",
-                      "font-semibold text-muted-foreground",
-                    )}>
+                  <div
+                    className={cn(
+                      "mb-2 flex items-center gap-1.5 overflow-x-auto pb-1",
+                      "scrollbar-none",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex shrink-0 items-center gap-1 text-[10px]",
+                        "font-semibold text-muted-foreground",
+                      )}
+                    >
                       <Sparkles className="h-3 w-3 text-primary" />
                       Quick:
                     </span>
@@ -1419,10 +1579,12 @@ export function SupportManagement() {
                       </Button>
                     </div>
 
-                    <div className={cn(
-                      "flex items-center justify-between px-1 text-[10px]",
-                      "text-muted-foreground",
-                    )}>
+                    <div
+                      className={cn(
+                        "flex items-center justify-between px-1 text-[10px]",
+                        "text-muted-foreground",
+                      )}
+                    >
                       <span>Enter ↵ to send • Shift + Enter for new line</span>
                       <span
                         className={cn(
@@ -1436,19 +1598,23 @@ export function SupportManagement() {
                   </form>
                 </div>
               ) : (
-                <div className={cn(
-                  "border-t border-glass-border bg-muted/10 p-4",
-                  "text-center text-xs font-medium text-muted-foreground",
-                )}>
+                <div
+                  className={cn(
+                    "border-t border-glass-border bg-muted/10 p-4",
+                    "text-center text-xs font-medium text-muted-foreground",
+                  )}
+                >
                   All conversations with this user have been resolved.
                 </div>
               )}
             </>
           ) : (
-            <div className={cn(
-              "flex flex-1 flex-col items-center justify-center p-8",
-              "text-center",
-            )}>
+            <div
+              className={cn(
+                "flex flex-1 flex-col items-center justify-center p-8",
+                "text-center",
+              )}
+            >
               <div
                 className={cn(
                   "flex h-14 w-14 items-center justify-center rounded-2xl",
@@ -1461,10 +1627,12 @@ export function SupportManagement() {
               <h3 className="mt-4 text-base font-bold text-foreground">
                 Support Conversation Inbox
               </h3>
-              <p className={cn(
-                "mt-1 max-w-sm text-xs leading-relaxed",
-                "text-muted-foreground",
-              )}>
+              <p
+                className={cn(
+                  "mt-1 max-w-sm text-xs leading-relaxed",
+                  "text-muted-foreground",
+                )}
+              >
                 Select an active ticket from the left panel to review message
                 history, reply to students, and manage support resolutions.
               </p>
@@ -1499,14 +1667,18 @@ export function SupportManagement() {
 
               return (
                 <div className="space-y-5">
-                  <div className={cn(
-                    "flex items-center justify-between border-b",
-                    "border-glass-border pb-3",
-                  )}>
-                    <span className={cn(
-                      "text-xs font-bold uppercase tracking-wider",
-                      "text-muted-foreground",
-                    )}>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between border-b",
+                      "border-glass-border pb-3",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-xs font-bold uppercase tracking-wider",
+                        "text-muted-foreground",
+                      )}
+                    >
                       Student Context
                     </span>
                     <Badge
@@ -1542,10 +1714,12 @@ export function SupportManagement() {
                       {name}
                     </h4>
                     {email && (
-                      <div className={cn(
-                        "mt-0.5 flex items-center gap-1 text-xs",
-                        "text-muted-foreground",
-                      )}>
+                      <div
+                        className={cn(
+                          "mt-0.5 flex items-center gap-1 text-xs",
+                          "text-muted-foreground",
+                        )}
+                      >
                         <span className="max-w-[190px] truncate">{email}</span>
                         <button
                           type="button"
@@ -1565,10 +1739,12 @@ export function SupportManagement() {
                   </div>
 
                   {/* Ticket Details */}
-                  <div className={cn(
-                    "space-y-3 rounded-xl border border-glass-border",
-                    "bg-card/40 p-3 text-xs",
-                  )}>
+                  <div
+                    className={cn(
+                      "space-y-3 rounded-xl border border-glass-border",
+                      "bg-card/40 p-3 text-xs",
+                    )}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Status</span>
                       <Badge
@@ -1587,9 +1763,11 @@ export function SupportManagement() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Ticket ID</span>
-                      <div className={cn(
-                        "flex items-center gap-1 font-mono text-[11px]",
-                      )}>
+                      <div
+                        className={cn(
+                          "flex items-center gap-1 font-mono text-[11px]",
+                        )}
+                      >
                         <span>{latestTicket.id.slice(0, 8)}...</span>
                         <button
                           type="button"
@@ -1621,7 +1799,6 @@ export function SupportManagement() {
                         )}
                       </span>
                     </div>
-
 
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">

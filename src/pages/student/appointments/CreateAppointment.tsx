@@ -7,6 +7,7 @@ import {
   AlertCircle,
   Sparkles,
   Info,
+  ShieldCheck,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -21,9 +22,7 @@ import {
   useAvailableSlots,
   useCategories,
 } from "@/features/appointments/hooks";
-import {
-  useSubmitAppointment,
-} from "@/features/appointments/hooks/useAppointments";
+import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
 import {
   TimeSlot,
   CreateAppointmentRequest,
@@ -296,10 +295,28 @@ export default function CreateAppointment() {
                 required
                 maxChars={MAX_REASON_LENGTH}
                 info={
-                  "This note is confidential and read by the " +
-                  "guidance counselor."
+                  "Confidential note read strictly by your " +
+                  "guidance counselor for session preparation."
                 }
               />
+
+              <div
+                className={cn(
+                  "flex items-start gap-2.5 rounded-xl border",
+                  "border-primary/20 bg-primary/5 p-3 text-xs",
+                  "text-muted-foreground",
+                )}
+              >
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="leading-relaxed">
+                  <strong className="text-foreground">
+                    Strict Confidentiality:
+                  </strong>{" "}
+                  Your consultation reason is restricted exclusively to your
+                  guidance counselor. It is never included in attendance exports
+                  or shared with academic faculty.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -514,9 +531,7 @@ export default function CreateAppointment() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Selected Schedule Pill */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
@@ -545,9 +560,7 @@ export default function CreateAppointment() {
               </div>
 
               {/* Concern Category */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
