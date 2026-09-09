@@ -144,7 +144,8 @@ export function SupportManagement() {
     totalPages: number;
   } | null>(null);
 
-  const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+  const [selectedGroupKey, setSelectedGroupKey] =
+    useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "unread" | "open" | "closed"
   >("all");
@@ -443,7 +444,10 @@ export function SupportManagement() {
     };
 
     fetchGroupMessages();
-    const interval = setInterval(fetchGroupMessages, MESSAGES_POLL_INTERVAL_MS);
+    const interval = setInterval(
+      fetchGroupMessages,
+      MESSAGES_POLL_INTERVAL_MS,
+    );
     return () => clearInterval(interval);
   }, [selectedGroup]);
 
@@ -591,10 +595,10 @@ export function SupportManagement() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
         className={cn(
-          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col overflow-hidden",
-          "rounded-2xl border border-glass-border bg-card/60 shadow-md",
-          "backdrop-blur-xl md:h-[calc(100vh-11rem)] md:min-h-[580px]",
-          "md:flex-row",
+          "flex h-[calc(100dvh-5.5rem)] min-h-[420px] flex-col",
+          "overflow-hidden rounded-2xl border border-glass-border",
+          "bg-card/60 shadow-md backdrop-blur-xl",
+          "md:h-[calc(100vh-11rem)] md:min-h-[580px] md:flex-row",
         )}
       >
         {/* Left Panel: Tickets List */}
@@ -613,7 +617,8 @@ export function SupportManagement() {
           }
           className={cn(
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
-            "border-glass-border transition-[width] duration-200 ease-out",
+            "border-glass-border",
+            !isResizing && "transition-[width] duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && !isMobile && "md:border-r",
             isSidebarCollapsed && !isMobile
@@ -629,13 +634,22 @@ export function SupportManagement() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
-              className="flex h-full w-full flex-col items-center py-3"
+              onClick={() => setIsSidebarCollapsed(false)}
+              className={cn(
+                "flex h-full w-full cursor-pointer flex-col",
+                "items-center py-3 select-none hover:bg-muted/10",
+                "transition-colors",
+              )}
+              title="Click to expand active conversations"
             >
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSidebarCollapsed(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSidebarCollapsed(false);
+                }}
                 className={cn(
                   "h-8 w-8 rounded-lg border border-glass-border",
                   "text-muted-foreground transition-colors",
@@ -958,7 +972,9 @@ export function SupportManagement() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
+                        <div
+                          className="flex items-center justify-between gap-1"
+                        >
                           <span
                             className={cn(
                               "truncate text-xs font-bold sm:text-sm",
@@ -1056,7 +1072,11 @@ export function SupportManagement() {
                 >
                   Previous
                 </Button>
-                <span className="text-[11px] font-medium text-muted-foreground">
+                <span
+                  className={cn(
+                    "text-[11px] font-medium text-muted-foreground",
+                  )}
+                >
                   Page {page} of {meta.totalPages}
                 </span>
                 <Button
@@ -1144,9 +1164,10 @@ export function SupportManagement() {
                       <>
                         <div
                           className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center",
-                            "overflow-hidden rounded-full border",
-                            "border-glass-border bg-muted sm:h-9 sm:w-9",
+                            "flex h-8 w-8 shrink-0 items-center",
+                            "justify-center overflow-hidden rounded-full",
+                            "border border-glass-border bg-muted",
+                            "sm:h-9 sm:w-9",
                           )}
                         >
                           {latestTicket?.profilePicture ? (
@@ -1168,7 +1189,11 @@ export function SupportManagement() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="truncate text-xs font-bold sm:text-sm">
+                          <h3
+                            className={cn(
+                              "truncate text-xs font-bold sm:text-sm",
+                            )}
+                          >
                             {headerName}
                           </h3>
                           {headerEmail && (
@@ -1199,7 +1224,10 @@ export function SupportManagement() {
                       )}
                     >
                       <CheckCircle className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Mark as </span>Resolved
+                      <span className="hidden sm:inline">
+                        Mark as{" "}
+                      </span>
+                      Resolved
                     </Button>
                   ) : (
                     <Badge
@@ -1378,11 +1406,12 @@ export function SupportManagement() {
                                 )}
                               </div>
 
-                              {activeMessageId === msg.id && (
+                               {activeMessageId === msg.id && (
                                 <span
                                   className={cn(
-                                    "animate-in fade-in mt-0.5 px-1 text-[9px]",
-                                    "text-muted-foreground duration-150",
+                                    "animate-in fade-in mt-0.5 px-1",
+                                    "text-[9px] text-muted-foreground",
+                                    "duration-150",
                                   )}
                                 >
                                   {formattedFullDate}
@@ -1395,7 +1424,9 @@ export function SupportManagement() {
 
                       {isResolved && (
                         <div className="my-5 flex items-center">
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                           <span
                             className={cn(
                               "mx-4 inline-flex items-center gap-1",
@@ -1405,10 +1436,14 @@ export function SupportManagement() {
                               "text-muted-foreground",
                             )}
                           >
-                            <CheckCircle className="h-3 w-3 text-emerald-500" />
+                            <CheckCircle
+                              className="h-3 w-3 text-emerald-500"
+                            />
                             Ticket Resolved
                           </span>
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                         </div>
                       )}
                     </div>
@@ -1431,8 +1466,8 @@ export function SupportManagement() {
                       onClick={scrollToBottom}
                       className={cn(
                         "h-8 gap-1.5 rounded-full bg-blue-600 px-3 text-xs",
-                        "text-white shadow-lg transition-all hover:bg-blue-700",
-                        "active:scale-95 animate-bounce",
+                        "text-white shadow-lg transition-all",
+                        "hover:bg-blue-700 active:scale-95 animate-bounce",
                       )}
                     >
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -1444,9 +1479,9 @@ export function SupportManagement() {
                     size="icon"
                     onClick={scrollToBottom}
                     className={cn(
-                      "h-8 w-8 rounded-full bg-primary text-primary-foreground",
-                      "shadow-lg transition-all hover:bg-primary/90",
-                      "active:scale-95",
+                      "h-8 w-8 rounded-full bg-primary",
+                      "text-primary-foreground shadow-lg transition-all",
+                      "hover:bg-primary/90 active:scale-95",
                     )}
                     aria-label="Scroll to bottom"
                   >
