@@ -1,4 +1,5 @@
 import { MouseEvent, useMemo, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
@@ -110,6 +111,9 @@ export function SlipList({
   totalPages = 1,
   className,
 }: SlipListProps) {
+  const location = useLocation();
+  const isAssistantView = location.pathname.startsWith("/assistant");
+
   const [hiddenSlipKeys, setHiddenSlipKeys] = useState<Set<string>>(
     () => new Set(),
   );
@@ -449,7 +453,20 @@ export function SlipList({
         ),
         className: "w-[12%] min-w-[90px] px-3 py-3 text-right",
         render: (slip) => (
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-1">
+            {isAssistantView && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={(event) => hideSlip(slip, event)}
+                className="h-7 w-7 shrink-0 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Hide admission slip"
+                title="Hide"
+              >
+                <EyeOff size={12} />
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
@@ -486,6 +503,7 @@ export function SlipList({
       onStatusChange,
       handleCategoryChange,
       renderSortableHeader,
+      isAssistantView,
     ],
   );
 
