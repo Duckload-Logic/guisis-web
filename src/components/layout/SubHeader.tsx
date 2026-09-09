@@ -1,4 +1,6 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import Breadcrumbs from "./Breadcrumbs";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/utils/dateTime";
@@ -23,9 +25,19 @@ export default function SubHeader({
   showDate = false,
 }: SubHeaderProps) {
   const today = new Date();
+  const location = useLocation();
 
   return (
-    <section className="relative mb-8 min-w-0 max-w-full space-y-4 border-b border-border/60 pb-6">
+    <motion.section
+      key={`${location.pathname}-${title}`}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className={cn(
+        "relative mb-8 min-w-0 max-w-full space-y-4 border-b",
+        "border-border/60 pb-6",
+      )}
+    >
       <Breadcrumbs />
 
       <div
@@ -39,8 +51,9 @@ export default function SubHeader({
             <div
               className={cn(
                 "inline-flex h-7 items-center gap-2 rounded-full border",
-                "border-border/70 bg-muted/40 px-3 text-[11px] font-semibold",
-                "leading-none text-muted-foreground shadow-sm backdrop-blur-md",
+                "border-border/70 bg-muted/40 px-3 text-[11px]",
+                "font-semibold leading-none text-muted-foreground",
+                "shadow-sm backdrop-blur-md",
               )}
             >
               {badgeIcon}
@@ -49,11 +62,21 @@ export default function SubHeader({
           )}
 
           <div className="min-w-0 space-y-2">
-            <h1 className="break-words text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+            <h1
+              className={cn(
+                "break-words text-2xl font-bold leading-tight",
+                "text-foreground sm:text-3xl",
+              )}
+            >
               {title}
             </h1>
             {description && (
-              <p className="max-w-3xl break-words text-sm text-muted-foreground sm:text-base">
+              <p
+                className={cn(
+                  "max-w-3xl break-words text-sm text-muted-foreground",
+                  "sm:text-base",
+                )}
+              >
                 {description}
               </p>
             )}
@@ -67,12 +90,16 @@ export default function SubHeader({
         </div>
 
         {(headerActions || headerStats) && (
-          <div className="flex min-w-0 flex-wrap items-center gap-3 sm:justify-end">
+          <div
+            className={cn(
+              "flex min-w-0 flex-wrap items-center gap-3 sm:justify-end",
+            )}
+          >
             {headerStats}
             {headerActions}
           </div>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 }
