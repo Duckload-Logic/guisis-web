@@ -382,47 +382,6 @@ export default function LogsTable({
     return cols;
   }, [showIPAddress, selectedSort, selectedOrder]);
 
-  const renderMobileItem = (log: SystemLog) => (
-    <button
-      type="button"
-      onClick={() =>
-        navigate(
-          `/superadmin/${title.replace(/\s+/g, "-").toLowerCase()}/${log.id}`,
-        )
-      }
-      className={cn(
-        "block w-full rounded-2xl border border-border bg-card p-4",
-        "text-left shadow-md backdrop-blur-xl transition-all",
-        "active:scale-[0.98]",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {formatLogDate(log.createdAt)}
-          </p>
-          <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-foreground">
-            {log.message}
-          </p>
-        </div>
-        <Badge
-          variant="outline"
-          className={cn(
-            "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
-            getActionBadgeColor(log.action),
-          )}
-        >
-          {formatAction(log.action)}
-        </Badge>
-      </div>
-
-      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-        <span>Actor: {log.userEmail || "—"}</span>
-        <span>Target: {log.targetEmail || "—"}</span>
-        {showIPAddress && <span>IP: {log.ipAddress || "—"}</span>}
-      </div>
-    </button>
-  );
 
   return (
     <div className="mx-auto w-full max-w-[1700px] space-y-6">
@@ -471,7 +430,7 @@ export default function LogsTable({
                 <button
                   type="button"
                   className={cn(
-                    "inline-flex h-10 items-center justify-between gap-2",
+                    "inline-flex h-10 w-full items-center justify-between gap-2 sm:w-auto",
                     "rounded-xl border border-border/70 bg-background/50 px-3",
                     "text-xs font-semibold shadow-sm transition-colors",
                     selectedAction !== "all" && "border-primary text-primary",
@@ -577,7 +536,7 @@ export default function LogsTable({
       {showFilters && (
         <Card className="rounded-2xl border border-border bg-card shadow-sm">
           <CardContent className="flex flex-wrap items-end gap-4 p-5">
-            <div className="min-w-[200px] max-w-[300px] flex-1 space-y-2">
+            <div className="min-w-0 w-full flex-1 space-y-2 sm:min-w-[200px] sm:max-w-[300px]">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Start Date
               </label>
@@ -590,7 +549,7 @@ export default function LogsTable({
                 placeholder="From date"
               />
             </div>
-            <div className="min-w-[200px] max-w-[300px] flex-1 space-y-2">
+            <div className="min-w-0 w-full flex-1 space-y-2 sm:min-w-[200px] sm:max-w-[300px]">
               <label className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 End Date
               </label>
@@ -603,12 +562,12 @@ export default function LogsTable({
                 placeholder="To date"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 sm:w-auto">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="h-10 rounded-xl"
+                className="h-10 w-full rounded-xl sm:w-auto"
               >
                 Reset
               </Button>
@@ -619,15 +578,13 @@ export default function LogsTable({
 
       <Card
         className={cn(
-          "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
-          "xl:border xl:border-border xl:bg-card xl:shadow-sm",
+          "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
         )}
       >
         <CardContent className="p-0">
           <Table
             data={processedLogs}
             columns={columns}
-            renderMobileItem={renderMobileItem}
             isLoading={isLoading}
             emptyState={
               <div className="flex flex-col items-center justify-center px-6 py-20 text-center">

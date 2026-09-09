@@ -666,146 +666,7 @@ export default function UserManagement() {
     [userToRemoveWhitelist, editingWhitelistEntry, isWhitelistOpen, roleFilter],
   );
 
-  const renderMobileUserItem = (user: UserAccount) => (
-    <div
-      key={user.id}
-      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-            {user.firstName[0]}
-            {user.lastName[0]}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-foreground">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-            >
-              <MoreHorizontal size={18} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48 rounded-xl bg-card"
-          >
-            {menuActions(user)?.map((item: any) => (
-              <DropdownMenuItem
-                key={item.id}
-                className="cursor-pointer gap-2 text-foreground focus:bg-muted focus:text-primary"
-                onClick={item.onAction}
-              >
-                <item.icon size={14} />
-                {item.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-1">
-        {user.roles?.map((role) => (
-          <Badge
-            key={role.id}
-            variant="outline"
-            className={cn(
-              "rounded-full px-2.5 text-[10px]",
-              getRoleBadgeColor(role.name),
-            )}
-          >
-            {role.name}
-          </Badge>
-        ))}
-      </div>
-      <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
-        <span>
-          Status:{" "}
-          <strong
-            className={user.isActive ? "text-emerald-500" : "text-destructive"}
-          >
-            {user.isActive ? "Active" : "Blocked"}
-          </strong>
-        </span>
-        <span>Joined: {formatDate(user.createdAt)}</span>
-      </div>
-    </div>
-  );
 
-  const renderMobileWhitelistItem = (entry: WhitelistEntry) => (
-    <div
-      key={entry.email}
-      className="block w-full rounded-2xl border border-border bg-card p-4 shadow-sm backdrop-blur-xl"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-foreground">
-            {entry.email}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Whitelisted: {formatDate(entry.createdAt)}
-          </p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full"
-            >
-              <MoreHorizontal size={18} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48 rounded-xl bg-card"
-          >
-            <DropdownMenuItem
-              className="cursor-pointer gap-2 text-foreground focus:bg-muted focus:text-primary"
-              onClick={() => {
-                setEditingWhitelistEntry(entry);
-                setIsWhitelistOpen(true);
-              }}
-            >
-              <Shield size={14} />
-              Edit Roles
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
-              className="cursor-pointer gap-2 text-red-500 focus:bg-red-500/10 focus:text-red-500"
-              onClick={() => setUserToRemoveWhitelist(entry.email)}
-            >
-              <UserMinus size={14} />
-              Remove Whitelist
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-1">
-        {entry.roles?.map((role: any) => (
-          <Badge
-            key={role.id}
-            variant="outline"
-            className={cn(
-              "rounded-full px-2.5 text-[10px]",
-              getRoleBadgeColor(role.name),
-            )}
-          >
-            {role.name}
-          </Badge>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <div className="mx-auto w-full max-w-[1700px] space-y-6">
@@ -942,11 +803,10 @@ export default function UserManagement() {
       {activeTab === "users" ? (
         <Card
           className={cn(
-            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
-            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+            "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
           )}
         >
-          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
+          <CardHeader className="border-b border-border/50 px-4 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -969,7 +829,6 @@ export default function UserManagement() {
             <Table
               data={processedUsers}
               columns={userColumns}
-              renderMobileItem={renderMobileUserItem}
               isLoading={isLoading}
               emptyState={
                 <div className="flex flex-col items-center py-20 text-center text-muted-foreground">
@@ -1009,11 +868,10 @@ export default function UserManagement() {
       ) : (
         <Card
           className={cn(
-            "overflow-hidden rounded-2xl border-0 bg-transparent shadow-none",
-            "sm:border sm:border-border sm:bg-card sm:shadow-sm",
+            "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
           )}
         >
-          <CardHeader className="border-b border-border/50 px-0 pb-4 sm:px-6">
+          <CardHeader className="border-b border-border/50 px-4 pb-4 sm:px-6">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -1034,7 +892,6 @@ export default function UserManagement() {
             <Table
               data={filteredWhitelist}
               columns={whitelistColumns}
-              renderMobileItem={renderMobileWhitelistItem}
               isLoading={isWhitelistLoading}
               emptyState={
                 <div className="flex flex-col items-center py-20 text-center text-muted-foreground">

@@ -1,7 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useLogDetail } from "@/features/system-admin/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { usePageMetadata } from "@/context";
 import {
   ArrowLeft,
@@ -20,6 +22,72 @@ import {
   getActionBadgeColor,
   formatAction,
 } from "@/features/system-admin/utils/logStyles";
+
+function LogDetailsSkeleton() {
+  const navigate = useNavigate();
+  return (
+    <div className="mx-auto w-full max-w-[1700px] space-y-6">
+      <div className="flex items-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
+        </Button>
+        <div className="space-y-1">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-3 w-52" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-border/50 pb-4">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-9 w-9 rounded-xl" />
+                <Skeleton className="h-6 w-48" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2 pt-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="h-full">
+            <CardHeader className="border-b border-border/50 pb-4">
+              <Skeleton className="h-6 w-44" />
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <div className="space-y-2 pt-2">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -48,14 +116,7 @@ export default function LogDetails() {
 
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 animate-pulse items-center justify-center">
-        <Clock className="mr-2 h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">
-          Loading log detail...
-        </span>
-      </div>
-    );
+    return <LogDetailsSkeleton />;
   }
 
   if (error || !log) {
@@ -83,7 +144,49 @@ export default function LogDetails() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1700px] space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="mx-auto w-full max-w-[1700px] space-y-6"
+    >
+      <div
+        className={cn(
+          "flex flex-col gap-4 sm:flex-row sm:items-center",
+          "sm:justify-between",
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Log #{log.id}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Detailed telemetry entry and execution tracks
+            </p>
+          </div>
+        </div>
+        <Badge
+          variant="outline"
+          className={cn(
+            "w-fit rounded-xl border-border bg-muted/30 px-3 py-1",
+            "text-xs text-muted-foreground shadow-sm",
+          )}
+        >
+          {formatDate(log.createdAt)}
+        </Badge>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Details Section */}
         <div className="space-y-6 lg:col-span-2">
@@ -239,6 +342,6 @@ export default function LogDetails() {
           </Card>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

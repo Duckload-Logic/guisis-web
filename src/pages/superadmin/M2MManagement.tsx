@@ -382,7 +382,7 @@ export default function M2MManagement() {
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
                               className={cn(
-                                "h-8 min-h-0 w-8 shrink-0 rounded-xl",
+                                "h-9 min-h-[36px] w-9 shrink-0 rounded-xl",
                                 "text-muted-foreground transition-colors",
                                 "hover:bg-primary/10 hover:text-primary",
                               )}
@@ -572,7 +572,7 @@ export default function M2MManagement() {
                                         );
                                       }}
                                       className={cn(
-                                        "h-8 min-h-0 gap-1.5 rounded-xl px-3",
+                                        "h-9 min-h-[36px] gap-1.5 rounded-xl px-3",
                                         "text-xs font-semibold",
                                         "border-notice-foreground/30",
                                         "text-notice-foreground",
@@ -588,7 +588,7 @@ export default function M2MManagement() {
                                       variant="outline"
                                       size="sm"
                                       onClick={() => setRotateTarget(client)}
-                                      className="h-8 min-h-0 gap-1.5 rounded-xl px-3 text-xs font-semibold"
+                                      className="h-9 min-h-[36px] gap-1.5 rounded-xl px-3 text-xs font-semibold"
                                       title="Rotate Client Secret"
                                     >
                                       <RefreshCw className="h-3.5 w-3.5 shrink-0" />{" "}
@@ -600,7 +600,7 @@ export default function M2MManagement() {
                                       size="icon"
                                       onClick={() => setRevokeTarget(client)}
                                       className={cn(
-                                        "h-8 min-h-0 w-8 rounded-xl p-0 text-destructive",
+                                        "h-9 min-h-[36px] w-9 rounded-xl p-0 text-destructive",
                                         "border-red-500/20 hover:bg-destructive/10",
                                       )}
                                       title="Revoke Client"
@@ -627,7 +627,7 @@ export default function M2MManagement() {
                               variant="ghost"
                               size="icon"
                               onClick={() => toggleFlip(client.id)}
-                              className="h-8 min-h-0 w-8 shrink-0 rounded-xl text-primary hover:bg-primary/10"
+                              className="h-9 min-h-[36px] w-9 shrink-0 rounded-xl text-primary hover:bg-primary/10"
                               title="Flip back to front"
                             >
                               <RotateCcw className="h-4 w-4 text-primary" />

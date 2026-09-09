@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
 
 import {
   TrendingUp,
@@ -231,7 +232,12 @@ export default function AnalyticsOverview() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1700px] space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="mx-auto w-full max-w-[1700px] space-y-6"
+    >
       {/* Hero Metrics Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {metrics.map((item) => (
@@ -255,7 +261,9 @@ export default function AnalyticsOverview() {
                 <p className="text-xs font-bold uppercase text-muted-foreground">
                   {item.label}
                 </p>
-                <p className="mt-1 text-2xl sm:text-4xl font-bold">{item.value}</p>
+                <p className="mt-1 text-2xl font-bold sm:text-4xl">
+                  {item.value}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -266,16 +274,24 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="col-span-1 min-h-[450px] lg:col-span-3">
           <CardHeader
-            className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-center sm:justify-between"
+            className={cn(
+              "flex flex-col gap-4 pb-6 sm:flex-row sm:items-center",
+              "sm:justify-between",
+            )}
           >
-            <CardTitle className="flex items-center gap-3 text-xl sm:text-2xl font-bold">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold sm:text-2xl">
               <TrendingUp
                 size={24}
-                className="text-primary shrink-0"
+                className="shrink-0 text-primary"
               />
               System Traffic & Logins
             </CardTitle>
-            <div className="flex flex-wrap items-center gap-1 rounded-2xl p-1 bg-muted/20">
+            <div
+              className={cn(
+                "grid w-full grid-cols-4 items-center gap-1 rounded-2xl",
+                "bg-muted/20 p-1 sm:flex sm:w-auto",
+              )}
+            >
               {(["daily", "weekly", "monthly", "yearly"] as const).map(
                 (r) => (
                   <Button
@@ -284,10 +300,11 @@ export default function AnalyticsOverview() {
                     size="sm"
                     onClick={() => setRange(r)}
                     className={cn(
-                      "h-8 sm:h-9 rounded-xl px-3 sm:px-6 text-xs sm:text-sm font-medium capitalize transition-all duration-300",
+                      "h-10 rounded-xl px-2 text-xs font-semibold capitalize",
+                      "transition-all duration-300 sm:h-9 sm:px-5 sm:text-sm",
                       range === r
-                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                        ? "bg-secondary text-secondary-foreground shadow-xs"
+                        : "text-muted-foreground hover:bg-white/5",
                     )}
                   >
                     {r}
@@ -598,6 +615,6 @@ export default function AnalyticsOverview() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }

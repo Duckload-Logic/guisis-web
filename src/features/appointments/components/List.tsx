@@ -598,100 +598,6 @@ export default function AppointmentList({
     ],
   );
 
-  const renderMobileItem = (apt: Appointment) => (
-    <div
-      key={apt.id}
-      className={cn(
-        "space-y-3 rounded-xl border border-border bg-card p-4",
-        "shadow-md backdrop-blur-xl transition-all duration-200",
-        "active:scale-[0.98]",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Avatar className="h-9 w-9 shrink-0 rounded-xl border border-primary/20">
-            {getProfilePictureUrl(apt.user?.profilePicture) ? (
-              <AvatarImage
-                src={getProfilePictureUrl(apt.user?.profilePicture)}
-                alt={getAppointmentStudentName(apt) || "Student"}
-                className="object-cover"
-              />
-            ) : null}
-            <AvatarFallback
-              className={cn(
-                "rounded-xl bg-primary/10 text-xs font-bold text-primary",
-              )}
-            >
-              {`${apt.user?.firstName?.[0] || ""}${
-                apt.user?.lastName?.[0] || ""
-              }`.toUpperCase() || "ST"}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {getAppointmentStudentName(apt) || "Unnamed Student"}
-            </p>
-            <p className="line-clamp-1 text-xs text-muted-foreground">
-              {apt.appointmentCategory?.name}
-            </p>
-          </div>
-        </div>
-
-        <Badge
-          variant="outline"
-          className={cn(
-            "shrink-0 whitespace-nowrap rounded-xl border px-2.5 py-1",
-            "text-[10px] font-bold tracking-wide shadow-md",
-            STATUS_COLORS[getStatusColorKey(apt.status?.name)],
-          )}
-        >
-          {apt.status?.name}
-        </Badge>
-      </div>
-
-      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Date Requested
-          </p>
-          <p className="mt-0.5 font-semibold text-foreground">
-            {formatCompactDate(apt.createdAt)}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Appointment Date
-          </p>
-          <p className="mt-0.5 font-semibold text-foreground">
-            {formatCompactDate(apt.whenDate)}
-          </p>
-          <p className="text-[11px] text-muted-foreground">
-            {format12HourTime(apt.timeSlot?.time || "") || "No time"}
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-        <UrgencyCapsule appointment={apt} />
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(event) => handleViewClick(apt, event)}
-            className={cn(
-              "h-8 gap-1.5 rounded-xl border-primary/20 bg-primary/5",
-              "px-3 text-[11px] font-semibold text-primary",
-            )}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            View
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
 
   const emptyState = (
     <div
@@ -819,28 +725,6 @@ export default function AppointmentList({
     </table>
   );
 
-  const renderMobileSkeleton = () => (
-    <>
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div
-          key={index}
-          className={cn(
-            "animate-pulse rounded-xl border border-border",
-            "bg-card p-4 shadow-md backdrop-blur-xl",
-          )}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <Skeleton className="h-5 w-36 rounded" />
-            <Skeleton className="h-6 w-16 rounded-xl" />
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
-        </div>
-      ))}
-    </>
-  );
 
   return (
     <div className={cn("flex flex-col space-y-6", className)}>
@@ -1060,11 +944,9 @@ export default function AppointmentList({
         <Table
           data={visibleAppointments}
           columns={columns}
-          renderMobileItem={renderMobileItem}
           isLoading={isLoading}
           emptyState={emptyState}
           renderDesktopSkeleton={renderDesktopSkeleton}
-          renderMobileSkeleton={renderMobileSkeleton}
           containerClassName="px-3 py-3"
           onRowClick={onViewClick}
         />
