@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -99,7 +100,6 @@ export function ReportModal({
           const sName = getStudentName(item);
           const sNum = getStudentNumber(item);
           const catName = item.appointmentCategory?.name || "N/A";
-          const reason = item.reason || "N/A";
           return `
             <tr>
               <td style="
@@ -118,9 +118,6 @@ export function ReportModal({
               </td>
               <td style="border: 1px solid #333; padding: 6px;">
                 ${catName}
-              </td>
-              <td style="border: 1px solid #333; padding: 6px;">
-                ${reason}
               </td>
               <td style="
                 border: 1px solid #333;
@@ -287,23 +284,23 @@ export function ReportModal({
           <table class="main-table">
             <thead>
               <tr>
-                <th style="width: 5%">#</th>
                 ${
                   type === "appointments"
                     ? `
+                  <th style="width: 5%">#</th>
                   <th style="width: 15%">Date</th>
-                  <th style="width: 25%">Student Name</th>
-                  <th style="width: 15%">Student Number</th>
-                  <th style="width: 15%">Category</th>
-                  <th style="width: 15%">Reason</th>
+                  <th style="width: 30%">Student Name</th>
+                  <th style="width: 20%">Student Number</th>
+                  <th style="width: 20%">Category</th>
                   <th style="width: 10%">Status</th>
                 `
                     : `
+                  <th style="width: 5%">#</th>
                   <th style="width: 15%">Date of Absence</th>
                   <th style="width: 25%">Student Name</th>
                   <th style="width: 15%">Student Number</th>
                   <th style="width: 15%">Ticket Code</th>
-                  <th style="width: 20%">Reason</th>
+                  <th style="width: 15%">Reason</th>
                   <th style="width: 10%">Status</th>
                 `
                 }
@@ -313,7 +310,10 @@ export function ReportModal({
               ${
                 rowsHtml ||
                 `<tr>
-                  <td colspan="7" style="text-align: center; padding: 20px;">
+                  <td colspan="${type === "appointments" ? 6 : 7}" style="
+                    text-align: center;
+                    padding: 20px;
+                  ">
                     No records found.
                   </td>
                 </tr>`
@@ -370,21 +370,18 @@ export function ReportModal({
         "Student Name",
         "Student Number",
         "Category",
-        "Reason",
         "Status",
       ];
       rows = filteredData.map((item, index) => {
         const sName = getStudentName(item);
         const sNum = getStudentNumber(item);
         const catName = item.appointmentCategory?.name || "N/A";
-        const reason = item.reason || "N/A";
         return [
           String(index + 1),
           item.whenDate,
           sName,
           sNum,
           catName,
-          reason,
           "Completed",
         ];
       });
@@ -487,20 +484,29 @@ export function ReportModal({
                   </th>
                   {type === "appointments" ? (
                     <>
-                      <th className="w-28 p-3 font-semibold text-muted-foreground">
+                      <th
+                        className={cn(
+                          "w-28 p-3 font-semibold text-muted-foreground",
+                        )}
+                      >
                         Date
                       </th>
                       <th className="p-3 font-semibold text-muted-foreground">
                         Student Name
                       </th>
-                      <th className="w-32 p-3 font-semibold text-muted-foreground">
+                      <th
+                        className={cn(
+                          "w-32 p-3 font-semibold text-muted-foreground",
+                        )}
+                      >
                         Student Number
                       </th>
-                      <th className="w-36 p-3 font-semibold text-muted-foreground">
+                      <th
+                        className={cn(
+                          "w-36 p-3 font-semibold text-muted-foreground",
+                        )}
+                      >
                         Category
-                      </th>
-                      <th className="p-3 font-semibold text-muted-foreground">
-                        Reason
                       </th>
                     </>
                   ) : (
@@ -536,7 +542,7 @@ export function ReportModal({
                 {filteredData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={type === "appointments" ? 6 : 7}
                       className="p-8 text-center text-muted-foreground"
                     >
                       No records found for this period.
@@ -569,13 +575,15 @@ export function ReportModal({
                         <td className="p-3 text-foreground">{sName}</td>
                         <td className="p-3 text-muted-foreground">{sNum}</td>
                         <td className="p-3 text-foreground">{col5}</td>
-                        <td
-                          className={
-                            "p-3 text-muted-foreground " + "max-w-xs truncate"
-                          }
-                        >
-                          {item.reason}
-                        </td>
+                        {type !== "appointments" && (
+                          <td
+                            className={
+                              "max-w-xs truncate p-3 text-muted-foreground"
+                            }
+                          >
+                            {item.reason}
+                          </td>
+                        )}
                         <td className="p-3 text-center">
                           <span
                             className={
