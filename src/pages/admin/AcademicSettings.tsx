@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { GraduationCap, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   GetAcademicSettings,
   PutAcademicSettings,
@@ -8,9 +9,18 @@ import {
 import { useToast, usePageMetadata } from "@/context/hooks";
 import { SelectField } from "@/components/ui/select-field";
 import { LabeledSwitch } from "@/components/ui/labeled-switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-// ─── constants ───────────────────────────────────────────────────────────────
 
 const QUERY_KEY = ["counselor", "academicSettings"] as const;
 
@@ -25,8 +35,6 @@ const YEAR_RANGE = Array.from(
   (_, i) => new Date().getFullYear() - 2 + i,
 );
 
-// ─── component ───────────────────────────────────────────────────────────────
-
 export default function AcademicSettings() {
   usePageMetadata({
     title: "Academic Settings",
@@ -38,21 +46,17 @@ export default function AcademicSettings() {
   const { triggerToast } = useToast();
   const queryClient = useQueryClient();
 
-  // ── remote state ──────────────────────────────────────────────────────────
-
   const { data: current, isLoading } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: GetAcademicSettings,
     staleTime: 1000 * 60 * 5,
   });
 
-  // ── local form state ──────────────────────────────────────────────────────
-
   const [yearStart, setYearStart] = useState<number>(new Date().getFullYear());
   const [term, setTerm] = useState<number>(1);
   const [allowExpeditedIIR, setAllowExpeditedIIR] = useState<boolean>(false);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
-  // Derive yearEnd automatically — always start + 1.
   const yearEnd = yearStart + 1;
 
   useEffect(() => {
@@ -64,7 +68,11 @@ export default function AcademicSettings() {
   }, [current]);
 
   const yearOptions = useMemo(
-    () => YEAR_RANGE.map((y) => ({ id: y, label: String(y) })),
+    () =>
+      YEAR_RANGE.map((y) => ({
+        id: y,
+        label: `A.Y. ${y}–${y + 1}`,
+      })),
     [],
   );
 
@@ -72,18 +80,6 @@ export default function AcademicSettings() {
     () => [1, 2, 3].map((t) => ({ id: t, label: TERM_LABELS[t] })),
     [],
   );
-
-  // ── confirmation dialog state ─────────────────────────────────────────────
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
-
-  // The exact string the admin must type to confirm the update.
-  const expectedConfirm = `${yearStart}-${yearEnd} ${TERM_LABELS[term]}`;
-
-  const confirmMatch = confirmText.trim() === expectedConfirm;
-
-  // ── mutation ──────────────────────────────────────────────────────────────
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -98,17 +94,14 @@ export default function AcademicSettings() {
       triggerToast(
         "Academic setting updated. " +
           "Future COR uploads will be validated against " +
-          `${yearStart}-${yearEnd} ${TERM_LABELS[term]}.`,
+          `A.Y. ${yearStart}–${yearEnd} ${TERM_LABELS[term]}.`,
       );
       setDialogOpen(false);
-      setConfirmText("");
     },
     onError: () => {
       triggerToast("Failed to update academic setting. Please try again.");
     },
   });
-
-  // ── helpers ───────────────────────────────────────────────────────────────
 
   const isDirty =
     current &&
@@ -116,25 +109,61 @@ export default function AcademicSettings() {
       term !== current.currentTerm ||
       allowExpeditedIIR !== current.allowExpeditedIIR);
 
-  // ─────────────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-4xl flex-col space-y-8 px-4",
+          "sm:px-6 md:px-8",
+        )}
+      >
+        <div className="flex items-start gap-4">
+          <Skeleton className="h-12 w-12 rounded-2xl" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+          </div>
+        </div>
+        <Skeleton className="h-16 w-full rounded-2xl" />
+        <div className="space-y-6 rounded-3xl border border-border p-6 sm:p-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Skeleton className="h-14 w-full rounded-xl" />
+            <Skeleton className="h-14 w-full rounded-xl" />
+          </div>
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <div className="flex justify-end pt-4">
+            <Skeleton className="h-11 w-40 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
       className={cn(
-        "mx-auto flex w-full max-w-4xl flex-col space-y-8",
-        "px-4 sm:px-6 md:px-8",
+        "mx-auto flex w-full max-w-4xl flex-col space-y-8 px-4",
+        "sm:px-6 md:px-8",
       )}
     >
-      {/* Header (Wave 1) */}
-      <div
-        className="animate-fade-in-up flex items-start gap-4"
-        style={{ animationDelay: "0.05s", animationFillMode: "both" }}
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 shadow-inner">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div
+          className={cn(
+            "flex h-12 w-12 shrink-0 items-center justify-center",
+            "rounded-2xl bg-primary/10 shadow-inner",
+          )}
+        >
           <GraduationCap className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="mt-0.5 max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground">
+          <h1
+            className={cn(
+              "mt-0.5 max-w-2xl text-sm font-medium leading-relaxed",
+              "text-muted-foreground",
+            )}
+          >
             Set the current active school year and term. All student COR uploads
             will be automatically validated against this setting by the OCR
             service.
@@ -142,14 +171,13 @@ export default function AcademicSettings() {
         </div>
       </div>
 
-      {/* Current active banner (Wave 2) */}
-      {!isLoading && current && (
+      {/* Current active banner */}
+      {current && (
         <div
           className={cn(
             "flex items-center gap-3 rounded-2xl border border-primary/20",
-            "animate-fade-in-up bg-primary/5 px-5 py-4 shadow-sm",
+            "bg-primary/5 px-5 py-4 shadow-sm",
           )}
-          style={{ animationDelay: "0.10s", animationFillMode: "both" }}
         >
           <div className="rounded-full bg-primary/10 p-1.5">
             <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
@@ -157,71 +185,56 @@ export default function AcademicSettings() {
           <p className="text-sm font-medium">
             Active setting:&nbsp;
             <span className="font-bold tracking-tight text-primary">
-              {current.currentYearStart}–{current.currentYearEnd}{" "}
+              A.Y. {current.currentYearStart}–{current.currentYearEnd}{" "}
               {TERM_LABELS[current.currentTerm]}
             </span>
           </p>
         </div>
       )}
 
-      {/* Form card (Wave 3) */}
+      {/* Form card */}
       <div
         className={cn(
-          "bg-glass-bg/40 rounded-3xl border border-border backdrop-blur-2xl",
-          "animate-fade-in-up space-y-6 px-6 py-8 shadow-md sm:px-8",
+          "rounded-3xl border border-border bg-glass-bg/40 p-6 shadow-md",
+          "backdrop-blur-2xl sm:p-8 space-y-6",
         )}
-        style={{ animationDelay: "0.15s", animationFillMode: "both" }}
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* School year start */}
+          {/* Academic Year Selector */}
           <SelectField
             id="yearStart"
-            label="School Year Start"
+            label="Academic Year"
             options={yearOptions}
             value={yearStart}
             onChange={(val) => setYearStart(Number(val))}
           />
 
-          {/* School year end — derived, read-only */}
-          <div className="space-y-2">
-            <label className="block text-sm font-bold text-foreground/80">
-              School Year End
-              <span className="ml-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground opacity-70">
-                (auto)
-              </span>
-            </label>
-            <div
-              className={cn(
-                "w-full rounded-xl border border-border/50 bg-muted/30 shadow-inner",
-                "px-4 py-2.5 text-sm font-semibold text-muted-foreground",
-              )}
-            >
-              {yearEnd}
-            </div>
-          </div>
+          {/* Term Selector */}
+          <SelectField
+            id="term"
+            label="Active Term"
+            options={termOptions}
+            value={term}
+            onChange={(val) => setTerm(Number(val))}
+          />
         </div>
-
-        {/* Term */}
-        <SelectField
-          id="term"
-          label="Current Term"
-          options={termOptions}
-          value={term}
-          onChange={(val) => setTerm(Number(val))}
-        />
 
         {/* Expedited IIR Submission Toggle */}
         <div
           className={cn(
-            "flex items-center justify-between rounded-xl",
-            "border border-border/50 bg-muted/10 p-4",
+            "flex items-center justify-between rounded-xl border",
+            "border-border/50 bg-muted/10 p-4",
           )}
         >
           <div className="space-y-1">
             <label className="block text-sm font-bold text-foreground/80">
               Allow Expedited IIR Submission
             </label>
-            <p className="max-w-lg text-xs leading-relaxed text-muted-foreground">
+            <p
+              className={cn(
+                "max-w-lg text-xs leading-relaxed text-muted-foreground",
+              )}
+            >
               When enabled, shifters, transferees, and returning students can
               perform an "Express Submit" validating only basic profile info.
             </p>
@@ -236,135 +249,120 @@ export default function AcademicSettings() {
         {/* Warning notice */}
         <div
           className={cn(
-            "flex gap-3 rounded-xl border border-yellow-500/20",
-            "mt-6 bg-yellow-500/5 px-4 py-4",
+            "flex gap-3 rounded-xl border border-amber-500/20",
+            "bg-amber-500/5 px-4 py-4",
           )}
         >
-          <div className="mt-0.5 h-fit rounded-full bg-yellow-500/10 p-1.5">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-600" />
+          <div className="mt-0.5 h-fit rounded-full bg-amber-500/10 p-1.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
           </div>
-          <p className="text-xs font-medium leading-relaxed text-muted-foreground">
-            <strong className="text-yellow-600">Warning:</strong> Changing this
+          <p
+            className={cn(
+              "text-xs font-medium leading-relaxed text-muted-foreground",
+            )}
+          >
+            <strong className="text-amber-600">Warning:</strong> Changing this
             setting immediately affects how the OCR service validates COR
-            uploads. CORs that do not match the active school year and term will
-            be marked as unvalidated.
+            uploads. CORs that do not match the active school year and term
+            will be marked as unvalidated.
           </p>
         </div>
 
-        {/* Save button */}
-        <div className="border-t border-border/50 pt-4">
-          <button
+        {/* Save button with Flexbox */}
+        <div className="flex justify-end border-t border-border/50 pt-4">
+          <Button
             id="btn-open-confirm-dialog"
+            type="button"
             disabled={!isDirty || isLoading}
-            onClick={() => {
-              setConfirmText("");
-              setDialogOpen(true);
-            }}
-            className={cn(
-              "float-right w-full rounded-xl bg-primary px-6 py-3 text-sm font-bold sm:w-auto sm:min-w-[200px]",
-              "text-primary-foreground shadow-md shadow-primary/20 transition-all duration-300",
-              "hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg active:scale-95",
-              "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-md",
-            )}
+            onClick={() => setDialogOpen(true)}
+            className="w-full rounded-xl sm:w-auto sm:min-w-[180px]"
           >
             Save Changes
-          </button>
-          <div className="clear-both"></div>
+          </Button>
         </div>
       </div>
 
-      {/* ── Confirmation Dialog ────────────────────────────────────────── */}
-      {dialogOpen && (
-        <div
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
-            "animate-in fade-in bg-black/60 backdrop-blur-sm duration-200",
-          )}
-        >
-          <div
-            className={cn(
-              "w-full max-w-md rounded-3xl border border-border/50",
-              "animate-in zoom-in-95 bg-background/95 p-8 shadow-2xl backdrop-blur-xl duration-200",
-            )}
-          >
-            {/* Dialog header */}
-            <div className="mb-6 flex items-center gap-4">
+      {/* Accessible Confirmation Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md rounded-3xl p-6 sm:p-8">
+          <DialogHeader className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex h-12 w-12 items-center justify-center",
-                  "rounded-2xl border border-yellow-500/20 bg-yellow-500/15",
+                  "flex h-10 w-10 shrink-0 items-center justify-center",
+                  "rounded-xl border border-amber-500/20 bg-amber-500/15",
                 )}
               >
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
               </div>
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">
-                  Confirm Setting Change
-                </h2>
-                <p className="text-xs font-medium text-muted-foreground">
-                  This action affects COR validation system-wide.
-                </p>
-              </div>
+              <DialogTitle
+                className="text-base font-bold tracking-tight sm:text-lg"
+              >
+                Confirm Academic Setting Change
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              This action immediately updates COR validation rules system-wide.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div
+            className={cn(
+              "space-y-3 rounded-2xl border border-border/70 bg-muted/30 p-4",
+              "text-xs",
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Current Setting:</span>
+              <span className="font-semibold text-foreground">
+                A.Y. {current?.currentYearStart}–{current?.currentYearEnd}{" "}
+                {TERM_LABELS[current?.currentTerm || 1]}
+              </span>
             </div>
 
-            <p className="mb-4 text-sm font-medium leading-relaxed text-foreground/80">
-              You are about to set the active academic period to:
-            </p>
-            <p className="mb-6 rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 text-center text-lg font-bold tracking-tight text-primary">
-              {expectedConfirm}
-            </p>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
-              To confirm, type exactly:
-            </p>
-            <p className="mb-4 w-fit select-all rounded-lg border bg-muted/50 px-3 py-1.5 font-mono text-sm font-semibold">
-              {expectedConfirm}
-            </p>
-            <input
-              id="confirm-text-input"
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type the confirmation string…"
-              className={cn(
-                "mb-6 w-full rounded-xl border bg-background/50 px-4",
-                "py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2",
-                confirmMatch
-                  ? "border-green-500 bg-green-500/5 focus:ring-green-500/50"
-                  : "border-border focus:ring-primary/50",
-              )}
-            />
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">New Setting:</span>
+              <Badge variant="default" className="font-bold">
+                A.Y. {yearStart}–{yearEnd} {TERM_LABELS[term]}
+              </Badge>
+            </div>
 
-            <div className="flex gap-3">
-              <button
-                id="btn-cancel-confirm"
-                onClick={() => {
-                  setDialogOpen(false);
-                  setConfirmText("");
-                }}
-                className={cn(
-                  "flex-1 rounded-xl border border-border/60 py-3",
-                  "text-sm font-bold transition-all hover:border-border hover:bg-muted/50 active:scale-95",
-                )}
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Expedited IIR:</span>
+              <Badge
+                variant={allowExpeditedIIR ? "default" : "secondary"}
+                className="font-bold"
               >
-                Cancel
-              </button>
-              <button
-                id="btn-submit-confirm"
-                disabled={!confirmMatch || mutation.isPending}
-                onClick={() => mutation.mutate()}
-                className={cn(
-                  "flex-1 rounded-xl bg-primary py-3 text-sm shadow-md",
-                  "font-bold text-primary-foreground transition-all duration-300",
-                  "hover:bg-primary/90 hover:shadow-lg active:scale-95",
-                  "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-md",
-                )}
-              >
-                {mutation.isPending ? "Saving…" : "Confirm Update"}
-              </button>
+                {allowExpeditedIIR ? "Enabled" : "Disabled"}
+              </Badge>
             </div>
           </div>
-        </div>
-      )}
+
+          <DialogFooter
+            className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end"
+          >
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              disabled={mutation.isPending}
+              className="rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              id="btn-submit-confirm"
+              type="button"
+              variant="default"
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate()}
+              className="rounded-xl font-bold shadow-md"
+            >
+              {mutation.isPending ? "Saving..." : "Confirm Update"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
