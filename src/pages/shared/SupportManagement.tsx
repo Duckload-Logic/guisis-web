@@ -670,18 +670,15 @@ export function SupportManagement() {
                 aria-hidden="true"
               />
               {unreadCount > 0 && (
-                <span
-                  className={cn(
-                    "mt-2 flex h-5 min-w-5 items-center justify-center",
-                    "rounded-full bg-primary px-1 text-[9px] font-bold",
-                    "text-primary-foreground",
-                  )}
+                <Badge
+                  variant="default"
+                  className="mt-2 h-5 min-w-5 justify-center px-1 text-[9px]"
                   title={`${unreadCount} unread conversation${
                     unreadCount === 1 ? "" : "s"
                   }`}
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+                </Badge>
               )}
             </motion.div>
           )}
@@ -801,26 +798,31 @@ export function SupportManagement() {
                     size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={cn(
-                      "h-7 flex-1 rounded-lg text-[10px] font-bold uppercase",
-                      "tracking-wider transition-all",
+                      "h-7 flex-1 shrink-0 whitespace-nowrap rounded-lg",
+                      "px-1.5 text-[10px] font-bold uppercase tracking-wider",
+                      "transition-all",
                       isActive
                         ? "shadow-xs bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted/50 " +
                             "hover:text-foreground",
                     )}
                   >
-                    <span>{tab.label}</span>
+                    <span className="shrink-0 whitespace-nowrap">
+                      {tab.label}
+                    </span>
                     {hasCount && (
-                      <span
+                      <Badge
+                        variant="outline"
                         className={cn(
-                          "ml-1 rounded-full px-1.5 py-0.2 text-[9px]",
+                          "ml-1 h-4 min-w-4 border-transparent px-1.5",
+                          "text-[9px] font-bold",
                           isActive
                             ? "bg-primary-foreground text-primary"
                             : "bg-blue-500 text-white",
                         )}
                       >
                         {tab.count}
-                      </span>
+                      </Badge>
                     )}
                   </Button>
                 );
@@ -985,23 +987,23 @@ export function SupportManagement() {
                           >
                             {name}
                           </span>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex shrink-0 items-center gap-1.5">
                             {isUnread && (
                               <Badge
                                 variant="outline"
                                 className={cn(
                                   "rounded-md border-blue-500/30",
-                                  "bg-blue-500/10",
-                                  "px-1.5 py-0 text-[9px] font-bold",
-                                  "text-blue-500",
+                                  "bg-blue-500/10 px-1.5 py-0 text-[9px]",
+                                  "font-bold text-blue-500",
                                 )}
                               >
                                 Unread
                               </Badge>
                             )}
-                            <span
+                            <Badge
+                              variant="outline"
                               className={cn(
-                                "shrink-0 rounded-full px-2 py-0.5",
+                                "border-transparent px-2 py-0.5",
                                 "text-[9px] font-bold uppercase",
                                 hasOpen
                                   ? "bg-emerald-500/15 text-emerald-600 " +
@@ -1010,7 +1012,7 @@ export function SupportManagement() {
                               )}
                             >
                               {hasOpen ? "Open" : "Resolved"}
-                            </span>
+                            </Badge>
                           </div>
                         </div>
 
@@ -1319,16 +1321,17 @@ export function SupportManagement() {
                                   "my-3 flex items-center justify-center",
                                 )}
                               >
-                                <span
+                                <Badge
+                                  variant="outline"
                                   className={cn(
-                                    "rounded-full border border-glass-border",
-                                    "bg-muted/40 px-3 py-0.5 text-[10px]",
-                                    "font-semibold uppercase tracking-wider",
+                                    "border-glass-border bg-muted/40 px-3",
+                                    "py-0.5 text-[10px] font-semibold",
+                                    "uppercase tracking-wider",
                                     "text-muted-foreground shadow-xs",
                                   )}
                                 >
                                   {formatDateDivider(msg.createdAt)}
-                                </span>
+                                </Badge>
                               </div>
                             )}
 
@@ -1427,20 +1430,19 @@ export function SupportManagement() {
                           <div
                             className="flex-1 border-t border-glass-border"
                           />
-                          <span
+                          <Badge
+                            variant="outline"
                             className={cn(
-                              "mx-4 inline-flex items-center gap-1",
-                              "rounded-full border border-glass-border",
-                              "bg-muted/40 px-2.5 py-0.5 text-[10px]",
-                              "font-bold uppercase tracking-wider",
-                              "text-muted-foreground",
+                              "mx-4 gap-1 border-glass-border bg-muted/40",
+                              "px-2.5 py-0.5 text-[10px] font-bold uppercase",
+                              "tracking-wider text-muted-foreground",
                             )}
                           >
                             <CheckCircle
                               className="h-3 w-3 text-emerald-500"
                             />
                             Ticket Resolved
-                          </span>
+                          </Badge>
                           <div
                             className="flex-1 border-t border-glass-border"
                           />

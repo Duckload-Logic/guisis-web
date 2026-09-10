@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import { useNotificationDropdown } from "../hooks/useNotificationDropdown";
@@ -55,7 +56,12 @@ export default function NotificationModal({
         "sm:top-[5.25rem] md:right-24 md:flex lg:right-28",
       )}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <div
+        className={cn(
+          "flex items-center justify-between gap-3 border-b border-border",
+          "px-4 py-3",
+        )}
+      >
         <div className="flex gap-2 text-sm">
           <NotificationFilterButton
             active={filter === "all"}
@@ -70,9 +76,15 @@ export default function NotificationModal({
           >
             Unread
             {unreadCount > 0 && (
-              <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
+              <Badge
+                variant="destructive"
+                className={cn(
+                  "ml-1 h-4 min-w-4 px-1.5 text-[10px] font-semibold",
+                  "shadow-md",
+                )}
+              >
                 {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
+              </Badge>
             )}
           </NotificationFilterButton>
         </div>
@@ -94,7 +106,10 @@ export default function NotificationModal({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="max-h-[26rem] flex-1 space-y-2.5 overflow-y-auto overscroll-contain p-2.5"
+        className={cn(
+          "max-h-[26rem] flex-1 space-y-2.5 overflow-y-auto",
+          "overscroll-contain p-2.5",
+        )}
       >
         {showPushBanner && (
           <PushNotificationBanner
@@ -123,13 +138,21 @@ export default function NotificationModal({
         )}
 
         {isFetching && loadedNotifications.length > 0 && (
-          <div className="py-3 text-center text-xs font-medium text-muted-foreground">
+          <div
+            className={cn(
+              "py-3 text-center text-xs font-medium text-muted-foreground",
+            )}
+          >
             Loading more notifications...
           </div>
         )}
 
         {!hasNextPage && loadedNotifications.length > 0 && (
-          <div className="py-3 text-center text-[11px] font-medium text-muted-foreground">
+          <div
+            className={cn(
+              "py-3 text-center text-[11px] font-medium text-muted-foreground",
+            )}
+          >
             You are all caught up.
           </div>
         )}

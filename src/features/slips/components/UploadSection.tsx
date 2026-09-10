@@ -93,25 +93,26 @@ export function UploadSection({
               <div
                 className={cn(
                   "flex h-6 w-6 shrink-0 items-center justify-center",
-                  "rounded-full bg-muted text-xs font-semibold text-foreground",
+                  "rounded-full bg-muted text-xs font-semibold",
+                  "text-foreground",
                 )}
               >
                 {number}
               </div>
             )}
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-foreground">{title}</h3>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-medium text-foreground">
+                  {title}
+                </h3>
                 <Badge
                   variant={optional ? "secondary" : "destructive"}
-                  className="text-xs"
+                  className="shrink-0 whitespace-nowrap text-xs"
                 >
                   {optional ? "Optional" : "Required"}
                 </Badge>
               </div>
-              <p
-                                className="mt-0.5 text-xs text-muted-foreground"
-                              >
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {description}
               </p>
             </div>
