@@ -326,25 +326,32 @@ export default function CreateAppointment() {
               className="cursor-pointer border-b border-border/60 py-3.5"
               onClick={() => setShowBackupSchedule(!showBackupSchedule)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-2">
+                <div
+                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+                >
+                  <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium text-foreground">
                     Alternative Preferred Schedules (Optional — Up to 3)
                   </CardTitle>
                   <Badge
                     variant="outline"
-                    className="text-[10px]"
+                    className="shrink-0 whitespace-nowrap text-[10px]"
                   >
                     {filledBackupCount > 0
-                      ? `${filledBackupCount} of ${MAX_BACKUP_OPTIONS} selected`
+                      ? `${filledBackupCount} of ` +
+                        `${MAX_BACKUP_OPTIONS} selected`
                       : "Optional"}
                   </Badge>
                 </div>
                 {showBackupSchedule ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  <ChevronUp
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                  />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                  />
                 )}
               </div>
             </CardHeader>

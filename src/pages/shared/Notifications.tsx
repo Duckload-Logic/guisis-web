@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   useGetNotifications,
@@ -177,11 +178,25 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-4 px-0 py-2 sm:space-y-6 sm:p-4 md:p-6">
+    <div
+      className={cn(
+        "mx-auto w-full max-w-5xl space-y-4 px-0 py-2",
+        "sm:space-y-6 sm:p-4 md:p-6",
+      )}
+    >
       <Card className="overflow-hidden rounded-xl border-border shadow-md">
-        <CardHeader className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <CardHeader
+          className={cn(
+            "flex flex-col gap-4 border-b p-4 sm:flex-row",
+            "sm:items-center sm:justify-between sm:p-6",
+          )}
+        >
           <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
+            <CardTitle
+              className={cn(
+                "flex items-center gap-2 text-lg font-semibold sm:text-xl",
+              )}
+            >
               <Bell className="h-5 w-5 shrink-0 text-primary" />
               Recent Notifications
             </CardTitle>
@@ -202,7 +217,11 @@ export default function NotificationsPage() {
           )}
         </CardHeader>
 
-        <div className="flex gap-2 border-b border-border px-4 py-3 text-sm sm:px-6">
+        <div
+          className={cn(
+            "flex gap-2 border-b border-border px-4 py-3 text-sm sm:px-6",
+          )}
+        >
           <FilterButton
             active={filter === "all"}
             onClick={() => setFilter("all")}
@@ -215,9 +234,15 @@ export default function NotificationsPage() {
           >
             Unread
             {unreadCount > 0 && (
-              <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
+              <Badge
+                variant="destructive"
+                className={cn(
+                  "ml-1 h-4 min-w-4 px-1.5 text-[10px] font-semibold",
+                  "shadow-md",
+                )}
+              >
                 {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
+              </Badge>
             )}
           </FilterButton>
         </div>
@@ -262,13 +287,23 @@ export default function NotificationsPage() {
           )}
 
           {isFetching && loadedNotifications.length > 0 && (
-            <div className="border-t border-border p-4 text-center text-xs font-medium text-muted-foreground">
+            <div
+              className={cn(
+                "border-t border-border p-4 text-center text-xs font-medium",
+                "text-muted-foreground",
+              )}
+            >
               Loading more notifications...
             </div>
           )}
 
           {!hasNextPage && loadedNotifications.length > 0 && (
-            <div className="border-t border-border p-4 text-center text-[11px] font-medium text-muted-foreground">
+            <div
+              className={cn(
+                "border-t border-border p-4 text-center text-[11px]",
+                "font-medium text-muted-foreground",
+              )}
+            >
               You are all caught up.
             </div>
           )}
@@ -326,9 +361,11 @@ function NotificationItem({
       variant="ghost"
       onClick={() => onClick(notification)}
       className={cn(
-        "group flex min-h-11 w-full cursor-pointer items-start justify-start text-left",
-        "gap-3 rounded-xl border p-4 shadow-md transition-colors duration-200",
-        "hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group flex min-h-11 w-full cursor-pointer items-start",
+        "justify-start text-left gap-3 rounded-xl border p-4 shadow-md",
+        "transition-colors duration-200 hover:bg-muted/60",
+        "focus-visible:outline-none focus-visible:ring-2",
+        "focus-visible:ring-ring",
         unread && "border-primary/15 bg-primary/5",
         highlightedRead &&
           "border-border/60 bg-muted/30 text-muted-foreground opacity-60",
@@ -362,7 +399,12 @@ function NotificationItem({
         >
           {notification.title}
         </span>
-        <span className="mt-1 block line-clamp-2 text-sm leading-relaxed text-muted-foreground sm:line-clamp-none">
+        <span
+          className={cn(
+            "mt-1 block line-clamp-2 text-sm leading-relaxed",
+            "text-muted-foreground sm:line-clamp-none",
+          )}
+        >
           {notification.message}
         </span>
         <span className="mt-2 block text-xs font-medium text-muted-foreground">

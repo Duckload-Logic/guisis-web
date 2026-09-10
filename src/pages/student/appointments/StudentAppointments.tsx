@@ -373,13 +373,14 @@ export default function StudentAppointments() {
                   setCurrentPage(1);
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs",
-                  "select-none font-semibold transition-all",
+                  "flex shrink-0 items-center gap-1.5 whitespace-nowrap",
+                  "rounded-xl px-3 py-1.5 text-xs select-none font-semibold",
+                  "transition-all",
                   isSelected
                     ? "border border-primary/40 bg-primary/10 " +
                         "text-primary shadow-sm"
                     : "border border-border/70 bg-card " +
-                        "text-muted-foreground hover:bg-muted/60" +
+                        "text-muted-foreground hover:bg-muted/60 " +
                         "hover:text-foreground",
                 )}
               >
