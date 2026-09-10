@@ -745,7 +745,7 @@ export default function Dashboard() {
                 Monthly Activity Trend
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Visitor touchpoints across recent months
+                Consultations and verified slips across recent months
               </CardDescription>
             </CardHeader>
 
@@ -817,7 +817,7 @@ export default function Dashboard() {
                       "text-center text-xs text-muted-foreground",
                     )}
                   >
-                    No visitor records available
+                    No touchpoint records available
                   </div>
                 )}
               </div>

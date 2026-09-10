@@ -561,8 +561,7 @@ export default function Profile() {
                   "md:text-4xl",
                 )}
               >
-                {user.firstName}{" "}
-                {user.middleName && `${user.middleName[0]}. `}
+                {user.firstName} {user.middleName && `${user.middleName[0]}. `}
                 {user.lastName}
               </h1>
               <p className="text-base font-medium text-muted-foreground/80">
@@ -586,7 +585,10 @@ export default function Profile() {
                   Last Login
                 </span>
                 <span className="flex items-center gap-1.5 text-xs font-bold">
-                  <Clock size={12} className="text-blue-400" />{" "}
+                  <Clock
+                    size={12}
+                    className="text-blue-400"
+                  />{" "}
                   {stats.lastSession
                     ? `${format12HourTime(stats.lastSession)} Today`
                     : "No recent session"}
@@ -598,7 +600,10 @@ export default function Profile() {
       </div>
 
       {/* Actionable Tabs Interface */}
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs
+        defaultValue="overview"
+        className="space-y-6"
+      >
         <div
           className={cn(
             "flex flex-col justify-between gap-4 md:flex-row md:items-center",
@@ -665,7 +670,10 @@ export default function Profile() {
                   <CardTitle
                     className="flex items-center gap-2 text-2xl font-bold"
                   >
-                    <User className="text-primary" size={24} />
+                    <User
+                      className="text-primary"
+                      size={24}
+                    />
                     Personal Information
                   </CardTitle>
                   <CardDescription>
@@ -763,7 +771,10 @@ export default function Profile() {
                       "border-border/10 bg-muted/40 px-4 text-sm font-bold",
                     )}
                   >
-                    <Mail size={16} className="text-blue-500" />
+                    <Mail
+                      size={16}
+                      className="text-blue-500"
+                    />
                     {user.email}
                   </div>
                 </div>
@@ -806,7 +817,10 @@ export default function Profile() {
                   )}
                 >
                   <div className="mb-2 flex items-center gap-3">
-                    <Calendar size={16} className="text-primary" />
+                    <Calendar
+                      size={16}
+                      className="text-primary"
+                    />
                     <p className="text-xs font-bold">Join Date</p>
                   </div>
                   <p className="text-xl tracking-tight">
@@ -819,7 +833,10 @@ export default function Profile() {
         </TabsContent>
 
         {/* Activity Tab Content */}
-        <TabsContent value="activity" className="outline-none">
+        <TabsContent
+          value="activity"
+          className="outline-none"
+        >
           <Card
             className={cn(
               "overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
@@ -936,7 +953,10 @@ export default function Profile() {
                       "bg-muted shadow-inner",
                     )}
                   >
-                    <Clock size={32} className="text-muted-foreground/40" />
+                    <Clock
+                      size={32}
+                      className="text-muted-foreground/40"
+                    />
                   </div>
                   <h3 className="text-xl font-bold">No recent activities</h3>
                   <p
@@ -1014,9 +1034,7 @@ export default function Profile() {
                 <span className="flex items-center gap-1.5 font-medium">
                   <ZoomOut size={14} /> Zoom
                 </span>
-                <span className="font-semibold">
-                  {Math.round(zoom * 100)}%
-                </span>
+                <span className="font-semibold">{Math.round(zoom * 100)}%</span>
               </div>
               <Slider
                 value={[zoom]}
@@ -1044,7 +1062,10 @@ export default function Profile() {
             >
               {isUploadingPicture ? (
                 <>
-                  <Loader2 size={16} className="mr-2 animate-spin" />
+                  <Loader2
+                    size={16}
+                    className="mr-2 animate-spin"
+                  />
                   Saving...
                 </>
               ) : (
