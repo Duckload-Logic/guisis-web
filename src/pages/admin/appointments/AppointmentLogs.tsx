@@ -66,8 +66,14 @@ export default function AppointmentLogs() {
 
   // State for other filters
   const [statusFilter, setStatusFilter] = useUrlState<number>("status", 0);
-  const [selectedCategory, setSelectedCategory] = useUrlState<string>("category", "all");
-  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>("urgency", "all");
+  const [selectedCategory, setSelectedCategory] = useUrlState<string>(
+    "category",
+    "all",
+  );
+  const [selectedUrgency, setSelectedUrgency] = useUrlState<string>(
+    "urgency",
+    "all",
+  );
   const { data: categories } = useCategories();
   const [searchTerm, setSearchTerm] = useUrlState("q", "");
   const [currentPage, setCurrentPage] = useUrlState("page", 1);
@@ -85,7 +91,13 @@ export default function AppointmentLogs() {
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
       });
-      setReportData(response.appointments || []);
+      const sanitizedAppointments = (response.appointments || []).map(
+        (appt) => {
+          const { reason: _omitted, ...safeAppt } = appt;
+          return safeAppt as Appointment;
+        },
+      );
+      setReportData(sanitizedAppointments);
       setIsReportOpen(true);
     } catch (error) {
       console.error("Failed to generate report", error);
@@ -107,10 +119,8 @@ export default function AppointmentLogs() {
     params: {
       page: currentPage,
       statusId: statusFilter !== 0 ? statusFilter : undefined,
-      categoryId:
-        selectedCategory === "all" ? undefined : selectedCategory,
-      urgency:
-        selectedUrgency === "all" ? undefined : selectedUrgency,
+      categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+      urgency: selectedUrgency === "all" ? undefined : selectedUrgency,
       search: debouncedSearch,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
@@ -122,10 +132,8 @@ export default function AppointmentLogs() {
       params: {
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
-        categoryId:
-          selectedCategory === "all" ? undefined : selectedCategory,
-        urgency:
-          selectedUrgency === "all" ? undefined : selectedUrgency,
+        categoryId: selectedCategory === "all" ? undefined : selectedCategory,
+        urgency: selectedUrgency === "all" ? undefined : selectedUrgency,
       },
     });
 
@@ -177,7 +185,7 @@ export default function AppointmentLogs() {
     );
   }, [appointmentStatusesWithAll, statusFilter]);
 
-return (
+  return (
     <>
       <div
         className={cn(
@@ -196,7 +204,7 @@ return (
               "backdrop-blur-md transition-all duration-300 hover:shadow-lg",
             )}
           >
-            <CardHeader className="border-border/40 border-b bg-muted/20 px-6 py-4">
+            <CardHeader className="border-b border-border/40 bg-muted/20 px-6 py-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground/90">
                 <Calendar className="h-5 w-5 text-primary" />
                 Filter by Date
@@ -224,7 +232,9 @@ return (
                   className="flex items-center gap-2 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <FileText className="h-4 w-4" />
-                  {isReportLoading ? "Generating..." : "Generate Monthly Report"}
+                  {isReportLoading
+                    ? "Generating..."
+                    : "Generate Monthly Report"}
                 </Button>
               </div>
             </CardContent>
