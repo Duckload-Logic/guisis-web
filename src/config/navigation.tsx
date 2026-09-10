@@ -19,6 +19,7 @@ import {
 
 export interface NavItem {
   label: string;
+  shortLabel?: string;
   href: string;
   icon: React.ReactNode;
 }
@@ -39,6 +40,7 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
     },
     {
       label: "Admission Slips",
+      shortLabel: "Slips",
       href: "/student/slips",
       icon: <FileText size={ICON_SIZE} />,
     },
@@ -66,6 +68,7 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
     },
     {
       label: "Student Records",
+      shortLabel: "Records",
       href: "/admin/student-records",
       icon: <Users size={ICON_SIZE} />,
     },
@@ -76,6 +79,7 @@ export const NAV_CONFIG: Record<string, NavItem[]> = {
     },
     {
       label: "Admission Slips",
+      shortLabel: "Slips",
       href: "/admin/slips",
       icon: <FileText size={ICON_SIZE} />,
     },

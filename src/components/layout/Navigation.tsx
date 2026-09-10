@@ -17,6 +17,7 @@ import { useUI, useAuth } from "@/context";
 import { UISettingsModal } from "@/components/shared/UISettingsModal";
 import { cn } from "@/lib/utils";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
+import type { NavItem as NavItemConfig } from "@/config/navigation";
 
 const HOME_HREF = "/";
 const SETTINGS_HREF = "/settings";
@@ -59,7 +60,7 @@ function NavItem({
   showExpandedContent = false,
   onClick,
 }: {
-  item: { label: string; href: string; icon: React.ReactNode };
+  item: NavItemConfig;
   active: boolean;
   variant?: "desktop" | "mobile-bottom" | "mobile-drawer";
   isExpanded?: boolean;
@@ -91,14 +92,11 @@ function NavItem({
         </div>
         <span
           className={cn(
-            "mt-0.5 w-full text-center text-[10px] leading-tight",
-            item.href === "/student/slips"
-              ? "whitespace-normal"
-              : "truncate",
+            "mt-0.5 w-full truncate text-center text-[10px] leading-tight",
           )}
           title={item.label}
         >
-          {item.label}
+          {item.shortLabel || item.label}
         </span>
       </Link>
     );
@@ -357,7 +355,12 @@ export default function Navigation({
               >
                 <MoreHorizontal className="h-5 w-5" />
               </div>
-              <span className="mt-0.5 w-full truncate text-center text-[10px] leading-tight">
+              <span
+                className={cn(
+                  "mt-0.5 w-full truncate text-center text-[10px]",
+                  "leading-tight",
+                )}
+              >
                 More
               </span>
             </button>
