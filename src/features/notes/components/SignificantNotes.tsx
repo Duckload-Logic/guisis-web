@@ -90,6 +90,7 @@ export default function SignificantNotes({ iirId }: SignificantNotesProps) {
   );
 
   const handleSubmit = async (data: SignificantNoteFormData) => {
+    if (createNoteMutation.isPending) return;
     await createNoteMutation.mutateAsync(data);
   };
 

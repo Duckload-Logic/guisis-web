@@ -60,7 +60,7 @@ export function WhitelistModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || selectedRoles.length === 0) return;
+    if (!email || selectedRoles.length === 0 || isProcessing) return;
     await onWhitelist(email, selectedRoles);
   };
 

@@ -65,6 +65,7 @@ export default function AddNoteModal({
   }, [open, appointmentId, admissionSlipId, reset]);
 
   const handleFormSubmit = async (data: SignificantNoteFormData) => {
+    if (isSubmitting) return;
     await onSubmit(data);
     reset();
   };

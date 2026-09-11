@@ -63,7 +63,7 @@ export function RoleManagementModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || isUpdating) return;
     await onUpdate(selectedRoles, reason, referenceId);
     // onClose is handled by the caller or after success
   };
