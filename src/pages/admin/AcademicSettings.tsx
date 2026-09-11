@@ -284,7 +284,7 @@ export default function AcademicSettings() {
 
       {/* Accessible Confirmation Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md rounded-md p-6 sm:p-8">
+        <DialogContent className="max-w-md p-6 sm:p-8">
           <DialogHeader className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
               <div

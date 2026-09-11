@@ -60,7 +60,7 @@ export default function ServiceDisclaimerModal({
       <DialogContent
         className={cn(
           "flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden",
-          "rounded-md border border-border bg-background p-0 shadow-md",
+          "border border-border bg-background p-0 shadow-md",
           "sm:max-w-[600px]",
         )}
         fallbackTitle="Important System Notice"

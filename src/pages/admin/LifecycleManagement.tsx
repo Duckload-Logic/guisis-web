@@ -14,10 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  usePrograms,
-  useIIRPagination,
-} from "@/features/iir/hooks";
+import { usePrograms, useIIRPagination } from "@/features/iir/hooks";
 import { Program, IIRProfileView } from "@/features/iir/types";
 import { iirService } from "@/features/iir/services/service";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -711,7 +708,10 @@ export default function LifecycleManagement() {
         onOpenChange={setDestructiveWarning}
       >
         <AlertDialogContent
-          className="max-w-md rounded-md border-amber-500/20 bg-glass-bg backdrop-blur-xl"
+          className={cn(
+            "max-w-md border-amber-500/20",
+            "bg-glass-bg backdrop-blur-xl",
+          )}
         >
           <AlertDialogHeader>
             <div className="mb-2 flex items-start gap-4">
@@ -797,7 +797,9 @@ export default function LifecycleManagement() {
         onOpenChange={(open) => !open && setPendingAction(null)}
       >
         <AlertDialogContent
-          className="max-w-sm rounded-md border-glass-border bg-glass-bg backdrop-blur-xl"
+          className={cn(
+            "max-w-sm border-glass-border bg-glass-bg backdrop-blur-xl",
+          )}
         >
           <AlertDialogHeader>
             <AlertDialogTitle>

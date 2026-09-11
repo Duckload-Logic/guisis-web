@@ -32,9 +32,8 @@ const DrawerOverlay = React.forwardRef<
 ));
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 
-interface DrawerContentProps extends React.ComponentPropsWithoutRef<
-  typeof DrawerPrimitive.Content
-> {
+interface DrawerContentProps
+  extends React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> {
   scrollClassName?: string;
 }
 
@@ -48,7 +47,7 @@ const DrawerContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto max-h-[80vh]",
-        "flex-col rounded-t-md border bg-card",
+        "flex-col rounded-t-xl border bg-card",
         className,
       )}
       {...props}
@@ -57,7 +56,7 @@ const DrawerContent = React.forwardRef<
       <div
         className={cn(
           "min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pt-0",
-          "[touch-action:pan-y] [-webkit-overflow-scrolling:touch]",
+          "[-webkit-overflow-scrolling:touch] [touch-action:pan-y]",
           scrollClassName,
         )}
       >

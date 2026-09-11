@@ -828,7 +828,7 @@ export default function SubmitSlip() {
         open={isGuidelineModalOpen}
         onOpenChange={setIsGuidelineModalOpen}
       >
-        <DialogContent className="max-w-2xl rounded-md p-6">
+        <DialogContent className="max-w-2xl p-6">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               University Nurse Sign-off Requirement
@@ -889,7 +889,7 @@ export default function SubmitSlip() {
         open={!!previewData}
         onOpenChange={(open) => !open && setPreviewData(null)}
       >
-        <DialogContent className="max-w-3xl rounded-md p-6">
+        <DialogContent className="max-w-3xl p-6">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               {previewData?.file.name}

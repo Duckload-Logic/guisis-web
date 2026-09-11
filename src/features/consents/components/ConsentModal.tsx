@@ -34,7 +34,7 @@ export default function ConsentModal({
     >
       <DialogContent
         className={cn(
-          "max-w-[500px] rounded-2xl border-border bg-card p-5 sm:p-6",
+          "max-w-[500px] border-border bg-card p-5 sm:p-6",
           "shadow-2xl outline-none",
         )}
         hasCloseButton={false}

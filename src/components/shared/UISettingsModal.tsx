@@ -13,11 +13,13 @@ import { cn } from "@/lib/utils";
 const FONT_SCALE_MIN = 80;
 const FONT_SCALE_MAX = 120;
 const FONT_SCALE_STEP = 10;
+const FONT_STEPS = [80, 90, 100, 110, 120] as const;
 const BASE_FONT_SIZE_PX = 16;
 
 const SPEECH_RATE_MIN = 0.5;
 const SPEECH_RATE_MAX = 2.0;
 const SPEECH_RATE_STEP = 0.1;
+const SPEECH_PRESETS = [0.8, 1.0, 1.2, 1.5] as const;
 
 interface SettingToggleRowProps {
   icon: React.ReactNode;
@@ -38,7 +40,7 @@ const SettingToggleRow: React.FC<SettingToggleRowProps> = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-between rounded-md border border-border",
+      "flex items-center justify-between rounded-xl border border-border",
       "bg-muted/10 p-4 transition-colors hover:bg-muted/20",
     )}
   >
@@ -133,18 +135,6 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
     draftSpeechRate !== speechRate ||
     draftSpeechVoice !== speechVoice;
 
-  const increaseFont = () => {
-    setDraftFontScale((prev) =>
-      Math.min(FONT_SCALE_MAX, prev + FONT_SCALE_STEP),
-    );
-  };
-
-  const decreaseFont = () => {
-    setDraftFontScale((prev) =>
-      Math.max(FONT_SCALE_MIN, prev - FONT_SCALE_STEP),
-    );
-  };
-
   const handleApplySettings = () => {
     setFontScale(draftFontScale);
     setGrayscale(draftGrayscale);
@@ -233,7 +223,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
         className={cn(
           "flex max-h-[90dvh] w-full flex-col overflow-hidden border-t",
           "border-border bg-card p-0 text-card-foreground shadow-2xl",
-          "sm:max-h-[85vh] sm:max-w-lg sm:rounded-md sm:border",
+          "sm:max-h-[85vh] sm:max-w-lg sm:border",
         )}
       >
         {/* Header */}
@@ -305,60 +295,77 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           />
 
           {/* Font Size Section */}
-          <div className="rounded-md border border-border bg-muted/10 p-4">
+          <div className="rounded-xl border border-border bg-muted/10 p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Type
                   size={18}
                   className="text-primary"
                 />
-                <p className="text-sm font-medium text-foreground">Font Size</p>
+                <p className="text-sm font-medium text-foreground">
+                  Font Size
+                </p>
               </div>
               <span className="text-xs font-semibold text-primary">
-                {draftFontScale}%
+                {draftFontScale}% {draftFontScale === 100 ? "(Default)" : ""}
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={decreaseFont}
-                disabled={draftFontScale <= FONT_SCALE_MIN}
-                aria-label="Decrease font size"
-                className="h-8 w-8 p-0 text-base"
-              >
-                −
-              </Button>
+            {/* Segmented Steps */}
+            <div
+              className={cn(
+                "grid grid-cols-5 gap-1.5 rounded-md border",
+                "border-border/60 bg-muted/30 p-1",
+              )}
+            >
+              {FONT_STEPS.map((step) => {
+                const isSelected = draftFontScale === step;
+                const label =
+                  step === 100
+                    ? "Default"
+                    : step < 100
+                      ? "Small"
+                      : "Large";
+                return (
+                  <button
+                    key={step}
+                    type="button"
+                    onClick={() => setDraftFontScale(step)}
+                    className={cn(
+                      "flex flex-col items-center justify-center",
+                      "rounded py-1.5 text-xs font-medium transition-all",
+                      isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    )}
+                  >
+                    <span>{step}%</span>
+                    <span className="text-[10px] opacity-75">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-              <div className="flex-1 px-1">
-                <Slider
-                  value={[draftFontScale]}
-                  min={FONT_SCALE_MIN}
-                  max={FONT_SCALE_MAX}
-                  step={FONT_SCALE_STEP}
-                  onValueChange={([val]) => setDraftFontScale(val)}
-                  aria-label="Font scale slider"
-                />
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={increaseFont}
-                disabled={draftFontScale >= FONT_SCALE_MAX}
-                aria-label="Increase font size"
-                className="h-8 w-8 p-0 text-base"
+            {/* Live Sample Text Preview */}
+            <div
+              className={cn(
+                "mt-3 flex items-center justify-center rounded-md",
+                "border border-border bg-card p-3 text-center",
+              )}
+            >
+              <p
+                style={{
+                  fontSize: `${(draftFontScale / 100) * 14}px`,
+                }}
+                className="font-medium text-foreground transition-all duration-200"
               >
-                +
-              </Button>
+                Aa — The quick brown fox jumps over the lazy dog.
+              </p>
             </div>
           </div>
 
           {/* Reading Speed Section */}
-          <div className="rounded-md border border-border bg-muted/10 p-4">
+          <div className="rounded-xl border border-border bg-muted/10 p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Volume2
@@ -375,9 +382,10 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                   "text-xs font-bold text-primary",
                 )}
               >
-                {draftSpeechRate}x
+                {draftSpeechRate.toFixed(1)}x
               </span>
             </div>
+
             <div className="px-1">
               <Slider
                 value={[draftSpeechRate]}
@@ -387,6 +395,29 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
                 onValueChange={([v]) => setDraftSpeechRate(v)}
                 aria-label="Reading speed slider"
               />
+            </div>
+
+            {/* Quick Speed Preset Chips */}
+            <div className="mt-3 flex items-center justify-between gap-1.5">
+              {SPEECH_PRESETS.map((speed) => {
+                const isActive = Math.abs(draftSpeechRate - speed) < 0.05;
+                return (
+                  <button
+                    key={speed}
+                    type="button"
+                    onClick={() => setDraftSpeechRate(speed)}
+                    className={cn(
+                      "flex-1 rounded border py-1 text-center text-xs",
+                      "font-medium transition-all",
+                      isActive
+                        ? "border-primary bg-primary/10 text-primary font-semibold"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    )}
+                  >
+                    {speed.toFixed(1)}x {speed === 1.0 ? "(Normal)" : ""}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

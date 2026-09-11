@@ -905,7 +905,10 @@ export default function AppointmentDetails() {
         onOpenChange={setIsStartConfirming}
       >
         <AlertDialogContent
-          className="max-w-md rounded-md border border-border bg-card shadow-2xl backdrop-blur-2xl"
+          className={cn(
+            "max-w-md border border-border bg-card shadow-2xl",
+            "backdrop-blur-2xl",
+          )}
         >
           <AlertDialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">

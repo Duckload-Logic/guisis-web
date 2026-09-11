@@ -872,7 +872,7 @@ export default function M2MManagement() {
         >
           <DialogContent
             className={cn(
-              "overflow-hidden rounded-xl border border-glass-border",
+              "overflow-hidden border border-glass-border",
               "bg-background/95 p-0 shadow-md backdrop-blur-2xl",
               "sm:max-w-md",
             )}

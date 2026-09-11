@@ -686,9 +686,7 @@ export default function ReviewSlips() {
         open={showNotFound}
         onOpenChange={setShowNotFound}
       >
-        <AlertDialogContent
-          className="max-w-sm rounded-md border-border shadow-md"
-        >
+        <AlertDialogContent className="max-w-sm border-border shadow-md">
           <AlertDialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
               <AlertCircle className="h-5 w-5" />

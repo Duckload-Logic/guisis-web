@@ -35,7 +35,10 @@ export function CORPreviewDialog({
     >
       <DialogContent
         hasCloseButton={false}
-        className="flex h-[90vh] max-w-5xl flex-col overflow-hidden rounded-[32px] border-none bg-background/95 p-0 shadow-2xl backdrop-blur-md"
+        className={cn(
+          "flex h-[90vh] max-w-5xl flex-col overflow-hidden border-none",
+          "bg-background/95 p-0 shadow-2xl backdrop-blur-md",
+        )}
       >
         <DialogHeader className="shrink-0 border-b bg-card p-6">
           <div className="flex items-center justify-between">

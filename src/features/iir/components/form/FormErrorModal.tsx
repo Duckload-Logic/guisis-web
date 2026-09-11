@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X, AlertCircle, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from "@/components/ui/responsive-modal";
 import { cn } from "@/lib/utils";
 
 export interface FormErrorItem {
@@ -124,8 +130,9 @@ const findElement = (
   if (el) return el;
 
   if (errorMessage) {
-    const errorEls = Array.from(document.querySelectorAll("p, span, div"))
-      .filter((e) => e.textContent?.trim() === errorMessage.trim());
+    const errorEls = Array.from(
+      document.querySelectorAll("p, span, div"),
+    ).filter((e) => e.textContent?.trim() === errorMessage.trim());
     for (const errEl of errorEls) {
       const container = errEl.closest("div.space-y-2, div.grid, td, tr, div");
       if (container) {
@@ -148,7 +155,6 @@ const findElement = (
   return null;
 };
 
-
 interface FormErrorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -164,18 +170,6 @@ export function FormErrorModal({
   totalErrors,
   onNavigateToSection,
 }: FormErrorModalProps) {
-  const [isRendered, setIsRendered] = useState(isOpen);
-
-  useEffect(() => {
-    if (isOpen) setIsRendered(true);
-  }, [isOpen]);
-
-  const handleAnimationEnd = () => {
-    if (!isOpen) setIsRendered(false);
-  };
-
-  if (!isRendered && !isOpen) return null;
-
   const handleDeepLinkClick = (
     fieldPath: string,
     sectionTitle: string,
@@ -211,46 +205,39 @@ export function FormErrorModal({
     }, 250);
   };
 
-  return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-50 flex items-end justify-center p-0",
-        "bg-black/50 backdrop-blur-sm transition-opacity duration-300",
-        "sm:items-center sm:p-4",
-        isOpen ? "opacity-100" : "opacity-0",
-      )}
-      onTransitionEnd={handleAnimationEnd}
+  return (
+    <ResponsiveModal
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
     >
-      <div
-        className={cn(
-          "flex max-h-[90vh] w-full transform flex-col rounded-t-md",
-          "bg-background p-6 shadow-2xl transition-transform",
-          "duration-300 sm:max-w-md sm:rounded-md md:max-w-lg",
-          isOpen
-            ? "translate-y-0"
-            : "translate-y-full sm:translate-y-8 sm:scale-95",
-        )}
+      <ResponsiveModalContent
+        className="flex max-h-[85vh] flex-col p-0 sm:max-w-lg"
       >
-        <div className="mb-2 flex shrink-0 items-start justify-between">
-          <div className="flex items-center gap-3 text-destructive">
-            <AlertCircle className="h-6 w-6" />
-            <h2 className="text-xl font-bold">Action Required</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-md p-1 transition-colors hover:bg-muted"
+        <ResponsiveModalHeader className="border-b px-6 py-4">
+          <ResponsiveModalTitle
+            className={cn(
+              "flex items-center gap-2 text-xl font-bold text-destructive",
+            )}
           >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
+            <AlertCircle className="h-5 w-5" />
+            Action Required
+          </ResponsiveModalTitle>
+          <ResponsiveModalDescription
+            className="text-sm text-muted-foreground"
+          >
+            We found{" "}
+            <span className="font-bold text-foreground">
+              {totalErrors} items
+            </span>{" "}
+            that need your attention before you can submit the form.
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        <p className="mb-6 shrink-0 text-sm text-muted-foreground">
-          We found{" "}
-          <span className="font-bold text-foreground">{totalErrors} items</span>{" "}
-          that need your attention before you can submit the form.
-        </p>
-
-        <div className="custom-scrollbar flex-1 space-y-6 overflow-y-auto pr-2">
+        <div
+          className={cn(
+            "custom-scrollbar flex-1 space-y-6 overflow-y-auto px-6 py-4",
+          )}
+        >
           {Object.entries(groupedErrors).map(([sectionTitle, errors]) => (
             <div
               key={sectionTitle}
@@ -279,17 +266,27 @@ export function FormErrorModal({
                       "group flex w-full items-start gap-3 rounded-lg border",
                       "border-border bg-card p-3 text-left transition-colors",
                       "hover:border-destructive hover:bg-destructive/5",
-                      "focus:outline-none focus:ring-2 focus:ring-destructive/20",
+                      "focus:outline-none focus:ring-2",
+                      "focus:ring-destructive/20",
                     )}
                   >
-                    <div className="mt-0.5 h-4 min-w-[4px] rounded-full bg-destructive" />
-                    <span className="flex-1 pr-2 text-sm leading-tight text-foreground">
+                    <div
+                      className={cn(
+                        "mt-0.5 h-4 min-w-[4px] rounded-full bg-destructive",
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "flex-1 pr-2 text-sm leading-tight text-foreground",
+                      )}
+                    >
                       {error.message}
                     </span>
                     <ChevronRight
                       className={cn(
-                        "mt-0.5 h-4 w-4 text-muted-foreground transition-all",
-                        "group-hover:translate-x-1 group-hover:text-destructive",
+                        "mt-0.5 h-4 w-4 text-muted-foreground",
+                        "transition-all group-hover:translate-x-1",
+                        "group-hover:text-destructive",
                       )}
                     />
                   </button>
@@ -299,16 +296,18 @@ export function FormErrorModal({
           ))}
         </div>
 
-        <div className="mt-6 shrink-0 border-t border-border pt-4">
+        <ResponsiveModalFooter className="border-t border-border px-6 py-4">
           <Button
             onClick={onClose}
-            className="w-full bg-destructive text-white hover:bg-destructive/90"
+            className={cn(
+              "w-full bg-destructive text-white",
+              "hover:bg-destructive/90",
+            )}
           >
-            Got it, I'll fix them
+            Got it, I&apos;ll fix them
           </Button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+        </ResponsiveModalFooter>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

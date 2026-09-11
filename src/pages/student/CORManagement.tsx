@@ -568,7 +568,7 @@ export default function CORManagement() {
       >
         <DialogContent
           className={cn(
-            "max-w-xl rounded-2xl border-border bg-card p-6 shadow-xl",
+            "max-w-xl border-border bg-card p-6 shadow-xl",
           )}
         >
           <DialogHeader>

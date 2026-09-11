@@ -438,7 +438,7 @@ export function ReportModal({
       onOpenChange={(open) => !open && onClose()}
     >
       <DialogContent
-        className="flex max-h-[85vh] max-w-4xl flex-col rounded-md p-6"
+        className="flex max-h-[85vh] max-w-4xl flex-col p-6"
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
