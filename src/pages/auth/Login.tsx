@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   AuthHeader,
   LoginForm,
@@ -28,6 +28,7 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const isFallback = searchParams.get("fallback") === "true";
+  const isSubmittingRef = useRef(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [email, setEmail] = useState("");
@@ -68,13 +69,16 @@ export default function Login() {
 
   const handleNativeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (isLoading || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setError("");
     try {
       await login({ email: username, password });
       navigate("/auth/callback?type=native");
     } catch (err: any) {
       setError(err?.message || "Invalid email or password");
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 

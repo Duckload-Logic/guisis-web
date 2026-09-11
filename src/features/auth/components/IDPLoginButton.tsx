@@ -3,9 +3,10 @@
  * Initiates OAuth 2.0 Authorization Code flow with IDP
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { API_ROUTES } from "@/config/apiRoutes";
 import { IDP_BUTTON_TEXT } from "../types/idp";
+import { Button } from "@/components/ui/button";
 
 /**
  * Props for IDPLoginButton component
@@ -44,12 +45,15 @@ export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
   onClick,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const isRedirectingRef = useRef(false);
 
   /**
    * Handles button click to initiate OAuth flow
    * Fetches authorization URL and redirects to IDP
    */
   const handleLogin = () => {
+    if (disabled || isLoading || isRedirectingRef.current) return;
+    isRedirectingRef.current = true;
     setIsLoading(true);
     if (onClick) onClick();
 
@@ -63,7 +67,7 @@ export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
   };
 
   return (
-    <button
+    <Button
       type="button"
       onClick={handleLogin}
       disabled={disabled || isLoading}
@@ -72,6 +76,6 @@ export const IDPLoginButton: React.FC<IDPLoginButtonProps> = ({
       aria-label={isLoading ? IDP_BUTTON_TEXT.LOADING : IDP_BUTTON_TEXT.LOGIN}
     >
       {isLoading ? IDP_BUTTON_TEXT.LOADING : IDP_BUTTON_TEXT.LOGIN}
-    </button>
+    </Button>
   );
 };
