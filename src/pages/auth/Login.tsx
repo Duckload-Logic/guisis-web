@@ -68,6 +68,7 @@ export default function Login() {
 
   const handleNativeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError("");
     try {
       await login({ email: username, password });
@@ -79,6 +80,7 @@ export default function Login() {
 
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading || isOTPLoading) return;
     setError("");
     setSuccessMessage("");
     if (!email) {
@@ -103,6 +105,7 @@ export default function Login() {
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading || isOTPLoading) return;
     setError("");
     setSuccessMessage("");
     if (!otpCode) {

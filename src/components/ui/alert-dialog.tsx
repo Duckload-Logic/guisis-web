@@ -135,8 +135,7 @@ const AlertDialogAction = React.forwardRef<
         const result = onClick(event);
         const isPromise =
           result &&
-          typeof (result as unknown as Promise<unknown>).then ===
-            "function";
+          typeof (result as unknown as Promise<unknown>).then === "function";
 
         if (isPromise) {
           isPendingRef.current = true;

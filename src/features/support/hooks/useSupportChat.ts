@@ -85,8 +85,7 @@ export function useSupportChat() {
 
   // Poll history messages if viewing history detail and widget is open
   useEffect(() => {
-    if (!isOpen || viewMode !== "history-detail" ||
-        !selectedHistoryTicketId) {
+    if (!isOpen || viewMode !== "history-detail" || !selectedHistoryTicketId) {
       return;
     }
 
@@ -119,8 +118,7 @@ export function useSupportChat() {
         }
       } catch (err: any) {
         console.error("[SupportWidget] {FetchMessages}:", err);
-        if (err?.response?.status === 403 ||
-            err?.response?.status === 401) {
+        if (err?.response?.status === 403 || err?.response?.status === 401) {
           setTicketId(null);
           localStorage.removeItem("guisis_support_ticket_id");
         }
@@ -183,10 +181,7 @@ export function useSupportChat() {
       const ticket = await PostSupportTicket(payload);
       if (ticket && ticket.id) {
         setTicketId(ticket.id);
-        localStorage.setItem(
-          "guisis_support_ticket_id",
-          ticket.id
-        );
+        localStorage.setItem("guisis_support_ticket_id", ticket.id);
         setMessage("");
       }
     } catch (err) {
