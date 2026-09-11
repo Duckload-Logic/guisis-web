@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
@@ -120,8 +120,13 @@ export default function CreateAppointment() {
     }
   };
 
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = () => {
-    if (!isFormValid || !selectedDate || !selectedTime) return;
+    if (!isFormValid || !selectedDate || !selectedTime || isSubmitting || isSubmittingRef.current) {
+      return;
+    }
+    isSubmittingRef.current = true;
 
     const payload: CreateAppointmentRequest = {
       whenDate: toISODateString(selectedDate),
@@ -151,12 +156,16 @@ export default function CreateAppointment() {
         navigate("/student/appointments");
       },
       onError: (error: any) => {
+        isSubmittingRef.current = false;
         if (error.message?.includes("IIR profile")) {
           triggerToast("Please complete your IIR profile first.");
           navigate("/iir-form");
           return;
         }
         triggerToast(error.message || "Failed to book appointment.");
+      },
+      onSettled: () => {
+        isSubmittingRef.current = false;
       },
     });
   };
