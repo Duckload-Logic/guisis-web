@@ -105,6 +105,7 @@ export default function IIRForm() {
   const [localFormData, setLocalFormData] = useState<IIRFormType | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
   const [isTransitioningStep, setIsTransitioningStep] = useState(false);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -593,7 +594,10 @@ export default function IIRForm() {
       triggerToast("Form data is missing. Please try again.");
       return;
     }
-
+    if (isSavingRef.current || isSaving) {
+      return;
+    }
+    isSavingRef.current = true;
     setIsSaving(true);
     persistTwoByTwoPhoto(localFormData);
 
@@ -646,6 +650,7 @@ export default function IIRForm() {
       const errorMessage = getErrorMessage(err);
       triggerToast(errorMessage);
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
