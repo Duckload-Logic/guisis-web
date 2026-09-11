@@ -38,7 +38,7 @@ const SettingToggleRow: React.FC<SettingToggleRowProps> = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-between rounded-xl border border-border",
+      "flex items-center justify-between rounded-md border border-border",
       "bg-muted/10 p-4 transition-colors hover:bg-muted/20",
     )}
   >
@@ -57,7 +57,10 @@ const SettingToggleRow: React.FC<SettingToggleRowProps> = ({
           {statusLabel}
         </span>
       )}
-      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+      />
     </div>
   </div>
 );
@@ -230,7 +233,7 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
         className={cn(
           "flex max-h-[90dvh] w-full flex-col overflow-hidden border-t",
           "border-border bg-card p-0 text-card-foreground shadow-2xl",
-          "sm:max-h-[85vh] sm:max-w-lg sm:rounded-2xl sm:border",
+          "sm:max-h-[85vh] sm:max-w-lg sm:rounded-md sm:border",
         )}
       >
         {/* Header */}
@@ -279,9 +282,15 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           <SettingToggleRow
             icon={
               draftPerformanceMode ? (
-                <Leaf size={18} className="text-emerald-500" />
+                <Leaf
+                  size={18}
+                  className="text-emerald-500"
+                />
               ) : (
-                <Zap size={18} className="text-amber-500" />
+                <Zap
+                  size={18}
+                  className="text-amber-500"
+                />
               )
             }
             title="Graphics Quality"
@@ -292,19 +301,18 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
             }
             checked={draftPerformanceMode}
             onCheckedChange={setDraftPerformanceMode}
-            statusLabel={
-              draftPerformanceMode ? "Performance" : "High Quality"
-            }
+            statusLabel={draftPerformanceMode ? "Performance" : "High Quality"}
           />
 
           {/* Font Size Section */}
-          <div className="rounded-xl border border-border bg-muted/10 p-4">
+          <div className="rounded-md border border-border bg-muted/10 p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Type size={18} className="text-primary" />
-                <p className="text-sm font-medium text-foreground">
-                  Font Size
-                </p>
+                <Type
+                  size={18}
+                  className="text-primary"
+                />
+                <p className="text-sm font-medium text-foreground">Font Size</p>
               </div>
               <span className="text-xs font-semibold text-primary">
                 {draftFontScale}%
@@ -350,10 +358,13 @@ export const UISettingsModal: React.FC<UISettingsModalProps> = ({
           </div>
 
           {/* Reading Speed Section */}
-          <div className="rounded-xl border border-border bg-muted/10 p-4">
+          <div className="rounded-md border border-border bg-muted/10 p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Volume2 size={18} className="text-primary" />
+                <Volume2
+                  size={18}
+                  className="text-primary"
+                />
                 <p className="text-sm font-medium text-foreground">
                   Reading Speed
                 </p>

@@ -223,9 +223,9 @@ export function FormErrorModal({
     >
       <div
         className={cn(
-          "flex max-h-[90vh] w-full transform flex-col rounded-t-2xl",
+          "flex max-h-[90vh] w-full transform flex-col rounded-t-md",
           "bg-background p-6 shadow-2xl transition-transform",
-          "duration-300 sm:max-w-md sm:rounded-xl md:max-w-lg",
+          "duration-300 sm:max-w-md sm:rounded-md md:max-w-lg",
           isOpen
             ? "translate-y-0"
             : "translate-y-full sm:translate-y-8 sm:scale-95",

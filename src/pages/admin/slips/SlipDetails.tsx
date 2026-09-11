@@ -829,7 +829,9 @@ export default function SlipDetails() {
           setIsConfirming(open);
         }}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent
+          className="max-w-md rounded-md border border-border bg-card shadow-2xl backdrop-blur-2xl"
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold">
               {actionType === "approve"
@@ -891,7 +893,9 @@ export default function SlipDetails() {
         open={isVerifyConfirming}
         onOpenChange={setIsVerifyConfirming}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent
+          className="max-w-md rounded-md border border-border bg-card shadow-2xl backdrop-blur-2xl"
+        >
           <AlertDialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
               <ShieldCheck className="h-5 w-5" />

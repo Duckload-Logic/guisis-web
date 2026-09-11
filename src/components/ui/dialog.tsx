@@ -95,7 +95,7 @@ const DialogContent = React.forwardRef<
           className={cn(
             "fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)]",
             "max-w-lg translate-x-[-50%] translate-y-[-50%] sm:w-full",
-            "gap-4 rounded-3xl border bg-background p-6 shadow-xl",
+            "gap-4 rounded-md border bg-background p-6 shadow-xl",
             "data-[state=open]:animate-dialog-content-show",
             "data-[state=closed]:animate-dialog-content-hide",
             "motion-reduce:animate-none",
