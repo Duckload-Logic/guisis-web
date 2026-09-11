@@ -67,7 +67,7 @@ export default function ConsentModal({
         {/* Content Body */}
         <div
           className={cn(
-            "space-y-2.5 text-xs sm:text-sm leading-relaxed",
+            "space-y-2.5 text-xs leading-relaxed sm:text-sm",
             "text-muted-foreground",
           )}
         >
@@ -81,7 +81,7 @@ export default function ConsentModal({
             <a
               className={cn(
                 "font-semibold text-primary underline underline-offset-2",
-                "hover:text-primary/80 transition-colors",
+                "transition-colors hover:text-primary/80",
               )}
               target="_blank"
               rel="noreferrer"
@@ -105,7 +105,7 @@ export default function ConsentModal({
         >
           <label
             htmlFor="terms-agree"
-            className="flex cursor-pointer items-center gap-3 select-none"
+            className="flex cursor-pointer select-none items-center gap-3"
           >
             <input
               id="terms-agree"
@@ -139,12 +139,12 @@ export default function ConsentModal({
                 </svg>
               )}
             </span>
-            <span className="text-xs sm:text-sm font-medium text-foreground">
+            <span className="text-xs font-medium text-foreground sm:text-sm">
               I agree to the{" "}
               <a
                 className={cn(
                   "font-semibold text-primary underline underline-offset-2",
-                  "hover:text-primary/80 transition-colors",
+                  "transition-colors hover:text-primary/80",
                 )}
                 target="_blank"
                 rel="noreferrer"
@@ -166,7 +166,7 @@ export default function ConsentModal({
               onClick={onCancel}
               disabled={loading}
               className={cn(
-                "h-10 rounded-xl px-4 text-xs sm:text-sm font-semibold",
+                "h-10 rounded-xl px-4 text-xs font-semibold sm:text-sm",
               )}
             >
               Sign out
@@ -177,10 +177,10 @@ export default function ConsentModal({
             disabled={!agreed || loading}
             onClick={onAccept}
             className={cn(
-              "h-10 rounded-xl px-5 text-xs sm:text-sm font-semibold",
+              "h-10 rounded-xl px-5 text-xs font-semibold sm:text-sm",
               "transition-all",
               !agreed || loading
-                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                ? "cursor-not-allowed bg-muted text-muted-foreground"
                 : "bg-primary text-primary-foreground hover:bg-primary/90",
             )}
           >

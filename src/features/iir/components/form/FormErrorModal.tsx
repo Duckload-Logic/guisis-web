@@ -222,9 +222,7 @@ export function FormErrorModal({
             <AlertCircle className="h-5 w-5" />
             Action Required
           </ResponsiveModalTitle>
-          <ResponsiveModalDescription
-            className="text-sm text-muted-foreground"
-          >
+          <ResponsiveModalDescription className="text-sm text-muted-foreground">
             We found{" "}
             <span className="font-bold text-foreground">
               {totalErrors} items

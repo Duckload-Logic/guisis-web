@@ -322,16 +322,14 @@ export default function CORManagement() {
     <div className="mx-auto w-full px-3 pb-24 sm:px-6 md:px-8">
       {!corUrl ? (
         /* State 1: Direct In-Page Upload Dropzone (No Indirection) */
-        <div className="mx-auto max-w-3xl space-y-6 animate-fade-in-up">
+        <div className="animate-fade-in-up mx-auto max-w-3xl space-y-6">
           <Card
             className={cn(
               "overflow-hidden rounded-2xl border border-border",
               "bg-card shadow-sm",
             )}
           >
-            <CardHeader
-              className="border-b border-border/40 bg-muted/20 p-5 sm:p-6"
-            >
+            <CardHeader className="border-b border-border/40 bg-muted/20 p-5 sm:p-6">
               <div className="flex items-center gap-4">
                 <div
                   className={cn(
@@ -505,9 +503,7 @@ export default function CORManagement() {
                 "bg-card shadow-sm",
               )}
             >
-              <CardHeader
-                className="border-b border-border/40 bg-muted/20 px-5 py-3.5"
-              >
+              <CardHeader className="border-b border-border/40 bg-muted/20 px-5 py-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
