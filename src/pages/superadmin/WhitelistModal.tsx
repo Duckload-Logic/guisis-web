@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import Checkbox from "@/components/form/Checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface WhitelistModalProps {
@@ -38,6 +38,7 @@ export function WhitelistModal({
   initialEmail,
   initialRoleIds,
 }: WhitelistModalProps) {
+  const isSubmittingRef = useRef(false);
   const [email, setEmail] = useState("");
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
 
@@ -60,8 +61,20 @@ export function WhitelistModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || selectedRoles.length === 0 || isProcessing) return;
-    await onWhitelist(email, selectedRoles);
+    if (
+      !email ||
+      selectedRoles.length === 0 ||
+      isProcessing ||
+      isSubmittingRef.current
+    ) {
+      return;
+    }
+    isSubmittingRef.current = true;
+    try {
+      await onWhitelist(email, selectedRoles);
+    } finally {
+      isSubmittingRef.current = false;
+    }
   };
 
   return (

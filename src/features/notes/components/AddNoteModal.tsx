@@ -2,7 +2,7 @@
  * Modal for adding a new significant note
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -37,6 +37,7 @@ export default function AddNoteModal({
   appointmentId,
   admissionSlipId,
 }: AddNoteModalProps) {
+  const isSubmittingRef = useRef(false);
   const {
     handleSubmit,
     control,
@@ -65,9 +66,14 @@ export default function AddNoteModal({
   }, [open, appointmentId, admissionSlipId, reset]);
 
   const handleFormSubmit = async (data: SignificantNoteFormData) => {
-    if (isSubmitting) return;
-    await onSubmit(data);
-    reset();
+    if (isSubmitting || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    try {
+      await onSubmit(data);
+      reset();
+    } finally {
+      isSubmittingRef.current = false;
+    }
   };
 
   const handleClose = () => {

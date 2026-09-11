@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import Checkbox from "@/components/form/Checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UserAccount } from "@/features/system-admin/types";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,7 @@ export function RoleManagementModal({
   onUpdate,
   isUpdating,
 }: RoleManagementModalProps) {
+  const isSubmittingRef = useRef(false);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
   const [reason, setReason] = useState("");
   const [referenceId, setReferenceId] = useState("");
@@ -63,8 +64,13 @@ export function RoleManagementModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || isUpdating) return;
-    await onUpdate(selectedRoles, reason, referenceId);
+    if (!user || isUpdating || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    try {
+      await onUpdate(selectedRoles, reason, referenceId);
+    } finally {
+      isSubmittingRef.current = false;
+    }
     // onClose is handled by the caller or after success
   };
 
