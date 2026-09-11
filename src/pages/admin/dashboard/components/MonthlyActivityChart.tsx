@@ -48,9 +48,7 @@ export function MonthlyActivityChart({
       )}
     >
       <CardHeader
-        className={cn(
-          "border-b border-glass-border bg-muted/20 px-5 py-3.5",
-        )}
+        className={cn("border-b border-glass-border bg-muted/20 px-5 py-3.5")}
       >
         <CardTitle className="text-sm font-bold text-foreground">
           Monthly Activity Trend

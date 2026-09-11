@@ -2,19 +2,11 @@ import { useMemo, useId } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import {
-  Calendar,
-  Users,
-  FileText,
-  Sparkles,
-  Ticket,
-} from "lucide-react";
+import { Calendar, Users, FileText, Sparkles, Ticket } from "lucide-react";
 
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { useAdminDashboard } from "@/features/analytics/hooks";
-import {
-  GetAcademicSettings,
-} from "@/features/student-core/services/academicSettingsService";
+import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
 import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
@@ -23,13 +15,9 @@ import { toISODateString } from "@/utils";
 import { AcademicAlert } from "./dashboard/components/AcademicAlert";
 import { DailyTipBanner } from "./dashboard/components/DailyTipBanner";
 import { DashboardKpiGrid } from "./dashboard/components/DashboardKpiGrid";
-import {
-  TodayAppointmentsCard,
-} from "./dashboard/components/TodayAppointmentsCard";
+import { TodayAppointmentsCard } from "./dashboard/components/TodayAppointmentsCard";
 import { SlipsSummaryCard } from "./dashboard/components/SlipsSummaryCard";
-import {
-  MonthlyActivityChart,
-} from "./dashboard/components/MonthlyActivityChart";
+import { MonthlyActivityChart } from "./dashboard/components/MonthlyActivityChart";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -178,7 +166,10 @@ export default function Dashboard() {
 
       <DailyTipBanner />
 
-      <DashboardKpiGrid isLoading={isAnalyticsLoading} kpis={kpis} />
+      <DashboardKpiGrid
+        isLoading={isAnalyticsLoading}
+        kpis={kpis}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <TodayAppointmentsCard

@@ -1,9 +1,4 @@
-import {
-  Calendar,
-  Clock,
-  ChevronRight,
-  ArrowUpRight,
-} from "lucide-react";
+import { Calendar, Clock, ChevronRight, ArrowUpRight } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -149,8 +144,8 @@ export function TodayAppointmentsCard({
               No appointments scheduled for today
             </h4>
             <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-              Your counseling agenda is clear today. View the master
-              calendar to review upcoming dates or manage bookings.
+              Your counseling agenda is clear today. View the master calendar to
+              review upcoming dates or manage bookings.
             </p>
             <Button
               variant="outline"

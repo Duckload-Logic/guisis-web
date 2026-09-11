@@ -39,9 +39,9 @@ export function AcademicAlert({
             Academic Year Out of Date
           </h4>
           <p className="mt-0.5 text-xs leading-relaxed text-foreground/80">
-            The current active term ({currentYearStart}&ndash;{currentYearEnd})
-            {" "}needs review. Update the school year configuration to maintain
-            {" "}valid records.
+            The current active term ({currentYearStart}&ndash;{currentYearEnd}){" "}
+            needs review. Update the school year configuration to maintain valid
+            records.
           </p>
         </div>
       </div>
