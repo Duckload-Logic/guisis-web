@@ -123,7 +123,13 @@ export default function CreateAppointment() {
   const isSubmittingRef = useRef(false);
 
   const handleSubmit = () => {
-    if (!isFormValid || !selectedDate || !selectedTime || isSubmitting || isSubmittingRef.current) {
+    if (
+      !isFormValid ||
+      !selectedDate ||
+      !selectedTime ||
+      isSubmitting ||
+      isSubmittingRef.current
+    ) {
       return;
     }
     isSubmittingRef.current = true;
@@ -336,9 +342,7 @@ export default function CreateAppointment() {
               onClick={() => setShowBackupSchedule(!showBackupSchedule)}
             >
               <div className="flex items-center justify-between gap-2">
-                <div
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-                >
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                   <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium text-foreground">
                     Alternative Preferred Schedules (Optional — Up to 3)
@@ -354,13 +358,9 @@ export default function CreateAppointment() {
                   </Badge>
                 </div>
                 {showBackupSchedule ? (
-                  <ChevronUp
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
+                  <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                 ) : (
-                  <ChevronDown
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                 )}
               </div>
             </CardHeader>

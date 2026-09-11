@@ -59,15 +59,76 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  debounceMs?: number;
 }
 
+const DEFAULT_DEBOUNCE_MS = 500;
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      debounceMs = DEFAULT_DEBOUNCE_MS,
+      onClick,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
+    const lastClickRef = React.useRef<number>(0);
+    const isPendingRef = React.useRef<boolean>(false);
     const Comp = asChild ? Slot : "button";
+
+    const handleClick = React.useCallback(
+      (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (isPendingRef.current) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
+        if (debounceMs > 0) {
+          const now = Date.now();
+          if (now - lastClickRef.current < debounceMs) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          lastClickRef.current = now;
+        }
+
+        if (!onClick) return;
+
+        try {
+          const result = onClick(event);
+          const isPromise =
+            result &&
+            typeof (result as unknown as Promise<unknown>).then ===
+              "function";
+
+          if (isPromise) {
+            isPendingRef.current = true;
+            (result as unknown as Promise<unknown>).finally(() => {
+              isPendingRef.current = false;
+            });
+          }
+        } catch (err) {
+          isPendingRef.current = false;
+          throw err;
+        }
+      },
+      [onClick, debounceMs],
+    );
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled}
+        onClick={handleClick}
         {...props}
       />
     );
