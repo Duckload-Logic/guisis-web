@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +19,33 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
+const MOBILE_MODAL_BREAKPOINT = 768;
+
+function useIsMobileModal() {
+  const [isMobile, setIsMobile] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < MOBILE_MODAL_BREAKPOINT;
+  });
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mql = window.matchMedia(
+      `(max-width: ${MOBILE_MODAL_BREAKPOINT - 1}px)`,
+    );
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_MODAL_BREAKPOINT);
+    };
+
+    mql.addEventListener("change", onChange);
+    setIsMobile(window.innerWidth < MOBILE_MODAL_BREAKPOINT);
+
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isMobile;
+}
+
 interface BaseProps {
   children: React.ReactNode;
 }
@@ -32,7 +58,7 @@ export function ResponsiveModal({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return (
@@ -59,7 +85,7 @@ export function ResponsiveModalTrigger({
   children,
   asChild,
 }: BaseProps & { asChild?: boolean }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return <DrawerTrigger asChild={asChild}>{children}</DrawerTrigger>;
@@ -73,7 +99,7 @@ export function ResponsiveModalContent({
   className,
   hasCloseButton = true,
 }: BaseProps & { className?: string; hasCloseButton?: boolean }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return (
@@ -97,7 +123,7 @@ export function ResponsiveModalHeader({
   children,
   className,
 }: BaseProps & { className?: string }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return <DrawerHeader className={className}>{children}</DrawerHeader>;
@@ -110,7 +136,7 @@ export function ResponsiveModalTitle({
   children,
   className,
 }: BaseProps & { className?: string }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return <DrawerTitle className={className}>{children}</DrawerTitle>;
@@ -123,7 +149,7 @@ export function ResponsiveModalDescription({
   children,
   className,
 }: BaseProps & { className?: string }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return (
@@ -140,7 +166,7 @@ export function ResponsiveModalFooter({
   children,
   className,
 }: BaseProps & { className?: string }) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileModal();
 
   if (isMobile) {
     return <DrawerFooter className={className}>{children}</DrawerFooter>;
