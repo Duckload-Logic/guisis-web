@@ -104,14 +104,63 @@ AlertDialogDescription.displayName =
 
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
-  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    className={cn(buttonVariants(), className)}
-    {...props}
-  />
-));
+  React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+    debounceMs?: number;
+  }
+>(({ className, debounceMs = 600, onClick, ...props }, ref) => {
+  const lastClickRef = React.useRef<number>(0);
+  const isPendingRef = React.useRef<boolean>(false);
+
+  const handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (isPendingRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      if (debounceMs > 0) {
+        const now = Date.now();
+        if (now - lastClickRef.current < debounceMs) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+        lastClickRef.current = now;
+      }
+
+      if (!onClick) return;
+
+      try {
+        const result = onClick(event);
+        const isPromise =
+          result &&
+          typeof (result as unknown as Promise<unknown>).then ===
+            "function";
+
+        if (isPromise) {
+          isPendingRef.current = true;
+          (result as unknown as Promise<unknown>).finally(() => {
+            isPendingRef.current = false;
+          });
+        }
+      } catch (err) {
+        isPendingRef.current = false;
+        throw err;
+      }
+    },
+    [onClick, debounceMs],
+  );
+
+  return (
+    <AlertDialogPrimitive.Action
+      ref={ref}
+      className={cn(buttonVariants(), className)}
+      onClick={handleClick}
+      {...props}
+    />
+  );
+});
 AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName;
 
 const AlertDialogCancel = React.forwardRef<

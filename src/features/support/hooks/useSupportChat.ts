@@ -198,10 +198,11 @@ export function useSupportChat() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !ticketId) return;
+    if (!message.trim() || !ticketId || isSubmitting) return;
 
     const textToSend = message;
     setMessage("");
+    setIsSubmitting(true);
 
     try {
       await PostSupportTicketMessage(ticketId, {
@@ -216,6 +217,8 @@ export function useSupportChat() {
       console.error("[SupportWidget] {SendMessage}:", err);
       // Put message back in input if it failed
       setMessage(textToSend);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
