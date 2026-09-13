@@ -92,6 +92,38 @@ export function getRolePath(roleName?: string) {
   return "student";
 }
 
+export function extractTargetId(notification: NotificationEntry): string {
+  const direct =
+    notification.targetId ||
+    (notification as { target_id?: string }).target_id ||
+    (notification as { targetID?: string }).targetID;
+
+  if (typeof direct === "string" && direct.trim() !== "") {
+    return direct.trim();
+  }
+
+  const text = `${notification.title || ""} ${notification.message || ""}`;
+
+  const uuidMatch = text.match(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+  );
+  if (uuidMatch) {
+    return uuidMatch[0];
+  }
+
+  const codeMatch = text.match(/\b(SLIP-[A-Z0-9]+)\b/i);
+  if (codeMatch) {
+    return codeMatch[1];
+  }
+
+  const hashMatch = text.match(/#([a-zA-Z0-9_-]+)/);
+  if (hashMatch) {
+    return hashMatch[1];
+  }
+
+  return "";
+}
+
 export function getNotificationTargetUrl(
   notification: NotificationEntry,
   roleName?: string,
@@ -100,34 +132,60 @@ export function getNotificationTargetUrl(
   const notificationType = (notification.type || "").toLowerCase();
   const targetType = (notification.targetType || "").toLowerCase();
   const title = (notification.title || "").toLowerCase();
-  const adminLikeRole = rolePath === "admin";
+  const targetId = extractTargetId(notification);
 
   if (
     notificationType.includes("support") ||
     targetType === "supportticket" ||
     title.includes("support")
   ) {
-    const tid = notification.targetId || "";
     if (rolePath === "student") {
-      return `/student?openSupport=true&ticketId=${tid}`;
+      return targetId
+        ? `/student?openSupport=true&ticketId=${targetId}`
+        : "/student?openSupport=true";
     }
-    return `/${rolePath}/support?ticketId=${tid}`;
+    return targetId
+      ? `/${rolePath}/support?ticketId=${targetId}`
+      : `/${rolePath}/support`;
   }
 
-  if (notificationType.includes("appointment")) {
-    return adminLikeRole && notification.targetId
-      ? `/admin/appointments/${notification.targetId}`
-      : `/${rolePath}/appointments`;
+  const isAppointment =
+    notificationType.includes("appointment") ||
+    targetType === "appointment" ||
+    title.includes("appointment");
+
+  if (isAppointment) {
+    if (targetId && (rolePath === "admin" || rolePath === "student")) {
+      return `/${rolePath}/appointments/${targetId}`;
+    }
+    return `/${rolePath}/appointments`;
   }
 
-  if (notificationType.includes("slip")) {
-    return adminLikeRole && notification.targetId
-      ? `/admin/slips/${notification.targetId}`
-      : `/${rolePath}/slips`;
+  const isSlip =
+    notificationType.includes("slip") ||
+    targetType === "slip" ||
+    title.includes("slip");
+
+  if (isSlip) {
+    if (
+      targetId &&
+      (rolePath === "admin" ||
+        rolePath === "assistant" ||
+        rolePath === "student")
+    ) {
+      return `/${rolePath}/slips/${targetId}`;
+    }
+    return `/${rolePath}/slips`;
   }
 
-  if (notificationType.includes("user") && adminLikeRole && notification.targetId) {
-    return `/admin/student-records/${notification.targetId}`;
+  const isStudentRecord =
+    notificationType.includes("user") ||
+    notificationType.includes("student") ||
+    targetType === "student" ||
+    targetType === "user";
+
+  if (isStudentRecord && rolePath === "admin" && targetId) {
+    return `/admin/student-records/${targetId}`;
   }
 
   if (notificationType.includes("system") || title.includes("m2m")) {

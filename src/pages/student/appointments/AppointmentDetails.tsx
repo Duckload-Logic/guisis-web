@@ -4,6 +4,7 @@ import {
   useAppointment,
   useCancelAppointment,
 } from "@/features/appointments/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,8 @@ export default function AppointmentDetails() {
   const navigate = useNavigate();
   const { triggerToast } = useToast();
 
+  useAutoMarkNotificationRead(id);
+
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useCancelAppointment();
@@ -185,9 +188,7 @@ export default function AppointmentDetails() {
   if (isLoading) {
     return (
       <div
-        className={cn(
-          "mx-auto flex w-full max-w-7xl flex-col space-y-6 pb-12",
-        )}
+        className={cn("mx-auto flex w-full max-w-7xl flex-col space-y-6 pb-12")}
       >
         {/* Hero Header Skeleton */}
         <div

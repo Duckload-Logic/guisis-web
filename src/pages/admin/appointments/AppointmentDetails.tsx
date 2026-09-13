@@ -35,6 +35,7 @@ import {
   useUpdateAppointment,
   useStartAppointment,
 } from "@/features/appointments/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import {
   format12HourTime,
@@ -185,6 +186,9 @@ function AppointmentDetailsSkeleton() {
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  useAutoMarkNotificationRead(id);
+
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { data: appointmentStatuses } = useStatuses();
   const { mutateAsync: updateAppointment } = useUpdateAppointment();
