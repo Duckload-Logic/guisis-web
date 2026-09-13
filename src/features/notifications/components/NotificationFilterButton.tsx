@@ -7,12 +7,14 @@ interface NotificationFilterButtonProps {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
+  className?: string;
 }
 
 export function NotificationFilterButton({
   active,
   onClick,
   children,
+  className,
 }: NotificationFilterButtonProps) {
   return (
     <Button
@@ -20,10 +22,12 @@ export function NotificationFilterButton({
       variant="ghost"
       onClick={onClick}
       className={cn(
-        "relative h-9 min-h-9 rounded-xl px-3 font-medium shadow-none",
+        "relative h-7 flex-1 rounded-md px-3 text-xs font-medium",
+        "transition-all",
         active
-          ? "bg-primary/10 text-primary shadow-md"
-          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+          ? "bg-background font-semibold text-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-background/50 hover:text-foreground",
+        className,
       )}
     >
       {children}
