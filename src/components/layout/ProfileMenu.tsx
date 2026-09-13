@@ -106,9 +106,10 @@ export default function ProfileMenu({
           <div
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "animate-in fade-in zoom-in-95 absolute right-0 isolate",
-              "z-[9999] mt-2 w-72 overflow-hidden rounded-xl border",
-              "border-border bg-card text-card-foreground shadow-xl",
+              "absolute right-0 top-full isolate z-[9999] mt-2 w-72",
+              "overflow-hidden rounded-xl border border-border bg-card",
+              "animate-popover-show text-card-foreground shadow-xl",
+              "origin-top-right",
             )}
           >
             <button

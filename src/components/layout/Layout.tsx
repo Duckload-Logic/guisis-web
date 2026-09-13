@@ -1,5 +1,4 @@
 import Header from "@/components/layout/Header";
-import NotificationModal from "@/features/notifications/components/NotificationModal";
 
 import Toast from "@/components/ui/Toast";
 import { NAV_CONFIG } from "@/config/navigation";
@@ -351,22 +350,15 @@ export default function Layout({
           }`}
         >
           {showHeader && (
-            <>
-              <Header
-                user={user}
-                role={currentRole || ""}
-                handleLogout={handleLogout}
-                getRoleLabel={getRoleLabel}
-                showNotifications={showNotifications}
-                setShowNotifications={setShowNotifications}
-                isLoggedIn={isLoggedIn}
-              />
-
-              <NotificationModal
-                showNotifications={showNotifications}
-                setShowNotifications={setShowNotifications}
-              />
-            </>
+            <Header
+              user={user}
+              role={currentRole || ""}
+              handleLogout={handleLogout}
+              getRoleLabel={getRoleLabel}
+              showNotifications={showNotifications}
+              setShowNotifications={setShowNotifications}
+              isLoggedIn={isLoggedIn}
+            />
           )}
 
           <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col-reverse xl:flex-row">
@@ -415,9 +407,7 @@ export default function Layout({
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <AlertTriangle
-                    className="h-5 w-5 shrink-0 text-warning-foreground"
-                  />
+                        <AlertTriangle className="h-5 w-5 shrink-0 text-warning-foreground" />
                         <div className="text-sm font-medium">
                           You are currently using an expedited profile. Please
                           complete your Individual Inventory Record (IIR) to

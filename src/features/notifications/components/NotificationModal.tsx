@@ -49,11 +49,10 @@ export default function NotificationModal({
       role="dialog"
       aria-label="Notifications dropdown"
       className={cn(
-        "fixed right-3 top-[4.25rem] z-50 hidden w-[calc(100vw-1.5rem)]",
+        "absolute right-0 top-full z-[9999] mt-2 flex w-[calc(100vw-2rem)]",
         "max-w-[28rem] flex-col overflow-hidden rounded-xl border",
-        "border-border bg-card text-card-foreground shadow-md outline-none",
-        "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200",
-        "sm:top-[5.25rem] md:right-24 md:flex lg:right-28",
+        "border-border bg-card text-card-foreground shadow-xl outline-none",
+        "origin-top-right animate-popover-show sm:w-[26rem]",
       )}
     >
       <div
@@ -168,7 +167,10 @@ export default function NotificationModal({
             "hover:bg-primary/10 hover:text-primary",
           )}
         >
-          <Link to={`/${rolePath}/notifications`} onClick={closeNotifications}>
+          <Link
+            to={`/${rolePath}/notifications`}
+            onClick={closeNotifications}
+          >
             View All
           </Link>
         </Button>
