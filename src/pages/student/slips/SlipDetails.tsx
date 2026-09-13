@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { useGetSlipById, useGetSlipAttachments } from "@/features/slips/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,8 @@ import { formatDate } from "@/utils";
 export default function SlipDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  useAutoMarkNotificationRead(id);
 
   const { data: slip, isLoading, isError } = useGetSlipById(id || "");
   const { data: attachments = [] } = useGetSlipAttachments(id || "");
@@ -98,9 +101,7 @@ export default function SlipDetails() {
   if (isLoading) {
     return (
       <div
-        className={cn(
-          "mx-auto flex w-full max-w-7xl flex-col space-y-6 pb-12",
-        )}
+        className={cn("mx-auto flex w-full max-w-7xl flex-col space-y-6 pb-12")}
       >
         {/* Hero Header Skeleton */}
         <div
@@ -291,9 +292,7 @@ export default function SlipDetails() {
                       "border-border/60 bg-muted/20 p-3.5",
                     )}
                   >
-                    <Calendar
-                      className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-                    />
+                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div>
                       <p
                         className={cn(

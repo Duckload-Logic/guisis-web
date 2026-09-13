@@ -39,6 +39,7 @@ import {
   useClaimTicket,
   useStartSlip,
 } from "@/features/slips/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { AttachmentsGrid } from "@/features/slips/components/AttachmentsGrid";
 import { usePageMetadata, useToast } from "@/context";
@@ -54,11 +55,7 @@ import type { SignificantNoteFormData } from "@/features/notes/validation/noteSc
 
 type ActionType = "approve" | "reject" | "revision" | null;
 
-function SlipDetailsSkeleton({
-  slipsBasePath,
-}: {
-  slipsBasePath: string;
-}) {
+function SlipDetailsSkeleton({ slipsBasePath }: { slipsBasePath: string }) {
   const navigate = useNavigate();
 
   return (
@@ -148,6 +145,8 @@ export default function SlipDetails() {
   const location = useLocation();
   const isAssistant = location.pathname.startsWith("/assistant");
   const slipsBasePath = isAssistant ? "/assistant/slips" : "/admin/slips";
+
+  useAutoMarkNotificationRead(id);
 
   const { data: slip, isLoading, isError, refetch } = useGetSlipById(id || "");
   const { data: attachments } = useGetSlipAttachments(id || "");
@@ -829,7 +828,12 @@ export default function SlipDetails() {
           setIsConfirming(open);
         }}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent
+          className={cn(
+            "max-w-md border border-border bg-card shadow-2xl",
+            "backdrop-blur-2xl",
+          )}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold">
               {actionType === "approve"
@@ -891,7 +895,12 @@ export default function SlipDetails() {
         open={isVerifyConfirming}
         onOpenChange={setIsVerifyConfirming}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent
+          className={cn(
+            "max-w-md border border-border bg-card shadow-2xl",
+            "backdrop-blur-2xl",
+          )}
+        >
           <AlertDialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
               <ShieldCheck className="h-5 w-5" />

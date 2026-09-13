@@ -248,54 +248,31 @@ export default function Header({
           setDarkMode={setDarkMode}
         />
 
-        {!isLoggedIn ? (
-          <>
-            <Button
-              size="sm"
-              className={cn(
-                "hidden font-semibold shadow-sm transition-transform",
-                "gap-1.5 hover:-translate-y-0.5 sm:inline-flex",
-              )}
-              onClick={handleLogin}
-            >
-              Login <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
+        <Button
+          size="sm"
+          className={cn(
+            "hidden font-semibold shadow-sm transition-transform",
+            "gap-1.5 hover:-translate-y-0.5 sm:inline-flex",
+          )}
+          onClick={handleLogin}
+        >
+          Login <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
 
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={cn(
-                "rounded-lg p-2 text-foreground hover:bg-muted xl:hidden",
-                "transition-colors",
-              )}
-              aria-label="Toggle Menu"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </>
-        ) : (
-          <>
-            <NotificationBell
-              showNotifications={showNotifications}
-              setShowNotifications={setShowNotifications}
-            />
-
-            <div className="hidden xl:block">
-              <ProfileMenu
-                firstName={user?.firstName}
-                middleName={user?.middleName}
-                lastName={user?.lastName}
-                roleLabel={getRoleLabel()}
-                role={role}
-                profilePath={`/${role}/profile`}
-                onLogout={handleLogout}
-              />
-            </div>
-          </>
-        )}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className={cn(
+            "rounded-lg p-2 text-foreground hover:bg-muted xl:hidden",
+            "transition-colors",
+          )}
+          aria-label="Toggle Menu"
+        >
+          {mobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </button>
       </div>
 
       {/* Mobile Menu Dropdown */}

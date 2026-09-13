@@ -90,6 +90,7 @@ export default function SignificantNotes({ iirId }: SignificantNotesProps) {
   );
 
   const handleSubmit = async (data: SignificantNoteFormData) => {
+    if (createNoteMutation.isPending) return;
     await createNoteMutation.mutateAsync(data);
   };
 
@@ -134,7 +135,7 @@ export default function SignificantNotes({ iirId }: SignificantNotesProps) {
               <div
                 className={cn(
                   "flex items-center justify-between",
-                  "border-b border-border/50 pb-2 mb-3",
+                  "mb-3 border-b border-border/50 pb-2",
                 )}
               >
                 <span

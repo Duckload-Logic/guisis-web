@@ -2,6 +2,8 @@ export interface NotificationEntry {
   id: string;
   receiverId?: string | null;
   actorId?: string | null;
+  actorName?: string | null;
+  actorProfilePicture?: string | null;
   targetId?: string | null;
   targetType?: string | null;
   title: string;
@@ -27,4 +29,3 @@ export interface ListNotificationsResponse {
   unreadCount: number;
   untouchedCount: number;
 }
-

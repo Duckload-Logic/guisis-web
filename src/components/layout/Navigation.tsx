@@ -28,13 +28,16 @@ const MAX_PRIMARY_MOBILE_ITEMS = 4;
  * Desktop sidebar sizing.
  * 24px keeps a small breathing room while keeping the sidebar visually connected.
  */
-const DESKTOP_LEFT_GUTTER = 12;
-const EXPANDED_SIDEBAR_WIDTH = 256;
-const COLLAPSED_SIDEBAR_WIDTH = 72;
-const EDGE_CONTROL_SPACE = 20;
+const DESKTOP_LEFT_GUTTER = "0.75rem";
+const EXPANDED_SIDEBAR_WIDTH = "16rem";
+const COLLAPSED_SIDEBAR_WIDTH = "4.5rem";
+const EDGE_CONTROL_SPACE = "1.25rem";
 
-const EXPANDED_BRANDING_HEIGHT = 214;
-const COLLAPSED_BRANDING_HEIGHT = 96;
+const EXPANDED_BRANDING_HEIGHT = "13.375rem";
+const COLLAPSED_BRANDING_HEIGHT = "6rem";
+
+const EXPANDED_FOOTPRINT = "18rem";
+const COLLAPSED_FOOTPRINT = "6.5rem";
 
 /*
  * Animation timing.
@@ -84,7 +87,7 @@ function NavItem({
         <div
           className={cn(
             "flex h-7 w-7 items-center justify-center rounded-lg",
-            "transition-colors",
+            "transition-colors [&>svg]:h-5 [&>svg]:w-5",
             active && "bg-primary/10",
           )}
         >
@@ -116,7 +119,12 @@ function NavItem({
         )}
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-6 w-6 items-center justify-center">
+          <div
+            className={cn(
+              "flex h-6 w-6 items-center justify-center",
+              "[&>svg]:h-5 [&>svg]:w-5",
+            )}
+          >
             {item.icon}
           </div>
           <span className="text-sm font-medium">{item.label}</span>
@@ -137,26 +145,34 @@ function NavItem({
       onClick={onClick}
       title={!isExpanded ? item.label : undefined}
       className={cn(
-        "sidebar-icon-tilt group flex cursor-pointer items-center gap-3",
-        "rounded-xl px-3 py-3",
+        "sidebar-icon-tilt group flex cursor-pointer items-center",
+        isExpanded ? "justify-start gap-3 px-3 py-3" : "justify-center p-3",
+        "rounded-xl",
         "transition-[background-color,color,box-shadow] duration-200 ease-out",
         active
           ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:shadow-sm",
+          : "text-muted-foreground hover:bg-muted/60"
+            + " hover:text-foreground hover:shadow-sm",
       )}
     >
-      <div className="flex w-6 shrink-0 items-center justify-center">
+      <div
+        className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center",
+          "[&>svg]:h-5 [&>svg]:w-5 [&>svg]:shrink-0",
+          "[&>svg]:transition-transform",
+        )}
+      >
         {item.icon}
       </div>
 
       <span
         className="min-w-0 overflow-hidden whitespace-nowrap"
         style={{
-          maxWidth: showExpandedContent ? 190 : 0,
+          maxWidth: showExpandedContent ? "12rem" : "0rem",
           opacity: showExpandedContent ? 1 : 0,
           transform: showExpandedContent
             ? "translate3d(0, 0, 0)"
-            : "translate3d(-7px, 0, 0)",
+            : "translate3d(-0.4375rem, 0, 0)",
           transition: showExpandedContent
             ? [
                 `max-width 300ms ${CONTENT_EASING}`,
@@ -443,8 +459,9 @@ export default function Navigation({
     ? EXPANDED_BRANDING_HEIGHT
     : COLLAPSED_BRANDING_HEIGHT;
 
-  const navigationFootprint =
-    DESKTOP_LEFT_GUTTER + sidebarWidth + EDGE_CONTROL_SPACE;
+  const navigationFootprint = isExpanded
+    ? EXPANDED_FOOTPRINT
+    : COLLAPSED_FOOTPRINT;
 
   return (
     <div
@@ -455,7 +472,7 @@ export default function Navigation({
         willChange: "width",
       }}
     >
-      {/* 12px left gutter: small breathing room while staying visually connected. */}
+      {/* 0.75rem left gutter: small breathing room while staying connected. */}
       <div
         className="relative z-40 h-[calc(100%-1.5rem)]"
         style={{
@@ -490,8 +507,8 @@ export default function Navigation({
                 alt="Polytechnic University of the Philippines – Taguig logo"
                 className="shrink-0 rounded-full object-contain"
                 style={{
-                  width: isExpanded ? 78 : 40,
-                  height: isExpanded ? 78 : 40,
+                  width: isExpanded ? "4.875rem" : "2.5rem",
+                  height: isExpanded ? "4.875rem" : "2.5rem",
                   transform: isExpanded
                     ? "translate3d(0, -3px, 0)"
                     : "translate3d(0, 0, 0)",
@@ -507,12 +524,12 @@ export default function Navigation({
               <div
                 className="w-full overflow-hidden"
                 style={{
-                  maxHeight: showExpandedContent ? 96 : 0,
-                  marginTop: showExpandedContent ? 12 : 0,
+                  maxHeight: showExpandedContent ? "6rem" : "0rem",
+                  marginTop: showExpandedContent ? "0.75rem" : "0rem",
                   opacity: showExpandedContent ? 1 : 0,
                   transform: showExpandedContent
                     ? "translate3d(0, 0, 0)"
-                    : "translate3d(0, -6px, 0)",
+                    : "translate3d(0, -0.375rem, 0)",
                   transition: showExpandedContent
                     ? [
                         `max-height 300ms ${CONTENT_EASING}`,
@@ -542,9 +559,10 @@ export default function Navigation({
             {/* Pod remains attached to the moving divider. */}
             <div
               className={cn(
-                "absolute -right-[18px] bottom-0 z-[60]",
-                "flex h-9 w-9 translate-y-1/2 items-center justify-center",
-                "rounded-full border border-border/70 bg-background shadow-md",
+                "absolute bottom-0 right-0 z-[60]",
+                "flex h-9 w-9 translate-x-1/2 translate-y-1/2",
+                "items-center justify-center rounded-full border",
+                "border-border/70 bg-background shadow-md",
               )}
             >
               <button
@@ -559,18 +577,19 @@ export default function Navigation({
                 aria-expanded={sidebarPinned}
                 title={sidebarPinned ? "Collapse Sidebar" : "Expand Sidebar"}
                 className={cn(
-                  "flex !h-[22px] !min-h-[22px] !w-[22px] !min-w-[22px]",
-                  "items-center justify-center rounded-full border-0 !p-0",
-                  "bg-primary text-primary-foreground shadow-sm",
-                  "transition-[background-color,box-shadow] duration-200 ease-out",
-                  "hover:bg-primary/90 hover:shadow-md",
+                  "flex h-[1.375rem] min-h-[1.375rem] w-[1.375rem]",
+                  "min-w-[1.375rem] items-center justify-center",
+                  "rounded-full border-0 p-0 bg-primary",
+                  "text-primary-foreground shadow-sm",
+                  "transition-[background-color,box-shadow] duration-200",
+                  "ease-out hover:bg-primary/90 hover:shadow-md",
                   "focus-visible:outline-none focus-visible:ring-2",
                   "focus-visible:ring-primary/35 focus-visible:ring-offset-2",
                   "active:!transform-none",
                 )}
               >
                 <ChevronRight
-                  className="block h-3 w-3 shrink-0"
+                  className="block h-3.5 w-3.5 shrink-0"
                   style={{
                     transform: sidebarPinned
                       ? "rotate(180deg)"
@@ -585,7 +604,12 @@ export default function Navigation({
             </div>
           </div>
 
-          <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden p-3 pt-7">
+          <nav
+            className={cn(
+              "flex min-h-0 flex-1 flex-col gap-2",
+              "overflow-y-auto overflow-x-hidden p-3 pt-7",
+            )}
+          >
             {navigationItems.map((item) => (
               <NavItem
                 key={item.href}

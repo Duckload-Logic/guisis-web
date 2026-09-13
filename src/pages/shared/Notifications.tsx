@@ -4,10 +4,10 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, BellOff, CheckCheck } from "lucide-react";
+
 import { usePageMetadata, useAuth } from "@/context";
 import {
   Card,
@@ -28,11 +28,12 @@ import {
 } from "@/features/notifications/hooks/useNotifications";
 import type { NotificationEntry } from "@/features/notifications/types";
 import {
-  formatNotificationTime,
-  getIconForNotificationType,
-  getNotificationIconClass,
-  getNotificationTargetUrl,
-} from "@/features/notifications/utils";
+  NotificationItem,
+} from "@/features/notifications/components/NotificationItem";
+import {
+  NotificationFilterButton,
+} from "@/features/notifications/components/NotificationFilterButton";
+import { getNotificationTargetUrl } from "@/features/notifications/utils";
 
 const PAGE_SIZE = 10;
 
@@ -198,7 +199,7 @@ export default function NotificationsPage() {
               )}
             >
               <Bell className="h-5 w-5 shrink-0 text-primary" />
-              Recent Notifications
+              Notifications
             </CardTitle>
             <CardDescription className="mt-1 text-sm leading-relaxed">
               Stay up to date with the latest activities and alerts.
@@ -210,70 +211,116 @@ export default function NotificationsPage() {
               type="button"
               onClick={handleMarkAllRead}
               disabled={markAllRead.isPending}
-              className="min-h-11 w-full border-primary sm:w-auto"
+              className="gap-1.5 min-h-11 w-full sm:w-auto"
             >
-              {markAllRead.isPending ? "Marking..." : "Mark all as read"}
+              <CheckCheck className="h-4 w-4" />
+              <span>
+                {markAllRead.isPending ? "Marking..." : "Mark all as read"}
+              </span>
             </Button>
           )}
         </CardHeader>
 
+        {/* Filter Bar */}
         <div
           className={cn(
-            "flex gap-2 border-b border-border px-4 py-3 text-sm sm:px-6",
+            "flex items-center gap-1 border-b border-border bg-muted/20",
+            "p-2 sm:px-6 sm:py-2.5",
           )}
         >
-          <FilterButton
-            active={filter === "all"}
-            onClick={() => setFilter("all")}
-          >
-            All
-          </FilterButton>
-          <FilterButton
-            active={filter === "unread"}
-            onClick={() => setFilter("unread")}
-          >
-            Unread
-            {unreadCount > 0 && (
-              <Badge
-                variant="destructive"
-                className={cn(
-                  "ml-1 h-4 min-w-4 px-1.5 text-[10px] font-semibold",
-                  "shadow-md",
-                )}
-              >
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </Badge>
+          <div
+            className={cn(
+              "flex w-full max-w-xs gap-1 rounded-lg bg-muted/50 p-1",
             )}
-          </FilterButton>
+          >
+            <NotificationFilterButton
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
+            >
+              All
+            </NotificationFilterButton>
+            <NotificationFilterButton
+              active={filter === "unread"}
+              onClick={() => setFilter("unread")}
+            >
+              Unread
+              {unreadCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className={cn(
+                    "ml-1.5 h-4 min-w-4 px-1 text-[10px] font-bold",
+                  )}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Badge>
+              )}
+            </NotificationFilterButton>
+          </div>
         </div>
 
         <CardContent className="p-0">
-          <div className="divide-y divide-border">
-            {isLoading && loadedNotifications.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">
-                Loading notifications...
-              </div>
-            ) : loadedNotifications.length === 0 ? (
-              <div className="p-12 text-center text-sm text-muted-foreground">
-                No {filter === "unread" ? "unread " : ""}notifications found.
-              </div>
-            ) : (
-              loadedNotifications.map((notification) => (
-                <div key={notification.id} className="px-2 py-1 sm:px-3">
-                  <NotificationItem
-                    notification={notification}
-                    isSelectedRead={selectedReadIds.has(notification.id)}
-                    onClick={handleNotificationClick}
+          {isLoading && loadedNotifications.length === 0 ? (
+            <div className="space-y-3 p-4 sm:p-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex items-start gap-3 rounded-xl border",
+                    "border-border/40 animate-pulse bg-muted/20 p-3",
+                  )}
+                >
+                  <div
+                    className="h-10 w-10 shrink-0 rounded-full bg-muted/60"
                   />
+                  <div className="flex-1 space-y-2 pt-0.5">
+                    <div className="h-4 w-1/3 rounded bg-muted/60" />
+                    <div className="h-3 w-3/4 rounded bg-muted/40" />
+                    <div className="h-2.5 w-1/4 rounded bg-muted/30" />
+                  </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          ) : loadedNotifications.length === 0 ? (
+            <div
+              className={cn(
+                "flex flex-col items-center justify-center py-16",
+                "text-center",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-12 w-12 items-center justify-center rounded-full",
+                  "bg-muted/50 text-muted-foreground",
+                )}
+              >
+                <BellOff className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-sm font-medium text-foreground">
+                No {filter === "unread" ? "unread " : ""}notifications
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {filter === "unread"
+                  ? "You have no unread notifications."
+                  : "You're all caught up! No notifications to display."}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2.5 p-3 sm:p-6">
+              {loadedNotifications.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  isSelectedRead={selectedReadIds.has(notification.id)}
+                  onClick={handleNotificationClick}
+                />
+              ))}
+            </div>
+          )}
 
           <div ref={loadMoreRef} className="min-h-1" />
 
           {hasNextPage && loadedNotifications.length > 0 && (
-            <div className="border-t border-border px-4 py-3 sm:hidden">
+            <div className="border-t border-border p-4 sm:hidden">
               <Button
                 type="button"
                 variant="outline"
@@ -310,107 +357,5 @@ export default function NotificationsPage() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function FilterButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={onClick}
-      className={cn(
-        "relative min-h-11 rounded-xl px-3 font-medium shadow-none",
-        active
-          ? "bg-primary/10 text-primary shadow-md"
-          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-      )}
-    >
-      {children}
-    </Button>
-  );
-}
-
-function NotificationItem({
-  notification,
-  isSelectedRead,
-  onClick,
-}: {
-  notification: NotificationEntry;
-  isSelectedRead: boolean;
-  onClick: (notification: NotificationEntry) => void;
-}) {
-  const { icon: Icon, color } = getIconForNotificationType(
-    notification.type || "",
-    notification.targetType || "",
-  );
-  const unread = !notification.isRead && !isSelectedRead;
-  const highlightedRead = isSelectedRead || notification.isRead;
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      onClick={() => onClick(notification)}
-      className={cn(
-        "group flex min-h-11 w-full cursor-pointer items-start",
-        "justify-start text-left gap-3 rounded-xl border p-4 shadow-md",
-        "transition-colors duration-200 hover:bg-muted/60",
-        "focus-visible:outline-none focus-visible:ring-2",
-        "focus-visible:ring-ring",
-        unread && "border-primary/15 bg-primary/5",
-        highlightedRead &&
-          "border-border/60 bg-muted/30 text-muted-foreground opacity-60",
-      )}
-    >
-      <span
-        className={cn(
-          "mt-2.5 h-2.5 w-2.5 shrink-0 rounded-full transition-colors",
-          unread ? "bg-red-500 shadow-md" : "bg-transparent",
-        )}
-      />
-
-      <span
-        className={cn(
-          "shrink-0 rounded-xl p-2.5 shadow-md",
-          getNotificationIconClass(color),
-          highlightedRead && "bg-muted text-muted-foreground",
-        )}
-      >
-        <Icon className="h-5 w-5" />
-      </span>
-
-      <span className="min-w-0 flex-1">
-        <span
-          className={cn(
-            "block line-clamp-1 text-sm sm:text-base",
-            unread
-              ? "font-semibold text-foreground"
-              : "font-medium text-muted-foreground",
-          )}
-        >
-          {notification.title}
-        </span>
-        <span
-          className={cn(
-            "mt-1 block line-clamp-2 text-sm leading-relaxed",
-            "text-muted-foreground sm:line-clamp-none",
-          )}
-        >
-          {notification.message}
-        </span>
-        <span className="mt-2 block text-xs font-medium text-muted-foreground">
-          {formatNotificationTime(notification.createdAt)}
-        </span>
-      </span>
-    </Button>
   );
 }

@@ -15,6 +15,7 @@ import {
   useUserIIR,
   useIIRDownload,
 } from "@/features/iir/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
 import type { TabId } from "@/features/iir/constants";
 import { getErrorMessage } from "@/lib/api";
@@ -41,6 +42,8 @@ export default function IIRProfile() {
   const navigate = useNavigate();
   const { studentId, iirId: paramIirId } = useParams();
   const targetRecordId = studentId || paramIirId;
+
+  useAutoMarkNotificationRead(targetRecordId);
 
   const { data: me, isLoading: isMeLoading } = useMe({});
 

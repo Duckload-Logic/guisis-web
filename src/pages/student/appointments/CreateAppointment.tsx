@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
@@ -120,8 +120,19 @@ export default function CreateAppointment() {
     }
   };
 
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = () => {
-    if (!isFormValid || !selectedDate || !selectedTime) return;
+    if (
+      !isFormValid ||
+      !selectedDate ||
+      !selectedTime ||
+      isSubmitting ||
+      isSubmittingRef.current
+    ) {
+      return;
+    }
+    isSubmittingRef.current = true;
 
     const payload: CreateAppointmentRequest = {
       whenDate: toISODateString(selectedDate),
@@ -151,12 +162,16 @@ export default function CreateAppointment() {
         navigate("/student/appointments");
       },
       onError: (error: any) => {
+        isSubmittingRef.current = false;
         if (error.message?.includes("IIR profile")) {
           triggerToast("Please complete your IIR profile first.");
           navigate("/iir-form");
           return;
         }
         triggerToast(error.message || "Failed to book appointment.");
+      },
+      onSettled: () => {
+        isSubmittingRef.current = false;
       },
     });
   };
@@ -327,9 +342,7 @@ export default function CreateAppointment() {
               onClick={() => setShowBackupSchedule(!showBackupSchedule)}
             >
               <div className="flex items-center justify-between gap-2">
-                <div
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-                >
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                   <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium text-foreground">
                     Alternative Preferred Schedules (Optional — Up to 3)
@@ -345,13 +358,9 @@ export default function CreateAppointment() {
                   </Badge>
                 </div>
                 {showBackupSchedule ? (
-                  <ChevronUp
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
+                  <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                 ) : (
-                  <ChevronDown
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                 )}
               </div>
             </CardHeader>

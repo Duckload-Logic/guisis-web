@@ -35,6 +35,7 @@ import {
   useUpdateAppointment,
   useStartAppointment,
 } from "@/features/appointments/hooks";
+import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import {
   format12HourTime,
@@ -185,6 +186,9 @@ function AppointmentDetailsSkeleton() {
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  useAutoMarkNotificationRead(id);
+
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { data: appointmentStatuses } = useStatuses();
   const { mutateAsync: updateAppointment } = useUpdateAppointment();
@@ -904,7 +908,12 @@ export default function AppointmentDetails() {
         open={isStartConfirming}
         onOpenChange={setIsStartConfirming}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border border-border bg-card shadow-2xl backdrop-blur-2xl">
+        <AlertDialogContent
+          className={cn(
+            "max-w-md border border-border bg-card shadow-2xl",
+            "backdrop-blur-2xl",
+          )}
+        >
           <AlertDialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
               <Play className="h-5 w-5 fill-current" />

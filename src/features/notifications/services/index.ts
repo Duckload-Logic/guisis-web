@@ -30,6 +30,17 @@ export const PatchNotificationRead = async (
   await apiClient.patch(API_ROUTES.notifications.markAsRead(id), {}, config);
 };
 
+export const PatchNotificationTargetRead = async (
+  targetId: string,
+  config?: AxiosConfigWithMeta,
+): Promise<void> => {
+  await apiClient.patch(
+    API_ROUTES.notifications.markTargetAsRead(targetId),
+    {},
+    config,
+  );
+};
+
 export const PatchNotificationsRead = async (
   config?: AxiosConfigWithMeta,
 ): Promise<void> => {
@@ -48,4 +59,3 @@ export const GetNotificationStreamUrl = (): string => {
 };
 
 export * from "./push";
-

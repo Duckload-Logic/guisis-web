@@ -142,8 +142,8 @@ function PreviewModal({
     >
       <DialogContent
         className={cn(
-          "w-[calc(100vw-1.5rem)] max-w-5xl overflow-hidden rounded-3xl",
-          "border-border bg-card p-0 shadow-2xl backdrop-blur-2xl",
+          "w-[calc(100vw-1.5rem)] max-w-5xl overflow-hidden border-border",
+          "bg-card p-0 shadow-2xl backdrop-blur-2xl",
         )}
         fallbackTitle="Attachment preview"
         fallbackDescription="Preview the selected admission slip attachment."
