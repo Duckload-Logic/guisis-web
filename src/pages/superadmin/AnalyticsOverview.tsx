@@ -329,84 +329,103 @@ export default function AnalyticsOverview() {
                   />
                 </div>
               )}
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <LineChart data={visitorData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="rgba(255,255,255,0.05)"
+              {visitorData.length === 0 && !analyticsFetching ? (
+                <div
+                  className={cn(
+                    "flex h-full flex-col items-center justify-center",
+                    "text-center",
+                  )}
+                >
+                  <TrendingUp
+                    className="mb-2 h-10 w-10 text-muted-foreground/30"
                   />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#888888" }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: "#888888" }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                      backdropFilter: "blur(12px)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      borderRadius: "16px",
-                      color: "#fff",
-                    }}
-                    itemStyle={{ color: "#fff" }}
-                    labelStyle={{ color: "#fff" }}
-                  />
-                  <Legend
-                    verticalAlign="top"
-                    align="right"
-                    height={36}
-                    iconType="circle"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="logins"
-                    name="System Logins"
-                    stroke={SYSTEM_LOGINS_COLOR}
-                    strokeWidth={4}
-                    dot={{
-                      r: 6,
-                      fill: SYSTEM_LOGINS_COLOR,
-                      strokeWidth: 2,
-                      stroke: "#fff",
-                    }}
-                    activeDot={{
-                      r: 8,
-                      fill: SYSTEM_LOGINS_COLOR,
-                      strokeWidth: 0,
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="activity"
-                    name="System Activity"
-                    stroke={SYSTEM_ACTIVITY_COLOR}
-                    strokeWidth={4}
-                    strokeDasharray="8 8"
-                    dot={{
-                      r: 6,
-                      fill: SYSTEM_ACTIVITY_COLOR,
-                      strokeWidth: 2,
-                      stroke: "#fff",
-                    }}
-                    activeDot={{
-                      r: 8,
-                      fill: SYSTEM_ACTIVITY_COLOR,
-                      strokeWidth: 0,
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                  <p className="text-sm font-semibold text-foreground">
+                    No Traffic & Login Data Recorded
+                  </p>
+                  <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+                    No login events found for the selected {range} timeframe.
+                  </p>
+                </div>
+              ) : (
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                >
+                  <LineChart data={visitorData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="rgba(255,255,255,0.05)"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: "#888888" }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: "#888888" }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        backdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "16px",
+                        color: "#fff",
+                      }}
+                      itemStyle={{ color: "#fff" }}
+                      labelStyle={{ color: "#fff" }}
+                    />
+                    <Legend
+                      verticalAlign="top"
+                      align="right"
+                      height={36}
+                      iconType="circle"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="logins"
+                      name="System Logins"
+                      stroke={SYSTEM_LOGINS_COLOR}
+                      strokeWidth={4}
+                      dot={{
+                        r: 6,
+                        fill: SYSTEM_LOGINS_COLOR,
+                        strokeWidth: 2,
+                        stroke: "#fff",
+                      }}
+                      activeDot={{
+                        r: 8,
+                        fill: SYSTEM_LOGINS_COLOR,
+                        strokeWidth: 0,
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="activity"
+                      name="System Activity"
+                      stroke={SYSTEM_ACTIVITY_COLOR}
+                      strokeWidth={4}
+                      strokeDasharray="8 8"
+                      dot={{
+                        r: 6,
+                        fill: SYSTEM_ACTIVITY_COLOR,
+                        strokeWidth: 2,
+                        stroke: "#fff",
+                      }}
+                      activeDot={{
+                        r: 8,
+                        fill: SYSTEM_ACTIVITY_COLOR,
+                        strokeWidth: 0,
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
