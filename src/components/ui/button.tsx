@@ -103,14 +103,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         if (!onClick) return;
 
         try {
-          const result = onClick(event);
-          const isPromise =
-            result &&
-            typeof (result as unknown as Promise<unknown>).then === "function";
-
-          if (isPromise) {
+          const result: unknown = onClick(event);
+          if (
+            result !== null &&
+            typeof result === "object" &&
+            "then" in result &&
+            typeof (result as Promise<unknown>).then === "function"
+          ) {
             isPendingRef.current = true;
-            (result as unknown as Promise<unknown>).finally(() => {
+            (result as Promise<unknown>).finally(() => {
               isPendingRef.current = false;
             });
           }
