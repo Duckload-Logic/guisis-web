@@ -14,37 +14,24 @@ import { cn } from "@/lib/utils";
 import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { format12HourTime } from "@/utils";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
-
-interface UserProfile {
-  firstName?: string;
-  lastName?: string;
-  studentNumber?: string;
-  profilePicture?: string;
-}
-
-interface AppointmentItem {
-  id: string | number;
-  user?: UserProfile;
-  appointmentCategory?: { name?: string };
-  status?: { name?: string };
-  timeSlot?: { time?: string };
-}
+import { Appointment } from "@/features/appointments/types";
+import { User } from "@/features/users/types/user";
 
 interface TodayAppointmentsCardProps {
   isLoading: boolean;
-  appointments: AppointmentItem[];
+  appointments: Appointment[];
   formattedToday: string;
   onViewAll: () => void;
-  onSelectAppointment: (id: string | number) => void;
+  onSelectAppointment: (id: string) => void;
 }
 
-function getUserInitials(user?: UserProfile): string {
+function getUserInitials(user?: User): string {
   const firstInitial = user?.firstName?.trim()?.[0] || "";
   const lastInitial = user?.lastName?.trim()?.[0] || "";
   return `${firstInitial}${lastInitial}`.toUpperCase() || "ST";
 }
 
-function getUserFullName(user?: UserProfile): string {
+function getUserFullName(user?: User): string {
   return (
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Student"
   );
@@ -158,10 +145,12 @@ export function TodayAppointmentsCard({
           </div>
         ) : (
           <div className="divide-y divide-glass-border">
-            {appointments.map((apt) => (
+            {appointments.map((apt, index) => (
               <div
-                key={apt.id}
-                onClick={() => onSelectAppointment(apt.id)}
+                key={apt.id || index}
+                onClick={() => {
+                  if (apt.id) onSelectAppointment(apt.id);
+                }}
                 className={cn(
                   "group flex flex-col gap-3 p-4 transition-colors",
                   "cursor-pointer hover:bg-muted/30 sm:flex-row",
