@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -35,7 +35,6 @@ import { SelectField } from "@/components/ui/select-field";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { cn } from "@/lib/utils";
 
 const MAX_MESSAGE_WORDS = 100;
@@ -50,6 +49,7 @@ const MIN_SIDEBAR_WIDTH = 260;
 const MAX_SIDEBAR_WIDTH = 480;
 const COLLAPSED_SIDEBAR_WIDTH = 48;
 const SIDEBAR_WIDTH_STORAGE_KEY = "guisis_support_sidebar_width";
+const SUPPORT_DESKTOP_BREAKPOINT_PX = 768;
 
 const CANNED_RESPONSES = [
   "Hello! How may I assist you today?",
@@ -169,7 +169,57 @@ export function SupportManagement() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastScrollPosRef = useRef<number>(0);
 
-  const isMobile = useIsMobile();
+  // Support Chat switches to its desktop, side-by-side layout at Tailwind's
+  // `md` breakpoint (768px). Keep the JS behavior aligned with that same
+  // breakpoint instead of the app-wide 1280px mobile breakpoint.
+  const [isSupportDesktop, setIsSupportDesktop] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth >= SUPPORT_DESKTOP_BREAKPOINT_PX;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mediaQuery = window.matchMedia(
+      `(min-width: ${SUPPORT_DESKTOP_BREAKPOINT_PX}px)`,
+    );
+
+    const syncSupportLayout = (event?: MediaQueryListEvent) => {
+      const matches = event ? event.matches : mediaQuery.matches;
+      setIsSupportDesktop(matches);
+
+      // A collapsed desktop rail should never leak into the stacked mobile
+      // layout when the viewport is resized.
+      if (!matches) {
+        setIsSidebarCollapsed(false);
+      }
+    };
+
+    syncSupportLayout();
+    mediaQuery.addEventListener("change", syncSupportLayout);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncSupportLayout);
+    };
+  }, []);
+
+  const handleHideConversations = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsSidebarCollapsed(true);
+    },
+    [],
+  );
+
+  const handleShowConversations = useCallback(
+    (event?: React.MouseEvent<HTMLElement>) => {
+      event?.preventDefault();
+      event?.stopPropagation();
+      setIsSidebarCollapsed(false);
+    },
+    [],
+  );
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     if (typeof window === "undefined") return DEFAULT_SIDEBAR_WIDTH;
     const saved = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
@@ -605,7 +655,7 @@ export function SupportManagement() {
         <div
           id="active-conversations-panel"
           style={
-            !isMobile
+            isSupportDesktop
               ? {
                   width: `${
                     isSidebarCollapsed
@@ -620,15 +670,15 @@ export function SupportManagement() {
             "border-glass-border",
             !isResizing && "transition-[width] duration-200 ease-out",
             "md:border-b-0",
-            isSidebarCollapsed && !isMobile && "md:border-r",
-            isSidebarCollapsed && !isMobile
+            isSidebarCollapsed && isSupportDesktop && "md:border-r",
+            isSidebarCollapsed && isSupportDesktop
               ? "hidden md:flex md:flex-none"
               : selectedGroupKey
                 ? "hidden md:flex"
                 : "flex flex-1",
           )}
         >
-          {!isMobile && isSidebarCollapsed && (
+          {isSupportDesktop && isSidebarCollapsed && (
             <motion.div
               key="collapsed-conversations-rail"
               initial={{ opacity: 0 }}
@@ -646,16 +696,14 @@ export function SupportManagement() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsSidebarCollapsed(false);
-                }}
+                onClick={handleShowConversations}
                 className={cn(
                   "h-8 w-8 rounded-lg border border-glass-border",
                   "text-muted-foreground transition-colors",
                   "hover:bg-primary/10 hover:text-primary",
                   "focus-visible:ring-2 focus-visible:ring-primary",
                 )}
+                debounceMs={0}
                 aria-label="Show active conversations"
                 aria-controls="active-conversations-panel"
                 aria-expanded={false}
@@ -686,7 +734,7 @@ export function SupportManagement() {
           <div
             className={cn(
               "border-b border-glass-border p-3 sm:p-4",
-              isSidebarCollapsed && !isMobile && "hidden",
+              isSidebarCollapsed && isSupportDesktop && "hidden",
             )}
           >
             <div className="flex items-center justify-between gap-2">
@@ -711,19 +759,21 @@ export function SupportManagement() {
                     {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
                   </Badge>
                 ) : null}
-                {!isMobile && (
+                {isSupportDesktop && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsSidebarCollapsed(true)}
+                    onClick={handleHideConversations}
                     className={cn(
                       "h-7 gap-1 rounded-lg border border-glass-border",
                       "px-2 text-[10px] font-semibold",
                       "text-muted-foreground transition-colors",
                       "hover:bg-primary/10 hover:text-primary",
                       "focus-visible:ring-2 focus-visible:ring-primary",
+                      "relative z-10 pointer-events-auto",
                     )}
+                    debounceMs={0}
                     aria-label="Hide active conversations"
                     aria-controls="active-conversations-panel"
                     aria-expanded={true}
@@ -858,7 +908,7 @@ export function SupportManagement() {
           <div
             className={cn(
               "flex-1 divide-y divide-glass-border overflow-y-auto",
-              isSidebarCollapsed && !isMobile && "hidden",
+              isSidebarCollapsed && isSupportDesktop && "hidden",
             )}
           >
             {isLoadingTickets && filteredGroups.length === 0 ? (
@@ -1056,7 +1106,7 @@ export function SupportManagement() {
           </div>
 
           {/* Pagination */}
-          {(!isSidebarCollapsed || isMobile) &&
+          {(!isSidebarCollapsed || !isSupportDesktop) &&
             meta &&
             meta.totalPages > 1 && (
               <div
@@ -1097,7 +1147,7 @@ export function SupportManagement() {
         </div>
 
         {/* Draggable Divider (Jakob's, Fitts's, & Tesler's Law) */}
-        {!isMobile && !isSidebarCollapsed && (
+        {isSupportDesktop && !isSidebarCollapsed && (
           <div
             onMouseDown={handleMouseDownResize}
             onDoubleClick={handleResetSidebarWidth}
