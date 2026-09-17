@@ -656,13 +656,18 @@ export function SupportManagement() {
           id="active-conversations-panel"
           style={
             isSupportDesktop
-              ? {
-                  width: `${
-                    isSidebarCollapsed
-                      ? COLLAPSED_SIDEBAR_WIDTH
-                      : sidebarWidth
-                  }px`,
-                }
+              ? (() => {
+                  const width = isSidebarCollapsed
+                    ? COLLAPSED_SIDEBAR_WIDTH
+                    : sidebarWidth;
+
+                  return {
+                    width: `${width}px`,
+                    minWidth: `${width}px`,
+                    maxWidth: `${width}px`,
+                    flexBasis: `${width}px`,
+                  };
+                })()
               : undefined
           }
           className={cn(
@@ -692,25 +697,24 @@ export function SupportManagement() {
               )}
               title="Click to expand active conversations"
             >
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
                 onClick={handleShowConversations}
                 className={cn(
-                  "h-8 w-8 rounded-lg border border-glass-border",
-                  "text-muted-foreground transition-colors",
-                  "hover:bg-primary/10 hover:text-primary",
-                  "focus-visible:ring-2 focus-visible:ring-primary",
+                  "inline-flex h-8 w-8 items-center justify-center",
+                  "rounded-lg border border-glass-border",
+                  "bg-transparent text-muted-foreground",
+                  "transition-colors hover:bg-primary/10 hover:text-primary",
+                  "focus-visible:outline-none focus-visible:ring-2",
+                  "focus-visible:ring-primary",
                 )}
-                debounceMs={0}
                 aria-label="Show active conversations"
                 aria-controls="active-conversations-panel"
                 aria-expanded={false}
                 title="Show active conversations"
               >
                 <PanelLeftOpen className="h-4 w-4" />
-              </Button>
+              </button>
 
               <div className="mt-3 h-px w-6 bg-glass-border" />
               <MessageSquare
@@ -760,28 +764,26 @@ export function SupportManagement() {
                   </Badge>
                 ) : null}
                 {isSupportDesktop && (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     onClick={handleHideConversations}
                     className={cn(
-                      "h-7 gap-1 rounded-lg border border-glass-border",
-                      "px-2 text-[10px] font-semibold",
-                      "text-muted-foreground transition-colors",
-                      "hover:bg-primary/10 hover:text-primary",
+                      "relative z-30 inline-flex h-7 items-center",
+                      "justify-center gap-1 rounded-lg border",
+                      "border-glass-border bg-transparent px-2",
+                      "text-[10px] font-semibold text-muted-foreground",
+                      "transition-colors hover:bg-primary/10",
+                      "hover:text-primary focus-visible:outline-none",
                       "focus-visible:ring-2 focus-visible:ring-primary",
-                      "relative z-10 pointer-events-auto",
                     )}
-                    debounceMs={0}
                     aria-label="Hide active conversations"
                     aria-controls="active-conversations-panel"
-                    aria-expanded={true}
+                    aria-expanded={!isSidebarCollapsed}
                     title="Hide active conversations"
                   >
                     <PanelLeftClose className="h-3.5 w-3.5" />
                     Hide
-                  </Button>
+                  </button>
                 )}
               </div>
             </div>
