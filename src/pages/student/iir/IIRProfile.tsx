@@ -18,8 +18,8 @@ import {
 import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
 import type { TabId } from "@/features/iir/constants";
-import { getErrorMessage } from "@/lib/api";
-import { Edit, User, Printer } from "lucide-react";
+import { Edit, User, Printer, AlertCircle } from "lucide-react";
+import { checkIIRPrintEligibility } from "@/features/iir/utils/printEligibility";
 import {
   BioCard,
   InfoContent,
@@ -83,19 +83,6 @@ export default function IIRProfile() {
   const [activeTab, setActiveTab] = useState<TabId>("personal");
   const [isPreparingPrint, setIsPreparingPrint] = useState(false);
 
-  useEffect(() => {
-    const handleBeforePrint = () => setIsPreparingPrint(true);
-    const handleAfterPrint = () => setIsPreparingPrint(false);
-
-    window.addEventListener("beforeprint", handleBeforePrint);
-    window.addEventListener("afterprint", handleAfterPrint);
-
-    return () => {
-      window.removeEventListener("beforeprint", handleBeforePrint);
-      window.removeEventListener("afterprint", handleAfterPrint);
-    };
-  }, []);
-
   // Switch to significantNotes tab if prompted by URL
   useEffect(() => {
     if (searchParams.get("addNote") === "true") {
@@ -131,27 +118,61 @@ export default function IIRProfile() {
 
   const badgeIcon = useMemo(() => <User size={16} />, []);
 
+  const { isPrintDisabled, missingFields, tooltip: printButtonTooltip } =
+    useMemo(
+      () =>
+        isLoading
+          ? {
+              isPrintDisabled: true,
+              missingFields: [],
+              tooltip: "Loading profile...",
+            }
+          : checkIIRPrintEligibility(studentData, isDownloading),
+      [studentData, isDownloading, isLoading],
+    );
+
+  useEffect(() => {
+    const handleBeforePrint = () => {
+      if (!isPrintDisabled) {
+        setIsPreparingPrint(true);
+      }
+    };
+    const handleAfterPrint = () => setIsPreparingPrint(false);
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, [isPrintDisabled]);
+
   const headerActions = useMemo(() => {
     if (!finalIirId) return null;
     return (
       <div className="flex items-center gap-2">
         <button
           onClick={() => generatePreview(finalIirId)}
-          disabled={isDownloading}
+          disabled={isDownloading || isPrintDisabled}
           className={cn(
             "group flex h-10 w-10 items-center justify-center rounded-xl",
-            "border border-emerald-500/20 p-0",
-            "hover:bg-emerald-500/10 disabled:opacity-50",
-            "disabled:hover:bg-transparent",
-            "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+            "border p-0 transition-all duration-300",
+            isPrintDisabled
+              ? "cursor-not-allowed border-border/50 text-muted-foreground opacity-50"
+              : cn(
+                  "border-emerald-500/20 text-emerald-500",
+                  "hover:-translate-y-0.5 hover:bg-emerald-500/10 hover:shadow-md",
+                  "disabled:opacity-50 disabled:hover:bg-transparent",
+                ),
           )}
-          title="Download PDF"
+          title={printButtonTooltip}
+          aria-disabled={isDownloading || isPrintDisabled}
         >
           <Printer
             size={ICON_SIZE}
             className={cn(
-              "text-emerald-500 transition-transform",
-              "group-hover:scale-110",
+              !isPrintDisabled && "transition-transform group-hover:scale-110",
             )}
           />
         </button>
@@ -184,7 +205,15 @@ export default function IIRProfile() {
         )}
       </div>
     );
-  }, [finalIirId, isDownloading, isAdmin, navigate]);
+  }, [
+    finalIirId,
+    isDownloading,
+    isPrintDisabled,
+    printButtonTooltip,
+    isAdmin,
+    navigate,
+    isOwnExpedited,
+  ]);
 
   usePageMetadata({
     title: isAdmin ? "Individual Inventory Record" : "My IIR Profile",
@@ -250,6 +279,14 @@ export default function IIRProfile() {
     }
 
     @media print {
+      ${
+        isPrintDisabled
+          ? `
+      .iir-print-indicator {
+        display: none !important;
+      }
+      `
+          : `
       .iir-print-indicator {
         display: flex !important;
         position: fixed;
@@ -267,6 +304,8 @@ export default function IIRProfile() {
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
+      }
+      `
       }
     }
   `}</style>
@@ -299,6 +338,49 @@ export default function IIRProfile() {
           "px-4 sm:px-6 md:px-8",
         )}
       >
+        {isPrintDisabled && (
+          <div
+            className={cn(
+              "flex flex-col gap-3 rounded-2xl border border-amber-500/30",
+              "bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200",
+              "sm:flex-row sm:items-center sm:justify-between",
+            )}
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+              <div>
+                <p className="text-sm font-semibold">
+                  IIR Printing Is Disabled
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Your record is incomplete. Please add your{" "}
+                  <span className="font-medium text-foreground">
+                    {missingFields.join(" and ")}
+                  </span>{" "}
+                  to enable official IIR printing.
+                </p>
+              </div>
+            </div>
+            {!isAdmin && (
+              <button
+                onClick={() =>
+                  navigate(
+                    isOwnExpedited
+                      ? "/student/iir/form"
+                      : `/student/iir/form?edit=true&iirId=${finalIirId}`,
+                  )
+                }
+                className={cn(
+                  "inline-flex shrink-0 items-center justify-center gap-1.5",
+                  "rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-semibold",
+                  "text-white shadow-sm transition hover:bg-amber-600",
+                )}
+              >
+                Complete Information
+              </button>
+            )}
+          </div>
+        )}
         <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-4">
           <div
             className="animate-fade-in-up transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)]"
