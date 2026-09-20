@@ -44,9 +44,25 @@ export function useIIRDownload() {
         setCurrentFileName(fileName);
         setIsDownloading(false);
       }, 400); // Small delay to let user see 100%
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate IIR PDF preview:", error);
-      triggerToast("Failed to generate IIR PDF preview. Please try again.");
+      let message = "Failed to generate IIR PDF preview. Please try again.";
+      if (error?.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const parsed = JSON.parse(text);
+          if (parsed?.data?.error) {
+            message = parsed.data.error;
+          } else if (parsed?.message) {
+            message = parsed.message;
+          }
+        } catch {
+          // Fallback to default message
+        }
+      } else if (error?.response?.data?.data?.error) {
+        message = error.response.data.data.error;
+      }
+      triggerToast(message);
       setIsDownloading(false);
     } finally {
       clearInterval(progressInterval);
