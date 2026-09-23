@@ -11,16 +11,15 @@ export interface CreateMessagePayload {
   message: string;
 }
 
+export type SupportTicketStatusFilter = "" | "open" | "closed" | "resolved";
+
 /**
  * Creates a new support ticket (starts chat session)
  */
 export async function PostSupportTicket(
-  payload: CreateTicketPayload
+  payload: CreateTicketPayload,
 ): Promise<Ticket> {
-  const { data } = await apiClient.post<Ticket>(
-    "/support/tickets",
-    payload
-  );
+  const { data } = await apiClient.post<Ticket>("/support/tickets", payload);
   return data;
 }
 
@@ -28,10 +27,10 @@ export async function PostSupportTicket(
  * Fetches all messages for a specific support ticket
  */
 export async function GetSupportTicketMessages(
-  ticketId: string
+  ticketId: string,
 ): Promise<Message[]> {
   const { data } = await apiClient.get<Message[]>(
-    `/support/tickets/${ticketId}/messages`
+    `/support/tickets/${ticketId}/messages`,
   );
   return data;
 }
@@ -41,11 +40,11 @@ export async function GetSupportTicketMessages(
  */
 export async function PostSupportTicketMessage(
   ticketId: string,
-  payload: CreateMessagePayload
+  payload: CreateMessagePayload,
 ): Promise<Message> {
   const { data } = await apiClient.post<Message>(
     `/support/tickets/${ticketId}/messages`,
-    payload
+    payload,
   );
   return data;
 }
@@ -61,28 +60,38 @@ export interface PaginatedTicketsResponse {
 }
 
 /**
- * Fetches all support tickets (admin view) with pagination
+ * Fetches all support tickets (admin view) with pagination.
+ * Query params are passed through the shared Axios interceptor so pageSize is
+ * consistently converted to page_size for the backend.
  */
 export async function GetSupportTickets(
   page: number = 1,
   pageSize: number = 10,
-  status: string = ""
+  status: SupportTicketStatusFilter = "",
 ): Promise<PaginatedTicketsResponse> {
-  const statusParam = status ? `&status=${status}` : "";
   const { data } = await apiClient.get<PaginatedTicketsResponse>(
-    `/support/tickets?page=${page}&page_size=${pageSize}${statusParam}`
+    "/support/tickets",
+    {
+      params: {
+        page,
+        pageSize,
+        ...(status ? { status } : {}),
+      },
+    },
   );
   return data;
 }
 
 /**
- * Resolves/closes a support ticket (admin operation)
+ * Resolves/closes a support ticket (admin operation).
+ * The backend returns the updated ticket so the UI can synchronize status
+ * immediately without waiting for the next polling cycle.
  */
 export async function PatchSupportTicketStatus(
-  ticketId: string
+  ticketId: string,
 ): Promise<Ticket> {
   const { data } = await apiClient.patch<Ticket>(
-    `/support/tickets/${ticketId}/status`
+    `/support/tickets/${ticketId}/status`,
   );
   return data;
 }
@@ -99,10 +108,10 @@ export async function GetMySupportTickets(): Promise<Ticket[]> {
  * Marks a support ticket as read (admin operation)
  */
 export async function PatchSupportTicketRead(
-  ticketId: string
+  ticketId: string,
 ): Promise<{ message: string }> {
   const { data } = await apiClient.patch<{ message: string }>(
-    `/support/tickets/${ticketId}/read`
+    `/support/tickets/${ticketId}/read`,
   );
   return data;
 }
