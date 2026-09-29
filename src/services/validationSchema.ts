@@ -202,10 +202,12 @@ export const commonRules = {
   nameFormat: (): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(String(value));
+      const normalized = String(value).trim();
+      if (normalized.toUpperCase() === "N/A") return true;
+      return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(normalized);
     },
     message:
-      "Must contain only letters, spaces, hyphens, periods, or apostrophes",
+      'Must contain only letters, spaces, hyphens, periods, or apostrophes (or use "N/A")',
   }),
 
   studentNumber: (maxYear?: number): ValidationRule => ({
@@ -274,7 +276,9 @@ export const commonRules = {
   noSpecialChars: (fieldName: string): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return !SPECIAL_CHARS_REGEX.test(String(value));
+      const normalized = String(value).trim();
+      if (normalized.toUpperCase() === "N/A") return true;
+      return !SPECIAL_CHARS_REGEX.test(normalized);
     },
     message: `${fieldName} contains invalid special characters`,
   }),
