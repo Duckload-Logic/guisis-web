@@ -87,7 +87,7 @@ const ParentInformationCard = memo(
         title={title}
         description={
           `${title} is required. If unknown/unavailable, ` +
-          `please type 'N/A' in the name fields, select standard options, ` +
+          `please type 'Not Applicable' in the name fields, select standard options, ` +
           `and make sure to complete the Guardian section.`
         }
         icon={User}
