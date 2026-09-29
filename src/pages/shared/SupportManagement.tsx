@@ -653,28 +653,23 @@ export function SupportManagement() {
 
     setIsResolving(true);
     try {
-      const resolvedTicket = await PatchSupportTicketStatus(ticketId);
+      await PatchSupportTicketStatus(ticketId);
 
       // Invalidate any polling request that started before the PATCH completed.
+      // This prevents a stale OPEN response from winning the race and putting
+      // the resolved ticket back into the Open tab.
       ticketsRequestIdRef.current += 1;
 
-      const resolvedStatus =
-        typeof resolvedTicket?.status === "string"
-          ? resolvedTicket.status
-          : "CLOSED";
-      const resolvedUpdatedAt =
-        typeof resolvedTicket?.updatedAt === "string"
-          ? resolvedTicket.updatedAt
-          : new Date().toISOString();
+      const resolvedUpdatedAt = new Date().toISOString();
 
-      // Apply the status immediately. In the Open tab, remove the resolved
-      // ticket before refetching so it cannot remain visible as OPEN.
+      // The API closes tickets as CLOSED. Apply that state immediately so ALL,
+      // OPEN, and CLOSED stay consistent without waiting for the next poll.
       setTickets((previousTickets) => {
         const synchronizedTickets = previousTickets.map((ticket) =>
           ticket.id === ticketId
             ? {
                 ...ticket,
-                status: resolvedStatus,
+                status: "CLOSED",
                 updatedAt: resolvedUpdatedAt,
               }
             : ticket,
@@ -755,7 +750,8 @@ export function SupportManagement() {
           className={cn(
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
             "border-glass-border",
-            !isResizing && "transition-[width] duration-200 ease-out",
+            !isResizing &&
+              "transition-[width,min-width,max-width,flex-basis] duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && isSupportDesktop && "md:border-r",
             isSidebarCollapsed && isSupportDesktop
