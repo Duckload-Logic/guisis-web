@@ -755,7 +755,8 @@ export function SupportManagement() {
           className={cn(
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
             "border-glass-border",
-            !isResizing && "transition-[width] duration-200 ease-out",
+            !isResizing &&
+              "transition-[width,min-width,max-width,flex-basis] duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && isSupportDesktop && "md:border-r",
             isSidebarCollapsed && isSupportDesktop
