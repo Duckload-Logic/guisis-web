@@ -11,7 +11,7 @@ export interface CreateMessagePayload {
   message: string;
 }
 
-export type SupportTicketStatusFilter = "" | "open" | "closed" | "resolved";
+export type SupportTicketStatusFilter = "" | "open" | "closed";
 
 /**
  * Creates a new support ticket (starts chat session)
@@ -82,15 +82,19 @@ export async function GetSupportTickets(
   return data;
 }
 
+export interface ResolveSupportTicketResponse {
+  message: string;
+}
+
 /**
  * Resolves/closes a support ticket (admin operation).
- * The backend returns the updated ticket so the UI can synchronize status
- * immediately without waiting for the next polling cycle.
+ * The backend confirms the action with a message; the UI updates the ticket
+ * locally to CLOSED, then immediately refetches the active tab.
  */
 export async function PatchSupportTicketStatus(
   ticketId: string,
-): Promise<Ticket> {
-  const { data } = await apiClient.patch<Ticket>(
+): Promise<ResolveSupportTicketResponse> {
+  const { data } = await apiClient.patch<ResolveSupportTicketResponse>(
     `/support/tickets/${ticketId}/status`,
   );
   return data;
