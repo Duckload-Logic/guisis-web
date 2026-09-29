@@ -77,7 +77,11 @@ const ParentInformationCard = memo(
       const ageDate = new Date(diffMs);
       return Math.abs(ageDate.getUTCFullYear() - 1970);
     };
-    const isNameDisabled = false;
+    const isParentUnknown =
+      person.firstName?.trim().toLowerCase() === "n/a" &&
+      person.middleName?.trim().toLowerCase() === "n/a" &&
+      person.lastName?.trim().toLowerCase() === "n/a";
+    const isNameDisabled = isParentUnknown;
     const isNA =
       person.occupation?.trim().toLowerCase() === "not applicable" ||
       person.occupation?.trim().toLowerCase() === "n/a";
@@ -85,14 +89,53 @@ const ParentInformationCard = memo(
     return (
       <SectionContainer
         title={title}
-        description={
-          `${title} is required. If unknown/unavailable, ` +
-          `please type 'N/A' in the name fields, select standard options, ` +
-          `and make sure to complete the Guardian section.`
-        }
+        description={`${title} is required. Complete the details below or mark the parent as unknown/unavailable.`}
         icon={User}
       >
         <div className="flex flex-col gap-8">
+          <div
+            className={cn(
+              "rounded-xl border border-amber-500/30 bg-amber-500/10",
+              "p-4 sm:p-5",
+            )}
+          >
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Parent information unavailable?
+                </p>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                  If this parent's information is unknown or unavailable, check
+                  the option below. The First Name, Middle Name, and Last Name
+                  fields will be filled with &quot;N/A&quot; automatically. Please
+                  make sure to complete the Guardian section.
+                </p>
+
+                <Checkbox
+                  id={`family.relatedPersons.${idx}.parent_unknown`}
+                  name={`family.relatedPersons.${idx}.parent_unknown`}
+                  label="Parent is N/A / Unknown"
+                  checked={isParentUnknown}
+                  onCheckedChange={(checked) => {
+                    const prefix = `family.relatedPersons.${idx}`;
+
+                    if (checked === true) {
+                      handleInputChange(`${prefix}.firstName`, "N/A");
+                      handleInputChange(`${prefix}.middleName`, "N/A");
+                      handleInputChange(`${prefix}.lastName`, "N/A");
+                    } else {
+                      handleInputChange(`${prefix}.firstName`, "");
+                      handleInputChange(`${prefix}.middleName`, "");
+                      handleInputChange(`${prefix}.lastName`, "");
+                    }
+                  }}
+                  className="mt-4"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"

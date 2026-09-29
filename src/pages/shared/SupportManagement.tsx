@@ -70,6 +70,9 @@ interface OptimisticMessage extends Message {
   isPending?: boolean;
 }
 
+const isOpenTicket = (ticket: Ticket): boolean =>
+  ticket.status.trim().toUpperCase() === "OPEN";
+
 const getInitials = (name: string): string => {
   const clean = name.replace(/^\(Guest\)\s+/i, "").trim();
   const parts = clean.split(/\s+/).filter(Boolean);
@@ -168,6 +171,7 @@ export function SupportManagement() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastScrollPosRef = useRef<number>(0);
+  const ticketsRequestIdRef = useRef(0);
 
   // Support Chat switches to its desktop, side-by-side layout at Tailwind's
   // `md` breakpoint (768px). Keep the JS behavior aligned with that same
@@ -332,7 +336,7 @@ export function SupportManagement() {
     const query = searchQuery.trim().toLowerCase();
     return groupedUsers.filter((g) => {
       const latestTicket = g.tickets[g.tickets.length - 1];
-      const hasOpen = g.tickets.some((t) => t.status.toLowerCase() === "open");
+      const hasOpen = g.tickets.some(isOpenTicket);
 
       if (statusFilter === "unread" && latestTicket?.isRead) return false;
       if (statusFilter === "open" && !hasOpen) return false;
@@ -361,9 +365,13 @@ export function SupportManagement() {
 
   const activeTicket = useMemo(() => {
     if (!selectedGroup) return null;
-    const latestTicket =
-      selectedGroup.tickets[selectedGroup.tickets.length - 1];
-    return latestTicket.status.toLowerCase() === "open" ? latestTicket : null;
+
+    for (let index = selectedGroup.tickets.length - 1; index >= 0; index -= 1) {
+      const ticket = selectedGroup.tickets[index];
+      if (isOpenTicket(ticket)) return ticket;
+    }
+
+    return null;
   }, [selectedGroup]);
 
   const wordCount = useMemo(() => {
@@ -384,28 +392,43 @@ export function SupportManagement() {
     }
   }, [replyText]);
 
-  const fetchTickets = async (showLoading = false) => {
-    if (showLoading) setIsLoadingTickets(true);
-    try {
-      const apiStatus =
-        statusFilter === "open" || statusFilter === "closed"
-          ? statusFilter
-          : "";
-      const data = await GetSupportTickets(
-        page,
-        DEFAULT_PAGE_SIZE,
-        apiStatus,
-      );
-      if (data && Array.isArray(data.tickets)) {
-        setTickets(data.tickets);
-        setMeta(data.meta);
+  const fetchTickets = useCallback(
+    async (showLoading = false) => {
+      const requestId = ++ticketsRequestIdRef.current;
+
+      if (showLoading) setIsLoadingTickets(true);
+      try {
+        const apiStatus =
+          statusFilter === "open" || statusFilter === "closed"
+            ? statusFilter
+            : "";
+        const data = await GetSupportTickets(
+          page,
+          DEFAULT_PAGE_SIZE,
+          apiStatus,
+        );
+
+        // Ignore responses from an older tab/filter poll. Without this guard,
+        // a request started before resolving a ticket can finish afterwards
+        // and reinsert the stale OPEN copy into the current list.
+        if (requestId !== ticketsRequestIdRef.current) return;
+
+        if (data && Array.isArray(data.tickets)) {
+          setTickets(data.tickets);
+          setMeta(data.meta);
+        }
+      } catch (err) {
+        if (requestId === ticketsRequestIdRef.current) {
+          console.error("[SupportManagement] {FetchTickets}:", err);
+        }
+      } finally {
+        if (showLoading && requestId === ticketsRequestIdRef.current) {
+          setIsLoadingTickets(false);
+        }
       }
-    } catch (err) {
-      console.error("[SupportManagement] {FetchTickets}:", err);
-    } finally {
-      if (showLoading) setIsLoadingTickets(false);
-    }
-  };
+    },
+    [page, statusFilter],
+  );
 
   useEffect(() => {
     setPage(1);
@@ -418,7 +441,7 @@ export function SupportManagement() {
       TICKETS_POLL_INTERVAL_MS,
     );
     return () => clearInterval(interval);
-  }, [page, statusFilter]);
+  }, [fetchTickets]);
 
   useEffect(() => {
     if (queryTicketId && tickets.length > 0) {
@@ -621,10 +644,69 @@ export function SupportManagement() {
   const handleResolveTicket = async () => {
     if (!activeTicket) return;
 
+    const ticketId = activeTicket.id;
+    const selectedGroupHasAnotherOpenTicket = Boolean(
+      selectedGroup?.tickets.some(
+        (ticket) => ticket.id !== ticketId && isOpenTicket(ticket),
+      ),
+    );
+
     setIsResolving(true);
     try {
-      await PatchSupportTicketStatus(activeTicket.id);
-      fetchTickets();
+      const resolvedTicket = await PatchSupportTicketStatus(ticketId);
+
+      // Invalidate any polling request that started before the PATCH completed.
+      ticketsRequestIdRef.current += 1;
+
+      const resolvedStatus =
+        typeof resolvedTicket?.status === "string"
+          ? resolvedTicket.status
+          : "CLOSED";
+      const resolvedUpdatedAt =
+        typeof resolvedTicket?.updatedAt === "string"
+          ? resolvedTicket.updatedAt
+          : new Date().toISOString();
+
+      // Apply the status immediately. In the Open tab, remove the resolved
+      // ticket before refetching so it cannot remain visible as OPEN.
+      setTickets((previousTickets) => {
+        const synchronizedTickets = previousTickets.map((ticket) =>
+          ticket.id === ticketId
+            ? {
+                ...ticket,
+                status: resolvedStatus,
+                updatedAt: resolvedUpdatedAt,
+              }
+            : ticket,
+        );
+
+        return statusFilter === "open"
+          ? synchronizedTickets.filter((ticket) => ticket.id !== ticketId)
+          : synchronizedTickets;
+      });
+
+      if (statusFilter === "open") {
+        setMeta((previousMeta) => {
+          if (!previousMeta) return previousMeta;
+
+          const total = Math.max(0, previousMeta.total - 1);
+          const totalPages = Math.ceil(total / previousMeta.pagesSize);
+
+          return {
+            ...previousMeta,
+            total,
+            totalPages,
+          };
+        });
+
+        if (!selectedGroupHasAnotherOpenTicket) {
+          setSelectedGroupKey(null);
+        }
+      }
+
+      // Reconcile with the server immediately instead of waiting for the next
+      // 10-second polling cycle. Request sequencing prevents stale overwrites.
+      await fetchTickets(false);
     } catch (err) {
       console.error("[SupportManagement] {ResolveTicket}:", err);
     } finally {
@@ -969,7 +1051,7 @@ export function SupportManagement() {
                   latestTicket.studentEmail || latestTicket.guestEmail || "";
                 const isSelected = selectedGroupKey === g.key;
                 const hasOpen = g.tickets.some(
-                  (t) => t.status.toLowerCase() === "open",
+                  isOpenTicket,
                 );
                 const isUnread = !latestTicket.isRead;
 
@@ -1321,7 +1403,7 @@ export function SupportManagement() {
               >
                 {selectedGroup.tickets.map((t) => {
                   const msgs = groupMessages[t.id] || [];
-                  const isResolved = t.status.toLowerCase() !== "open";
+                  const isResolved = !isOpenTicket(t);
 
                   return (
                     <div key={t.id} className="flex flex-col space-y-1">
@@ -1716,7 +1798,7 @@ export function SupportManagement() {
               const email =
                 latestTicket?.studentEmail || latestTicket?.guestEmail || "";
               const hasOpen = selectedGroup.tickets.some(
-                (t) => t.status.toLowerCase() === "open",
+                isOpenTicket,
               );
 
               return (
