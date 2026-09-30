@@ -1479,7 +1479,7 @@ export function SupportManagement() {
                                   )}
                                 >
                                   {isStaff
-                                    ? `Staff (${msg.senderName})`
+                                    ? `${msg.senderName} (${msg.senderRole || "Guidance Counselor"})`
                                     : msg.senderName}
                                 </span>
                               )}
