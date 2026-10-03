@@ -57,9 +57,9 @@ export const QUERY_KEYS = {
     provinces: (regionCode: string) =>
       ["locations", "provinces", regionCode] as const,
     citiesByRegion: (regionCode: string) =>
-      ["locations", "cities", regionCode] as const,
+      ["locations", "cities", "region", regionCode] as const,
     citiesByProvince: (provinceCode: string) =>
-      ["locations", "cities", provinceCode] as const,
+      ["locations", "cities", "province", provinceCode] as const,
     barangays: (cityCode: string) =>
       ["locations", "barangays", cityCode] as const,
   },
