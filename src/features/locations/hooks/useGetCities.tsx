@@ -4,10 +4,12 @@ import { CACHE_TIMING } from "@/config/constants";
 import { QUERY_KEYS } from "@/config/queryKeys";
 
 export function useGetCities(regionCode?: string, provinceCode?: string) {
+  const queryKey = provinceCode
+    ? QUERY_KEYS.locations.citiesByProvince(provinceCode)
+    : QUERY_KEYS.locations.citiesByRegion(regionCode || "");
+
   return useQuery({
-    queryKey:
-      QUERY_KEYS.locations.citiesByRegion(regionCode || "") ||
-      QUERY_KEYS.locations.citiesByProvince(provinceCode || ""),
+    queryKey,
     queryFn: async () => {
       if (provinceCode) {
         return GetCities(undefined, provinceCode, {
@@ -18,10 +20,10 @@ export function useGetCities(regionCode?: string, provinceCode?: string) {
 
       return GetCities(regionCode, undefined, {
         handlerName: "useCities",
-        stepName: "Fetch Cities",
+        stepName: "Fetch Cities by Region",
       });
     },
-    enabled: !!regionCode || !!provinceCode,
+    enabled: Boolean(provinceCode || regionCode),
     staleTime: CACHE_TIMING.MEDIUM.staleTime,
     gcTime: CACHE_TIMING.MEDIUM.gcTime,
   });
