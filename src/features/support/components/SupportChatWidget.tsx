@@ -13,6 +13,7 @@ import {
   PersonStanding,
   ChevronDown,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { useSupportChat } from "../hooks/useSupportChat";
 import { useAuth } from "@/context";
@@ -217,9 +218,7 @@ export function SupportChatWidget() {
                 <ArrowLeft className="h-4 w-4" />
               </button>
             ) : (
-              <div
-                className="h-2 w-2 animate-pulse rounded-full bg-emerald-400"
-              />
+              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
             )}
             <div>
               <h3 className="text-sm font-bold">
@@ -227,16 +226,16 @@ export function SupportChatWidget() {
                   ? "Chat History"
                   : viewMode === "history-detail"
                     ? "Ticket Messages"
-                    : "GuiSIS Support"}
+                    : "Guidance Office Support"}
               </h3>
               <p className="text-[10px] opacity-80">
                 {viewMode === "history"
                   ? "Your past conversations"
                   : viewMode === "history-detail"
-                    ? "Read-only view"
+                    ? "Read-only consultation record"
                     : isPolling
-                      ? "Live Chat"
-                      : "Typically replies in minutes"}
+                      ? "Direct line to Guidance & System Admins"
+                      : "Official Guidance Consultation"}
               </p>
             </div>
           </div>
@@ -408,11 +407,31 @@ export function SupportChatWidget() {
                       )}
                     >
                       {showSenderLabel && (
-                        <span
-                          className="px-1 text-[10px] text-muted-foreground"
-                        >
-                          {isMe ? "You" : "GuiSIS Support"}
-                        </span>
+                        <div className="mb-1 flex items-center gap-1.5 px-1">
+                          <span
+                            className={cn(
+                              "text-[11px] font-semibold",
+                              isMe
+                                ? "text-muted-foreground"
+                                : "text-foreground",
+                            )}
+                          >
+                            {isMe ? "You" : msg.senderName}
+                          </span>
+                          {!isMe && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-0.5",
+                                "rounded-full border border-primary/30",
+                                "bg-primary/10 px-1.5 py-0.5 text-[9px]",
+                                "shadow-2xs font-medium text-primary",
+                              )}
+                            >
+                              <ShieldCheck className="h-2.5 w-2.5" />
+                              {msg.senderRole || "Guidance Counselor"}
+                            </span>
+                          )}
+                        </div>
                       )}
                       <div
                         onClick={() =>
@@ -461,6 +480,22 @@ export function SupportChatWidget() {
               className="flex h-full flex-col gap-4"
             >
               <div className="space-y-3">
+                <div
+                  className={cn(
+                    "rounded-xl border border-primary/20 bg-primary/5",
+                    "shadow-2xs p-3 text-xs text-muted-foreground",
+                  )}
+                >
+                  <p className="flex items-center gap-1.5 font-semibold text-primary">
+                    <ShieldCheck className="h-4 w-4 shrink-0" />
+                    Guidance Office Official Support
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed">
+                    You are connected directly with Guidance Personnel. Please
+                    keep interactions respectful and professional.
+                  </p>
+                </div>
+
                 <p className="text-xs text-muted-foreground">
                   Hello! How can we help you today? Pick a topic or type your
                   concern below to start a live chat session.
@@ -617,11 +652,31 @@ export function SupportChatWidget() {
                       )}
                     >
                       {showSenderLabel && (
-                        <span
-                          className="px-1 text-[10px] text-muted-foreground"
-                        >
-                          {isMe ? "You" : "GuiSIS Support"}
-                        </span>
+                        <div className="mb-0.5 flex items-center gap-1.5 px-1">
+                          <span
+                            className={cn(
+                              "text-[10px] font-semibold",
+                              isMe
+                                ? "text-muted-foreground"
+                                : "text-foreground",
+                            )}
+                          >
+                            {isMe ? "You" : msg.senderName || "Guidance Office"}
+                          </span>
+                          {!isMe && (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-0.5",
+                                "rounded-full border border-primary/30",
+                                "bg-primary/10 px-1.5 py-0.5 text-[9px]",
+                                "shadow-2xs font-medium text-primary",
+                              )}
+                            >
+                              <ShieldCheck className="h-2.5 w-2.5" />
+                              {msg.senderRole || "Guidance Counselor"}
+                            </span>
+                          )}
+                        </div>
                       )}
                       <div
                         onClick={() =>
@@ -901,7 +956,7 @@ export function SupportChatWidget() {
                         <span
                           className={cn(
                             "pointer-events-none absolute right-full",
-                          "top-1/2 mr-3",
+                            "top-1/2 mr-3",
                             "-translate-y-1/2 whitespace-nowrap rounded",
                             "bg-slate-900/90 px-2 py-1 text-xs font-medium",
                             "text-white opacity-0 shadow transition-opacity",
@@ -968,9 +1023,7 @@ export function SupportChatWidget() {
                       transition={{ duration: 0.2 }}
                       className="flex items-center justify-center"
                     >
-                      <PersonStanding
-                        className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8"
-                      />
+                      <PersonStanding className="h-6 w-6 sm:h-7 sm:w-7 xl:h-8 xl:w-8" />
                     </motion.span>
                   )}
                 </AnimatePresence>

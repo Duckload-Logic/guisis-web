@@ -1,6 +1,5 @@
 import { Search, X } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -46,11 +45,7 @@ export default function SearchInput({
   }, [localValue, searchTerm]);
 
   const handleChange = (val: string) => {
-    if (noSpecialCharacters && SPECIAL_CHARS_REGEX.test(val)) {
-      setError("Special characters are not allowed");
-    } else {
-      setError("");
-    }
+    setError("");
     setLocalValue(val);
   };
 
@@ -86,7 +81,7 @@ export default function SearchInput({
           className={cn(
             "h-11 bg-muted/40 py-2.5 pl-10 pr-11 text-sm font-medium",
             "text-foreground shadow-md outline-none transition-all",
-            "duration-200 hover:border-glass-border/60",
+            "hover:border-glass-border/60 duration-200",
             "placeholder:text-muted-foreground/70",
             "focus:border-primary/50 focus:bg-glass-bg focus:ring-2",
             "focus:ring-primary/5",

@@ -281,6 +281,9 @@ export const commonRules = {
       return !SPECIAL_CHARS_REGEX.test(normalized);
     },
     message: `${fieldName} contains invalid special characters`,
+  noSpecialChars: (_fieldName: string): ValidationRule => ({
+    validate: () => true,
+    message: "",
   }),
 
   inList: (list: string[], fieldName: string): ValidationRule => ({

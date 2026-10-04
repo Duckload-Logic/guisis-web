@@ -43,6 +43,7 @@ import goodCertImage from "@/assets/images/good-certificate-example.png";
 import badCertImage from "@/assets/images/bad-certificate-example.png";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_FILES_PER_DOCUMENT = 3;
 const MAX_REASON_CHARS = 500;
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
@@ -228,10 +229,18 @@ export default function SubmitSlip() {
     if (!files) return;
 
     const allFiles = Array.from(files);
-    const currentTotalSize = formData.files[documentType].reduce(
+    const existingFileCount =
+      formData.files[documentType].length + getKeptFiles(documentType).length;
+
+    const currentLocalSize = formData.files[documentType].reduce(
       (acc, f) => acc + f.size,
       0,
     );
+    const currentKeptSize = getKeptFiles(documentType).reduce(
+      (acc, file) => acc + (Number(file.fileSize) || 0),
+      0,
+    );
+    const currentTotalSize = currentLocalSize + currentKeptSize;
 
     let incomingSize = 0;
     const validFiles: File[] = [];
@@ -251,6 +260,13 @@ export default function SubmitSlip() {
     }
 
     if (validFiles.length === 0) return;
+
+    if (existingFileCount + validFiles.length > MAX_FILES_PER_DOCUMENT) {
+      triggerToast(
+        `A maximum of ${MAX_FILES_PER_DOCUMENT} files is allowed for this document type.`,
+      );
+      return;
+    }
 
     if (currentTotalSize + incomingSize > MAX_FILE_SIZE_BYTES) {
       triggerToast("Total size for this category must not exceed 5MB.");
@@ -284,6 +300,40 @@ export default function SubmitSlip() {
 
   const handleSubmit = async () => {
     if (!isFormValid || submittingRef.current) return;
+
+    const exceedsFileCountLimit = (
+      ["excuseLetter", "parentId", "medicalCert"] as DocumentType[]
+    ).some(
+      (documentType) =>
+        formData.files[documentType].length + getKeptFiles(documentType).length >
+        MAX_FILES_PER_DOCUMENT,
+    );
+
+    if (exceedsFileCountLimit) {
+      triggerToast(
+        `Each document type is limited to ${MAX_FILES_PER_DOCUMENT} files.`,
+      );
+      return;
+    }
+
+    const exceedsSizeLimit = (
+      ["excuseLetter", "parentId", "medicalCert"] as DocumentType[]
+    ).some((documentType) => {
+      const localSize = formData.files[documentType].reduce(
+        (acc, file) => acc + file.size,
+        0,
+      );
+      const keptSize = getKeptFiles(documentType).reduce(
+        (acc, file) => acc + (Number(file.fileSize) || 0),
+        0,
+      );
+      return localSize + keptSize > MAX_FILE_SIZE_BYTES;
+    });
+
+    if (exceedsSizeLimit) {
+      triggerToast("Total size for each document type must not exceed 5MB.");
+      return;
+    }
 
     submittingRef.current = true;
     setUploadProgress(0);
@@ -360,7 +410,9 @@ export default function SubmitSlip() {
   ) => {
     const localFiles = formData.files[documentType];
     const keptFiles = getKeptFiles(documentType);
-    const hasFiles = localFiles.length > 0 || keptFiles.length > 0;
+    const totalFileCount = localFiles.length + keptFiles.length;
+    const hasFiles = totalFileCount > 0;
+    const hasReachedFileLimit = totalFileCount >= MAX_FILES_PER_DOCUMENT;
 
     return (
       <div
@@ -389,7 +441,7 @@ export default function SubmitSlip() {
               )}
             >
               <CheckCircle2 className="mr-1 h-3 w-3" />
-              Attached ({localFiles.length + keptFiles.length})
+              Attached ({totalFileCount}/{MAX_FILES_PER_DOCUMENT})
             </Badge>
           )}
         </div>
@@ -433,8 +485,15 @@ export default function SubmitSlip() {
             type="file"
             multiple
             accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => handleFileAdd(documentType, e.target.files)}
-            className="absolute inset-0 cursor-pointer opacity-0"
+            disabled={hasReachedFileLimit}
+            onChange={(e) => {
+              handleFileAdd(documentType, e.target.files);
+              e.currentTarget.value = "";
+            }}
+            className={cn(
+              "absolute inset-0 opacity-0",
+              hasReachedFileLimit ? "cursor-not-allowed" : "cursor-pointer",
+            )}
           />
           <div
             className={cn(
@@ -443,9 +502,13 @@ export default function SubmitSlip() {
             )}
           >
             <Folder className="h-4 w-4 text-primary" />
-            <span>Click or drag to attach {title.toLowerCase()}</span>
+            <span>
+              {hasReachedFileLimit
+                ? `Maximum of ${MAX_FILES_PER_DOCUMENT} files reached`
+                : `Click or drag to attach ${title.toLowerCase()}`}
+            </span>
             <span className="text-[10px] text-muted-foreground/60">
-              (PDF, JPG, PNG ≤ 5MB)
+              (max {MAX_FILES_PER_DOCUMENT} files, PDF/JPG/PNG ≤ 5MB total)
             </span>
           </div>
         </div>
@@ -627,8 +690,8 @@ export default function SubmitSlip() {
                 "parentId",
                 "Parent / Guardian ID",
                 "Required",
-                "1-page clear copy of parent or legal guardian's valid " +
-                  "government/company ID with signature.",
+                "Upload up to 3 one-page clear ID copies for the father, " +
+                  "mother, and/or guardian listed in your IIR, with signature.",
                 true,
               )}
 
