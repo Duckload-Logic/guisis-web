@@ -2,7 +2,6 @@
  * Dynamic validation schema system
  * Defines validation rules for forms without hardcoding them
  */
-import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 
 export type ValidationRule = {
   type?: string;
@@ -157,7 +156,7 @@ export const commonRules = {
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-        
+
         const d = new Date(year, month - 1, day);
         if (
           d.getFullYear() !== year ||
@@ -273,14 +272,6 @@ export const commonRules = {
     message,
   }),
 
-  noSpecialChars: (fieldName: string): ValidationRule => ({
-    validate: (value: any) => {
-      if (value === undefined || value === null || value === "") return true;
-      const normalized = String(value).trim();
-      if (normalized.toUpperCase() === "N/A") return true;
-      return !SPECIAL_CHARS_REGEX.test(normalized);
-    },
-    message: `${fieldName} contains invalid special characters`,
   noSpecialChars: (_fieldName: string): ValidationRule => ({
     validate: () => true,
     message: "",
