@@ -10,6 +10,14 @@ interface Legend {
   label: string;
 }
 
+export type DisabledDateReason =
+  | "weekend"
+  | "past"
+  | "today"
+  | "after-max"
+  | "holiday"
+  | "booked";
+
 interface CalendarProps {
   /** Current month being displayed */
   currentMonth: Date;
@@ -19,6 +27,8 @@ interface CalendarProps {
   onMonthChange: (date: Date) => void;
   /** Callback when a date is selected */
   onDateSelect: (date: Date) => void;
+  /** Optional callback when the user taps a disabled date */
+  onDisabledDateClick?: (date: Date, reason: DisabledDateReason) => void;
   /** Set of booked dates in "YYYY-MM-DD" format */
   bookedDates?: Set<string>;
   /** Custom legends to display */
@@ -48,6 +58,7 @@ export default function Calendar({
   selectedDate,
   onMonthChange,
   onDateSelect,
+  onDisabledDateClick,
   bookedDates = new Set(),
   legends,
   occupiedDayColor = "bg-primary",
@@ -139,8 +150,8 @@ export default function Calendar({
     [currentYear, currentMonthIndex],
   );
 
-  const isDateDisabled = useCallback(
-    (day: number): boolean => {
+  const getDateDisabledReason = useCallback(
+    (day: number): DisabledDateReason | null => {
       const date = new Date(currentYear, currentMonthIndex, day);
       const dayOfWeek = date.getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
@@ -151,13 +162,13 @@ export default function Calendar({
         "0",
       )}-${String(day).padStart(2, "0")}`;
 
-      if (!allowWeekends && isWeekend) return true;
-      if (!allowPastDates && isPast) return true;
-      if (!allowCurrentDate && isToday) return true;
-      if (maxDate && date > maxDate) return true;
-      if (!isAdmin && checkIsHoliday(day)) return true;
-      if (!isAdmin && bookedDates.has(dateKey)) return true;
-      return false;
+      if (!allowWeekends && isWeekend) return "weekend";
+      if (!allowPastDates && isPast) return "past";
+      if (!allowCurrentDate && isToday) return "today";
+      if (maxDate && date > maxDate) return "after-max";
+      if (!isAdmin && checkIsHoliday(day)) return "holiday";
+      if (!isAdmin && bookedDates.has(dateKey)) return "booked";
+      return null;
     },
     [
       currentYear,
@@ -174,6 +185,11 @@ export default function Calendar({
       isAdmin,
       checkIsHoliday,
     ],
+  );
+
+  const isDateDisabled = useCallback(
+    (day: number): boolean => Boolean(getDateDisabledReason(day)),
+    [getDateDisabledReason],
   );
 
   const handleDateClick = (day: number) => {
@@ -249,7 +265,9 @@ export default function Calendar({
             currentMonthIndex={currentMonthIndex}
             currentYear={currentYear}
             isDateDisabled={isDateDisabled}
+            getDateDisabledReason={getDateDisabledReason}
             handleDateClick={handleDateClick}
+            onDisabledDateClick={onDisabledDateClick}
             isAdmin={isAdmin}
             statsMap={statsMap}
             displayLegends={displayLegends}
@@ -275,7 +293,9 @@ interface CalendarContentProps {
   currentMonthIndex: number;
   currentYear: number;
   isDateDisabled: (day: number) => boolean;
+  getDateDisabledReason: (day: number) => DisabledDateReason | null;
   handleDateClick: (day: number) => void;
+  onDisabledDateClick?: (date: Date, reason: DisabledDateReason) => void;
   isAdmin: boolean;
   statsMap: any;
   displayLegends: Legend[];
@@ -296,7 +316,9 @@ function CalendarContent({
   currentMonthIndex,
   currentYear,
   isDateDisabled,
+  getDateDisabledReason,
   handleDateClick,
+  onDisabledDateClick,
   isAdmin,
   statsMap,
   displayLegends,
@@ -376,7 +398,8 @@ function CalendarContent({
               selectedDate?.getDate() === day &&
               selectedDate.getMonth() === currentMonthIndex &&
               selectedDate.getFullYear() === currentYear;
-            const isDisabled = isDateDisabled(day);
+            const disabledReason = getDateDisabledReason(day);
+            const isDisabled = Boolean(disabledReason);
             const holidayName = isHoliday(day);
             const isHolidayDate = !!holidayName;
 
@@ -422,8 +445,18 @@ function CalendarContent({
               >
                 <button
                   type="button"
-                  disabled={isDisabled}
-                  onClick={() => handleDateClick(day)}
+                  disabled={isDisabled && !onDisabledDateClick}
+                  aria-disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled && disabledReason) {
+                      onDisabledDateClick?.(
+                        new Date(currentYear, currentMonthIndex, day),
+                        disabledReason,
+                      );
+                      return;
+                    }
+                    handleDateClick(day);
+                  }}
                   className={btnClass}
                   aria-label={`${day} ${monthName}${
                     holidayName ? ` - ${holidayName}` : ""

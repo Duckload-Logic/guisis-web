@@ -70,6 +70,16 @@ export function DatePicker({
     () => (selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""),
     [selectedDate],
   );
+  const nativeMin = `${fromYear}-01-01`;
+  const nativeMax = React.useMemo(() => {
+    const configuredMax = new Date(toYear, 11, 31);
+    const effectiveMax =
+      maxDate && maxDate.getTime() < configuredMax.getTime()
+        ? maxDate
+        : configuredMax;
+
+    return format(effectiveMax, "yyyy-MM-dd");
+  }, [maxDate, toYear]);
 
   React.useEffect(() => {
     const closeOnMobileResize = () => {
@@ -118,19 +128,7 @@ export function DatePicker({
         </div>
       )}
 
-      <div className="relative h-11 w-full sm:hidden">
-        <div
-          className={cn(
-            triggerClasses,
-            "pointer-events-none",
-            !hasValue && "font-normal italic text-muted-foreground/60",
-          )}
-          aria-hidden="true"
-        >
-          <CalendarIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1 truncate">{displayText}</span>
-        </div>
-
+      <div className="w-full sm:hidden">
         <input
           ref={inputRef}
           id={`${safeId}-mobile`}
@@ -139,12 +137,22 @@ export function DatePicker({
           onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
           disabled={disabled}
-          max={maxDate ? format(maxDate, "yyyy-MM-dd") : undefined}
+          min={nativeMin}
+          max={nativeMax}
           aria-label={label ?? placeholder}
           aria-invalid={Boolean(error)}
           className={cn(
-            "absolute inset-0 h-full w-full opacity-0",
-            disabled ? "pointer-events-none" : "cursor-pointer",
+            "h-11 w-full rounded-xl border px-4 py-2.5 text-sm",
+            "font-medium tracking-tight text-foreground outline-none",
+            "transition-all duration-200",
+            "focus-visible:border-primary/50 focus-visible:ring-2",
+            "focus-visible:ring-primary/5",
+            getFieldStateClasses({
+              disabled,
+              error: !!error,
+              filled: hasValue,
+              required,
+            }),
           )}
         />
       </div>
