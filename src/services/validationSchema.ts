@@ -188,16 +188,6 @@ export const commonRules = {
       "Must be a valid Philippine mobile number (e.g. 09XXXXXXXXX or +639XXXXXXXXX)",
   }),
 
-  telephone: (): ValidationRule => ({
-    validate: (value: any) => {
-      if (value === undefined || value === null || value === "") return true;
-      const clean = String(value).replace(/[\s\-\(\)]/g, "");
-      return /^(\+63|0)(2[3578]\d{7}|[3-9]\d{1,2}\d{7})$/.test(clean);
-    },
-    message:
-      "Must be a valid Philippine telephone number (e.g. 02XXXXXXXXX or 09XXXXXXXXX)",
-  }),
-
   nameFormat: (): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;

@@ -661,7 +661,7 @@ export function SupportChatWidget() {
                                 : "text-foreground",
                             )}
                           >
-                            {isMe ? "You" : msg.senderName || "Guidance Office"}
+                            {isMe ? "You" : msg.senderName || "GuiSIS Support"}
                           </span>
                           {!isMe && (
                             <span
