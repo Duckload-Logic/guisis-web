@@ -80,10 +80,16 @@ export function transformFormToPayload(formData: IIRForm): any {
         firstName: formData.student.basicInfo.firstName,
         middleName: handleNullableString(formData.student.basicInfo.middleName),
         lastName: formData.student.basicInfo.lastName,
+        suffixName: handleNullableString(
+          formData.student.personalInfo.suffix ||
+            formData.student.basicInfo.suffixName,
+        ),
       },
       personalInfo: {
         id: formData.student.personalInfo.id,
         iirId: formData.id,
+        suffix: handleNullableString(formData.student.personalInfo.suffix),
+        suffixName: handleNullableString(formData.student.personalInfo.suffix),
         studentNumber: formData.student.personalInfo.studentNumber,
         gender: formData.student.personalInfo.gender,
         civilStatus: formData.student.personalInfo.civilStatus,
@@ -128,6 +134,9 @@ export function transformFormToPayload(formData: IIRForm): any {
             formData.student.personalInfo.emergencyContact.middleName,
           ),
           lastName: formData.student.personalInfo.emergencyContact.lastName,
+          suffixName: handleNullableString(
+            formData.student.personalInfo.emergencyContact.suffixName,
+          ),
           contactNumber:
             formData.student.personalInfo.emergencyContact.contactNumber,
           relationship:
@@ -212,6 +221,7 @@ export function transformFormToPayload(formData: IIRForm): any {
             lastName: person.lastName,
             firstName: person.firstName,
             middleName: handleNullableString(person.middleName),
+            suffixName: handleNullableString(person.suffixName),
             dateOfBirth: person.dateOfBirth
               ? formatDateForBackend(person.dateOfBirth)
               : undefined,
