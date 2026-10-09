@@ -70,6 +70,11 @@ export default function BioCard({
               ? `${data.basicInfo.middleName[0]}.`
               : ""}{" "}
             {data?.basicInfo?.lastName}
+            {data?.basicInfo?.suffixName
+              ? ` ${data.basicInfo.suffixName}`
+              : data?.personalInfo?.suffix
+                ? ` ${data.personalInfo.suffix}`
+                : ""}
           </h2>
           <span
             className={cn(

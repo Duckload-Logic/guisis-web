@@ -126,6 +126,7 @@ export interface BasicInfo {
   middleName: string | null;
   lastName: string;
   email: string;
+  suffixName?: string | null;
 }
 
 export interface EmergencyContact {
@@ -133,6 +134,7 @@ export interface EmergencyContact {
   firstName: string;
   middleName: string | null;
   lastName: string;
+  suffixName?: string | null;
   contactNumber: string;
   relationship: StudentRelationShip;
   address: Address;
@@ -197,6 +199,7 @@ export interface RelatedPerson {
   firstName: string;
   middleName: string | null;
   lastName: string;
+  suffixName?: string | null;
   dateOfBirth: string;
   educationalAttainment: EducationalLevel;
   occupation: string | null;
