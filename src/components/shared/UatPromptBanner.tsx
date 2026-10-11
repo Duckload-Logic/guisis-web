@@ -21,6 +21,7 @@ const BANNER_TITLE = 'Help Us Improve PUPT-GuiSIS';
 const BANNER_DESCRIPTION =
   'Please take 3–5 minutes to complete the official ISO 25010 ' +
   'User Acceptance Testing (UAT) evaluation.';
+const BUTTON_ALREADY_DONE = 'Already Completed';
 const BUTTON_DISMISS = 'Remind Me Later';
 const BUTTON_CONFIRM = 'Complete Evaluation';
 
@@ -41,14 +42,14 @@ export const UatPromptBanner: React.FC<UatPromptBannerProps> = ({
     }
   }, [storageKey]);
 
-  const handleOpenSurvey = () => {
+  const markAsCompleted = () => {
     localStorage.setItem(storageKey, 'true');
     setIsDismissed(true);
-    openUatSurvey({ fullName, email, role, yearLevel });
   };
 
-  const handleDismiss = () => {
-    setIsDismissed(true);
+  const handleOpenSurvey = () => {
+    markAsCompleted();
+    openUatSurvey({ fullName, email, role, yearLevel });
   };
 
   if (isDismissed) {
@@ -58,28 +59,37 @@ export const UatPromptBanner: React.FC<UatPromptBannerProps> = ({
   return (
     <div
       role="alert"
-      className="flex flex-col sm:flex-row items-center justify-between
-                 gap-3 rounded-lg border border-primary/20 bg-primary/5
-                 p-4 text-sm shadow-sm"
+      className="flex flex-col lg:flex-row items-start lg:items-center
+                 justify-between gap-3 rounded-lg border border-primary/20
+                 bg-primary/5 p-4 text-sm shadow-sm"
     >
       <div className="text-foreground">
         <p className="font-semibold text-sm">{BANNER_TITLE}</p>
         <p className="text-xs text-muted-foreground">{BANNER_DESCRIPTION}</p>
       </div>
 
-      <div className="flex w-full sm:w-auto items-center gap-2">
+      <div className="flex w-full lg:w-auto flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={markAsCompleted}
+          className={`flex-1 sm:flex-initial text-xs ${BUTTON_TOUCH_TARGET}`}
+        >
+          {BUTTON_ALREADY_DONE}
+        </Button>
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleDismiss}
-          className={`flex-1 sm:flex-initial ${BUTTON_TOUCH_TARGET}`}
+          onClick={() => setIsDismissed(true)}
+          className={`flex-1 sm:flex-initial text-xs ${BUTTON_TOUCH_TARGET}`}
         >
           {BUTTON_DISMISS}
         </Button>
         <Button
           size="sm"
           onClick={handleOpenSurvey}
-          className={`flex-1 sm:flex-initial ${BUTTON_TOUCH_TARGET}`}
+          className={`w-full sm:w-auto flex-initial text-xs
+                     ${BUTTON_TOUCH_TARGET}`}
         >
           {BUTTON_CONFIRM}
         </Button>
@@ -87,4 +97,3 @@ export const UatPromptBanner: React.FC<UatPromptBannerProps> = ({
     </div>
   );
 };
-
