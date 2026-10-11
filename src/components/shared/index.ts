@@ -21,3 +21,4 @@ export * from "./Table";
 export * from "./FriendlyErrorState";
 export { default as PDFPreview } from "./PDFPreview";
 export * from "./DocumentProgressDialog";
+export * from "./UatPromptBanner";
