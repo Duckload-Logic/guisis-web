@@ -1,5 +1,10 @@
 import React from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { FileText } from "lucide-react";
 
 interface DocumentProgressDialogProps {
@@ -18,8 +23,12 @@ export const DocumentProgressDialog: React.FC<DocumentProgressDialogProps> = ({
       <DialogContent className="sm:max-w-md [&>button]:hidden">
         <div className="flex flex-col items-center justify-center p-6 text-center">
           <FileText className="mb-4 h-12 w-12 animate-pulse text-emerald-500" />
-          <h3 className="mb-2 text-lg font-semibold">Generating Document</h3>
-          <p className="mb-6 text-sm text-muted-foreground">{message}</p>
+          <DialogTitle className="mb-2 text-lg font-semibold">
+            Generating Document
+          </DialogTitle>
+          <DialogDescription className="mb-6 text-sm text-muted-foreground">
+            {message}
+          </DialogDescription>
           <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-500/20">
             <div
               className="h-full bg-emerald-500 transition-all duration-300 ease-out"
