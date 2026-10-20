@@ -488,77 +488,74 @@ export default function AppointmentDetails() {
                     Counselor Remarks & Activity Log
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6 pt-5">
-                  {auditEntries.map((entry, idx) => (
-                    <div
-                      key={idx}
-                      className="group flex items-start gap-4"
-                    >
-                      <div className="relative mt-1">
-                        <div
-                          className={cn(
-                            "relative z-10 h-3.5 w-3.5 shrink-0 rounded-full",
-                            "border-2",
-                            entry.status.toUpperCase().includes("PENDING")
-                              ? "border-amber-500 bg-background"
-                              : entry.status
-                                    .toUpperCase()
-                                    .includes("APPROVED") ||
-                                  entry.status
-                                    .toUpperCase()
-                                    .includes("COMPLETED") ||
-                                  entry.status
-                                    .toUpperCase()
-                                    .includes("SCHEDULED")
-                                ? "border-emerald-500 bg-background"
-                                : entry.status
-                                      .toUpperCase()
-                                      .includes("REJECTED") ||
-                                    entry.status
-                                      .toUpperCase()
-                                      .includes("CANCELLED")
-                                  ? "border-red-500 bg-background"
-                                  : "border-primary bg-background",
-                          )}
-                        />
-                        <div
-                          className={cn(
-                            "absolute left-1/2 top-3.5 h-full w-0.5 bg-border",
-                            "-translate-x-1/2 group-last:hidden",
-                          )}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-foreground">
-                          {entry.status}
-                        </p>
-                        {entry.timestamp && (
-                          <p className="text-[10px] text-muted-foreground">
-                            {entry.timestamp}
-                          </p>
+                <CardContent className="pt-5">
+                  <div className="relative space-y-6 pl-6">
+                    {auditEntries.length > 1 && (
+                      <div
+                        className={cn(
+                          "absolute bottom-2 left-[5px] top-2",
+                          "w-0.5 bg-border/60",
                         )}
-                        {entry.remarks && (
-                          <p
+                        aria-hidden="true"
+                      />
+                    )}
+                    {auditEntries.map((entry, idx) => {
+                      const upper = entry.status.toUpperCase();
+                      const statusBorder = upper.includes("PENDING")
+                        ? "border-amber-500"
+                        : upper.includes("APPROVED") ||
+                            upper.includes("COMPLETED") ||
+                            upper.includes("SCHEDULED")
+                          ? "border-emerald-500"
+                          : upper.includes("REJECTED") ||
+                              upper.includes("CANCELLED")
+                            ? "border-destructive"
+                            : "border-primary";
+
+                      return (
+                        <div key={idx} className="relative">
+                          <div
                             className={cn(
-                              "whitespace-pre-wrap text-xs leading-relaxed",
-                              "text-muted-foreground",
+                              "absolute -left-6 top-1 z-10 h-3 w-3",
+                              "rounded-full border-2 bg-background",
+                              "shadow-sm ring-4 ring-card",
+                              statusBorder,
                             )}
-                          >
-                            {entry.remarks}
-                          </p>
-                        )}
-                        {entry.details && (
-                          <p
-                            className={cn(
-                              "text-[10px] italic text-muted-foreground",
+                            aria-hidden="true"
+                          />
+                          <div className="space-y-1">
+                            <p className="text-xs font-bold text-foreground">
+                              {entry.status}
+                            </p>
+                            {entry.timestamp && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {entry.timestamp}
+                              </p>
                             )}
-                          >
-                            {entry.details}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                            {entry.remarks && (
+                              <p
+                                className={cn(
+                                  "whitespace-pre-wrap text-xs leading-relaxed",
+                                  "text-muted-foreground",
+                                )}
+                              >
+                                {entry.remarks}
+                              </p>
+                            )}
+                            {entry.details && (
+                              <p
+                                className={cn(
+                                  "text-[10px] italic text-muted-foreground",
+                                )}
+                              >
+                                {entry.details}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
             )}

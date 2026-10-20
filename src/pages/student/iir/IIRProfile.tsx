@@ -111,12 +111,6 @@ export default function IIRProfile() {
   const isOwnExpedited =
     !isStaff && sessionIir?.isSubmitted && !sessionIir?.isCompleted;
 
-  useEffect(() => {
-    if (isOwnExpedited && activeTab !== "personal") {
-      setActiveTab("personal");
-    }
-  }, [isOwnExpedited, activeTab]);
-
   const badgeIcon = useMemo(() => <User size={16} />, []);
 
   const { isPrintDisabled, missingFields, tooltip: printButtonTooltip } =

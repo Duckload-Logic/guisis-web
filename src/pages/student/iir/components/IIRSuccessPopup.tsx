@@ -1,7 +1,12 @@
 import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface IIRSuccessPopupProps {
@@ -42,13 +47,15 @@ export function IIRSuccessPopup({
           </div>
         </div>
 
-        <h3 className="text-3xl font-[900] text-foreground">All Done!</h3>
+        <DialogTitle className="text-3xl font-[900] text-foreground">
+          All Done!
+        </DialogTitle>
 
-        <p className="px-4 font-medium text-muted-foreground">
+        <DialogDescription className="px-4 font-medium text-muted-foreground">
           {isEditMode
             ? "Your Individual Inventory Record has been successfully updated and saved."
             : "Your Individual Inventory Record has been successfully submitted and saved to our secure database."}
-        </p>
+        </DialogDescription>
 
         <Button
           onClick={onReturn}

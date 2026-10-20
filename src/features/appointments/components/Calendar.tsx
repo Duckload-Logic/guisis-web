@@ -114,12 +114,34 @@ export default function Calendar({
     today.getFullYear() === currentYear &&
     today.getMonth() === currentMonthIndex;
 
+  const isPrevDisabled =
+    !allowPastDates &&
+    (currentYear < today.getFullYear() ||
+      (currentYear === today.getFullYear() &&
+        currentMonthIndex <= today.getMonth()));
+
+  const nextMonthFirstDay = new Date(currentYear, currentMonthIndex + 1, 1);
+  const isNextDisabled = maxDate
+    ? nextMonthFirstDay >
+      new Date(
+        maxDate.getFullYear(),
+        maxDate.getMonth(),
+        maxDate.getDate(),
+        23,
+        59,
+        59,
+        999,
+      )
+    : false;
+
   const handlePrevMonth = () => {
-    onMonthChange(new Date(currentYear, currentMonthIndex - 1));
+    if (isPrevDisabled) return;
+    onMonthChange(new Date(currentYear, currentMonthIndex - 1, 1));
   };
 
   const handleNextMonth = () => {
-    onMonthChange(new Date(currentYear, currentMonthIndex + 1));
+    if (isNextDisabled) return;
+    onMonthChange(new Date(currentYear, currentMonthIndex + 1, 1));
   };
 
   const getDaysInMonth = (date: Date): number => {
@@ -256,6 +278,8 @@ export default function Calendar({
             monthName={monthName}
             handlePrevMonth={handlePrevMonth}
             handleNextMonth={handleNextMonth}
+            isPrevDisabled={isPrevDisabled}
+            isNextDisabled={isNextDisabled}
             emptyDays={emptyDays}
             days={days}
             formatDateKey={formatDateKey}
@@ -284,6 +308,8 @@ interface CalendarContentProps {
   monthName: string;
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
+  isPrevDisabled?: boolean;
+  isNextDisabled?: boolean;
   emptyDays: any[];
   days: number[];
   formatDateKey: (day: number) => string;
@@ -307,6 +333,8 @@ function CalendarContent({
   monthName,
   handlePrevMonth,
   handleNextMonth,
+  isPrevDisabled = false,
+  isNextDisabled = false,
   emptyDays,
   days,
   formatDateKey,
@@ -331,11 +359,15 @@ function CalendarContent({
         <button
           type="button"
           onClick={handlePrevMonth}
+          disabled={isPrevDisabled}
           className={cn(
             "flex h-10 min-h-0 w-10 shrink-0 items-center",
-            "justify-center rounded-lg p-0",
-            "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+            "justify-center rounded-lg p-0 text-foreground",
+            "transition-colors hover:bg-muted focus:outline-none",
+            "focus:ring-2 focus:ring-primary/30",
             "[overflow-wrap:normal] [word-break:normal]",
+            isPrevDisabled &&
+              "cursor-not-allowed opacity-30 hover:bg-transparent",
           )}
           aria-label="Previous month"
         >
@@ -354,11 +386,15 @@ function CalendarContent({
         <button
           type="button"
           onClick={handleNextMonth}
+          disabled={isNextDisabled}
           className={cn(
             "flex h-10 min-h-0 w-10 shrink-0 items-center",
-            "justify-center rounded-lg p-0",
-            "text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+            "justify-center rounded-lg p-0 text-foreground",
+            "transition-colors hover:bg-muted focus:outline-none",
+            "focus:ring-2 focus:ring-primary/30",
             "[overflow-wrap:normal] [word-break:normal]",
+            isNextDisabled &&
+              "cursor-not-allowed opacity-30 hover:bg-transparent",
           )}
           aria-label="Next month"
         >

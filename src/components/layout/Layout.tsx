@@ -400,29 +400,33 @@ export default function Layout({
                   {showIIRWarning && (
                     <div
                       className={cn(
-                        "mb-6 flex flex-col sm:flex-row",
-                        "gap-4 sm:items-center sm:justify-between",
-                        "rounded-xl border border-warning-foreground/30",
-                        "bg-warning-background p-4 text-warning-foreground",
+                        "mb-6 flex flex-col gap-4 rounded-xl border",
+                        "border-primary/20 bg-primary/5 p-4 text-foreground",
+                        "sm:flex-row sm:items-center sm:justify-between",
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <AlertTriangle className="h-5 w-5 shrink-0 text-warning-foreground" />
+                        <AlertTriangle
+                          className="h-5 w-5 shrink-0 text-primary"
+                        />
                         <div className="text-sm font-medium">
-                          You are currently using an expedited profile. Please
-                          complete your Individual Inventory Record (IIR) to
-                          gain full access.
+                          <span className="font-semibold text-primary">
+                            Expedited Profile:
+                          </span>{" "}
+                          You have full access to GuiSIS services. You may
+                          optionally update remaining profile sections.
                         </div>
                       </div>
                       <button
                         onClick={() => navigate(STUDENT_IIR_FORM_PATH)}
                         className={cn(
-                          "shrink-0 rounded-lg bg-yellow-600",
-                          "px-4 py-2 text-xs hover:bg-yellow-700",
-                          "font-semibold text-white shadow transition-colors",
+                          "shrink-0 rounded-lg border border-primary/20",
+                          "bg-primary/10 px-4 py-2 text-xs font-semibold",
+                          "text-primary shadow-sm transition-colors",
+                          "hover:bg-primary/20",
                         )}
                       >
-                        Complete Form
+                        Update Profile
                       </button>
                     </div>
                   )}

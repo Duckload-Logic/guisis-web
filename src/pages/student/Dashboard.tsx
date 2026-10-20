@@ -15,6 +15,7 @@ import { useAppointmentsStats } from "@/features/appointments/hooks/useAppointme
 import { useUserIIR } from "@/features/iir/hooks";
 import { useGetSlipStats } from "@/features/slips/hooks";
 import { useMe } from "@/features/users/hooks/useMe";
+import { UatPromptBanner } from "@/components/shared";
 import { cn } from "@/lib/utils";
 
 import { QuickActionsSection } from "./dashboard/QuickActionsSection";
@@ -197,6 +198,17 @@ export default function Dashboard() {
       )}
     >
       <AnimationStyles />
+
+      {me && (
+        <div className="mb-6">
+          <UatPromptBanner
+            userId={me.id}
+            fullName={`${me.firstName} ${me.lastName}`}
+            email={me.email}
+            role="Student"
+          />
+        </div>
+      )}
 
       {/* KPI Overview Strip */}
       <StatusSummaryCards

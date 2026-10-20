@@ -50,7 +50,7 @@ export default function InfoNavigation({
       >
         {filteredTabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const isTabDisabled = isExpedited && tab.id !== "personal";
+          const isTabDisabled = false;
 
           return (
             <button
