@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SelectField } from "@/components/ui/select-field";
 import { FormField } from "@/components/ui/form-field";
-import Calendar from "@/features/appointments/components/Calendar";
+import Calendar, {
+  type DisabledDateReason,
+} from "@/features/appointments/components/Calendar";
 import SlotSelector from "@/features/appointments/components/SlotSelector";
 import {
   useAvailableSlots,
@@ -29,13 +31,25 @@ import {
   AvailableTimeSlotView,
 } from "@/features/appointments/types";
 import { toISODateString } from "@/utils/dateTime";
+import { getFallbackHolidayName } from "@/utils/holidays";
 import { usePageMetadata, useToast } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/api";
 
 const MAX_REASON_LENGTH = 500;
 const MAX_BOOKING_DAYS_AHEAD = 60;
 const MAX_BACKUP_OPTIONS = 3;
+
+function isNonWorkingAppointmentDate(date: Date): boolean {
+  const day = date.getDay();
+  const isWeekend = day === 0 || day === 6;
+  const isHoliday = Boolean(
+    getFallbackHolidayName(toISODateString(date)),
+  );
+
+  return isWeekend || isHoliday;
+}
 
 interface BackupSchedule {
   date?: Date;
@@ -99,8 +113,46 @@ export default function CreateAppointment() {
   const isFormValid = hasPrimarySchedule && hasCategory && hasReason;
 
   const handleDateSelect = (date: Date) => {
+    if (isNonWorkingAppointmentDate(date)) {
+      triggerToast(
+        "Appointments cannot be scheduled on non-working days.",
+      );
+      return;
+    }
+
     setSelectedDate(date);
     setSelectedTime(undefined);
+  };
+
+  const handleDisabledDateClick = (
+    _date: Date,
+    reason: DisabledDateReason,
+  ) => {
+    if (reason === "weekend" || reason === "holiday") {
+      triggerToast(
+        "Appointments cannot be scheduled on non-working days.",
+      );
+      return;
+    }
+
+    if (reason === "today") {
+      triggerToast("Same-day appointments cannot be scheduled.");
+      return;
+    }
+
+    if (reason === "past") {
+      triggerToast("Past dates cannot be selected for appointments.");
+      return;
+    }
+
+    if (reason === "after-max") {
+      triggerToast(
+        `Appointments can only be booked up to ${MAX_BOOKING_DAYS_AHEAD} days ahead.`,
+      );
+      return;
+    }
+
+    triggerToast("This date is unavailable for appointment scheduling.");
   };
 
   const handleSlotSelect = (slot: AvailableTimeSlotView) => {
@@ -132,6 +184,18 @@ export default function CreateAppointment() {
     ) {
       return;
     }
+    const requestedDates = [
+      selectedDate,
+      ...backupSchedules.map((schedule) => schedule.date),
+    ].filter((date): date is Date => Boolean(date));
+
+    if (requestedDates.some(isNonWorkingAppointmentDate)) {
+      triggerToast(
+        "Appointments cannot be scheduled on non-working days.",
+      );
+      return;
+    }
+
     isSubmittingRef.current = true;
 
     const payload: CreateAppointmentRequest = {
@@ -168,7 +232,7 @@ export default function CreateAppointment() {
           navigate("/iir-form");
           return;
         }
-        triggerToast(error.message || "Failed to book appointment.");
+        triggerToast(getErrorMessage(error));
       },
       onSettled: () => {
         isSubmittingRef.current = false;
@@ -249,11 +313,13 @@ export default function CreateAppointment() {
                     selectedDate={selectedDate}
                     onMonthChange={setCurrentMonth}
                     onDateSelect={handleDateSelect}
+                    onDisabledDateClick={handleDisabledDateClick}
                     title="Consultation Calendar"
                     occupiedDayColor="bg-primary/80"
                     hasHeader
                     allowCurrentDate={false}
                     allowPastDates={false}
+                    allowWeekends={false}
                     maxDate={maxAllowedDate}
                     className="w-full border-0 p-0 shadow-none"
                   />
@@ -437,6 +503,13 @@ export default function CreateAppointment() {
                       selectedDate={activeBackup.date}
                       onMonthChange={() => {}}
                       onDateSelect={(d) => {
+                        if (isNonWorkingAppointmentDate(d)) {
+                          triggerToast(
+                            "Appointments cannot be scheduled on non-working days.",
+                          );
+                          return;
+                        }
+
                         setBackupSchedules((prev) => {
                           const next = [...prev];
                           next[activeBackupTab] = {
@@ -456,11 +529,13 @@ export default function CreateAppointment() {
                           return next;
                         });
                       }}
+                      onDisabledDateClick={handleDisabledDateClick}
                       title={`Backup Option ${activeBackupTab + 1} Date`}
                       occupiedDayColor="bg-primary/80"
                       hasHeader
                       allowCurrentDate={false}
                       allowPastDates={false}
+                      allowWeekends={false}
                       maxDate={maxAllowedDate}
                       className="w-full border-0 p-0 shadow-none"
                     />

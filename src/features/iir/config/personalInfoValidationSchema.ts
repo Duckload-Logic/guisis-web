@@ -104,7 +104,6 @@ export const personalInformationValidationSchema: FieldValidationSchema = {
     commonRules.required("Mobile number"),
     commonRules.phone(),
   ],
-  "student.personalInfo.telephoneNumber": [commonRules.telephone()],
   "student.personalInfo.isEmployed": [
     {
       type: "required",

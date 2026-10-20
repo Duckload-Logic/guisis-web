@@ -207,10 +207,7 @@ export default function ReviewSlips() {
     },
   });
 
-  const slips = useMemo(() => {
-    const rawSlips = data?.slips || [];
-    return rawSlips.filter((slip: Slip) => !slip.ticket?.isVerified);
-  }, [data]);
+  const slips = useMemo(() => data?.slips || [], [data]);
 
   const totalPages = data?.totalPages || 1;
 

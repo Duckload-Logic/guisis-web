@@ -3,6 +3,7 @@ export interface Message {
   ticketId: string;
   senderId?: string;
   senderName: string;
+  senderRole?: string;
   message: string;
   createdAt: string;
 }

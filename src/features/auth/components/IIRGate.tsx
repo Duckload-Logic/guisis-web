@@ -118,6 +118,18 @@ export const IIRGate = ({
             >
               Go to IIR Form
             </a>
+
+            <div className="mt-4 text-center">
+              <a
+                href="/student/appointments"
+                className={cn(
+                  "inline-block text-xs font-semibold text-destructive",
+                  "transition-colors hover:text-destructive/80 underline",
+                )}
+              >
+                In Crisis? Request Urgent Guidance Assistance &rarr;
+              </a>
+            </div>
           </div>
         </div>
       </div>

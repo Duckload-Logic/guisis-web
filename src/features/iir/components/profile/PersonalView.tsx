@@ -22,6 +22,10 @@ export default function PersonalView({
     { label: "First Name", value: asText(basicInfo?.firstName) },
     { label: "Middle Name", value: asText(basicInfo?.middleName) },
     { label: "Last Name", value: asText(basicInfo?.lastName) },
+    {
+      label: "Suffix",
+      value: asText(basicInfo?.suffixName || personalInfo?.suffix),
+    },
     { label: "Gender", value: asText(personalInfo?.gender?.name) },
     { label: "Civil Status", value: asText(personalInfo?.civilStatus?.name) },
     {

@@ -290,7 +290,7 @@ export default function AppointmentDetails() {
                 urgencyInfo.className,
               )}
             >
-              {urgencyInfo.label} Urgency
+              AI Suggested: {urgencyInfo.label} Priority
             </Badge>
             <Badge
               variant="outline"

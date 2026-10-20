@@ -175,6 +175,11 @@ export function initializeFormData(
   const preserveBasicInfo = options.preserveBasicInfoFromSource === true;
 
   const existingBasicInfo = baseData.student?.basicInfo || {};
+  const initialSuffix =
+    baseData.student?.personalInfo?.suffix ||
+    (existingBasicInfo as any)?.suffixName ||
+    (me as any)?.suffixName ||
+    "";
 
   return {
     ...baseData,
@@ -185,6 +190,9 @@ export function initializeFormData(
         ? {
             ...emptyData.student.basicInfo,
             ...existingBasicInfo,
+            suffixName:
+              (existingBasicInfo as any)?.suffixName ||
+              initialSuffix,
           }
         : {
             ...existingBasicInfo,
@@ -195,10 +203,15 @@ export function initializeFormData(
                 : "",
             lastName: me?.lastName || "",
             email: me?.email || "",
+            suffixName:
+              (existingBasicInfo as any)?.suffixName ||
+              (me as any)?.suffixName ||
+              "",
           },
       personalInfo: {
         ...emptyData.student?.personalInfo,
         ...baseData.student?.personalInfo,
+        suffix: initialSuffix,
         dateOfBirth: toDateOnly(baseData.student?.personalInfo?.dateOfBirth),
         emergencyContact: baseData.student?.personalInfo?.emergencyContact
           ? {

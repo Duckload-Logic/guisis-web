@@ -2,7 +2,6 @@
  * Dynamic validation schema system
  * Defines validation rules for forms without hardcoding them
  */
-import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
 
 export type ValidationRule = {
   type?: string;
@@ -157,7 +156,7 @@ export const commonRules = {
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-        
+
         const d = new Date(year, month - 1, day);
         if (
           d.getFullYear() !== year ||
@@ -189,23 +188,15 @@ export const commonRules = {
       "Must be a valid Philippine mobile number (e.g. 09XXXXXXXXX or +639XXXXXXXXX)",
   }),
 
-  telephone: (): ValidationRule => ({
-    validate: (value: any) => {
-      if (value === undefined || value === null || value === "") return true;
-      const clean = String(value).replace(/[\s\-\(\)]/g, "");
-      return /^(\+63|0)(2[3578]\d{7}|[3-9]\d{1,2}\d{7})$/.test(clean);
-    },
-    message:
-      "Must be a valid Philippine telephone number (e.g. 02XXXXXXXXX or 09XXXXXXXXX)",
-  }),
-
   nameFormat: (): ValidationRule => ({
     validate: (value: any) => {
       if (value === undefined || value === null || value === "") return true;
-      return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(String(value));
+      const normalized = String(value).trim();
+      if (normalized.toUpperCase() === "N/A") return true;
+      return /^[a-zA-ZñÑáéíóúÁÉÍÓÚäëïöüÄËÏÖÜ\s\-\.']+$/.test(normalized);
     },
     message:
-      "Must contain only letters, spaces, hyphens, periods, or apostrophes",
+      'Must contain only letters, spaces, hyphens, periods, or apostrophes (or use "N/A")',
   }),
 
   studentNumber: (maxYear?: number): ValidationRule => ({
@@ -271,12 +262,9 @@ export const commonRules = {
     message,
   }),
 
-  noSpecialChars: (fieldName: string): ValidationRule => ({
-    validate: (value: any) => {
-      if (value === undefined || value === null || value === "") return true;
-      return !SPECIAL_CHARS_REGEX.test(String(value));
-    },
-    message: `${fieldName} contains invalid special characters`,
+  noSpecialChars: (_fieldName: string): ValidationRule => ({
+    validate: () => true,
+    message: "",
   }),
 
   inList: (list: string[], fieldName: string): ValidationRule => ({

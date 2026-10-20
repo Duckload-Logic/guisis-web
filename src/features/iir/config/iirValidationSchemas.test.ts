@@ -58,10 +58,7 @@ describe("iirValidationSchemas", () => {
           },
         },
       };
-      const errors = validateObject(
-        data,
-        personalInformationValidationSchema,
-      );
+      const errors = validateObject(data, personalInformationValidationSchema);
       expect(Object.keys(errors).length).toBe(0);
     });
 
@@ -73,13 +70,10 @@ describe("iirValidationSchemas", () => {
           },
         },
       };
-      const errors = validateObject(
-        data,
-        personalInformationValidationSchema,
+      const errors = validateObject(data, personalInformationValidationSchema);
+      expect(errors["student.personalInfo.studentNumber"]).toContain(
+        "Format must be",
       );
-      expect(
-        errors["student.personalInfo.studentNumber"],
-      ).toContain("Format must be");
     });
 
     it("should fail for student number with year exceeding max academic year", () => {
@@ -91,13 +85,10 @@ describe("iirValidationSchemas", () => {
           },
         },
       };
-      const errors = validateObject(
-        data,
-        personalInformationValidationSchema,
+      const errors = validateObject(data, personalInformationValidationSchema);
+      expect(errors["student.personalInfo.studentNumber"]).toContain(
+        "Format must be",
       );
-      expect(
-        errors["student.personalInfo.studentNumber"],
-      ).toContain("Format must be");
     });
 
     it("should fail for future birthdate", () => {
@@ -115,10 +106,7 @@ describe("iirValidationSchemas", () => {
           },
         },
       };
-      const errors = validateObject(
-        data,
-        personalInformationValidationSchema,
-      );
+      const errors = validateObject(data, personalInformationValidationSchema);
       expect(errors["student.personalInfo.dateOfBirth"]).toBe(
         "Must be a valid past or present date (since 1900)",
       );
@@ -266,7 +254,7 @@ describe("iirValidationSchemas", () => {
       );
     });
 
-    it("should fail on special chars when problem is true", () => {
+    it("should allow details including punctuation and symbols when problem is true", () => {
       const data = {
         health: {
           healthRecord: {
@@ -275,14 +263,14 @@ describe("iirValidationSchemas", () => {
             speechHasProblem: false,
             generalHealthHasProblem: false,
             mentalEmotionalHasProblem: true,
-            mentalEmotionalDetails: "Invalid % character",
+            mentalEmotionalDetails: "N/A or other details (e.g. anxiety)",
           },
         },
       };
       const errors = validateObject(data, healthValidationSchema);
-      expect(errors["health.healthRecord.mentalEmotionalDetails"]).toBe(
-        "Mental health details contains invalid special characters",
-      );
+      expect(
+        errors["health.healthRecord.mentalEmotionalDetails"],
+      ).toBeUndefined();
     });
 
     it("should ignore invalid details when hasProblem is false", () => {

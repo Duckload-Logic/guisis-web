@@ -7,6 +7,8 @@ export interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  totalItems?: number;
+  pageSize?: number;
   showPageInfo?: boolean;
   siblingCount?: number;
   isLoading?: boolean;
@@ -61,23 +63,42 @@ export const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
   onPageChange,
+  totalItems,
+  pageSize,
   showPageInfo = true,
   siblingCount = 1,
   isLoading = false,
   className,
 }) => {
-  if (totalPages < 1) return null;
+  const safeCurrentPage = Math.min(
+    Math.max(currentPage, 1),
+    Math.max(totalPages, 1),
+  );
 
-  if (currentPage < 1 || currentPage > totalPages) {
-    console.warn("Invalid currentPage provided to Pagination component");
-  }
-
-  const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
+  const itemSummary = useMemo(() => {
+    if (totalItems === undefined) return null;
+    if (totalItems === 0) {
+      return { start: 0, end: 0, total: 0 };
+    }
+    const resolvedSize =
+      pageSize && pageSize > 0
+        ? pageSize
+        : Math.max(1, Math.ceil(totalItems / (totalPages || 1)));
+    const start = (safeCurrentPage - 1) * resolvedSize + 1;
+    const end = Math.min(safeCurrentPage * resolvedSize, totalItems);
+    return { start, end, total: totalItems };
+  }, [safeCurrentPage, totalPages, totalItems, pageSize]);
 
   const paginationRange = useMemo(
     () => calculatePaginationRange(safeCurrentPage, totalPages, siblingCount),
     [safeCurrentPage, totalPages, siblingCount],
   );
+
+  if (totalPages < 1) return null;
+
+  if (currentPage < 1 || currentPage > totalPages) {
+    console.warn("Invalid currentPage provided to Pagination component");
+  }
 
   const handlePageChange = (page: number) => {
     if (
@@ -118,14 +139,36 @@ export const Pagination: React.FC<PaginationProps> = ({
       role="navigation"
     >
       {showPageInfo && (
-        <div className="flex min-w-0 shrink-0 items-center justify-center gap-1 sm:justify-start">
+        <div
+          className={cn(
+            "flex min-w-0 shrink-0 items-center justify-center gap-1",
+            "sm:justify-start",
+          )}
+        >
           <span className="text-xs text-muted-foreground sm:text-sm">
-            Page{" "}
-            <span className="font-semibold text-foreground">
-              {safeCurrentPage}
-            </span>{" "}
-            of{" "}
-            <span className="font-semibold text-foreground">{totalPages}</span>
+            {itemSummary ? (
+              <>
+                Showing{" "}
+                <span className="font-semibold text-foreground">
+                  {itemSummary.start}–{itemSummary.end}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {itemSummary.total}
+                </span>
+              </>
+            ) : (
+              <>
+                Showing{" "}
+                <span className="font-semibold text-foreground">
+                  {safeCurrentPage}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {totalPages}
+                </span>
+              </>
+            )}
           </span>
         </div>
       )}

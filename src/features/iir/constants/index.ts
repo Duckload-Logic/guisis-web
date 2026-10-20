@@ -31,6 +31,7 @@ export const EMPTY_IIR_FORM: IIRForm = {
       middleName: {} as any,
       lastName: "",
       email: "",
+      suffixName: "",
     },
     personalInfo: {
       id: undefined,

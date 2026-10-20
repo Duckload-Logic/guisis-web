@@ -12,11 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { cn } from "@/lib/utils";
-import { SPECIAL_CHARS_REGEX } from "@/utils/validation";
-import {
-  BASE_FIELD_CLASSES,
-  getFieldStateClasses,
-} from "./form-styles";
+import { BASE_FIELD_CLASSES, getFieldStateClasses } from "./form-styles";
 
 const DEFAULT_TEXTAREA_ROWS = 5;
 const DICTATION_ICON_SIZE = 15;
@@ -95,8 +91,7 @@ export const FormField = forwardRef<
         const isTypeError = err instanceof TypeError;
         const isTargetError =
           err.message &&
-          (err.message.includes("target") ||
-            err.message.includes("undefined"));
+          (err.message.includes("target") || err.message.includes("undefined"));
         if (isTypeError && isTargetError) {
           if (sourceEvent) {
             sourceEvent.target.value = nextValue;
@@ -118,10 +113,7 @@ export const FormField = forwardRef<
   useEffect(() => {
     if (!transcript || transcript === previousTranscriptRef.current) return;
     const appended = transcript.slice(previousTranscriptRef.current.length);
-    const nextVal = `${stringValue}${appended}`.slice(
-      0,
-      maxChars ?? Infinity,
-    );
+    const nextVal = `${stringValue}${appended}`.slice(0, maxChars ?? Infinity);
     emitChange(nextVal);
     previousTranscriptRef.current = transcript;
   }, [transcript, stringValue, maxChars, emitChange]);
@@ -131,11 +123,7 @@ export const FormField = forwardRef<
   ) => {
     let nextValue = event.target.value.replace(/^\s+/, "");
     if (isTextbox && maxChars) nextValue = nextValue.slice(0, maxChars);
-    setInternalError(
-      noSpecialCharacters && SPECIAL_CHARS_REGEX.test(nextValue)
-        ? "Special characters are not allowed"
-        : "",
-    );
+    if (internalError) setInternalError("");
     emitChange(nextValue, event);
   };
 
@@ -193,7 +181,7 @@ export const FormField = forwardRef<
           <div
             className={cn(
               "flex h-11 shrink-0 items-center rounded-l-xl border",
-              "border-r-0 border-glass-border/30 bg-muted-foreground/20",
+              "border-glass-border/30 border-r-0 bg-muted-foreground/20",
               "px-4 text-sm font-medium text-card-foreground",
             )}
           >
@@ -218,9 +206,7 @@ export const FormField = forwardRef<
               rows={DEFAULT_TEXTAREA_ROWS}
               maxLength={maxChars}
               className={cn(
-                browserSupportsSpeechRecognition &&
-                  !disabled &&
-                  "pb-12",
+                browserSupportsSpeechRecognition && !disabled && "pb-12",
                 BASE_FIELD_CLASSES,
                 fieldStateClasses,
               )}
@@ -265,7 +251,7 @@ export const FormField = forwardRef<
               className={cn(
                 "absolute bottom-3 right-2 h-9 w-9 rounded-xl",
                 isListening
-                  ? "bg-primary text-white ring-4 ring-primary/20 animate-pulse"
+                  ? "animate-pulse bg-primary text-white ring-4 ring-primary/20"
                   : cn(
                       "bg-glass-bg text-muted-foreground hover:bg-primary/10",
                       "hover:text-primary",

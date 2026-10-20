@@ -47,6 +47,9 @@ const EXTRA_CURRICULAR_ORGS = [
 
 const checkSubjectDuplicates = (preferences: any[]): FormErrors => {
   const localErrors: FormErrors = {};
+  const isGenericNonAnswer = (val: string) =>
+    /^(n\/?a|not applicable|not indicated|none)$/i.test(val);
+
   const normalized = (preferences || []).map((p, idx) => ({
     name: (p?.subjectName || "").toLowerCase().trim(),
     isFavorite: !!p?.isFavorite,
@@ -55,10 +58,16 @@ const checkSubjectDuplicates = (preferences: any[]): FormErrors => {
   }));
 
   normalized.forEach((item1) => {
-    if (!item1.name) return;
+    if (!item1.name || isGenericNonAnswer(item1.name)) return;
 
     normalized.forEach((item2) => {
-      if (item1.index === item2.index || !item2.name) return;
+      if (
+        item1.index === item2.index ||
+        !item2.name ||
+        isGenericNonAnswer(item2.name)
+      ) {
+        return;
+      }
 
       if (item1.name === item2.name) {
         const path = `interests.subjectPreferences.${item1.index}.subjectName`;

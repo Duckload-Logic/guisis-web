@@ -147,6 +147,28 @@ describe("formHelpers", () => {
       expect(res.student.basicInfo.lastName).toBe("Smith");
     });
 
+    it("should initialize suffix from personalInfo or basicInfo", () => {
+      const source: any = {
+        ...COMPLETE_IIR_FORM,
+        student: {
+          ...COMPLETE_IIR_FORM.student,
+          basicInfo: {
+            ...COMPLETE_IIR_FORM.student.basicInfo,
+            suffixName: "Jr.",
+          },
+          personalInfo: {
+            ...COMPLETE_IIR_FORM.student.personalInfo,
+            suffix: "Jr.",
+          },
+        },
+      };
+      const res = initializeFormData(source, EMPTY_IIR_FORM, null, {
+        preserveBasicInfoFromSource: true,
+      });
+      expect(res.student.personalInfo.suffix).toBe("Jr.");
+      expect(res.student.basicInfo.suffixName).toBe("Jr.");
+    });
+
     it("should strip time component from ISO8601 birthdate string", () => {
       const source: any = {
         ...COMPLETE_IIR_FORM,

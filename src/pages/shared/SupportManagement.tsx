@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   MessageSquare,
   Send,
@@ -69,6 +69,9 @@ interface TicketGroup {
 interface OptimisticMessage extends Message {
   isPending?: boolean;
 }
+
+const isOpenTicket = (ticket: Ticket): boolean =>
+  ticket.status.trim().toUpperCase() === "OPEN";
 
 const getInitials = (name: string): string => {
   const clean = name.replace(/^\(Guest\)\s+/i, "").trim();
@@ -144,8 +147,7 @@ export function SupportManagement() {
     totalPages: number;
   } | null>(null);
 
-  const [selectedGroupKey, setSelectedGroupKey] =
-    useState<string | null>(null);
+  const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "unread" | "open" | "closed"
   >("all");
@@ -168,6 +170,7 @@ export function SupportManagement() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastScrollPosRef = useRef<number>(0);
+  const ticketsRequestIdRef = useRef(0);
 
   // Support Chat switches to its desktop, side-by-side layout at Tailwind's
   // `md` breakpoint (768px). Keep the JS behavior aligned with that same
@@ -332,7 +335,7 @@ export function SupportManagement() {
     const query = searchQuery.trim().toLowerCase();
     return groupedUsers.filter((g) => {
       const latestTicket = g.tickets[g.tickets.length - 1];
-      const hasOpen = g.tickets.some((t) => t.status.toLowerCase() === "open");
+      const hasOpen = g.tickets.some(isOpenTicket);
 
       if (statusFilter === "unread" && latestTicket?.isRead) return false;
       if (statusFilter === "open" && !hasOpen) return false;
@@ -361,9 +364,13 @@ export function SupportManagement() {
 
   const activeTicket = useMemo(() => {
     if (!selectedGroup) return null;
-    const latestTicket =
-      selectedGroup.tickets[selectedGroup.tickets.length - 1];
-    return latestTicket.status.toLowerCase() === "open" ? latestTicket : null;
+
+    for (let index = selectedGroup.tickets.length - 1; index >= 0; index -= 1) {
+      const ticket = selectedGroup.tickets[index];
+      if (isOpenTicket(ticket)) return ticket;
+    }
+
+    return null;
   }, [selectedGroup]);
 
   const wordCount = useMemo(() => {
@@ -384,28 +391,43 @@ export function SupportManagement() {
     }
   }, [replyText]);
 
-  const fetchTickets = async (showLoading = false) => {
-    if (showLoading) setIsLoadingTickets(true);
-    try {
-      const apiStatus =
-        statusFilter === "open" || statusFilter === "closed"
-          ? statusFilter
-          : "";
-      const data = await GetSupportTickets(
-        page,
-        DEFAULT_PAGE_SIZE,
-        apiStatus,
-      );
-      if (data && Array.isArray(data.tickets)) {
-        setTickets(data.tickets);
-        setMeta(data.meta);
+  const fetchTickets = useCallback(
+    async (showLoading = false) => {
+      const requestId = ++ticketsRequestIdRef.current;
+
+      if (showLoading) setIsLoadingTickets(true);
+      try {
+        const apiStatus =
+          statusFilter === "open" || statusFilter === "closed"
+            ? statusFilter
+            : "";
+        const data = await GetSupportTickets(
+          page,
+          DEFAULT_PAGE_SIZE,
+          apiStatus,
+        );
+
+        // Ignore responses from an older tab/filter poll. Without this guard,
+        // a request started before resolving a ticket can finish afterwards
+        // and reinsert the stale OPEN copy into the current list.
+        if (requestId !== ticketsRequestIdRef.current) return;
+
+        if (data && Array.isArray(data.tickets)) {
+          setTickets(data.tickets);
+          setMeta(data.meta);
+        }
+      } catch (err) {
+        if (requestId === ticketsRequestIdRef.current) {
+          console.error("[SupportManagement] {FetchTickets}:", err);
+        }
+      } finally {
+        if (showLoading && requestId === ticketsRequestIdRef.current) {
+          setIsLoadingTickets(false);
+        }
       }
-    } catch (err) {
-      console.error("[SupportManagement] {FetchTickets}:", err);
-    } finally {
-      if (showLoading) setIsLoadingTickets(false);
-    }
-  };
+    },
+    [page, statusFilter],
+  );
 
   useEffect(() => {
     setPage(1);
@@ -418,7 +440,7 @@ export function SupportManagement() {
       TICKETS_POLL_INTERVAL_MS,
     );
     return () => clearInterval(interval);
-  }, [page, statusFilter]);
+  }, [fetchTickets]);
 
   useEffect(() => {
     if (queryTicketId && tickets.length > 0) {
@@ -494,10 +516,7 @@ export function SupportManagement() {
     };
 
     fetchGroupMessages();
-    const interval = setInterval(
-      fetchGroupMessages,
-      MESSAGES_POLL_INTERVAL_MS,
-    );
+    const interval = setInterval(fetchGroupMessages, MESSAGES_POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [selectedGroup]);
 
@@ -621,10 +640,64 @@ export function SupportManagement() {
   const handleResolveTicket = async () => {
     if (!activeTicket) return;
 
+    const ticketId = activeTicket.id;
+    const selectedGroupHasAnotherOpenTicket = Boolean(
+      selectedGroup?.tickets.some(
+        (ticket) => ticket.id !== ticketId && isOpenTicket(ticket),
+      ),
+    );
+
     setIsResolving(true);
     try {
-      await PatchSupportTicketStatus(activeTicket.id);
-      fetchTickets();
+      await PatchSupportTicketStatus(ticketId);
+
+      // Invalidate any polling request that started before the PATCH completed.
+      // This prevents a stale OPEN response from winning the race and putting
+      // the resolved ticket back into the Open tab.
+      ticketsRequestIdRef.current += 1;
+
+      const resolvedUpdatedAt = new Date().toISOString();
+
+      // The API closes tickets as CLOSED. Apply that state immediately so ALL,
+      // OPEN, and CLOSED stay consistent without waiting for the next poll.
+      setTickets((previousTickets) => {
+        const synchronizedTickets = previousTickets.map((ticket) =>
+          ticket.id === ticketId
+            ? {
+                ...ticket,
+                status: "CLOSED",
+                updatedAt: resolvedUpdatedAt,
+              }
+            : ticket,
+        );
+
+        return statusFilter === "open"
+          ? synchronizedTickets.filter((ticket) => ticket.id !== ticketId)
+          : synchronizedTickets;
+      });
+
+      if (statusFilter === "open") {
+        setMeta((previousMeta) => {
+          if (!previousMeta) return previousMeta;
+
+          const total = Math.max(0, previousMeta.total - 1);
+          const totalPages = Math.ceil(total / previousMeta.pagesSize);
+
+          return {
+            ...previousMeta,
+            total,
+            totalPages,
+          };
+        });
+
+        if (!selectedGroupHasAnotherOpenTicket) {
+          setSelectedGroupKey(null);
+        }
+      }
+
+      // Reconcile with the server immediately instead of waiting for the next
+      // 10-second polling cycle. Request sequencing prevents stale overwrites.
+      await fetchTickets(false);
     } catch (err) {
       console.error("[SupportManagement] {ResolveTicket}:", err);
     } finally {
@@ -673,7 +746,8 @@ export function SupportManagement() {
           className={cn(
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
             "border-glass-border",
-            !isResizing && "transition-[width] duration-200 ease-out",
+            !isResizing &&
+              "transition-[width,min-width,max-width,flex-basis] duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && isSupportDesktop && "md:border-r",
             isSidebarCollapsed && isSupportDesktop
@@ -692,7 +766,7 @@ export function SupportManagement() {
               onClick={() => setIsSidebarCollapsed(false)}
               className={cn(
                 "flex h-full w-full cursor-pointer flex-col",
-                "items-center py-3 select-none hover:bg-muted/10",
+                "select-none items-center py-3 hover:bg-muted/10",
                 "transition-colors",
               )}
               title="Click to expand active conversations"
@@ -916,7 +990,10 @@ export function SupportManagement() {
             {isLoadingTickets && filteredGroups.length === 0 ? (
               <div className="space-y-3 p-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex gap-3 p-2.5">
+                  <div
+                    key={i}
+                    className="flex gap-3 p-2.5"
+                  >
                     <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
                     <div className="flex-1 space-y-2">
                       <div className="flex justify-between">
@@ -968,9 +1045,7 @@ export function SupportManagement() {
                 const email =
                   latestTicket.studentEmail || latestTicket.guestEmail || "";
                 const isSelected = selectedGroupKey === g.key;
-                const hasOpen = g.tickets.some(
-                  (t) => t.status.toLowerCase() === "open",
-                );
+                const hasOpen = g.tickets.some(isOpenTicket);
                 const isUnread = !latestTicket.isRead;
 
                 return (
@@ -1026,9 +1101,7 @@ export function SupportManagement() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div
-                          className="flex items-center justify-between gap-1"
-                        >
+                        <div className="flex items-center justify-between gap-1">
                           <span
                             className={cn(
                               "truncate text-xs font-bold sm:text-sm",
@@ -1157,7 +1230,7 @@ export function SupportManagement() {
               "group relative hidden w-1 shrink-0 cursor-col-resize",
               "select-none border-r border-glass-border bg-transparent",
               "transition-colors hover:bg-primary/50 md:block",
-              isResizing && "bg-primary shadow-xs",
+              isResizing && "shadow-xs bg-primary",
             )}
             title="Drag to resize • Double-click to reset"
             role="separator"
@@ -1278,9 +1351,7 @@ export function SupportManagement() {
                       )}
                     >
                       <CheckCircle className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">
-                        Mark as{" "}
-                      </span>
+                      <span className="hidden sm:inline">Mark as </span>
                       Resolved
                     </Button>
                   ) : (
@@ -1321,10 +1392,13 @@ export function SupportManagement() {
               >
                 {selectedGroup.tickets.map((t) => {
                   const msgs = groupMessages[t.id] || [];
-                  const isResolved = t.status.toLowerCase() !== "open";
+                  const isResolved = !isOpenTicket(t);
 
                   return (
-                    <div key={t.id} className="flex flex-col space-y-1">
+                    <div
+                      key={t.id}
+                      className="flex flex-col space-y-1"
+                    >
                       {msgs.map((msg, idx) => {
                         const isStaff =
                           msg.senderId && msg.senderId !== t.userId;
@@ -1366,7 +1440,10 @@ export function SupportManagement() {
                         });
 
                         return (
-                          <div key={msg.id} className="flex flex-col">
+                          <div
+                            key={msg.id}
+                            className="flex flex-col"
+                          >
                             {showDateDivider && (
                               <div
                                 className={cn(
@@ -1379,7 +1456,7 @@ export function SupportManagement() {
                                     "border-glass-border bg-muted/40 px-3",
                                     "py-0.5 text-[10px] font-semibold",
                                     "uppercase tracking-wider",
-                                    "text-muted-foreground shadow-xs",
+                                    "shadow-xs text-muted-foreground",
                                   )}
                                 >
                                   {formatDateDivider(msg.createdAt)}
@@ -1401,7 +1478,7 @@ export function SupportManagement() {
                                   )}
                                 >
                                   {isStaff
-                                    ? `Staff (${msg.senderName})`
+                                    ? `${msg.senderName} (${msg.senderRole || "Guidance Counselor"})`
                                     : msg.senderName}
                                 </span>
                               )}
@@ -1419,10 +1496,10 @@ export function SupportManagement() {
                                   isNewSenderStack ? "mt-1" : "mt-0",
                                   isStaff
                                     ? "rounded-tr-none bg-primary " +
-                                      "text-primary-foreground shadow-xs"
+                                        "shadow-xs text-primary-foreground"
                                     : "rounded-tl-none border " +
-                                      "border-glass-border/60 bg-muted/80 " +
-                                      "text-foreground",
+                                        "border-glass-border/60 bg-muted/80" +
+                                        "text-foreground",
                                   msg.isPending && "opacity-75",
                                 )}
                                 title={formattedFullDate}
@@ -1461,7 +1538,7 @@ export function SupportManagement() {
                                 )}
                               </div>
 
-                               {activeMessageId === msg.id && (
+                              {activeMessageId === msg.id && (
                                 <span
                                   className={cn(
                                     "animate-in fade-in mt-0.5 px-1",
@@ -1479,9 +1556,7 @@ export function SupportManagement() {
 
                       {isResolved && (
                         <div className="my-5 flex items-center">
-                          <div
-                            className="flex-1 border-t border-glass-border"
-                          />
+                          <div className="flex-1 border-t border-glass-border" />
                           <Badge
                             variant="outline"
                             className={cn(
@@ -1490,14 +1565,10 @@ export function SupportManagement() {
                               "tracking-wider text-muted-foreground",
                             )}
                           >
-                            <CheckCircle
-                              className="h-3 w-3 text-emerald-500"
-                            />
+                            <CheckCircle className="h-3 w-3 text-emerald-500" />
                             Ticket Resolved
                           </Badge>
-                          <div
-                            className="flex-1 border-t border-glass-border"
-                          />
+                          <div className="flex-1 border-t border-glass-border" />
                         </div>
                       )}
                     </div>
@@ -1521,7 +1592,7 @@ export function SupportManagement() {
                       className={cn(
                         "h-8 gap-1.5 rounded-full bg-blue-600 px-3 text-xs",
                         "text-white shadow-lg transition-all",
-                        "hover:bg-blue-700 active:scale-95 animate-bounce",
+                        "animate-bounce hover:bg-blue-700 active:scale-95",
                       )}
                     >
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -1590,7 +1661,10 @@ export function SupportManagement() {
                     ))}
                   </div>
 
-                  <form onSubmit={handleSendReply} className="space-y-1.5">
+                  <form
+                    onSubmit={handleSendReply}
+                    className="space-y-1.5"
+                  >
                     <div className="flex items-end gap-2">
                       <div className="relative min-w-0 flex-1">
                         <textarea
@@ -1625,7 +1699,7 @@ export function SupportManagement() {
                         }
                         size="icon"
                         className={cn(
-                          "h-9 w-9 shrink-0 rounded-xl text-white shadow-xs",
+                          "shadow-xs h-9 w-9 shrink-0 rounded-xl text-white",
                         )}
                         aria-label="Send message"
                       >
@@ -1715,9 +1789,7 @@ export function SupportManagement() {
                   : "Guest";
               const email =
                 latestTicket?.studentEmail || latestTicket?.guestEmail || "";
-              const hasOpen = selectedGroup.tickets.some(
-                (t) => t.status.toLowerCase() === "open",
-              );
+              const hasOpen = selectedGroup.tickets.some(isOpenTicket);
 
               return (
                 <div className="space-y-5">
@@ -1807,7 +1879,7 @@ export function SupportManagement() {
                           "rounded-md text-[10px] font-bold uppercase",
                           hasOpen
                             ? "bg-emerald-500/15 text-emerald-600 " +
-                              "dark:text-emerald-400"
+                                "dark:text-emerald-400"
                             : "bg-muted text-muted-foreground",
                         )}
                       >
