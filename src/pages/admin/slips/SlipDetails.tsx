@@ -751,65 +751,95 @@ export default function SlipDetails() {
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4 p-5">
-              {auditEntries.map((entry: any, idx: number) => (
+            <CardContent className="p-5">
+              <div className="relative space-y-5 pl-6">
                 <div
-                  key={idx}
-                  className="group flex items-start gap-3.5"
-                >
-                  <div className="relative mt-1">
-                    <div
-                      className={cn(
-                        "relative z-10 h-3 w-3 shrink-0 rounded-full border-2",
-                        entry.status.toUpperCase().includes("PENDING")
-                          ? "border-amber-500 bg-background shadow-sm"
-                          : entry.status.toUpperCase().includes("APPROVED") ||
-                              entry.status.toUpperCase().includes("COMPLETED")
-                            ? "border-emerald-500 bg-background shadow-sm"
-                            : entry.status.toUpperCase().includes("REJECTED") ||
-                                entry.status.toUpperCase().includes("REVISION")
-                              ? "border-destructive bg-background shadow-sm"
-                              : "border-primary bg-background shadow-sm",
-                      )}
-                    />
-                    <div className="absolute left-1/2 top-3 h-full w-0.5 -translate-x-1/2 bg-border/60 group-last:hidden" />
-                  </div>
+                  className={cn(
+                    "absolute bottom-2 left-[5px] top-2",
+                    "w-0.5 bg-border/60",
+                  )}
+                  aria-hidden="true"
+                />
+
+                {auditEntries.map((entry: any, idx: number) => {
+                  const upper = String(entry?.status || "").toUpperCase();
+                  const statusBorder = upper.includes("PENDING")
+                    ? "border-amber-500"
+                    : upper.includes("APPROVED") || upper.includes("COMPLETED")
+                      ? "border-emerald-500"
+                      : upper.includes("REJECTED") || upper.includes("REVISION")
+                        ? "border-destructive"
+                        : "border-primary";
+
+                  return (
+                    <div key={idx} className="relative">
+                      <div
+                        className={cn(
+                          "absolute -left-6 top-1 z-10 h-3 w-3",
+                          "rounded-full border-2 bg-background",
+                          "shadow-sm ring-4 ring-card",
+                          statusBorder,
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-foreground">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <span
+                              className={cn(
+                                "font-mono text-[10px]",
+                                "text-muted-foreground",
+                              )}
+                            >
+                              {entry.timestamp}
+                            </span>
+                          )}
+                        </div>
+                        {entry.remarks && (
+                          <p
+                            className={cn(
+                              "rounded-lg border bg-muted/20 p-2.5",
+                              "text-xs text-foreground/85",
+                            )}
+                          >
+                            {entry.remarks}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="relative">
+                  <div
+                    className={cn(
+                      "absolute -left-6 top-1 z-10 h-3 w-3",
+                      "rounded-full border-2 border-primary",
+                      "bg-background shadow-sm ring-4 ring-card",
+                    )}
+                    aria-hidden="true"
+                  />
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center justify-between">
                       <p className="text-xs font-bold text-foreground">
-                        {entry.status}
+                        Submission Received
                       </p>
-                      {entry.timestamp && (
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {entry.timestamp}
-                        </span>
-                      )}
+                      <span
+                        className={cn(
+                          "font-mono text-[10px]",
+                          "text-muted-foreground",
+                        )}
+                      >
+                        {formatDate(slip.createdAt || "")}
+                      </span>
                     </div>
-                    {entry.remarks && (
-                      <p className="rounded-lg border bg-muted/20 p-2.5 text-xs text-foreground/85">
-                        {entry.remarks}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              <div className="group flex items-start gap-3.5">
-                <div className="relative mt-1">
-                  <div className="relative z-10 h-3 w-3 shrink-0 rounded-full border-2 border-primary bg-background shadow-sm" />
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-foreground">
-                      Submission Received
+                    <p className="text-xs text-muted-foreground">
+                      Initial admission slip application logged.
                     </p>
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {formatDate(slip.createdAt || "")}
-                    </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Initial admission slip application logged.
-                  </p>
                 </div>
               </div>
             </CardContent>

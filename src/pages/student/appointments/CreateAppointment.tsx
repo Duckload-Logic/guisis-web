@@ -64,6 +64,7 @@ export default function CreateAppointment() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<TimeSlot>();
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [backupMonth, setBackupMonth] = useState<Date>(() => new Date());
   const [categoryId, setCategoryId] = useState<number>(0);
   const [reason, setReason] = useState<string>("");
 
@@ -135,6 +136,7 @@ export default function CreateAppointment() {
 
     setSelectedDate(date);
     setSelectedTime(undefined);
+    setBackupMonth(new Date(date.getFullYear(), date.getMonth(), 1));
   };
 
   const handleDisabledDateClick = (
@@ -526,6 +528,17 @@ export default function CreateAppointment() {
                         onClick={() => {
                           if (!isPrecedingEmpty) {
                             setActiveBackupTab(idx);
+                            const tabDate =
+                              backupSchedules[idx]?.date || selectedDate;
+                            if (tabDate) {
+                              setBackupMonth(
+                                new Date(
+                                  tabDate.getFullYear(),
+                                  tabDate.getMonth(),
+                                  1,
+                                ),
+                              );
+                            }
                           }
                         }}
                         title={
@@ -564,9 +577,9 @@ export default function CreateAppointment() {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
                   <div className="md:col-span-6">
                     <Calendar
-                      currentMonth={activeBackup.date || new Date()}
+                      currentMonth={backupMonth}
                       selectedDate={activeBackup.date}
-                      onMonthChange={() => {}}
+                      onMonthChange={setBackupMonth}
                       onDateSelect={(d) => {
                         if (isNonWorkingAppointmentDate(d)) {
                           triggerToast(
@@ -575,6 +588,9 @@ export default function CreateAppointment() {
                           return;
                         }
 
+                        setBackupMonth(
+                          new Date(d.getFullYear(), d.getMonth(), 1),
+                        );
                         setBackupSchedules((prev) => {
                           const next = [...prev];
                           next[activeBackupTab] = {
