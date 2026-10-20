@@ -43,10 +43,9 @@ export const IIRGate = ({
   }
 
   const isSubmitted = statusData?.isSubmitted ?? false;
-  const isCompleted = statusData?.isCompleted ?? false;
-  const allowExpeditedIIR = user?.allowExpeditedIIR ?? false;
-
-  const isBlocked = !isSubmitted || (!isCompleted && !allowExpeditedIIR);
+  // Accommodate higher years: Any student who has submitted their
+  // IIR (full or expedited) is granted access to all GuiSIS services.
+  const isBlocked = !isSubmitted;
 
   // If student is blocked, render background content with overlay modal
   if (isBlocked && !allowOnGuidancePage) {

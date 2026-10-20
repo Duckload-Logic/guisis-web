@@ -5,11 +5,13 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
+  Phone,
+  Building2,
   Info,
   ShieldCheck,
   ChevronDown,
   ChevronUp,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,6 +88,17 @@ export default function CreateAppointment() {
 
   const { mutate: submitAppointment, isPending: isSubmitting } =
     useSubmitAppointment();
+
+  const isCrisisDetected = useMemo(() => {
+    if (!reason || reason.trim().length < 4) return false;
+    const lower = reason.toLowerCase();
+    const crisisKeywords = [
+      "tulong", "help", "emergency", "saklolo", "suko", "suicide",
+      "ayoko na", "di ko na kaya", "mawala", "disappear", "ending it",
+      "self harm", "hurting myself", "die", "mamatay"
+    ];
+    return crisisKeywords.some((kw) => lower.includes(kw));
+  }, [reason]);
 
   usePageMetadata(
     useMemo(
@@ -380,6 +393,58 @@ export default function CreateAppointment() {
                   "guidance counselor for session preparation."
                 }
               />
+
+              {isCrisisDetected && (
+                <div
+                  className={cn(
+                    "flex flex-col gap-2.5 rounded-xl border",
+                    "border-destructive/30 bg-destructive/10 p-3.5",
+                    "text-xs text-foreground",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 font-semibold",
+                      "text-destructive",
+                    )}
+                  >
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <span>Emergency & Crisis Support Information</span>
+                  </div>
+                  <p className="leading-relaxed text-muted-foreground">
+                    If you are experiencing severe distress or crisis,
+                    support is accessible. While your request will be
+                    prioritized by automated triage, direct institutional
+                    hotlines are provided below.
+                  </p>
+                  <div
+                    className={cn(
+                      "space-y-1.5 rounded-lg border",
+                      "border-destructive/20 bg-background/80 p-2.5",
+                      "text-[11px]",
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Phone
+                        className="h-3.5 w-3.5 shrink-0 text-destructive"
+                      />
+                      <span>
+                        <strong>National Crisis Hotline (NCMH):</strong> 1553
+                        (Toll-Free) or 0917-899-8727
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Building2
+                        className="h-3.5 w-3.5 shrink-0 text-destructive"
+                      />
+                      <span>
+                        <strong>PUP-Taguig Guidance Office:</strong> Direct
+                        in-person walk-in consultation available
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div
                 className={cn(

@@ -290,13 +290,37 @@ export default function AppointmentDetails() {
                 urgencyInfo.className,
               )}
             >
-              AI Suggested: {urgencyInfo.label} Priority
+              AI Triage: {urgencyInfo.label} Priority
             </Badge>
+            {typeof (appointment as any)?.urgencyScore === "number" &&
+              (appointment as any)?.urgencyScore > 0 && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "rounded-full border-border/70 px-3 py-1",
+                    "text-[11px] font-medium shadow-sm",
+                    (appointment as any).urgencyScore < 0.7
+                      ? cn(
+                          "border-amber-500/30 bg-amber-500/10",
+                          "text-amber-700 dark:text-amber-400",
+                        )
+                      : "bg-muted/40 text-muted-foreground",
+                  )}
+                  title={
+                    (appointment as any).urgencyScore < 0.7
+                      ? "Automated triage confidence below 70%"
+                      : "DistilBERT automated triage confidence"
+                  }
+                >
+                  Confidence:{" "}
+                  {((appointment as any).urgencyScore * 100).toFixed(1)}%
+                </Badge>
+              )}
             <Badge
               variant="outline"
               className={cn(
-                "rounded-full border-border/70 bg-muted/40 px-3 py-1 text-[11px]",
-                "font-medium text-foreground/80",
+                "rounded-full border-border/70 bg-muted/40",
+                "px-3 py-1 text-[11px] font-medium text-foreground/80",
               )}
             >
               <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
