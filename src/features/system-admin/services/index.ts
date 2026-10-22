@@ -513,6 +513,7 @@ export interface ServiceHealth {
   name: string;
   status: string;
   isHealthy: boolean;
+  latencyMs?: number;
 }
 
 /**

@@ -62,6 +62,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useUrlState } from "@/hooks";
 
 type SortOrder = "asc" | "desc";
+const PAGE_SIZE = 10;
 
 export default function UserManagement() {
   const [activeTab, setActiveTab] = useUrlState<"users" | "whitelist">(
@@ -97,7 +98,7 @@ export default function UserManagement() {
 
   const { data, isLoading } = useUsers({
     page,
-    page_size: 10,
+    page_size: PAGE_SIZE,
     search: debounceSearch,
     role_id: roleFilter,
     sort_by: selectedSort,
@@ -854,11 +855,14 @@ export default function UserManagement() {
             />
           </CardContent>
 
-          {data && data.meta.totalPages > 1 && (
+          {data && data.meta.total > 0 && (
             <div className="border-t border-border/50 bg-muted/20">
               <Pagination
                 currentPage={page}
                 totalPages={data.meta.totalPages}
+                totalItems={data.meta.total}
+                pageSize={PAGE_SIZE}
+                itemLabel="users"
                 onPageChange={setPage}
                 isLoading={isLoading}
               />

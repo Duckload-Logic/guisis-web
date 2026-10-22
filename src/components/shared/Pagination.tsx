@@ -9,6 +9,7 @@ export interface PaginationProps {
   onPageChange: (page: number) => void;
   totalItems?: number;
   pageSize?: number;
+  itemLabel?: string;
   showPageInfo?: boolean;
   siblingCount?: number;
   isLoading?: boolean;
@@ -65,6 +66,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   totalItems,
   pageSize,
+  itemLabel,
   showPageInfo = true,
   siblingCount = 1,
   isLoading = false,
@@ -74,6 +76,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     Math.max(currentPage, 1),
     Math.max(totalPages, 1),
   );
+  const safeTotalPages = Math.max(totalPages, 1);
 
   const itemSummary = useMemo(() => {
     if (totalItems === undefined) return null;
@@ -88,6 +91,15 @@ export const Pagination: React.FC<PaginationProps> = ({
     const end = Math.min(safeCurrentPage * resolvedSize, totalItems);
     return { start, end, total: totalItems };
   }, [safeCurrentPage, totalPages, totalItems, pageSize]);
+
+  const rangeDisplay = useMemo(() => {
+    if (!itemSummary) return "";
+    if (itemSummary.total === 0) return "0";
+    if (itemSummary.start === itemSummary.end) {
+      return `${itemSummary.start}`;
+    }
+    return `${itemSummary.start}–${itemSummary.end}`;
+  }, [itemSummary]);
 
   const paginationRange = useMemo(
     () => calculatePaginationRange(safeCurrentPage, totalPages, siblingCount),
@@ -150,23 +162,34 @@ export const Pagination: React.FC<PaginationProps> = ({
               <>
                 Showing{" "}
                 <span className="font-semibold text-foreground">
-                  {itemSummary.start}–{itemSummary.end}
+                  {rangeDisplay}
                 </span>{" "}
                 of{" "}
                 <span className="font-semibold text-foreground">
                   {itemSummary.total}
                 </span>
-              </>
-            ) : (
-              <>
-                Showing{" "}
+                {itemLabel ? ` ${itemLabel}` : ""}{" "}
+                <span className="mx-1 text-muted-foreground/60">|</span> Page{" "}
                 <span className="font-semibold text-foreground">
                   {safeCurrentPage}
                 </span>{" "}
                 of{" "}
                 <span className="font-semibold text-foreground">
-                  {totalPages}
-                </span>
+                  {safeTotalPages}
+                </span>{" "}
+                {safeTotalPages === 1 ? "page" : "pages"}
+              </>
+            ) : (
+              <>
+                Page{" "}
+                <span className="font-semibold text-foreground">
+                  {safeCurrentPage}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground">
+                  {safeTotalPages}
+                </span>{" "}
+                {safeTotalPages === 1 ? "page" : "pages"}
               </>
             )}
           </span>

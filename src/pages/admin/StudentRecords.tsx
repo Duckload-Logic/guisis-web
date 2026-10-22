@@ -248,6 +248,9 @@ export default function StudentRecords() {
             <Pagination
               currentPage={page}
               totalPages={data?.meta?.totalPages || 1}
+              totalItems={data?.meta?.total ?? 0}
+              pageSize={pageSize}
+              itemLabel="IIRs"
               onPageChange={setPage}
             />
           </div>
