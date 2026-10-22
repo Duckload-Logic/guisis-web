@@ -225,11 +225,18 @@ export default function AnalyticsOverview() {
         icon: Server,
         searchKey: s.name,
       };
+      const raw = s as { latencyMs?: number; latency_ms?: number };
+      const resolvedLatency =
+        typeof s.latencyMs === "number"
+          ? s.latencyMs
+          : typeof raw.latency_ms === "number"
+            ? raw.latency_ms
+            : undefined;
       return {
         name: s.name,
         status: s.status,
         isHealthy: s.isHealthy,
-        latencyMs: s.latencyMs,
+        latencyMs: resolvedLatency,
         icon: meta.icon,
         searchKey: meta.searchKey,
       };
@@ -549,14 +556,14 @@ export default function AnalyticsOverview() {
                     Ping:{" "}
                     <strong
                       className={
-                        sub.latencyMs !== undefined
+                        typeof sub.latencyMs === "number"
                           ? sub.latencyMs < 50
                             ? "font-mono text-foreground"
                             : "font-mono text-amber-400"
                           : "text-muted-foreground"
                       }
                     >
-                      {sub.latencyMs !== undefined
+                      {typeof sub.latencyMs === "number"
                         ? `${sub.latencyMs.toFixed(1)}ms`
                         : "—"}
                     </strong>
