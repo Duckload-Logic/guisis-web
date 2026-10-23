@@ -38,6 +38,7 @@ import { usePageMetadata, useToast } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
+import { CRISIS_CONTACTS } from "@/config/constants";
 
 const MAX_REASON_LENGTH = 500;
 const MAX_BOOKING_DAYS_AHEAD = 60;
@@ -431,8 +432,8 @@ export default function CreateAppointment() {
                         className="h-3.5 w-3.5 shrink-0 text-destructive"
                       />
                       <span>
-                        <strong>National Crisis Hotline (NCMH):</strong> 1553
-                        (Toll-Free) or 0917-899-8727
+                        <strong>National Crisis Hotline (NCMH):</strong>{" "}
+                        {CRISIS_CONTACTS.displayHotline}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">

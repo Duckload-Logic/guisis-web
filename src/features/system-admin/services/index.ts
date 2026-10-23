@@ -513,6 +513,7 @@ export interface ServiceHealth {
   name: string;
   status: string;
   isHealthy: boolean;
+  latencyMs?: number;
 }
 
 /**
@@ -521,11 +522,32 @@ export interface ServiceHealth {
 export const GetSystemHealth = async (
   config?: AxiosConfigWithMeta,
 ): Promise<ServiceHealth[]> => {
+  const startTime =
+    typeof performance !== "undefined" ? performance.now() : 0;
   try {
     const { data } = await apiClient.get<ServiceHealth[]>(
       API_ROUTES.superadmin.logs.health,
       config,
     );
+    const rtt =
+      typeof performance !== "undefined"
+        ? Math.round((performance.now() - startTime) * 10) / 10
+        : 0;
+
+    if (Array.isArray(data)) {
+      return data.map((item) => {
+        const rawLatency =
+          item.latencyMs ??
+          (item as { latency_ms?: number }).latency_ms;
+        if (
+          item.name === "API Gateway Server" &&
+          (!rawLatency || rawLatency <= 0.1)
+        ) {
+          return { ...item, latencyMs: rtt };
+        }
+        return { ...item, latencyMs: rawLatency };
+      });
+    }
     return data;
   } catch (error) {
     throw error;

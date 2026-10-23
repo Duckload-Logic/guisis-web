@@ -615,11 +615,14 @@ export default function LogsTable({
             tableClassName="w-full table-fixed min-w-[1000px]"
           />
 
-          {totalPages > 1 && (
+          {total > 0 && (
             <div className="border-t border-border/50 bg-muted/20">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
+                totalItems={total}
+                pageSize={PAGE_SIZE}
+                itemLabel="logs"
                 onPageChange={setCurrentPage}
                 isLoading={isLoading}
               />

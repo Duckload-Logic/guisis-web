@@ -41,8 +41,10 @@ export const buildUatSurveyUrl = (ctx: EvaluatorContext): string => {
   return `${FORM_BASE_URL}&${params.toString()}`;
 };
 
-export const openUatSurvey = (ctx: EvaluatorContext): void => {
-  const targetUrl = buildUatSurveyUrl(ctx);
-  window.open(targetUrl, '_blank', 'noopener,noreferrer');
+/**
+ * Open UAT Survey
+ * Disabled: Evaluator quota already reached.
+ */
+export const openUatSurvey = (_ctx: EvaluatorContext): void => {
+  // Survey quota reached. Redirect intentionally disabled.
 };
-

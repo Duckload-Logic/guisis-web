@@ -117,24 +117,64 @@ export function DatePicker({
   return (
     <div className={cn("min-w-0 space-y-2", className)}>
       {label && (
-        <div
+        <label
+          htmlFor={`${safeId}-mobile`}
+          onClick={() => {
+            if (!disabled) {
+              try {
+                inputRef.current?.showPicker?.();
+              } catch {
+                // Ignore browser restrictions
+              }
+            }
+          }}
           className={cn(
             "flex items-start gap-1 text-sm font-medium",
-            "text-card-foreground",
+            "text-card-foreground select-none",
+            !disabled && "cursor-pointer",
           )}
         >
           <span>{label}</span>
           {required && <span className="text-red-500">*</span>}
-        </div>
+        </label>
       )}
 
-      <div className="w-full sm:hidden">
+      <div
+        className="w-full sm:hidden"
+        onClick={() => {
+          if (!disabled) {
+            try {
+              inputRef.current?.showPicker?.();
+            } catch {
+              // Ignore browser restrictions
+            }
+          }
+        }}
+      >
         <input
           ref={inputRef}
           id={`${safeId}-mobile`}
           type="date"
           value={nativeValue}
           onChange={(event) => onChange(event.target.value)}
+          onClick={(event) => {
+            if (!disabled) {
+              try {
+                event.currentTarget.showPicker?.();
+              } catch {
+                // Ignore browser restrictions
+              }
+            }
+          }}
+          onKeyDown={(event) => {
+            if (!disabled && (event.key === "Enter" || event.key === " ")) {
+              try {
+                event.currentTarget.showPicker?.();
+              } catch {
+                // Ignore browser restrictions
+              }
+            }
+          }}
           onBlur={onBlur}
           disabled={disabled}
           min={nativeMin}
@@ -144,9 +184,10 @@ export function DatePicker({
           className={cn(
             "h-11 w-full rounded-xl border px-4 py-2.5 text-sm",
             "font-medium tracking-tight text-foreground outline-none",
-            "transition-all duration-200",
+            "transition-all duration-200 cursor-pointer",
             "focus-visible:border-primary/50 focus-visible:ring-2",
             "focus-visible:ring-primary/5",
+            "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
             getFieldStateClasses({
               disabled,
               error: !!error,
