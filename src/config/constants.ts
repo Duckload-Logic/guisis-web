@@ -130,3 +130,14 @@ export const LAYOUT_STYLES = {
     "shadow-sm backdrop-blur-xl " +
     "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
 } as const;
+
+
+// Centralized emergency and crisis hotline contacts
+export const CRISIS_CONTACTS = {
+  ncmhShortCode: "1553",
+  dohTelephone: "(632) 8651-7800",
+  displayHotline: "1553 (Toll-Free) or Tel: (632) 8651-7800",
+  guidanceOfficeNote:
+    "Direct in-person walk-in consultation is accommodated immediately " +
+    "during office hours.",
+} as const;

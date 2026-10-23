@@ -9,7 +9,6 @@ import { useAdminDashboard } from "@/features/analytics/hooks";
 import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
 import { useGetSlipStats } from "@/features/slips/hooks/useSlips";
 import { useMe } from "@/features/users/hooks/useMe";
-import { UatPromptBanner } from "@/components/shared";
 import { usePageMetadata } from "@/context";
 import { cn } from "@/lib/utils";
 import { toISODateString } from "@/utils";
@@ -166,15 +165,6 @@ export default function Dashboard() {
         currentYearEnd={settings?.currentYearEnd}
         onConfigure={() => navigate("/admin/academic-settings")}
       />
-
-      {me && (
-        <UatPromptBanner
-          userId={me.id}
-          fullName={`${me.firstName} ${me.lastName}`}
-          email={me.email}
-          role="Admin / Counselor"
-        />
-      )}
 
       <DailyTipBanner />
 

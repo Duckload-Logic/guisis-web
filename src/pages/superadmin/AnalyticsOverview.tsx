@@ -179,34 +179,13 @@ export default function AnalyticsOverview() {
   }, [healthData]);
 
   const subsystems = useMemo(() => {
-    const metaMap: Record<
-      string,
-      { icon: any; searchKey: string }
-    > = {
-      "API Gateway Server": {
-        icon: Server,
-        searchKey: "Gateway",
-      },
-      "MySQL Database": {
-        icon: Database,
-        searchKey: "MySQL",
-      },
-      "Redis Cache Store": {
-        icon: Layers,
-        searchKey: "Redis",
-      },
-      "AI FastAPI Service": {
-        icon: Cpu,
-        searchKey: "FastAPI",
-      },
-      "Notification SMTP": {
-        icon: Mail,
-        searchKey: "SMTP",
-      },
-      "Identity Provider (IDP)": {
-        icon: Fingerprint,
-        searchKey: "IDP",
-      },
+    const metaMap: Record<string, { icon: any }> = {
+      "API Gateway Server": { icon: Server },
+      "MySQL Database": { icon: Database },
+      "Redis Cache Store": { icon: Layers },
+      "AI FastAPI Service": { icon: Cpu },
+      "Notification SMTP": { icon: Mail },
+      "Identity Provider (IDP)": { icon: Fingerprint },
     };
 
     if (!healthData || healthData.length === 0) {
@@ -216,15 +195,11 @@ export default function AnalyticsOverview() {
         isHealthy: true,
         latencyMs: undefined as number | undefined,
         icon: meta.icon,
-        searchKey: meta.searchKey,
       }));
     }
 
     return healthData.map((s) => {
-      const meta = metaMap[s.name] || {
-        icon: Server,
-        searchKey: s.name,
-      };
+      const meta = metaMap[s.name] || { icon: Server };
       const raw = s as { latencyMs?: number; latency_ms?: number };
       const resolvedLatency =
         typeof s.latencyMs === "number"
@@ -238,7 +213,6 @@ export default function AnalyticsOverview() {
         isHealthy: s.isHealthy,
         latencyMs: resolvedLatency,
         icon: meta.icon,
-        searchKey: meta.searchKey,
       };
     });
   }, [healthData]);
@@ -498,22 +472,13 @@ export default function AnalyticsOverview() {
             {subsystems.map((sub) => (
               <div
                 key={sub.name}
-                onClick={() =>
-                  navigate(
-                    `/superadmin/system-logs?search=${encodeURIComponent(
-                      sub.searchKey,
-                    )}`,
-                  )
-                }
                 className={cn(
                   "group flex flex-col justify-between rounded-xl border p-3",
-                  "cursor-pointer transition-all duration-200",
-                  "hover:border-primary/40",
+                  "transition-all duration-200",
                   sub.isHealthy
-                    ? "border-border/60 bg-muted/10 hover:bg-muted/20"
-                    : "border-red-500/30 bg-red-500/5 hover:bg-red-500/10",
+                    ? "border-border/60 bg-muted/10"
+                    : "border-red-500/30 bg-red-500/5",
                 )}
-                title={`Click to trace ${sub.name} in system logs`}
               >
                 <div className="flex items-center justify-between">
                   <div
