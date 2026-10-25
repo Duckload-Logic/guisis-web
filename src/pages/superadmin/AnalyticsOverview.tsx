@@ -194,6 +194,9 @@ export default function AnalyticsOverview() {
         status: "Checking...",
         isHealthy: true,
         latencyMs: undefined as number | undefined,
+        observedLatencyMs: undefined as number | undefined,
+        measuredAt: undefined as string | undefined,
+        measurementScope: undefined as string | undefined,
         icon: meta.icon,
       }));
     }
@@ -212,10 +215,18 @@ export default function AnalyticsOverview() {
         status: s.status,
         isHealthy: s.isHealthy,
         latencyMs: resolvedLatency,
+        observedLatencyMs:
+          typeof s.observedLatencyMs === "number"
+            ? s.observedLatencyMs
+            : undefined,
+        measuredAt: s.measuredAt,
+        measurementScope: s.measurementScope,
         icon: meta.icon,
       };
     });
   }, [healthData]);
+
+  const healthSnapshotAt = healthData?.[0]?.measuredAt;
 
   const metrics = [
     {
@@ -454,8 +465,15 @@ export default function AnalyticsOverview() {
               Subsystem Heartbeat & Latency Monitor
             </CardTitle>
             <CardDescription className="text-xs">
-              Live response ping for Database, Redis Cache, and API Gateway
+              Server-side probes share one UTC snapshot timestamp; browser RTT
+              is measured locally
             </CardDescription>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Snapshot:{" "}
+              {healthSnapshotAt
+                ? new Date(healthSnapshotAt).toLocaleString()
+                : "—"}
+            </p>
           </div>
           <Button
             variant="outline"
@@ -518,18 +536,34 @@ export default function AnalyticsOverview() {
                     {sub.name}
                   </p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
-                    Ping:{" "}
+                    Server probe:{" "}
                     <strong
                       className={
-                        typeof sub.latencyMs === "number"
+                        typeof sub.latencyMs === "number" && sub.latencyMs > 0
                           ? sub.latencyMs < 50
                             ? "font-mono text-foreground"
                             : "font-mono text-amber-400"
                           : "text-muted-foreground"
                       }
                     >
-                      {typeof sub.latencyMs === "number"
+                      {typeof sub.latencyMs === "number" && sub.latencyMs > 0
                         ? `${sub.latencyMs.toFixed(1)}ms`
+                        : "—"}
+                    </strong>
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Browser RTT:{" "}
+                    <strong
+                      className={
+                        typeof sub.observedLatencyMs === "number"
+                          ? sub.observedLatencyMs < 50
+                            ? "font-mono text-foreground"
+                            : "font-mono text-amber-400"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {typeof sub.observedLatencyMs === "number"
+                        ? `${sub.observedLatencyMs.toFixed(1)}ms`
                         : "—"}
                     </strong>
                   </p>
