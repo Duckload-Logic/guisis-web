@@ -39,25 +39,14 @@ export default function ConsentDialog({
         <DialogHeader>
           <DialogTitle className="text-2xl">Confirm Submission</DialogTitle>
           <DialogDescription className="pt-4 text-justify text-base">
-            By submitting this form, I hereby certify and testify that all
-            information provided herein are true, accurate, and legitimate to
-            the best of my knowledge, and I consent to its confidential
-            processing by the Guidance Office under{" "}
-            <span className="font-semibold text-foreground">
-              RA 10173 (Data Privacy Act of 2012)
-            </span>{" "}
-            and{" "}
-            <span className="font-semibold text-foreground">
-              RA 9258 (Guidance and Counseling Act)
-            </span>
-            . I acknowledge that any deliberate omission, misrepresentation, or
-            falsification of information herein shall constitute grounds for
-            disciplinary action, academic sanctions, and/or legal penalties in
-            accordance with the rules and regulations of the{" "}
+            By submitting this form, I confirm that the information I entered
+            is true and complete. I allow the{" "}
             <span className="font-semibold text-primary">
-              Polytechnic University of the Philippines - Taguig Campus
+              PUP-Taguig Guidance Office
             </span>{" "}
-            and applicable laws.
+            to keep and use my records confidentially for counseling and
+            student support, and I understand that submitting false information
+            may violate university rules.
           </DialogDescription>
         </DialogHeader>
 

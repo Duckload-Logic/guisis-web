@@ -133,7 +133,6 @@ export const LAYOUT_STYLES = {
     "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
 } as const;
 
-
 // Centralized emergency and crisis hotline contacts
 export const CRISIS_CONTACTS = {
   ncmhShortCode: "1553",
@@ -152,33 +151,32 @@ export const STUDENT_ROUTES = {
   SLIPS: "/student/slips",
 } as const;
 
-// Concise Data Privacy (RA 10173), Confidentiality (RA 9258) & Cookie notices
+// Plain-language privacy and cookie notices for students and staff
 export const PRIVACY_DISCLOSURES = {
   PRIMARY_SUMMARY:
-    "Your personal and guidance records are processed strictly for " +
-    "counseling and student support at PUP-Taguig under the Data Privacy " +
-    "Act of 2012 (RA 10173) and the Guidance and Counseling Act (RA 9258).",
+    "Everything you share in GuiSIS is kept private and used only by the " +
+    "PUP-Taguig Guidance Office to support you.",
   COOKIE_SUMMARY:
-    "This portal uses strictly necessary HttpOnly session cookies for " +
-    "secure authentication and zero third-party tracking cookies.",
+    "We only use basic sign-in cookies to keep your account safe—we never " +
+    "track you or show ads.",
   BULLETS: [
     {
-      title: "Counselor-Only Confidentiality (RA 9258):",
+      title: "Private to Guidance Counselors:",
       detail:
-        "Consultation reasons and session notes are restricted to licensed " +
-        "Guidance Counselors and excluded from system admin access.",
+        "Your counseling notes and appointment reasons are only visible to " +
+        "licensed Guidance Counselors.",
     },
     {
-      title: "Strictly Necessary Cookies:",
+      title: "Automatic Sign-Out for Safety:",
       detail:
-        "Encrypted session cookies (30-minute inactivity timeout) and local " +
-        "UI preferences keep your account secure on shared computers.",
+        "Your account signs out after 30 minutes of inactivity to protect " +
+        "you on shared computers.",
     },
     {
-      title: "Data Subject Rights (RA 10173):",
+      title: "Your Control Over Your Info:",
       detail:
-        "You have the right to access your guidance profile, update contact " +
-        "details, and request corrections through the Guidance Office.",
+        "You can view your profile and ask the Guidance Office to update " +
+        "your details anytime.",
     },
   ],
 } as const;

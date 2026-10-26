@@ -63,11 +63,11 @@ export default function ConsentModal({
                 id="terms-title"
                 className="text-base font-bold text-foreground sm:text-lg"
               >
-                Privacy &amp; Session Notice
+                Your Privacy Matters
               </h2>
             </DialogTitle>
             <p className="text-xs text-muted-foreground">
-              RA 10173 (Data Privacy Act) &amp; Cookie Policy
+              How we protect your information at PUP-Taguig
             </p>
           </div>
         </div>
@@ -80,21 +80,7 @@ export default function ConsentModal({
           )}
         >
           <p>{PRIVACY_DISCLOSURES.PRIMARY_SUMMARY}</p>
-          <p>
-            {PRIVACY_DISCLOSURES.COOKIE_SUMMARY} Read PUP&apos;s{" "}
-            <a
-              className={cn(
-                "font-semibold text-primary underline underline-offset-2",
-                "transition-colors hover:text-primary/80",
-              )}
-              target="_blank"
-              rel="noreferrer"
-              href={PUP_PRIVACY_URL}
-            >
-              Privacy Policy
-            </a>
-            .
-          </p>
+          <p>{PRIVACY_DISCLOSURES.COOKIE_SUMMARY}</p>
 
           {/* Progressive Disclosure Toggle */}
           <button
@@ -107,9 +93,7 @@ export default function ConsentModal({
             )}
           >
             <span>
-              {showDetails
-                ? "Hide Privacy & Cookie Summary"
-                : "View Privacy & Cookie Summary"}
+              {showDetails ? "Hide details" : "How is my information used?"}
             </span>
             {showDetails ? (
               <ChevronUp className="h-3.5 w-3.5" />
@@ -180,7 +164,19 @@ export default function ConsentModal({
               )}
             </span>
             <span className="text-xs font-medium text-foreground sm:text-sm">
-              I acknowledge the Data Privacy &amp; Cookie Notice and{" "}
+              I understand and agree to the{" "}
+              <a
+                className={cn(
+                  "font-semibold text-primary underline underline-offset-2",
+                  "transition-colors hover:text-primary/80",
+                )}
+                target="_blank"
+                rel="noreferrer"
+                href={PUP_PRIVACY_URL}
+              >
+                Privacy Policy
+              </a>{" "}
+              and{" "}
               <a
                 className={cn(
                   "font-semibold text-primary underline underline-offset-2",
