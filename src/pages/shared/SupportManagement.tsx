@@ -973,7 +973,8 @@ export function SupportManagement() {
                   if (val) setSortBy(val as "recent" | "oldest");
                 }}
                 buttonClassName={cn(
-                  "h-7 w-28 px-2 py-0.5 text-xs border border-glass-border",
+                  "h-7 w-auto whitespace-nowrap px-2 py-0.5 text-xs",
+                  "border border-glass-border",
                   "bg-muted/20 shadow-xs rounded-lg font-medium",
                 )}
               />
