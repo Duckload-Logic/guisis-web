@@ -44,9 +44,9 @@ const DEFAULT_PAGE_SIZE = 10;
 const SCROLL_THRESHOLD_PX = 80;
 const MAX_TEXTAREA_HEIGHT_PX = 120;
 const STACK_TIME_THRESHOLD_MS = 2 * 60 * 1000;
-const DEFAULT_SIDEBAR_WIDTH = 320;
-const MIN_SIDEBAR_WIDTH = 260;
-const MAX_SIDEBAR_WIDTH = 480;
+const DEFAULT_SIDEBAR_WIDTH = 380;
+const MIN_SIDEBAR_WIDTH = 360;
+const MAX_SIDEBAR_WIDTH = 520;
 const COLLAPSED_SIDEBAR_WIDTH = 48;
 const SIDEBAR_WIDTH_STORAGE_KEY = "guisis_support_sidebar_width";
 const SUPPORT_DESKTOP_BREAKPOINT_PX = 768;
@@ -747,7 +747,8 @@ export function SupportManagement() {
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
             "border-glass-border",
             !isResizing &&
-              "transition-[width,min-width,max-width,flex-basis] duration-200 ease-out",
+              "transition-[width,min-width,max-width,flex-basis] " +
+                "duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && isSupportDesktop && "md:border-r",
             isSidebarCollapsed && isSupportDesktop
@@ -823,7 +824,7 @@ export function SupportManagement() {
                 )}
               >
                 <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
-                <span className="truncate">Active Conversations</span>
+                <span className="whitespace-nowrap">Active Conversations</span>
               </h2>
               <div className="flex shrink-0 items-center gap-1.5">
                 {meta ? (
@@ -831,7 +832,8 @@ export function SupportManagement() {
                     variant="outline"
                     className={cn(
                       "rounded-lg border-primary/20 bg-primary/10",
-                      "px-2 py-0.5 text-[10px] font-bold text-primary",
+                      "shrink-0 whitespace-nowrap px-2 py-0.5",
+                      "text-[10px] font-bold text-primary",
                     )}
                   >
                     {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
@@ -924,7 +926,8 @@ export function SupportManagement() {
                     size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={cn(
-                      "h-7 flex-1 shrink-0 whitespace-nowrap rounded-lg",
+                      "h-8 !min-h-0 flex-auto shrink-0 gap-1",
+                      "whitespace-nowrap rounded-lg",
                       "px-1.5 text-[10px] font-bold uppercase tracking-wider",
                       "transition-all",
                       isActive
@@ -940,7 +943,7 @@ export function SupportManagement() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "ml-1 h-4 min-w-4 border-transparent px-1.5",
+                          "h-4 min-w-4 border-transparent px-1.5",
                           "text-[9px] font-bold",
                           isActive
                             ? "bg-primary-foreground text-primary"
@@ -973,7 +976,8 @@ export function SupportManagement() {
                   if (val) setSortBy(val as "recent" | "oldest");
                 }}
                 buttonClassName={cn(
-                  "h-7 w-auto whitespace-nowrap px-2 py-0.5 text-xs",
+                  "h-8 !min-h-0 w-auto shrink-0 whitespace-nowrap",
+                  "px-2.5 py-1 text-xs",
                   "border border-glass-border",
                   "bg-muted/20 shadow-xs rounded-lg font-medium",
                 )}
@@ -1102,10 +1106,13 @@ export function SupportManagement() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
+                        <div
+                          className="flex items-center justify-between gap-1"
+                        >
                           <span
                             className={cn(
-                              "truncate text-xs font-bold sm:text-sm",
+                              "whitespace-nowrap text-xs font-bold",
+                              "sm:text-sm",
                               isUnread
                                 ? "font-extrabold text-foreground"
                                 : "text-muted-foreground",
@@ -1319,7 +1326,8 @@ export function SupportManagement() {
                         <div className="min-w-0">
                           <h3
                             className={cn(
-                              "truncate text-xs font-bold sm:text-sm",
+                              "whitespace-nowrap text-xs font-bold",
+                              "sm:text-sm",
                             )}
                           >
                             {headerName}
@@ -1479,7 +1487,9 @@ export function SupportManagement() {
                                   )}
                                 >
                                   {isStaff
-                                    ? `${msg.senderName} (${msg.senderRole || "Guidance Counselor"})`
+                                    ? `${msg.senderName} (${
+                                        msg.senderRole || "Guidance Counselor"
+                                      })`
                                     : msg.senderName}
                                 </span>
                               )}
@@ -1557,7 +1567,9 @@ export function SupportManagement() {
 
                       {isResolved && (
                         <div className="my-5 flex items-center">
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                           <Badge
                             variant="outline"
                             className={cn(
@@ -1569,7 +1581,9 @@ export function SupportManagement() {
                             <CheckCircle className="h-3 w-3 text-emerald-500" />
                             Ticket Resolved
                           </Badge>
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                         </div>
                       )}
                     </div>

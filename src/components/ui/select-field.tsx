@@ -199,7 +199,7 @@ export function SelectField({
             >
               <span
                 className={cn(
-                  "min-w-0 flex-1 truncate whitespace-nowrap text-left",
+                  "grow whitespace-nowrap text-left",
                   !filled && "font-normal italic text-muted-foreground/60",
                 )}
                 title={filled ? getLabel(selectedOption) : undefined}
@@ -304,7 +304,7 @@ export function SelectField({
                     )}
                   >
                     <span
-                      className="flex-1 truncate whitespace-nowrap leading-5"
+                      className="grow whitespace-nowrap leading-5"
                     >
                       {getLabel(option)}
                     </span>
