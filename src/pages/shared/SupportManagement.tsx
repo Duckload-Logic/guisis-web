@@ -149,7 +149,7 @@ export function SupportManagement() {
 
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "unread" | "open" | "closed"
+    "all" | "open" | "closed"
   >("all");
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
   const [searchQuery, setSearchQuery] = useState("");
@@ -324,12 +324,34 @@ export function SupportManagement() {
     });
   }, [tickets, sortBy]);
 
-  const unreadCount = useMemo(() => {
-    return groupedUsers.filter((g) => {
+  const [tabUnreadCounts, setTabUnreadCounts] = useState({
+    all: 0,
+    open: 0,
+    closed: 0,
+  });
+
+  useEffect(() => {
+    let open = 0;
+    let closed = 0;
+    groupedUsers.forEach((g) => {
       const latest = g.tickets[g.tickets.length - 1];
-      return latest && !latest.isRead;
-    }).length;
-  }, [groupedUsers]);
+      if (!latest || latest.isRead) return;
+      if (g.tickets.some(isOpenTicket)) open += 1;
+      else closed += 1;
+    });
+
+    setTabUnreadCounts((prev) => {
+      if (statusFilter === "all") {
+        return { all: open + closed, open, closed };
+      }
+      if (statusFilter === "open") {
+        return { all: open + prev.closed, open, closed: prev.closed };
+      }
+      return { all: prev.open + closed, open: prev.open, closed };
+    });
+  }, [groupedUsers, statusFilter]);
+
+  const unreadCount = tabUnreadCounts.all;
 
   const filteredGroups = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -337,7 +359,7 @@ export function SupportManagement() {
       const latestTicket = g.tickets[g.tickets.length - 1];
       const hasOpen = g.tickets.some(isOpenTicket);
 
-      if (statusFilter === "unread" && latestTicket?.isRead) return false;
+      // Unread counts are shown as top-right badges on each tab
       if (statusFilter === "open" && !hasOpen) return false;
       if (statusFilter === "closed" && hasOpen) return false;
 
@@ -903,15 +925,18 @@ export function SupportManagement() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="mt-2.5 flex gap-1 rounded-xl bg-muted/30 p-1">
+            <div className="mt-2.5 flex gap-1.5 rounded-xl bg-muted/30 p-1.5">
               {(
                 [
-                  { id: "all", label: "All" },
-                  { id: "unread", label: "Unread", count: unreadCount },
-                  { id: "open", label: "Open" },
-                  { id: "closed", label: "Closed" },
+                  { id: "all", label: "All", count: tabUnreadCounts.all },
+                  { id: "open", label: "Open", count: tabUnreadCounts.open },
+                  {
+                    id: "closed",
+                    label: "Resolved",
+                    count: tabUnreadCounts.closed,
+                  },
                 ] as Array<{
-                  id: "all" | "unread" | "open" | "closed";
+                  id: "all" | "open" | "closed";
                   label: string;
                   count?: number;
                 }>
@@ -926,9 +951,9 @@ export function SupportManagement() {
                     size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={cn(
-                      "h-8 !min-h-0 flex-auto shrink-0 gap-1",
-                      "whitespace-nowrap rounded-lg",
-                      "px-1.5 text-[10px] font-bold uppercase tracking-wider",
+                      "relative h-8 !min-h-0 flex-1 shrink-0",
+                      "whitespace-nowrap rounded-lg px-2",
+                      "text-[10px] font-bold uppercase tracking-wider",
                       "transition-all",
                       isActive
                         ? "shadow-xs bg-primary text-primary-foreground"
@@ -943,11 +968,11 @@ export function SupportManagement() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "h-4 min-w-4 border-transparent px-1.5",
-                          "text-[9px] font-bold",
-                          isActive
-                            ? "bg-primary-foreground text-primary"
-                            : "bg-blue-500 text-white",
+                          "absolute -right-1 -top-1 z-10 flex h-4 min-w-4",
+                          "items-center justify-center rounded-full",
+                          "border-transparent bg-blue-500 px-1",
+                          "text-[9px] font-bold text-white shadow-xs",
+                          "ring-2 ring-card",
                         )}
                       >
                         {tab.count}
@@ -1121,18 +1146,6 @@ export function SupportManagement() {
                             {name}
                           </span>
                           <div className="flex shrink-0 items-center gap-1.5">
-                            {isUnread && (
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "rounded-md border-blue-500/30",
-                                  "bg-blue-500/10 px-1.5 py-0 text-[9px]",
-                                  "font-bold text-blue-500",
-                                )}
-                              >
-                                Unread
-                              </Badge>
-                            )}
                             <Badge
                               variant="outline"
                               className={cn(
