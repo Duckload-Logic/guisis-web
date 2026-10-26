@@ -41,11 +41,19 @@ export default function ConsentDialog({
           <DialogDescription className="pt-4 text-justify text-base">
             By submitting this form, I hereby certify and testify that all
             information provided herein are true, accurate, and legitimate to
-            the best of my knowledge. I acknowledge that any deliberate
-            omission, misrepresentation, or falsification of information herein
-            shall constitute grounds for disciplinary action, academic
-            sanctions, and/or legal penalties in accordance with the rules and
-            regulations of the{" "}
+            the best of my knowledge, and I consent to its confidential
+            processing by the Guidance Office under{" "}
+            <span className="font-semibold text-foreground">
+              RA 10173 (Data Privacy Act of 2012)
+            </span>{" "}
+            and{" "}
+            <span className="font-semibold text-foreground">
+              RA 9258 (Guidance and Counseling Act)
+            </span>
+            . I acknowledge that any deliberate omission, misrepresentation, or
+            falsification of information herein shall constitute grounds for
+            disciplinary action, academic sanctions, and/or legal penalties in
+            accordance with the rules and regulations of the{" "}
             <span className="font-semibold text-primary">
               Polytechnic University of the Philippines - Taguig Campus
             </span>{" "}
@@ -59,7 +67,7 @@ export default function ConsentDialog({
             variant="outline"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="border border-border hover:bg-muted"
+            className="h-11 border border-border hover:bg-muted"
           >
             Cancel
           </Button>
@@ -67,16 +75,18 @@ export default function ConsentDialog({
             type="button"
             onClick={onAccept}
             disabled={isSubmitting}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className={cn(
+              "h-11 bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
           >
             {isSubmitting ? (
               <>
                 <div
                   className={cn(
-                    "mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white",
-                    "border-t-transparent",
+                    "mr-2 h-4 w-4 animate-spin rounded-full border-2",
+                    "border-primary-foreground border-t-transparent",
                   )}
-                ></div>
+                />
                 Submitting...
               </>
             ) : (

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { PRIVACY_DISCLOSURES } from "@/config/constants";
 import { cn } from "@/lib/utils";
+
+const PUP_PRIVACY_URL = "https://www.pup.edu.ph/privacy";
+const PUP_TERMS_URL = "https://www.pup.edu.ph/terms";
 
 type ConsentModalProps = {
   open: boolean;
@@ -20,9 +24,13 @@ export default function ConsentModal({
   onCancel,
 }: ConsentModalProps) {
   const [agreed, setAgreed] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    if (open) setAgreed(false);
+    if (open) {
+      setAgreed(false);
+      setShowDetails(false);
+    }
   }, [open]);
 
   if (!open) return null;
@@ -55,29 +63,25 @@ export default function ConsentModal({
                 id="terms-title"
                 className="text-base font-bold text-foreground sm:text-lg"
               >
-                Terms and Conditions
+                Privacy &amp; Session Notice
               </h2>
             </DialogTitle>
             <p className="text-xs text-muted-foreground">
-              Data Privacy Act &amp; Service Consent
+              RA 10173 (Data Privacy Act) &amp; Cookie Policy
             </p>
           </div>
         </div>
 
-        {/* Content Body */}
+        {/* Concise Primary Summary */}
         <div
           className={cn(
-            "space-y-2.5 text-xs leading-relaxed sm:text-sm",
-            "text-muted-foreground",
+            "space-y-2 text-xs leading-relaxed text-muted-foreground",
+            "sm:text-sm",
           )}
         >
+          <p>{PRIVACY_DISCLOSURES.PRIMARY_SUMMARY}</p>
           <p>
-            By acknowledging below, you consent to the collection, use, and
-            processing of your personal information solely for guidance,
-            counseling, and legitimate university purposes.
-          </p>
-          <p>
-            Handled strictly in accordance with PUP&apos;s{" "}
+            {PRIVACY_DISCLOSURES.COOKIE_SUMMARY} Read PUP&apos;s{" "}
             <a
               className={cn(
                 "font-semibold text-primary underline underline-offset-2",
@@ -85,16 +89,50 @@ export default function ConsentModal({
               )}
               target="_blank"
               rel="noreferrer"
-              href="https://www.pup.edu.ph/privacy"
+              href={PUP_PRIVACY_URL}
             >
               Privacy Policy
-            </a>{" "}
-            and compliance with the{" "}
-            <span className="font-semibold text-foreground">
-              Data Privacy Act of 2012 (RA 10173)
-            </span>
+            </a>
             .
           </p>
+
+          {/* Progressive Disclosure Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowDetails((prev) => !prev)}
+            className={cn(
+              "inline-flex min-h-11 items-center gap-1.5 text-xs",
+              "font-semibold text-primary transition-colors",
+              "hover:text-primary/80",
+            )}
+          >
+            <span>
+              {showDetails
+                ? "Hide Privacy & Cookie Summary"
+                : "View Privacy & Cookie Summary"}
+            </span>
+            {showDetails ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {showDetails && (
+            <ul
+              className={cn(
+                "space-y-2 rounded-xl border border-border/70",
+                "bg-muted/30 p-3 text-xs",
+              )}
+            >
+              {PRIVACY_DISCLOSURES.BULLETS.map((item) => (
+                <li key={item.title}>
+                  <strong className="text-foreground">{item.title}</strong>{" "}
+                  <span>{item.detail}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Checkbox acknowledgement */}
@@ -105,7 +143,9 @@ export default function ConsentModal({
         >
           <label
             htmlFor="terms-agree"
-            className="flex cursor-pointer select-none items-center gap-3"
+            className={cn(
+              "flex min-h-11 cursor-pointer select-none items-center gap-3",
+            )}
           >
             <input
               id="terms-agree"
@@ -140,7 +180,7 @@ export default function ConsentModal({
               )}
             </span>
             <span className="text-xs font-medium text-foreground sm:text-sm">
-              I agree to the{" "}
+              I acknowledge the Data Privacy &amp; Cookie Notice and{" "}
               <a
                 className={cn(
                   "font-semibold text-primary underline underline-offset-2",
@@ -148,7 +188,7 @@ export default function ConsentModal({
                 )}
                 target="_blank"
                 rel="noreferrer"
-                href="https://www.pup.edu.ph/terms"
+                href={PUP_TERMS_URL}
               >
                 Terms of Service
               </a>
@@ -166,7 +206,7 @@ export default function ConsentModal({
               onClick={onCancel}
               disabled={loading}
               className={cn(
-                "h-10 rounded-xl px-4 text-xs font-semibold sm:text-sm",
+                "h-11 rounded-xl px-4 text-xs font-semibold sm:text-sm",
               )}
             >
               Sign out
@@ -177,7 +217,7 @@ export default function ConsentModal({
             disabled={!agreed || loading}
             onClick={onAccept}
             className={cn(
-              "h-10 rounded-xl px-5 text-xs font-semibold sm:text-sm",
+              "h-11 rounded-xl px-5 text-xs font-semibold sm:text-sm",
               "transition-all",
               !agreed || loading
                 ? "cursor-not-allowed bg-muted text-muted-foreground"
@@ -191,4 +231,3 @@ export default function ConsentModal({
     </Dialog>
   );
 }
-

@@ -12,11 +12,13 @@ export const ROLE_ROUTES = {
 // Admission Slip status
 export const STATUS_COLORS: Record<string, string> = {
   warning:
-    "border-warning-foreground/30 bg-warning-background text-warning-foreground",
+    "border-warning-foreground/30 bg-warning-background " +
+    "text-warning-foreground",
   danger:
     "border-danger-foreground/30 bg-danger-background text-danger-foreground",
   success:
-    "border-success-foreground/30 bg-success-background text-success-foreground",
+    "border-success-foreground/30 bg-success-background " +
+    "text-success-foreground",
   info: "border-info-foreground/30 bg-info-background text-info-foreground",
   stale: "border-stale-foreground/30 bg-stale-background text-stale-foreground",
   notice:
@@ -135,9 +137,48 @@ export const LAYOUT_STYLES = {
 // Centralized emergency and crisis hotline contacts
 export const CRISIS_CONTACTS = {
   ncmhShortCode: "1553",
+  ncmhTelHref: "tel:1553",
   dohTelephone: "(632) 8651-7800",
   displayHotline: "1553 (Toll-Free) or Tel: (632) 8651-7800",
   guidanceOfficeNote:
     "Direct in-person walk-in consultation is accommodated immediately " +
     "during office hours.",
+} as const;
+
+// Shared student route constants
+export const STUDENT_ROUTES = {
+  IIR_FORM: "/student/iir/form",
+  APPOINTMENTS: "/student/appointments",
+  SLIPS: "/student/slips",
+} as const;
+
+// Concise Data Privacy (RA 10173), Confidentiality (RA 9258) & Cookie notices
+export const PRIVACY_DISCLOSURES = {
+  PRIMARY_SUMMARY:
+    "Your personal and guidance records are processed strictly for " +
+    "counseling and student support at PUP-Taguig under the Data Privacy " +
+    "Act of 2012 (RA 10173) and the Guidance and Counseling Act (RA 9258).",
+  COOKIE_SUMMARY:
+    "This portal uses strictly necessary HttpOnly session cookies for " +
+    "secure authentication and zero third-party tracking cookies.",
+  BULLETS: [
+    {
+      title: "Counselor-Only Confidentiality (RA 9258):",
+      detail:
+        "Consultation reasons and session notes are restricted to licensed " +
+        "Guidance Counselors and excluded from system admin access.",
+    },
+    {
+      title: "Strictly Necessary Cookies:",
+      detail:
+        "Encrypted session cookies (30-minute inactivity timeout) and local " +
+        "UI preferences keep your account secure on shared computers.",
+    },
+    {
+      title: "Data Subject Rights (RA 10173):",
+      detail:
+        "You have the right to access your guidance profile, update contact " +
+        "details, and request corrections through the Guidance Office.",
+    },
+  ],
 } as const;

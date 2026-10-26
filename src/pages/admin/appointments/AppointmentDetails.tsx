@@ -44,12 +44,20 @@ import {
 } from "@/utils/dateTime";
 import { usePageMetadata, useToast } from "@/context";
 import { parseAuditTrail } from "@/utils/auditTrail";
-import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
-import RescheduleModal from "@/features/appointments/components/RescheduleModal";
+import ActionConfirmModal from
+  "@/features/appointments/components/ConfirmModal";
+import RescheduleModal from
+  "@/features/appointments/components/RescheduleModal";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { InOfficeSessionTimer } from "@/components/shared/InOfficeSessionTimer";
-import { StudentProfileBentoCard } from "@/components/shared/StudentProfileBentoCard";
+import {
+  StudentProfileBentoCard,
+} from "@/components/shared/StudentProfileBentoCard";
 import { cn } from "@/lib/utils";
+
+const FALLBACK_RESCHEDULED_STATUS_ID = 6;
+const COPY_FEEDBACK_MS = 2000;
+const LOW_CONFIDENCE_THRESHOLD = 0.7;
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
@@ -113,7 +121,7 @@ function AppointmentDetailsSkeleton() {
           variant="outline"
           size="sm"
           onClick={() => navigate("/admin/appointments")}
-          className="h-9 gap-1.5 rounded-xl border-border/70"
+          className="h-11 gap-1.5 rounded-xl border-border/70"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Appointments
@@ -140,15 +148,15 @@ function AppointmentDetailsSkeleton() {
               <Skeleton className="h-3 w-4/5 rounded" />
               <Skeleton className="h-3 w-2/3 rounded" />
             </div>
-            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
           </Card>
 
           <Card className="space-y-3 rounded-2xl border border-border/70 p-5">
             <Skeleton className="h-4 w-1/2 rounded" />
-            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
             <div className="flex gap-2">
-              <Skeleton className="h-9 flex-1 rounded-xl" />
-              <Skeleton className="h-9 flex-1 rounded-xl" />
+              <Skeleton className="h-11 flex-1 rounded-xl" />
+              <Skeleton className="h-11 flex-1 rounded-xl" />
             </div>
           </Card>
         </div>
@@ -240,7 +248,7 @@ export default function AppointmentDetails() {
     if (!appointment?.id) return;
     navigator.clipboard.writeText(appointment.id);
     setHasCopiedId(true);
-    setTimeout(() => setHasCopiedId(false), 2000);
+    setTimeout(() => setHasCopiedId(false), COPY_FEEDBACK_MS);
   };
 
   const urgencyInfo = getAppointmentUrgency(appointment);
@@ -259,9 +267,10 @@ export default function AppointmentDetails() {
               type="button"
               onClick={handleCopyId}
               className={cn(
-                "flex items-center gap-1.5 rounded-lg border border-border/70",
-                "bg-muted/40 px-2.5 py-1 font-mono text-[11px] text-muted-foreground",
-                "transition-colors hover:border-primary/40 hover:text-foreground",
+                "flex min-h-11 items-center gap-1.5 rounded-xl border",
+                "border-border/70 bg-muted/40 px-3 py-1.5 font-mono",
+                "text-[11px] text-muted-foreground transition-colors",
+                "hover:border-primary/40 hover:text-foreground",
               )}
               title="Click to copy full ID"
             >
@@ -299,7 +308,8 @@ export default function AppointmentDetails() {
                   className={cn(
                     "rounded-full border-border/70 px-3 py-1",
                     "text-[11px] font-medium shadow-sm",
-                    (appointment as any).urgencyScore < 0.7
+                    (appointment as any).urgencyScore <
+                      LOW_CONFIDENCE_THRESHOLD
                       ? cn(
                           "border-amber-500/30 bg-amber-500/10",
                           "text-amber-700 dark:text-amber-400",
@@ -307,7 +317,8 @@ export default function AppointmentDetails() {
                       : "bg-muted/40 text-muted-foreground",
                   )}
                   title={
-                    (appointment as any).urgencyScore < 0.7
+                    (appointment as any).urgencyScore <
+                    LOW_CONFIDENCE_THRESHOLD
                       ? "Automated triage confidence below 70%"
                       : "DistilBERT automated triage confidence"
                   }
@@ -339,14 +350,18 @@ export default function AppointmentDetails() {
 
   if (isError || (!appointment && !isLoading)) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
+      <div
+        className={cn(
+          "flex min-h-[400px] flex-col items-center justify-center space-y-4",
+        )}
+      >
         <p className="font-medium text-destructive">
           {isError ? "Error loading appointment" : "Appointment not found"}
         </p>
         <Button
           onClick={() => navigate("/admin/appointments")}
           variant="outline"
-          className="rounded-xl"
+          className="h-11 rounded-xl"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Appointments
@@ -449,13 +464,15 @@ export default function AppointmentDetails() {
     newTimeSlotId: number,
     reason: string,
   ) => {
+    const statusId =
+      getStatusIdByAction("Reschedule") ?? FALLBACK_RESCHEDULED_STATUS_ID;
     try {
       await updateAppointment({
         id: appointment.id!,
         data: {
           whenDate: newDate,
           timeSlot: { id: newTimeSlotId },
-          status: { id: 6 },
+          status: { id: statusId },
           adminNotes: reason,
         } as any,
       });
@@ -471,7 +488,8 @@ export default function AppointmentDetails() {
     middleName: appointment.user?.middleName,
     lastName: appointment.user?.lastName,
     email: appointment.user?.email,
-    studentNumber: appointment.studentNumber || appointment.user?.studentNumber,
+    studentNumber:
+      appointment.studentNumber || appointment.user?.studentNumber,
     contactNumber: appointment.contactNumber,
     profilePicture: appointment.user?.profilePicture,
     iirId: appointment.iirId,
@@ -530,7 +548,11 @@ export default function AppointmentDetails() {
           )}
         >
           <div className="flex items-center gap-3.5">
-            <div className="rounded-xl border border-primary/30 bg-primary/20 p-2.5">
+            <div
+              className={cn(
+                "rounded-xl border border-primary/30 bg-primary/20 p-2.5",
+              )}
+            >
               <StickyNote className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -539,17 +561,21 @@ export default function AppointmentDetails() {
               </h3>
               <p className="text-xs text-muted-foreground">
                 This completed appointment requires a consultation note in the
-                student's records.
+                student&apos;s records.
               </p>
             </div>
           </div>
           <Button
             onClick={() =>
               navigate(
-                `/admin/student-records/${appointment.iirId}?addNote=true&appointmentId=${appointment.id}`,
+                `/admin/student-records/${appointment.iirId}` +
+                  `?addNote=true&appointmentId=${appointment.id}`,
               )
             }
-            className="h-10 rounded-xl bg-primary px-5 text-xs font-bold text-white shadow-sm hover:bg-primary/90"
+            className={cn(
+              "h-11 rounded-xl bg-primary px-5 text-xs font-bold",
+              "text-white shadow-sm hover:bg-primary/90",
+            )}
           >
             Add Note Now
           </Button>
@@ -578,7 +604,9 @@ export default function AppointmentDetails() {
               "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+            <CardHeader
+              className="border-b border-border/50 bg-muted/20 px-5 py-3.5"
+            >
               <CardTitle
                 className={cn(
                   "flex items-center gap-2 text-xs font-bold uppercase",
@@ -623,14 +651,15 @@ export default function AppointmentDetails() {
                 />
               )}
 
-              {/* Lifecycle Actions */}
+              {/* Lifecycle Actions (44px Touch Targets) */}
               {isPending && (
                 <div className="space-y-2.5">
                   <Button
                     onClick={() => handleActionClick("Approve")}
                     className={cn(
-                      "h-10 w-full gap-2 rounded-xl bg-emerald-600 font-bold text-white",
-                      "shadow-sm transition-all hover:bg-emerald-700",
+                      "h-11 w-full gap-2 rounded-xl bg-emerald-600",
+                      "font-bold text-white shadow-sm transition-all",
+                      "hover:bg-emerald-700",
                     )}
                   >
                     <CheckCircle className="h-4 w-4" />
@@ -640,8 +669,9 @@ export default function AppointmentDetails() {
                     variant="outline"
                     onClick={() => handleActionClick("Reject")}
                     className={cn(
-                      "h-9 w-full gap-2 rounded-xl border-destructive/30 text-xs",
-                      "font-semibold text-destructive hover:bg-destructive/10",
+                      "h-11 w-full gap-2 rounded-xl border-destructive/30",
+                      "text-xs font-semibold text-destructive",
+                      "hover:bg-destructive/10",
                     )}
                   >
                     <XCircle className="h-4 w-4" />
@@ -655,7 +685,10 @@ export default function AppointmentDetails() {
                   <Button
                     variant="outline"
                     onClick={() => handleActionClick("Reschedule")}
-                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                    className={cn(
+                      "h-11 gap-2 rounded-xl border-border/80",
+                      "text-xs font-semibold",
+                    )}
                   >
                     <CalendarRange className="h-3.5 w-3.5 text-primary" />
                     Reschedule
@@ -663,7 +696,10 @@ export default function AppointmentDetails() {
                   <Button
                     variant="outline"
                     onClick={() => handleActionClick("No-show")}
-                    className="h-9 gap-2 rounded-xl border-border/80 text-xs font-semibold"
+                    className={cn(
+                      "h-11 gap-2 rounded-xl border-border/80",
+                      "text-xs font-semibold",
+                    )}
                   >
                     <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                     Mark No-show
@@ -672,8 +708,9 @@ export default function AppointmentDetails() {
                     variant="outline"
                     onClick={() => handleActionClick("Cancel")}
                     className={cn(
-                      "col-span-2 h-9 gap-2 rounded-xl border-destructive/30 text-xs",
-                      "font-semibold text-destructive hover:bg-destructive/10",
+                      "col-span-2 h-11 gap-2 rounded-xl",
+                      "border-destructive/30 text-xs font-semibold",
+                      "text-destructive hover:bg-destructive/10",
                     )}
                   >
                     <AlertCircle className="h-3.5 w-3.5" />
@@ -683,8 +720,15 @@ export default function AppointmentDetails() {
               )}
 
               {isCompleted && (
-                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
-                  <CheckCircle className="mx-auto h-7 w-7 text-emerald-600/80" />
+                <div
+                  className={cn(
+                    "rounded-xl border border-dashed border-border/70",
+                    "py-6 text-center",
+                  )}
+                >
+                  <CheckCircle
+                    className="mx-auto h-7 w-7 text-emerald-600/80"
+                  />
                   <p className="mt-2 text-xs font-bold text-foreground/80">
                     Consultation Completed
                   </p>
@@ -695,8 +739,15 @@ export default function AppointmentDetails() {
               )}
 
               {!isPending && !isScheduled && !isCompleted && (
-                <div className="rounded-xl border border-dashed border-border/70 py-6 text-center">
-                  <ShieldAlert className="mx-auto h-7 w-7 text-muted-foreground/60" />
+                <div
+                  className={cn(
+                    "rounded-xl border border-dashed border-border/70",
+                    "py-6 text-center",
+                  )}
+                >
+                  <ShieldAlert
+                    className="mx-auto h-7 w-7 text-muted-foreground/60"
+                  />
                   <p className="mt-2 text-xs font-bold text-muted-foreground">
                     Appointment is {appointment.status?.name}
                   </p>
@@ -720,7 +771,9 @@ export default function AppointmentDetails() {
               "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+            <CardHeader
+              className="border-b border-border/50 bg-muted/20 px-5 py-3.5"
+            >
               <div className="flex items-center justify-between">
                 <CardTitle
                   className={cn(
@@ -733,7 +786,10 @@ export default function AppointmentDetails() {
                 </CardTitle>
                 <Badge
                   variant="secondary"
-                  className="rounded-lg border border-primary/20 bg-primary/10 text-xs font-bold text-primary"
+                  className={cn(
+                    "rounded-lg border border-primary/20 bg-primary/10",
+                    "text-xs font-bold text-primary",
+                  )}
                 >
                   {appointment.appointmentCategory.name}
                 </Badge>
@@ -743,12 +799,24 @@ export default function AppointmentDetails() {
             <CardContent className="space-y-5 p-5">
               {/* Reason description box */}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p
+                  className={cn(
+                    "text-[10px] font-bold uppercase tracking-wider",
+                    "text-muted-foreground",
+                  )}
+                >
                   Reason for Consultation
                 </p>
                 <div className="rounded-xl border bg-muted/10 p-4">
-                  <p className="text-sm font-medium italic leading-relaxed text-foreground/90">
-                    "{appointment.reason || "No specific reason provided."}"
+                  <p
+                    className={cn(
+                      "text-sm font-medium italic leading-relaxed",
+                      "text-foreground/90",
+                    )}
+                  >
+                    &ldquo;
+                    {appointment.reason || "No specific reason provided."}
+                    &rdquo;
                   </p>
                 </div>
               </div>
@@ -756,7 +824,12 @@ export default function AppointmentDetails() {
               {/* Schedule options / Selected schedule */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <p
+                    className={cn(
+                      "text-[10px] font-bold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     {isPending
                       ? "Select Schedule Option to Approve"
                       : "Confirmed Consultation Schedule"}
@@ -787,16 +860,28 @@ export default function AppointmentDetails() {
                           })
                         }
                         className={cn(
-                          "group relative flex flex-col justify-between rounded-xl",
-                          "border p-3.5 text-left transition-all duration-200",
+                          "group relative flex min-h-11 flex-col",
+                          "justify-between rounded-xl border p-3.5",
+                          "text-left transition-all duration-200",
                           isSelected
-                            ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-                            : "border-border/80 bg-muted/10 hover:border-primary/30 hover:bg-muted/20",
+                            ? cn(
+                                "border-primary bg-primary/5 shadow-sm",
+                                "ring-1 ring-primary",
+                              )
+                            : cn(
+                                "border-border/80 bg-muted/10",
+                                "hover:border-primary/30 hover:bg-muted/20",
+                              ),
                           !isPending && "cursor-default hover:border-border/80",
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase",
+                              "text-muted-foreground",
+                            )}
+                          >
                             {opt.title}
                           </span>
                           {isSelected && (
@@ -807,7 +892,9 @@ export default function AppointmentDetails() {
                           <p className="text-sm font-bold text-foreground">
                             {formatDate(opt.date)}
                           </p>
-                          <p className="font-mono text-xs text-muted-foreground">
+                          <p
+                            className="font-mono text-xs text-muted-foreground"
+                          >
                             {format12HourTime(opt.slot.time)}
                           </p>
                         </div>
@@ -826,7 +913,9 @@ export default function AppointmentDetails() {
               "shadow-sm backdrop-blur-xl",
             )}
           >
-            <CardHeader className="border-b border-border/50 bg-muted/20 px-5 py-3.5">
+            <CardHeader
+              className="border-b border-border/50 bg-muted/20 px-5 py-3.5"
+            >
               <CardTitle
                 className={cn(
                   "flex items-center gap-2 text-xs font-bold uppercase",
@@ -975,7 +1064,12 @@ export default function AppointmentDetails() {
           )}
         >
           <AlertDialogHeader>
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+            <div
+              className={cn(
+                "mb-2 flex h-10 w-10 items-center justify-center rounded-xl",
+                "bg-emerald-500/10 text-emerald-600",
+              )}
+            >
               <Play className="h-5 w-5 fill-current" />
             </div>
             <AlertDialogTitle className="text-xl font-bold">
@@ -987,14 +1081,19 @@ export default function AppointmentDetails() {
               in the office to begin tracking session duration.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
-            <AlertDialogCancel className="rounded-xl font-semibold">
+          <div
+            className="flex justify-end gap-3 border-t border-border/50 pt-4"
+          >
+            <AlertDialogCancel className="h-11 rounded-xl font-semibold">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleConfirmStartAppointment(0)}
               disabled={startAppointmentMutation.isPending}
-              className="rounded-xl bg-emerald-600 font-semibold text-white shadow-sm hover:bg-emerald-700"
+              className={cn(
+                "h-11 rounded-xl bg-emerald-600 font-semibold text-white",
+                "shadow-sm hover:bg-emerald-700",
+              )}
             >
               {startAppointmentMutation.isPending
                 ? "Starting..."

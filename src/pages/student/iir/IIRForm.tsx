@@ -2,11 +2,14 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, User } from "lucide-react";
-import { GetAcademicSettings } from "@/features/student-core/services/academicSettingsService";
+import {
+  GetAcademicSettings,
+} from "@/features/student-core/services/academicSettingsService";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AnimationStyles } from "@/components/ui/animations";
 import { usePageMetadata, useToast } from "@/context";
+import { useFormShortcuts } from "@/hooks";
 import { useIIRProfile, useIIRStatus } from "@/features/iir/hooks";
 import {
   useGetIIRDraft,
@@ -31,7 +34,9 @@ import {
   FormErrorModal,
   groupErrorsBySection,
 } from "@/features/iir/components/form/FormErrorModal";
-import { SectionProgress } from "@/features/iir/components/form/SectionProgress";
+import {
+  SectionProgress,
+} from "@/features/iir/components/form/SectionProgress";
 import ConsentDialog from "@/features/iir/components/form/ConsentDialog";
 import { useMe } from "@/features/users/hooks/useMe";
 import { cn } from "@/lib/utils";
@@ -57,6 +62,8 @@ const PHOTO_REQUIRED_SECTION = 1;
 const PHOTO_REQUIRED_FIELD = "student.personalInfo.twoByTwoPhotoDataUrl";
 const PHOTO_REQUIRED_MESSAGE =
   "Upload your required 2x2 profile photo before moving to the next step.";
+const AUTO_SAVE_DEBOUNCE_MS = 1000;
+const ERROR_SCROLL_DELAY_MS = 50;
 
 export default function IIRForm() {
   const navigate = useNavigate();
@@ -81,7 +88,6 @@ export default function IIRForm() {
     markFieldTouched,
     markAllTouched,
     shouldShowError,
-    resetTouched,
     clearFieldTouched,
   } = useTouchedState();
 
@@ -91,6 +97,23 @@ export default function IIRForm() {
   const familySectionRef = useRef<any>(null);
   const healthSectionRef = useRef<any>(null);
   const interestsSectionRef = useRef<any>(null);
+
+  const sectionRefs = useMemo<Record<number, React.RefObject<any>>>(
+    () => ({
+      1: personalSectionRef,
+      2: personalSectionRef,
+      3: personalSectionRef,
+      4: personalSectionRef,
+      5: educationSectionRef,
+      6: familySectionRef,
+      7: familySectionRef,
+      8: familySectionRef,
+      9: familySectionRef,
+      10: healthSectionRef,
+      11: interestsSectionRef,
+    }),
+    [],
+  );
 
   const [currentSection, setCurrentSection] = useState<number>(1);
   const [visitedSections, setVisitedSections] = useState<number[]>(() => {
@@ -169,14 +192,29 @@ export default function IIRForm() {
     isNonFreshman &&
     !isEditMode;
 
+  // Modal error state
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [groupedErrors, setGroupedErrors] = useState({});
+  const [totalErrors, setTotalErrors] = useState(0);
+
+  const [lastChangeTimestamp, setLastChangeTimestamp] = useState(0);
+
+  const hasRequiredPhoto = Boolean(
+    localFormData?.student?.personalInfo?.twoByTwoPhotoDataUrl,
+  );
+  const isOnPhotoRequiredStep = currentSection === PHOTO_REQUIRED_SECTION;
+  const isPhotoStepBlocked = isOnPhotoRequiredStep && !hasRequiredPhoto;
+
+  const scrollToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      const mainEl = document.querySelector("main");
+      mainEl?.parentElement?.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }, []);
+
   const handleExpressSubmit = async () => {
     if (!localFormData) return;
-
-    const sectionRefs: Record<number, any> = {
-      1: personalSectionRef,
-      2: personalSectionRef,
-      3: personalSectionRef,
-    };
 
     let hasErrors = false;
     const allErrors: Record<string, string> = {};
@@ -202,39 +240,6 @@ export default function IIRForm() {
 
     setIsExpressSubmitting(true);
     setShowConsentDialog(true);
-  };
-
-  // Modal error state
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-  const [groupedErrors, setGroupedErrors] = useState({});
-  const [totalErrors, setTotalErrors] = useState(0);
-
-  const [lastChangeTimestamp, setLastChangeTimestamp] = useState(0);
-
-  const hasRequiredPhoto = Boolean(
-    localFormData?.student?.personalInfo?.twoByTwoPhotoDataUrl,
-  );
-  const isOnPhotoRequiredStep = currentSection === PHOTO_REQUIRED_SECTION;
-  const isPhotoStepBlocked = isOnPhotoRequiredStep && !hasRequiredPhoto;
-
-  const scrollToTop = () => {
-    const performScroll = () => {
-      window.scrollTo({ top: 0, behavior: "auto" });
-      document.documentElement.scrollTo({ top: 0, behavior: "auto" });
-      document.body.scrollTo({ top: 0, behavior: "auto" });
-      let el = document.querySelector("main") as HTMLElement | null;
-      while (el) {
-        if (typeof el.scrollTo === "function") {
-          el.scrollTo({ top: 0, behavior: "auto" });
-        }
-        el = el.parentElement;
-      }
-    };
-    performScroll();
-    requestAnimationFrame(performScroll);
-    setTimeout(performScroll, 50);
-    setTimeout(performScroll, 150);
-    setTimeout(performScroll, 300);
   };
 
   const handleInputChange = useCallback((fieldPath: string, value: any) => {
@@ -309,15 +314,26 @@ export default function IIRForm() {
     me,
   ]);
 
+  const autoSave = useCallback(async () => {
+    if (!localFormData) return;
+
+    try {
+      persistTwoByTwoPhoto(localFormData);
+      await saveDraft(localFormData);
+    } catch (err) {
+      console.error("[AutoSave] Error saving draft:", err);
+    }
+  }, [localFormData, persistTwoByTwoPhoto, saveDraft]);
+
   useEffect(() => {
     if (isInitializing || !localFormData) return;
 
     const saveTimer = setTimeout(() => {
       autoSave();
-    }, 1000);
+    }, AUTO_SAVE_DEBOUNCE_MS);
 
     return () => clearTimeout(saveTimer);
-  }, [localFormData, lastChangeTimestamp]);
+  }, [localFormData, lastChangeTimestamp, isInitializing, autoSave]);
 
   useEffect(() => {
     setVisitedSections((prev) => {
@@ -330,7 +346,7 @@ export default function IIRForm() {
     });
     localStorage.setItem("iir_current_section", currentSection.toString());
     scrollToTop();
-  }, [currentSection]);
+  }, [currentSection, scrollToTop]);
 
   useEffect(() => {
     const localDraftStr = localStorage.getItem(`iir_draft-student_${me?.id}`);
@@ -346,11 +362,11 @@ export default function IIRForm() {
           setDraftData(parsed);
           setShowDraftPrompt(true);
         }
-      } catch (e) {
+      } catch {
         clearDraft();
       }
     }
-  }, [clearDraft]);
+  }, [clearDraft, me?.id]);
 
   const handleRestoreDraft = () => {
     if (draftData) {
@@ -388,17 +404,6 @@ export default function IIRForm() {
     setShowDraftPrompt(false);
   };
 
-  const autoSave = async () => {
-    if (!localFormData) return;
-
-    try {
-      persistTwoByTwoPhoto(localFormData);
-      await saveDraft(localFormData);
-    } catch (err) {
-      console.error("[AutoSave] Error saving draft:", err);
-    }
-  };
-
   const isLoading =
     isLoadingDraft ||
     isLoadingProfile ||
@@ -406,23 +411,12 @@ export default function IIRForm() {
     isSubmitting ||
     (isSubmitted && isCompleted && !isEditMode);
 
-  if (draftError) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {draftError?.message || "Error loading draft data"}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  const handleBlockedPhotoStep = () => {
+  const handleBlockedPhotoStep = useCallback(() => {
     setShowPhotoValidationWarning(true);
     markFieldTouched(PHOTO_REQUIRED_FIELD);
     personalSectionRef.current?.validate?.(PHOTO_REQUIRED_SECTION);
     scrollToTop();
-  };
+  }, [markFieldTouched, scrollToTop]);
 
   const handleSectionNavigation = (targetSection: number) => {
     if (targetSection > currentSection && isPhotoStepBlocked) {
@@ -434,26 +428,11 @@ export default function IIRForm() {
     setSectionsWithErrors([]);
   };
 
-  const handleNextSection = async () => {
+  const handleNextSection = useCallback(async () => {
     if (isPhotoStepBlocked) {
       handleBlockedPhotoStep();
       return;
     }
-
-    // Validate current section using its ref
-    const sectionRefs: Record<number, any> = {
-      1: personalSectionRef,
-      2: personalSectionRef,
-      3: personalSectionRef,
-      4: personalSectionRef,
-      5: educationSectionRef,
-      6: familySectionRef,
-      7: familySectionRef,
-      8: familySectionRef,
-      9: familySectionRef,
-      10: healthSectionRef,
-      11: interestsSectionRef,
-    };
 
     const stepToValidate =
       currentSection >= 6 && currentSection <= 9
@@ -479,7 +458,7 @@ export default function IIRForm() {
           });
           firstErrorEl.focus?.();
         }
-      }, 50);
+      }, ERROR_SCROLL_DELAY_MS);
       return;
     }
 
@@ -499,49 +478,32 @@ export default function IIRForm() {
       setIsSaving(false);
       setIsTransitioningStep(false);
     }
-  };
+  }, [
+    isPhotoStepBlocked,
+    handleBlockedPhotoStep,
+    currentSection,
+    sectionRefs,
+    markAllTouched,
+    triggerToast,
+    currentIndex,
+    activeSections,
+    localFormData,
+    saveDraft,
+  ]);
 
-  const handlePreviousSection = () => {
+  const handlePreviousSection = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentSection(activeSections[currentIndex - 1].id);
     }
-  };
+  }, [currentIndex, activeSections]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setIsExpressSubmitting(false);
     // Mark all fields as touched so validation errors show
     markAllTouched();
 
-    // Always trigger validate() on the current section so inline field errors show
-    const currentSectionRefs: Record<number, any> = {
-      1: personalSectionRef,
-      2: personalSectionRef,
-      3: personalSectionRef,
-      4: personalSectionRef,
-      5: educationSectionRef,
-      6: familySectionRef,
-      7: familySectionRef,
-      8: familySectionRef,
-      9: familySectionRef,
-      10: healthSectionRef,
-      11: interestsSectionRef,
-    };
-    currentSectionRefs[currentSection]?.current?.validate?.();
-
-    // Validate all sections
-    const sectionRefs: Record<number, any> = {
-      1: personalSectionRef,
-      2: personalSectionRef,
-      3: personalSectionRef,
-      4: personalSectionRef,
-      5: educationSectionRef,
-      6: familySectionRef,
-      7: familySectionRef,
-      8: familySectionRef,
-      9: familySectionRef,
-      10: healthSectionRef,
-      11: interestsSectionRef,
-    };
+    // Always trigger validate() on the current section so inline errors show
+    sectionRefs[currentSection]?.current?.validate?.();
 
     const validationResult = validateAllSections(
       sectionRefs,
@@ -583,11 +545,40 @@ export default function IIRForm() {
       return;
     }
 
-    // All validations passed, clear section errors and open legal consent dialog
+    // All validations passed, clear section errors and open consent dialog
     clearDraft();
     setSectionsWithErrors([]);
     setShowConsentDialog(true);
-  };
+  }, [
+    markAllTouched,
+    sectionRefs,
+    currentSection,
+    activeSections,
+    localFormData,
+    isEditMode,
+    triggerToast,
+    clearDraft,
+  ]);
+
+  const isOnFinalStep = currentIndex === activeSections.length - 1;
+
+  useFormShortcuts({
+    onNext: !isOnFinalStep ? handleNextSection : undefined,
+    onPrev: currentIndex > 0 ? handlePreviousSection : undefined,
+    onSubmit: isOnFinalStep ? handleSubmit : undefined,
+    enabled: !isLoading && !isSaving && !showConsentDialog,
+  });
+
+  if (draftError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          {draftError?.message || "Error loading draft data"}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const handleLegalConsentAccept = async () => {
     if (!localFormData) {
@@ -1016,8 +1007,18 @@ export default function IIRForm() {
         <AnimationStyles />
 
         {/* Main Content Container */}
-        <div className="relative z-10 mx-auto w-full min-w-0 max-w-[1440px] px-4 sm:px-6 lg:px-8">
-          <div className="min-w-0 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div
+          className={cn(
+            "relative z-10 mx-auto w-full min-w-0 max-w-[1440px]",
+            "px-4 sm:px-6 lg:px-8",
+          )}
+        >
+          <div
+            className={cn(
+              "min-w-0 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]",
+              "lg:items-start lg:gap-8",
+            )}
+          >
             {/* Sidebar Progress Tracker (Desktop) */}
             <aside className="hidden min-w-0 lg:block">
               <SectionProgress

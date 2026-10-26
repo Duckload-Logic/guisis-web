@@ -220,7 +220,7 @@ export default function AppointmentsManagement() {
       <Button
         variant="outline"
         onClick={() => navigate("/admin/appointments/logs")}
-        className="h-10 gap-2 rounded-xl px-4 shadow-sm"
+        className="h-11 gap-2 rounded-xl px-4 shadow-sm"
       >
         <Archive className="h-4 w-4" />
         View All Logs
@@ -330,7 +330,7 @@ export default function AppointmentsManagement() {
                     setEndDate(toISODateString(end));
                   }}
                   className={cn(
-                    "h-8 rounded-lg px-3 text-xs font-semibold",
+                    "h-11 rounded-lg px-3 text-xs font-semibold",
                     "text-primary transition-colors hover:bg-primary/10",
                   )}
                 >
@@ -480,34 +480,59 @@ export default function AppointmentsManagement() {
                   )}
                 </div>
 
+                {/* Interactive Status Quick-Filter Buttons (44px) */}
                 <div className="mt-3 flex flex-wrap gap-2">
                   {isStatsLoading
                     ? Array.from({ length: 4 }).map((_, i) => (
                         <Skeleton
                           key={i}
-                          className="h-6 w-20 rounded-full"
+                          className="h-11 w-28 rounded-xl"
                         />
                       ))
-                    : chartData.map((item) => (
-                        <div
-                          key={item.status}
-                          className={cn(
-                            "inline-flex items-center gap-2 rounded-full",
-                            "border border-border bg-background px-3 py-1",
-                          )}
-                        >
-                          <span
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: item.fill }}
-                          />
-                          <span
-                            className="text-[11px] font-semibold"
-                            style={{ color: item.fill }}
+                    : chartData.map((item) => {
+                        const matchedStatus = statusWithAll.find(
+                          (s) =>
+                            s.name.toLowerCase() === item.status.toLowerCase(),
+                        );
+                        const isActive =
+                          selectedStatus?.name.toLowerCase() ===
+                          item.status.toLowerCase();
+
+                        return (
+                          <button
+                            key={item.status}
+                            type="button"
+                            onClick={() => {
+                              if (matchedStatus) {
+                                setSelectedStatus(
+                                  isActive ? defaultStatus : matchedStatus,
+                                );
+                                setCurrentPage(1);
+                              }
+                            }}
+                            className={cn(
+                              "inline-flex min-h-11 items-center gap-2",
+                              "rounded-xl border px-3.5 py-2 text-xs",
+                              "font-semibold transition-colors",
+                              isActive
+                                ? "border-primary bg-primary/10 text-foreground"
+                                : cn(
+                                    "border-border bg-background",
+                                    "hover:bg-muted/50",
+                                  ),
+                            )}
                           >
-                            {item.status}
-                          </span>
-                        </div>
-                      ))}
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: item.fill }}
+                            />
+                            <span>{item.status}</span>
+                            <span className="font-mono text-muted-foreground">
+                              ({item.count})
+                            </span>
+                          </button>
+                        );
+                      })}
                 </div>
               </div>
             </CardContent>
