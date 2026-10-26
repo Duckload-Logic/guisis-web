@@ -117,10 +117,12 @@ export default function UserSessions() {
 
   const formatBrowser = (ua: string) => {
     if (!ua) return "Unknown Device";
+    if (ua.includes("Edg") || ua.includes("Edge")) {
+      return "Microsoft Edge";
+    }
     if (ua.includes("Firefox")) return "Mozilla Firefox";
     if (ua.includes("Chrome")) return "Google Chrome";
     if (ua.includes("Safari") && !ua.includes("Chrome")) return "Apple Safari";
-    if (ua.includes("Edge")) return "Microsoft Edge";
     return "Web Browser";
   };
 
