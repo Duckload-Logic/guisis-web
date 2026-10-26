@@ -41,6 +41,7 @@ const MAX_MESSAGE_WORDS = 100;
 const TICKETS_POLL_INTERVAL_MS = 10000;
 const MESSAGES_POLL_INTERVAL_MS = 3000;
 const DEFAULT_PAGE_SIZE = 10;
+const MAX_UNREAD_SCAN_SIZE = 100;
 const SCROLL_THRESHOLD_PX = 80;
 const MAX_TEXTAREA_HEIGHT_PX = 120;
 const STACK_TIME_THRESHOLD_MS = 2 * 60 * 1000;
@@ -72,6 +73,26 @@ interface OptimisticMessage extends Message {
 
 const isOpenTicket = (ticket: Ticket): boolean =>
   ticket.status.trim().toUpperCase() === "OPEN";
+
+const countUnreadConversations = (ticketList: Ticket[]): number => {
+  const groups: { [key: string]: Ticket[] } = {};
+  ticketList.forEach((t) => {
+    const key = t.userId
+      ? `user:${t.userId}`
+      : `guest:${t.guestEmail || t.guestName || t.id}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  return Object.values(groups).filter((groupTickets) => {
+    groupTickets.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const latest = groupTickets[groupTickets.length - 1];
+    return Boolean(latest && !latest.isRead);
+  }).length;
+};
 
 const getInitials = (name: string): string => {
   const clean = name.replace(/^\(Guest\)\s+/i, "").trim();
@@ -139,6 +160,7 @@ export function SupportManagement() {
   const queryTicketId = searchParams.get("ticketId");
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<{
     total: number;
@@ -324,32 +346,16 @@ export function SupportManagement() {
     });
   }, [tickets, sortBy]);
 
-  const [tabUnreadCounts, setTabUnreadCounts] = useState({
-    all: 0,
-    open: 0,
-    closed: 0,
-  });
-
-  useEffect(() => {
-    let open = 0;
-    let closed = 0;
-    groupedUsers.forEach((g) => {
-      const latest = g.tickets[g.tickets.length - 1];
-      if (!latest || latest.isRead) return;
-      if (g.tickets.some(isOpenTicket)) open += 1;
-      else closed += 1;
-    });
-
-    setTabUnreadCounts((prev) => {
-      if (statusFilter === "all") {
-        return { all: open + closed, open, closed };
-      }
-      if (statusFilter === "open") {
-        return { all: open + prev.closed, open, closed: prev.closed };
-      }
-      return { all: prev.open + closed, open: prev.open, closed };
-    });
-  }, [groupedUsers, statusFilter]);
+  const tabUnreadCounts = useMemo(() => {
+    const source = allTickets.length > 0 ? allTickets : tickets;
+    return {
+      all: countUnreadConversations(source),
+      open: countUnreadConversations(source.filter(isOpenTicket)),
+      closed: countUnreadConversations(
+        source.filter((ticket) => !isOpenTicket(ticket)),
+      ),
+    };
+  }, [allTickets, tickets]);
 
   const unreadCount = tabUnreadCounts.all;
 
@@ -423,11 +429,10 @@ export function SupportManagement() {
           statusFilter === "open" || statusFilter === "closed"
             ? statusFilter
             : "";
-        const data = await GetSupportTickets(
-          page,
-          DEFAULT_PAGE_SIZE,
-          apiStatus,
-        );
+        const [data, globalData] = await Promise.all([
+          GetSupportTickets(page, DEFAULT_PAGE_SIZE, apiStatus),
+          GetSupportTickets(1, MAX_UNREAD_SCAN_SIZE, ""),
+        ]);
 
         // Ignore responses from an older tab/filter poll. Without this guard,
         // a request started before resolving a ticket can finish afterwards
@@ -437,6 +442,9 @@ export function SupportManagement() {
         if (data && Array.isArray(data.tickets)) {
           setTickets(data.tickets);
           setMeta(data.meta);
+        }
+        if (globalData && Array.isArray(globalData.tickets)) {
+          setAllTickets(globalData.tickets);
         }
       } catch (err) {
         if (requestId === ticketsRequestIdRef.current) {
@@ -542,24 +550,23 @@ export function SupportManagement() {
     return () => clearInterval(interval);
   }, [selectedGroup]);
 
-  // Mark selected conversation as read
+  // Mark selected conversation as read across both active page and global scan
   useEffect(() => {
     if (!selectedGroup) return;
-    const latestTicket =
-      selectedGroup.tickets[selectedGroup.tickets.length - 1];
-    if (latestTicket && !latestTicket.isRead) {
-      PatchSupportTicketRead(latestTicket.id)
-        .then(() => {
-          setTickets((prev) =>
-            prev.map((t) =>
-              t.id === latestTicket.id ? { ...t, isRead: true } : t,
-            ),
-          );
-        })
-        .catch((err) =>
-          console.error("[SupportManagement] {MarkAsRead}:", err),
-        );
-    }
+    const unreadTickets = selectedGroup.tickets.filter((t) => !t.isRead);
+    if (unreadTickets.length === 0) return;
+
+    const unreadIds = new Set(unreadTickets.map((t) => t.id));
+    Promise.all(unreadTickets.map((t) => PatchSupportTicketRead(t.id)))
+      .then(() => {
+        const markRead = (list: Ticket[]) =>
+          list.map((t) => (unreadIds.has(t.id) ? { ...t, isRead: true } : t));
+        setTickets(markRead);
+        setAllTickets(markRead);
+      })
+      .catch((err) =>
+        console.error("[SupportManagement] {MarkAsRead}:", err),
+      );
   }, [selectedGroupKey, selectedGroup]);
 
   // Initial scroll to bottom when group switches
@@ -630,6 +637,7 @@ export function SupportManagement() {
       await PostSupportTicketMessage(activeTicket.id, {
         message: textToSend,
       });
+      await PatchSupportTicketRead(activeTicket.id);
 
       const data = await GetSupportTicketMessages(activeTicket.id);
       if (Array.isArray(data)) {
@@ -672,6 +680,7 @@ export function SupportManagement() {
     setIsResolving(true);
     try {
       await PatchSupportTicketStatus(ticketId);
+      await PatchSupportTicketRead(ticketId);
 
       // Invalidate any polling request that started before the PATCH completed.
       // This prevents a stale OPEN response from winning the race and putting
@@ -697,6 +706,19 @@ export function SupportManagement() {
           ? synchronizedTickets.filter((ticket) => ticket.id !== ticketId)
           : synchronizedTickets;
       });
+
+      setAllTickets((previousTickets) =>
+        previousTickets.map((ticket) =>
+          ticket.id === ticketId
+            ? {
+                ...ticket,
+                status: "CLOSED",
+                isRead: true,
+                updatedAt: resolvedUpdatedAt,
+              }
+            : ticket,
+        ),
+      );
 
       if (statusFilter === "open") {
         setMeta((previousMeta) => {
@@ -969,10 +991,14 @@ export function SupportManagement() {
                         variant="outline"
                         className={cn(
                           "absolute -right-1 -top-1 z-10 flex h-4 min-w-4",
-                          "items-center justify-center rounded-full",
-                          "border-transparent bg-blue-500 px-1",
-                          "text-[9px] font-bold text-white shadow-xs",
-                          "ring-2 ring-card",
+                          "items-center justify-center rounded-full px-1",
+                          "text-[9px] font-bold transition-colors",
+                          isActive
+                            ? "border-primary bg-primary-foreground " +
+                                "text-primary shadow-sm ring-2 ring-primary"
+                            : "border-transparent bg-primary " +
+                                "text-primary-foreground shadow-xs " +
+                                "ring-2 ring-card",
                         )}
                       >
                         {tab.count}
