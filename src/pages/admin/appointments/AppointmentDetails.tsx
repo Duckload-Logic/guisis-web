@@ -21,6 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -251,7 +258,30 @@ export default function AppointmentDetails() {
     setTimeout(() => setHasCopiedId(false), COPY_FEEDBACK_MS);
   };
 
+  const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
+
   const urgencyInfo = getAppointmentUrgency(appointment);
+
+  const handlePriorityChange = async (newLevel: string) => {
+    if (!appointment?.id || newLevel === urgencyInfo.label.toUpperCase()) {
+      return;
+    }
+    setIsUpdatingPriority(true);
+    try {
+      await updateAppointment({
+        id: appointment.id,
+        data: {
+          ...appointment,
+          urgencyLevel: newLevel,
+        },
+      });
+      triggerToast(`✓ Priority updated to ${newLevel}`);
+    } catch {
+      triggerToast("Failed to update priority level");
+    } finally {
+      setIsUpdatingPriority(false);
+    }
+  };
 
   usePageMetadata(
     useMemo(
@@ -292,15 +322,30 @@ export default function AppointmentDetails() {
                 {appointment.status.name}
               </Badge>
             )}
-            <Badge
-              variant="outline"
-              className={cn(
-                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm",
-                urgencyInfo.className,
-              )}
+            <Select
+              value={urgencyInfo.label.toUpperCase()}
+              onValueChange={handlePriorityChange}
+              disabled={isUpdatingPriority}
             >
-              AI Triage: {urgencyInfo.label} Priority
-            </Badge>
+              <SelectTrigger
+                className={cn(
+                  "h-7 w-auto gap-1 rounded-full px-2.5 py-1",
+                  "text-[11px] font-bold shadow-sm transition-all border",
+                  urgencyInfo.className,
+                )}
+                title="Counselor Priority Override (Human-in-the-loop)"
+              >
+                <SelectValue placeholder="Priority">
+                  Priority: {urgencyInfo.label}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectItem value="LOW">Low Priority</SelectItem>
+                <SelectItem value="MEDIUM">Medium Priority</SelectItem>
+                <SelectItem value="HIGH">High Priority</SelectItem>
+                <SelectItem value="CRITICAL">Critical Priority</SelectItem>
+              </SelectContent>
+            </Select>
             {typeof (appointment as any)?.urgencyScore === "number" &&
               (appointment as any)?.urgencyScore > 0 && (
                 <Badge
@@ -344,7 +389,14 @@ export default function AppointmentDetails() {
           </div>
         ) : null,
       }),
-      [appointment, fullName, hasCopiedId, isLoading, urgencyInfo],
+      [
+        appointment,
+        fullName,
+        hasCopiedId,
+        isLoading,
+        urgencyInfo,
+        isUpdatingPriority,
+      ],
     ),
   );
 
@@ -941,12 +993,15 @@ export default function AppointmentDetails() {
                   const upper = entry.status.toUpperCase();
                   const statusBorder = upper.includes("RESCHEDULED")
                     ? "border-amber-500"
-                    : upper.includes("APPROVED") || upper.includes("COMPLETED")
-                      ? "border-emerald-500"
-                      : upper.includes("REJECTED") ||
-                          upper.includes("CANCELLED")
-                        ? "border-destructive"
-                        : "border-primary";
+                    : upper.includes("PRIORITY")
+                      ? "border-sky-500"
+                      : upper.includes("APPROVED") ||
+                          upper.includes("COMPLETED")
+                        ? "border-emerald-500"
+                        : upper.includes("REJECTED") ||
+                            upper.includes("CANCELLED")
+                          ? "border-destructive"
+                          : "border-primary";
 
                   return (
                     <div key={idx} className="relative">
