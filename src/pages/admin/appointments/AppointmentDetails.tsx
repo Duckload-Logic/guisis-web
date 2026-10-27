@@ -262,6 +262,12 @@ export default function AppointmentDetails() {
 
   const urgencyInfo = getAppointmentUrgency(appointment);
 
+  const isPriorityOverridden = useMemo(() => {
+    return auditEntries.some((entry) =>
+      entry.status.toUpperCase().includes("PRIORITY"),
+    );
+  }, [auditEntries]);
+
   const handlePriorityChange = async (newLevel: string) => {
     if (!appointment?.id || newLevel === urgencyInfo.label.toUpperCase()) {
       return;
@@ -273,6 +279,7 @@ export default function AppointmentDetails() {
         data: {
           ...appointment,
           urgencyLevel: newLevel,
+          urgencyScore: 0,
         },
       });
       triggerToast(`✓ Priority updated to ${newLevel}`);
@@ -346,7 +353,8 @@ export default function AppointmentDetails() {
                 <SelectItem value="CRITICAL">Critical Priority</SelectItem>
               </SelectContent>
             </Select>
-            {typeof (appointment as any)?.urgencyScore === "number" &&
+            {!isPriorityOverridden &&
+              typeof (appointment as any)?.urgencyScore === "number" &&
               (appointment as any)?.urgencyScore > 0 && (
                 <Badge
                   variant="outline"
@@ -396,6 +404,7 @@ export default function AppointmentDetails() {
         isLoading,
         urgencyInfo,
         isUpdatingPriority,
+        isPriorityOverridden,
       ],
     ),
   );
