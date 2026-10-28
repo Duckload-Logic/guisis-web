@@ -17,11 +17,15 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { TraceTracksViewer } from "@/features/system-admin/components/LogsTable";
+import {
+  TraceTracksViewer,
+} from "@/features/system-admin/components/LogsTable";
 import {
   getActionBadgeColor,
   formatAction,
 } from "@/features/system-admin/utils/logStyles";
+
+const SKELETON_FIELD_COUNT = 6;
 
 function LogDetailsSkeleton() {
   const navigate = useNavigate();
@@ -33,7 +37,7 @@ function LogDetailsSkeleton() {
           variant="outline"
           size="sm"
           onClick={() => navigate(-1)}
-          className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+          className="h-11 gap-2 rounded-xl border-border/70 shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
@@ -55,7 +59,7 @@ function LogDetailsSkeleton() {
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: SKELETON_FIELD_COUNT }).map((_, i) => (
                   <div key={i} className="space-y-1.5">
                     <Skeleton className="h-3 w-20" />
                     <Skeleton className="h-5 w-40" />
@@ -89,8 +93,6 @@ function LogDetailsSkeleton() {
   );
 }
 
-
-
 export default function LogDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -113,8 +115,6 @@ export default function LogDetails() {
     });
   };
 
-
-
   if (isLoading) {
     return <LogDetailsSkeleton />;
   }
@@ -128,12 +128,13 @@ export default function LogDetails() {
               Error Loading Log Details
             </h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              We couldn't retrieve the specified log entry. It may not exist.
+              We couldn&apos;t retrieve the specified log entry. It may not
+              exist.
             </p>
             <Button
               onClick={() => navigate(-1)}
               variant="outline"
-              className="mt-4 rounded-xl"
+              className="mt-4 h-11 rounded-xl"
             >
               Go Back
             </Button>
@@ -162,7 +163,7 @@ export default function LogDetails() {
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="h-10 gap-2 rounded-xl border-border/70 shadow-sm"
+            className="h-11 gap-2 rounded-xl border-border/70 shadow-sm"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
@@ -192,8 +193,15 @@ export default function LogDetails() {
         <div className="space-y-6 lg:col-span-2">
           <Card className="overflow-hidden">
             <CardHeader className="border-b border-white/10 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <CardTitle
+                className="flex items-center gap-2 text-lg font-semibold"
+              >
+                <span
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-xl",
+                    "bg-primary/10 text-primary",
+                  )}
+                >
                   <Terminal size={18} />
                 </span>
                 Log Information (ID #{log.id})
@@ -202,7 +210,12 @@ export default function LogDetails() {
             <CardContent className="space-y-6 pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     Action
                   </span>
                   <div>
@@ -220,52 +233,92 @@ export default function LogDetails() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     Timestamp
                   </span>
-                  <div className="flex items-center gap-1.5 text-sm text-foreground">
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-sm text-foreground",
+                    )}
+                  >
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     {formatDate(log.createdAt)}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     Actor
                   </span>
-                  <div className="flex items-center gap-1.5 text-sm text-foreground">
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-sm text-foreground",
+                    )}
+                  >
                     <User className="h-4 w-4 text-muted-foreground" />
                     {log.userEmail || "System"}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     Target
                   </span>
-                  <div className="flex items-center gap-1.5 text-sm text-foreground">
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-sm text-foreground",
+                    )}
+                  >
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     {log.targetEmail || "None"}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     IP Address
                   </span>
-                  <div className="flex items-center gap-1.5 text-sm text-foreground">
+                  <div
+                    className={cn(
+                      "flex items-center gap-1.5 text-sm text-foreground",
+                    )}
+                  >
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     {log.ipAddress || "—"}
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase tracking-wider",
+                      "text-muted-foreground",
+                    )}
+                  >
                     User Agent
                   </span>
                   <div
-                    className="max-w-sm truncate text-sm text-foreground"
-                    title={log.userAgent}
+                    className="max-w-sm break-all text-sm text-foreground"
                   >
                     {log.userAgent || "—"}
                   </div>
@@ -273,10 +326,21 @@ export default function LogDetails() {
               </div>
 
               <div className="space-y-1 pt-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <span
+                  className={cn(
+                    "text-xs font-semibold uppercase tracking-wider",
+                    "text-muted-foreground",
+                  )}
+                >
                   Message
                 </span>
-                <div className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
+                <div
+                  className={cn(
+                    "border-card-border max-h-[400px] overflow-x-auto",
+                    "whitespace-pre-wrap break-all rounded-xl border",
+                    "bg-background p-4 font-mono text-xs text-muted-foreground",
+                  )}
+                >
                   {log.message}
                 </div>
               </div>
@@ -287,13 +351,21 @@ export default function LogDetails() {
           {log.metadata && Object.keys(log.metadata).length > 0 && (
             <Card>
               <CardHeader className="border-card-border border-b pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                <CardTitle
+                className="flex items-center gap-2 text-lg font-semibold"
+              >
                   <Database className="h-5 w-5 text-primary" />
                   Metadata Changes
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <pre className="border-card-border max-h-[400px] overflow-x-auto rounded-xl border bg-background p-4 font-mono text-xs text-muted-foreground whitespace-pre-wrap break-all">
+                <pre
+                  className={cn(
+                    "border-card-border max-h-[400px] overflow-x-auto",
+                    "whitespace-pre-wrap break-all rounded-xl border",
+                    "bg-background p-4 font-mono text-xs text-muted-foreground",
+                  )}
+                >
                   {JSON.stringify(log.metadata, null, 2)}
                 </pre>
               </CardContent>
@@ -305,24 +377,46 @@ export default function LogDetails() {
         <div className="space-y-6">
           <Card className="h-full">
             <CardHeader className="border-b border-white/10 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <Activity className="h-5 w-5 animate-pulse text-primary" />
+              <CardTitle
+                className="flex items-center gap-2 text-lg font-semibold"
+              >
+                <Activity className="h-5 w-5 text-primary" />
                 Execution Trace Timeline
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               {log.traceId ? (
                 <div className="space-y-4">
-                  <div className="flex flex-col gap-1.5 rounded-xl border border-border bg-background p-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div
+                    className={cn(
+                      "flex flex-col gap-1.5 rounded-xl border border-border",
+                      "bg-background p-3",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-[10px] font-semibold uppercase tracking-wider",
+                        "text-muted-foreground",
+                      )}
+                    >
                       Trace ID
                     </span>
-                    <span className="select-all break-all font-mono text-xs text-foreground">
+                    <span
+                      className={cn(
+                        "select-all break-all font-mono text-xs",
+                        "text-foreground",
+                      )}
+                    >
                       {log.traceId}
                     </span>
                   </div>
                   <div className="pt-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <span
+                      className={cn(
+                        "text-xs font-semibold uppercase tracking-wider",
+                        "text-muted-foreground",
+                      )}
+                    >
                       Chronological Events
                     </span>
                     <div className="mt-4 h-full">
@@ -334,7 +428,11 @@ export default function LogDetails() {
                   </div>
                 </div>
               ) : (
-                <div className="py-12 text-center text-sm italic text-muted-foreground">
+                <div
+                  className={cn(
+                    "py-12 text-center text-sm italic text-muted-foreground",
+                  )}
+                >
                   No Trace ID associated with this log.
                 </div>
               )}

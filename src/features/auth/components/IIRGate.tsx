@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/context";
 import { AlertTriangle, Phone, Building2, X } from "lucide-react";
 import { useIIRStatus } from "@/features/iir/hooks";
 import { AnimationStyles } from "@/components/ui/animations";
 import { Spinner } from "@/components/shared";
-import { CRISIS_CONTACTS } from "@/config/constants";
+import { CRISIS_CONTACTS, STUDENT_ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 
 interface IIRGateProps {
@@ -114,25 +115,26 @@ export const IIRGate = ({
               form first to access this service.
             </p>
 
-            <a
-              href="/student/iir/form"
+            <Link
+              to={STUDENT_ROUTES.IIR_FORM}
               className={cn(
-                "block w-full rounded-xl bg-primary py-3 text-center",
-                "text-sm font-bold text-primary-foreground shadow-md",
-                "transition-all duration-200 hover:bg-primary/90",
-                "active:scale-95",
+                "flex min-h-11 w-full items-center justify-center rounded-xl",
+                "bg-primary px-4 py-3 text-center text-sm font-bold",
+                "text-primary-foreground shadow-md transition-all duration-200",
+                "hover:bg-primary/90 active:scale-95",
               )}
             >
               Go to IIR Form
-            </a>
+            </Link>
 
-            <div className="mt-4 text-center">
+            <div className="mt-3 text-center">
               <button
                 type="button"
                 onClick={() => setShowCrisisModal(true)}
                 className={cn(
-                  "inline-block text-xs font-semibold text-destructive",
-                  "transition-colors hover:text-destructive/80 underline",
+                  "inline-flex min-h-11 items-center justify-center px-3",
+                  "text-xs font-semibold text-destructive underline",
+                  "transition-colors hover:text-destructive/80",
                 )}
               >
                 In Crisis? Request Urgent Guidance Assistance &rarr;
@@ -161,7 +163,7 @@ export const IIRGate = ({
               <div className="flex items-center justify-between pb-3">
                 <span
                   id="crisis-dialog-title"
-                  className="font-bold text-destructive text-base"
+                  className="text-base font-bold text-destructive"
                 >
                   Emergency & Crisis Hotlines
                 </span>
@@ -170,8 +172,8 @@ export const IIRGate = ({
                   aria-label="Close crisis information"
                   onClick={() => setShowCrisisModal(false)}
                   className={cn(
-                    "rounded-lg p-1 text-muted-foreground",
-                    "hover:bg-muted transition-colors",
+                    "flex h-11 w-11 items-center justify-center rounded-lg",
+                    "text-muted-foreground transition-colors hover:bg-muted",
                   )}
                 >
                   <X className="h-5 w-5" />
@@ -180,7 +182,7 @@ export const IIRGate = ({
 
               <p
                 className={cn(
-                  "text-xs text-muted-foreground mb-4 leading-relaxed",
+                  "mb-4 text-xs leading-relaxed text-muted-foreground",
                 )}
               >
                 If you are experiencing severe distress or crisis, please reach
@@ -188,31 +190,34 @@ export const IIRGate = ({
               </p>
 
               <div className="space-y-3 text-xs">
-                <div
+                <a
+                  href={CRISIS_CONTACTS.ncmhTelHref}
                   className={cn(
-                    "rounded-xl border p-3 bg-muted/40 flex gap-3",
+                    "flex min-h-11 items-center gap-3 rounded-xl border",
+                    "bg-muted/40 p-3 transition-colors hover:bg-muted/70",
                   )}
                 >
                   <Phone
-                    className="h-4 w-4 text-destructive shrink-0 mt-0.5"
+                    className="h-4 w-4 shrink-0 text-destructive"
                   />
                   <div>
                     <p className="font-semibold text-foreground">
-                      National Crisis Hotline (NCMH)
+                      National Crisis Hotline (NCMH) — Tap to Call
                     </p>
                     <p className="text-muted-foreground">
                       {CRISIS_CONTACTS.displayHotline}
                     </p>
                   </div>
-                </div>
+                </a>
 
                 <div
                   className={cn(
-                    "rounded-xl border p-3 bg-muted/40 flex gap-3",
+                    "flex min-h-11 items-center gap-3 rounded-xl border",
+                    "bg-muted/40 p-3",
                   )}
                 >
                   <Building2
-                    className="h-4 w-4 text-destructive shrink-0 mt-0.5"
+                    className="h-4 w-4 shrink-0 text-destructive"
                   />
                   <div>
                     <p className="font-semibold text-foreground">

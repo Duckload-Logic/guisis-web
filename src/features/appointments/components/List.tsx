@@ -874,7 +874,7 @@ export default function AppointmentList({
 
             {/* Secondary Selectors (Category, Urgency) + Clear */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="w-[145px]">
+              <div className="w-auto shrink-0">
                 <SelectField
                   label=""
                   options={categoryOptions}
@@ -885,7 +885,8 @@ export default function AppointmentList({
                   labelKey="displayName"
                   enabled={!isLoading}
                   buttonClassName={cn(
-                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "!h-8 !min-h-0 w-auto whitespace-nowrap",
+                    "!py-1 !px-2.5 text-xs font-semibold",
                     "rounded-xl border-border/70 bg-card hover:bg-muted/40",
                     "shadow-none",
                     currentCategory !== "all" && "border-primary text-primary",
@@ -893,7 +894,7 @@ export default function AppointmentList({
                 />
               </div>
 
-              <div className="w-[130px]">
+              <div className="w-auto shrink-0">
                 <SelectField
                   label=""
                   options={urgencyOptions}
@@ -904,7 +905,8 @@ export default function AppointmentList({
                   labelKey="displayName"
                   enabled={!isLoading}
                   buttonClassName={cn(
-                    "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                    "!h-8 !min-h-0 w-auto whitespace-nowrap",
+                    "!py-1 !px-2.5 text-xs font-semibold",
                     "rounded-xl border-border/70 bg-card hover:bg-muted/40",
                     "shadow-none",
                     currentUrgency !== "all" && "border-primary text-primary",

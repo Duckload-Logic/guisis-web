@@ -435,7 +435,7 @@ export default function StudentSlips() {
         {/* Compact Sort Selector using SelectField */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
           <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          <div className="w-[185px] sm:w-[200px]">
+          <div className="w-auto shrink-0">
             <SelectField
               options={SORT_OPTIONS}
               value={`${selectedSort}-${selectedOrder}`}
@@ -451,7 +451,8 @@ export default function StudentSlips() {
               labelKey="displayName"
               enabled={!isLoading && !isSlipsLoading}
               buttonClassName={cn(
-                "!h-8 !min-h-0 !py-1 !px-2.5 text-xs font-semibold",
+                "!h-8 !min-h-0 w-auto whitespace-nowrap",
+                "!py-1 !px-2.5 text-xs font-semibold",
                 "rounded-xl border-border/70 bg-card hover:bg-muted/40",
                 "shadow-none",
               )}

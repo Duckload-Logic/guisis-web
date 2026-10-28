@@ -41,12 +41,13 @@ const MAX_MESSAGE_WORDS = 100;
 const TICKETS_POLL_INTERVAL_MS = 10000;
 const MESSAGES_POLL_INTERVAL_MS = 3000;
 const DEFAULT_PAGE_SIZE = 10;
+const MAX_UNREAD_SCAN_SIZE = 100;
 const SCROLL_THRESHOLD_PX = 80;
 const MAX_TEXTAREA_HEIGHT_PX = 120;
 const STACK_TIME_THRESHOLD_MS = 2 * 60 * 1000;
-const DEFAULT_SIDEBAR_WIDTH = 320;
-const MIN_SIDEBAR_WIDTH = 260;
-const MAX_SIDEBAR_WIDTH = 480;
+const DEFAULT_SIDEBAR_WIDTH = 380;
+const MIN_SIDEBAR_WIDTH = 360;
+const MAX_SIDEBAR_WIDTH = 520;
 const COLLAPSED_SIDEBAR_WIDTH = 48;
 const SIDEBAR_WIDTH_STORAGE_KEY = "guisis_support_sidebar_width";
 const SUPPORT_DESKTOP_BREAKPOINT_PX = 768;
@@ -72,6 +73,26 @@ interface OptimisticMessage extends Message {
 
 const isOpenTicket = (ticket: Ticket): boolean =>
   ticket.status.trim().toUpperCase() === "OPEN";
+
+const countUnreadConversations = (ticketList: Ticket[]): number => {
+  const groups: { [key: string]: Ticket[] } = {};
+  ticketList.forEach((t) => {
+    const key = t.userId
+      ? `user:${t.userId}`
+      : `guest:${t.guestEmail || t.guestName || t.id}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  return Object.values(groups).filter((groupTickets) => {
+    groupTickets.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const latest = groupTickets[groupTickets.length - 1];
+    return Boolean(latest && !latest.isRead);
+  }).length;
+};
 
 const getInitials = (name: string): string => {
   const clean = name.replace(/^\(Guest\)\s+/i, "").trim();
@@ -139,6 +160,7 @@ export function SupportManagement() {
   const queryTicketId = searchParams.get("ticketId");
 
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [allTickets, setAllTickets] = useState<Ticket[]>([]);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<{
     total: number;
@@ -149,7 +171,7 @@ export function SupportManagement() {
 
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "unread" | "open" | "closed"
+    "all" | "open" | "closed"
   >("all");
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
   const [searchQuery, setSearchQuery] = useState("");
@@ -324,12 +346,18 @@ export function SupportManagement() {
     });
   }, [tickets, sortBy]);
 
-  const unreadCount = useMemo(() => {
-    return groupedUsers.filter((g) => {
-      const latest = g.tickets[g.tickets.length - 1];
-      return latest && !latest.isRead;
-    }).length;
-  }, [groupedUsers]);
+  const tabUnreadCounts = useMemo(() => {
+    const source = allTickets.length > 0 ? allTickets : tickets;
+    return {
+      all: countUnreadConversations(source),
+      open: countUnreadConversations(source.filter(isOpenTicket)),
+      closed: countUnreadConversations(
+        source.filter((ticket) => !isOpenTicket(ticket)),
+      ),
+    };
+  }, [allTickets, tickets]);
+
+  const unreadCount = tabUnreadCounts.all;
 
   const filteredGroups = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -337,7 +365,7 @@ export function SupportManagement() {
       const latestTicket = g.tickets[g.tickets.length - 1];
       const hasOpen = g.tickets.some(isOpenTicket);
 
-      if (statusFilter === "unread" && latestTicket?.isRead) return false;
+      // Unread counts are shown as top-right badges on each tab
       if (statusFilter === "open" && !hasOpen) return false;
       if (statusFilter === "closed" && hasOpen) return false;
 
@@ -401,11 +429,10 @@ export function SupportManagement() {
           statusFilter === "open" || statusFilter === "closed"
             ? statusFilter
             : "";
-        const data = await GetSupportTickets(
-          page,
-          DEFAULT_PAGE_SIZE,
-          apiStatus,
-        );
+        const [data, globalData] = await Promise.all([
+          GetSupportTickets(page, DEFAULT_PAGE_SIZE, apiStatus),
+          GetSupportTickets(1, MAX_UNREAD_SCAN_SIZE, ""),
+        ]);
 
         // Ignore responses from an older tab/filter poll. Without this guard,
         // a request started before resolving a ticket can finish afterwards
@@ -415,6 +442,9 @@ export function SupportManagement() {
         if (data && Array.isArray(data.tickets)) {
           setTickets(data.tickets);
           setMeta(data.meta);
+        }
+        if (globalData && Array.isArray(globalData.tickets)) {
+          setAllTickets(globalData.tickets);
         }
       } catch (err) {
         if (requestId === ticketsRequestIdRef.current) {
@@ -520,24 +550,23 @@ export function SupportManagement() {
     return () => clearInterval(interval);
   }, [selectedGroup]);
 
-  // Mark selected conversation as read
+  // Mark selected conversation as read across both active page and global scan
   useEffect(() => {
     if (!selectedGroup) return;
-    const latestTicket =
-      selectedGroup.tickets[selectedGroup.tickets.length - 1];
-    if (latestTicket && !latestTicket.isRead) {
-      PatchSupportTicketRead(latestTicket.id)
-        .then(() => {
-          setTickets((prev) =>
-            prev.map((t) =>
-              t.id === latestTicket.id ? { ...t, isRead: true } : t,
-            ),
-          );
-        })
-        .catch((err) =>
-          console.error("[SupportManagement] {MarkAsRead}:", err),
-        );
-    }
+    const unreadTickets = selectedGroup.tickets.filter((t) => !t.isRead);
+    if (unreadTickets.length === 0) return;
+
+    const unreadIds = new Set(unreadTickets.map((t) => t.id));
+    Promise.all(unreadTickets.map((t) => PatchSupportTicketRead(t.id)))
+      .then(() => {
+        const markRead = (list: Ticket[]) =>
+          list.map((t) => (unreadIds.has(t.id) ? { ...t, isRead: true } : t));
+        setTickets(markRead);
+        setAllTickets(markRead);
+      })
+      .catch((err) =>
+        console.error("[SupportManagement] {MarkAsRead}:", err),
+      );
   }, [selectedGroupKey, selectedGroup]);
 
   // Initial scroll to bottom when group switches
@@ -608,6 +637,7 @@ export function SupportManagement() {
       await PostSupportTicketMessage(activeTicket.id, {
         message: textToSend,
       });
+      await PatchSupportTicketRead(activeTicket.id);
 
       const data = await GetSupportTicketMessages(activeTicket.id);
       if (Array.isArray(data)) {
@@ -650,6 +680,7 @@ export function SupportManagement() {
     setIsResolving(true);
     try {
       await PatchSupportTicketStatus(ticketId);
+      await PatchSupportTicketRead(ticketId);
 
       // Invalidate any polling request that started before the PATCH completed.
       // This prevents a stale OPEN response from winning the race and putting
@@ -675,6 +706,19 @@ export function SupportManagement() {
           ? synchronizedTickets.filter((ticket) => ticket.id !== ticketId)
           : synchronizedTickets;
       });
+
+      setAllTickets((previousTickets) =>
+        previousTickets.map((ticket) =>
+          ticket.id === ticketId
+            ? {
+                ...ticket,
+                status: "CLOSED",
+                isRead: true,
+                updatedAt: resolvedUpdatedAt,
+              }
+            : ticket,
+        ),
+      );
 
       if (statusFilter === "open") {
         setMeta((previousMeta) => {
@@ -747,7 +791,8 @@ export function SupportManagement() {
             "flex w-full shrink-0 flex-col overflow-hidden border-b",
             "border-glass-border",
             !isResizing &&
-              "transition-[width,min-width,max-width,flex-basis] duration-200 ease-out",
+              "transition-[width,min-width,max-width,flex-basis] " +
+                "duration-200 ease-out",
             "md:border-b-0",
             isSidebarCollapsed && isSupportDesktop && "md:border-r",
             isSidebarCollapsed && isSupportDesktop
@@ -823,7 +868,7 @@ export function SupportManagement() {
                 )}
               >
                 <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
-                <span className="truncate">Active Conversations</span>
+                <span className="whitespace-nowrap">Active Conversations</span>
               </h2>
               <div className="flex shrink-0 items-center gap-1.5">
                 {meta ? (
@@ -831,7 +876,8 @@ export function SupportManagement() {
                     variant="outline"
                     className={cn(
                       "rounded-lg border-primary/20 bg-primary/10",
-                      "px-2 py-0.5 text-[10px] font-bold text-primary",
+                      "shrink-0 whitespace-nowrap px-2 py-0.5",
+                      "text-[10px] font-bold text-primary",
                     )}
                   >
                     {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
@@ -901,15 +947,18 @@ export function SupportManagement() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="mt-2.5 flex gap-1 rounded-xl bg-muted/30 p-1">
+            <div className="mt-2.5 flex gap-1.5 rounded-xl bg-muted/30 p-1.5">
               {(
                 [
-                  { id: "all", label: "All" },
-                  { id: "unread", label: "Unread", count: unreadCount },
-                  { id: "open", label: "Open" },
-                  { id: "closed", label: "Closed" },
+                  { id: "all", label: "All", count: tabUnreadCounts.all },
+                  { id: "open", label: "Open", count: tabUnreadCounts.open },
+                  {
+                    id: "closed",
+                    label: "Resolved",
+                    count: tabUnreadCounts.closed,
+                  },
                 ] as Array<{
-                  id: "all" | "unread" | "open" | "closed";
+                  id: "all" | "open" | "closed";
                   label: string;
                   count?: number;
                 }>
@@ -924,8 +973,9 @@ export function SupportManagement() {
                     size="sm"
                     onClick={() => setStatusFilter(tab.id)}
                     className={cn(
-                      "h-7 flex-1 shrink-0 whitespace-nowrap rounded-lg",
-                      "px-1.5 text-[10px] font-bold uppercase tracking-wider",
+                      "relative h-8 !min-h-0 flex-1 shrink-0",
+                      "whitespace-nowrap rounded-lg px-2",
+                      "text-[10px] font-bold uppercase tracking-wider",
                       "transition-all",
                       isActive
                         ? "shadow-xs bg-primary text-primary-foreground"
@@ -940,11 +990,15 @@ export function SupportManagement() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "ml-1 h-4 min-w-4 border-transparent px-1.5",
-                          "text-[9px] font-bold",
+                          "absolute -right-1 -top-1 z-10 flex h-4 min-w-4",
+                          "items-center justify-center rounded-full px-1",
+                          "text-[9px] font-bold transition-colors",
                           isActive
-                            ? "bg-primary-foreground text-primary"
-                            : "bg-blue-500 text-white",
+                            ? "border-primary bg-primary-foreground " +
+                                "text-primary shadow-sm ring-2 ring-primary"
+                            : "border-transparent bg-primary " +
+                                "text-primary-foreground shadow-xs " +
+                                "ring-2 ring-card",
                         )}
                       >
                         {tab.count}
@@ -973,7 +1027,9 @@ export function SupportManagement() {
                   if (val) setSortBy(val as "recent" | "oldest");
                 }}
                 buttonClassName={cn(
-                  "h-7 w-28 px-2 py-0.5 text-xs border border-glass-border",
+                  "h-8 !min-h-0 w-auto shrink-0 whitespace-nowrap",
+                  "px-2.5 py-1 text-xs",
+                  "border border-glass-border",
                   "bg-muted/20 shadow-xs rounded-lg font-medium",
                 )}
               />
@@ -1101,10 +1157,13 @@ export function SupportManagement() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
+                        <div
+                          className="flex items-center justify-between gap-1"
+                        >
                           <span
                             className={cn(
-                              "truncate text-xs font-bold sm:text-sm",
+                              "whitespace-nowrap text-xs font-bold",
+                              "sm:text-sm",
                               isUnread
                                 ? "font-extrabold text-foreground"
                                 : "text-muted-foreground",
@@ -1113,18 +1172,6 @@ export function SupportManagement() {
                             {name}
                           </span>
                           <div className="flex shrink-0 items-center gap-1.5">
-                            {isUnread && (
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "rounded-md border-blue-500/30",
-                                  "bg-blue-500/10 px-1.5 py-0 text-[9px]",
-                                  "font-bold text-blue-500",
-                                )}
-                              >
-                                Unread
-                              </Badge>
-                            )}
                             <Badge
                               variant="outline"
                               className={cn(
@@ -1318,7 +1365,8 @@ export function SupportManagement() {
                         <div className="min-w-0">
                           <h3
                             className={cn(
-                              "truncate text-xs font-bold sm:text-sm",
+                              "whitespace-nowrap text-xs font-bold",
+                              "sm:text-sm",
                             )}
                           >
                             {headerName}
@@ -1478,7 +1526,9 @@ export function SupportManagement() {
                                   )}
                                 >
                                   {isStaff
-                                    ? `${msg.senderName} (${msg.senderRole || "Guidance Counselor"})`
+                                    ? `${msg.senderName} (${
+                                        msg.senderRole || "Guidance Counselor"
+                                      })`
                                     : msg.senderName}
                                 </span>
                               )}
@@ -1556,7 +1606,9 @@ export function SupportManagement() {
 
                       {isResolved && (
                         <div className="my-5 flex items-center">
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                           <Badge
                             variant="outline"
                             className={cn(
@@ -1568,7 +1620,9 @@ export function SupportManagement() {
                             <CheckCircle className="h-3 w-3 text-emerald-500" />
                             Ticket Resolved
                           </Badge>
-                          <div className="flex-1 border-t border-glass-border" />
+                          <div
+                            className="flex-1 border-t border-glass-border"
+                          />
                         </div>
                       )}
                     </div>

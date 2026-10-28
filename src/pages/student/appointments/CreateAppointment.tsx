@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,9 @@ import {
   useAvailableSlots,
   useCategories,
 } from "@/features/appointments/hooks";
-import { useSubmitAppointment } from "@/features/appointments/hooks/useAppointments";
+import {
+  useSubmitAppointment,
+} from "@/features/appointments/hooks/useAppointments";
 import {
   TimeSlot,
   CreateAppointmentRequest,
@@ -34,15 +37,17 @@ import {
 } from "@/features/appointments/types";
 import { toISODateString } from "@/utils/dateTime";
 import { getFallbackHolidayName } from "@/utils/holidays";
-import { usePageMetadata, useToast } from "@/context";
+import { useAuth, usePageMetadata, useToast } from "@/context";
+import { useFormShortcuts, useLocalDraft } from "@/hooks";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
-import { CRISIS_CONTACTS } from "@/config/constants";
+import { CRISIS_CONTACTS, STUDENT_ROUTES } from "@/config/constants";
 
 const MAX_REASON_LENGTH = 500;
 const MAX_BOOKING_DAYS_AHEAD = 60;
 const MAX_BACKUP_OPTIONS = 3;
+const APPOINTMENT_DRAFT_PREFIX = "guisis_draft_appointment_";
 
 function isNonWorkingAppointmentDate(date: Date): boolean {
   const day = date.getDay();
@@ -59,15 +64,51 @@ interface BackupSchedule {
   timeSlot?: TimeSlot;
 }
 
+interface AppointmentDraftState {
+  selectedDateIso?: string;
+  selectedTime?: TimeSlot;
+  categoryId: number;
+  reason: string;
+}
+
+const EMPTY_APPOINTMENT_DRAFT: AppointmentDraftState = {
+  selectedDateIso: undefined,
+  selectedTime: undefined,
+  categoryId: 0,
+  reason: "",
+};
+
 export default function CreateAppointment() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { triggerToast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [selectedTime, setSelectedTime] = useState<TimeSlot>();
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  const draftKey = `${APPOINTMENT_DRAFT_PREFIX}${user?.id || "anon"}`;
+  const {
+    draft: savedDraft,
+    setDraft: setSavedDraft,
+    clearDraft: clearSavedDraft,
+  } = useLocalDraft<AppointmentDraftState>(draftKey, EMPTY_APPOINTMENT_DRAFT);
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() =>
+    savedDraft.selectedDateIso
+      ? new Date(`${savedDraft.selectedDateIso}T00:00:00`)
+      : undefined,
+  );
+  const [selectedTime, setSelectedTime] = useState<TimeSlot | undefined>(
+    () => savedDraft.selectedTime,
+  );
+  const [currentMonth, setCurrentMonth] = useState<Date>(
+    () =>
+      savedDraft.selectedDateIso
+        ? new Date(`${savedDraft.selectedDateIso}T00:00:00`)
+        : new Date(),
+  );
   const [backupMonth, setBackupMonth] = useState<Date>(() => new Date());
-  const [categoryId, setCategoryId] = useState<number>(0);
-  const [reason, setReason] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<number>(
+    () => savedDraft.categoryId || 0,
+  );
+  const [reason, setReason] = useState<string>(() => savedDraft.reason || "");
 
   const [showBackupSchedule, setShowBackupSchedule] = useState(false);
   const [activeBackupTab, setActiveBackupTab] = useState(0);
@@ -76,6 +117,15 @@ export default function CreateAppointment() {
     { date: undefined, timeSlot: undefined },
     { date: undefined, timeSlot: undefined },
   ]);
+
+  useEffect(() => {
+    setSavedDraft({
+      selectedDateIso: selectedDate ? toISODateString(selectedDate) : undefined,
+      selectedTime,
+      categoryId,
+      reason,
+    });
+  }, [selectedDate, selectedTime, categoryId, reason, setSavedDraft]);
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useCategories();
@@ -95,9 +145,21 @@ export default function CreateAppointment() {
     if (!reason || reason.trim().length < 4) return false;
     const lower = reason.toLowerCase();
     const crisisKeywords = [
-      "tulong", "help", "emergency", "saklolo", "suko", "suicide",
-      "ayoko na", "di ko na kaya", "mawala", "disappear", "ending it",
-      "self harm", "hurting myself", "die", "mamatay"
+      "tulong",
+      "help",
+      "emergency",
+      "saklolo",
+      "suko",
+      "suicide",
+      "ayoko na",
+      "di ko na kaya",
+      "mawala",
+      "disappear",
+      "ending it",
+      "self harm",
+      "hurting myself",
+      "die",
+      "mamatay",
     ];
     return crisisKeywords.some((kw) => lower.includes(kw));
   }, [reason]);
@@ -127,6 +189,24 @@ export default function CreateAppointment() {
   const hasReason = reason.trim().length > 0;
   const isFormValid = hasPrimarySchedule && hasCategory && hasReason;
 
+  const hasDraftProgress = Boolean(
+    selectedDate || selectedTime || categoryId > 0 || reason.trim(),
+  );
+
+  const handleResetDraft = () => {
+    clearSavedDraft();
+    setSelectedDate(undefined);
+    setSelectedTime(undefined);
+    setCategoryId(0);
+    setReason("");
+    setBackupSchedules([
+      { date: undefined, timeSlot: undefined },
+      { date: undefined, timeSlot: undefined },
+      { date: undefined, timeSlot: undefined },
+    ]);
+    triggerToast("Saved appointment progress cleared.");
+  };
+
   const handleDateSelect = (date: Date) => {
     if (isNonWorkingAppointmentDate(date)) {
       triggerToast(
@@ -142,28 +222,29 @@ export default function CreateAppointment() {
 
   const handleDisabledDateClick = (
     _date: Date,
-    reason: DisabledDateReason,
+    reasonCode: DisabledDateReason,
   ) => {
-    if (reason === "weekend" || reason === "holiday") {
+    if (reasonCode === "weekend" || reasonCode === "holiday") {
       triggerToast(
         "Appointments cannot be scheduled on non-working days.",
       );
       return;
     }
 
-    if (reason === "today") {
+    if (reasonCode === "today") {
       triggerToast("Same-day appointments cannot be scheduled.");
       return;
     }
 
-    if (reason === "past") {
+    if (reasonCode === "past") {
       triggerToast("Past dates cannot be selected for appointments.");
       return;
     }
 
-    if (reason === "after-max") {
+    if (reasonCode === "after-max") {
       triggerToast(
-        `Appointments can only be booked up to ${MAX_BOOKING_DAYS_AHEAD} days ahead.`,
+        `Appointments can only be booked up to ${MAX_BOOKING_DAYS_AHEAD} ` +
+          "days ahead.",
       );
       return;
     }
@@ -236,16 +317,17 @@ export default function CreateAppointment() {
 
     submitAppointment(payload, {
       onSuccess: () => {
+        clearSavedDraft();
         triggerToast(
           "Appointment booked successfully! Awaiting counselor review.",
         );
-        navigate("/student/appointments");
+        navigate(STUDENT_ROUTES.APPOINTMENTS);
       },
       onError: (error: any) => {
         isSubmittingRef.current = false;
         if (error.message?.includes("IIR profile")) {
           triggerToast("Please complete your IIR profile first.");
-          navigate("/iir-form");
+          navigate(STUDENT_ROUTES.IIR_FORM);
           return;
         }
         triggerToast(getErrorMessage(error));
@@ -255,6 +337,11 @@ export default function CreateAppointment() {
       },
     });
   };
+
+  useFormShortcuts({
+    onSubmit: handleSubmit,
+    enabled: isFormValid && !isSubmitting,
+  });
 
   const formattedDate = selectedDate
     ? selectedDate.toLocaleDateString("en-US", {
@@ -310,11 +397,30 @@ export default function CreateAppointment() {
           {/* Card 1: Interactive Schedule Picker */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base font-semibold">
-                  1. Select Date & Available Time Slot
-                </CardTitle>
+              <div
+                className="flex flex-wrap items-center justify-between gap-2"
+              >
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base font-semibold">
+                    1. Select Date & Available Time Slot
+                  </CardTitle>
+                </div>
+                {hasDraftProgress && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleResetDraft}
+                    className={cn(
+                      "h-9 gap-1.5 rounded-lg text-xs text-muted-foreground",
+                      "hover:text-destructive",
+                    )}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Reset Draft
+                  </Button>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Click a date on the calendar, then choose your consultation time
@@ -392,8 +498,8 @@ export default function CreateAppointment() {
                 required
                 maxChars={MAX_REASON_LENGTH}
                 info={
-                  "Confidential note read strictly by your " +
-                  "guidance counselor for session preparation."
+                  "Confidential note read strictly by your guidance " +
+                  "counselor. Progress is saved automatically in this session."
                 }
               />
 
@@ -427,16 +533,24 @@ export default function CreateAppointment() {
                       "text-[11px]",
                     )}
                   >
-                    <div className="flex items-center gap-2">
+                    <a
+                      href={CRISIS_CONTACTS.ncmhTelHref}
+                      className={cn(
+                        "flex min-h-11 items-center gap-2 rounded-lg px-2",
+                        "transition-colors hover:bg-destructive/10",
+                      )}
+                    >
                       <Phone
                         className="h-3.5 w-3.5 shrink-0 text-destructive"
                       />
                       <span>
                         <strong>National Crisis Hotline (NCMH):</strong>{" "}
-                        {CRISIS_CONTACTS.displayHotline}
+                        <span className="underline">
+                          {CRISIS_CONTACTS.displayHotline}
+                        </span>
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    </a>
+                    <div className="flex min-h-11 items-center gap-2 px-2">
                       <Building2
                         className="h-3.5 w-3.5 shrink-0 text-destructive"
                       />
@@ -476,7 +590,9 @@ export default function CreateAppointment() {
               onClick={() => setShowBackupSchedule(!showBackupSchedule)}
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                <div
+                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
+                >
                   <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium text-foreground">
                     Alternative Preferred Schedules (Optional — Up to 3)
@@ -492,9 +608,13 @@ export default function CreateAppointment() {
                   </Badge>
                 </div>
                 {showBackupSchedule ? (
-                  <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <ChevronUp
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                  />
                 ) : (
-                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-muted-foreground"
+                  />
                 )}
               </div>
             </CardHeader>
@@ -548,8 +668,8 @@ export default function CreateAppointment() {
                             : undefined
                         }
                         className={cn(
-                          "flex items-center gap-1.5 rounded-xl px-3 py-1.5",
-                          "text-xs font-semibold transition-all",
+                          "flex min-h-11 items-center gap-1.5 rounded-xl px-3",
+                          "py-1.5 text-xs font-semibold transition-all",
                           isPrecedingEmpty &&
                             "cursor-not-allowed opacity-40 hover:bg-muted/30",
                           !isPrecedingEmpty &&
@@ -584,7 +704,8 @@ export default function CreateAppointment() {
                       onDateSelect={(d) => {
                         if (isNonWorkingAppointmentDate(d)) {
                           triggerToast(
-                            "Appointments cannot be scheduled on non-working days.",
+                            "Appointments cannot be scheduled on " +
+                              "non-working days.",
                           );
                           return;
                         }
@@ -651,7 +772,7 @@ export default function CreateAppointment() {
                           size="sm"
                           onClick={() => handleClearBackup(activeBackupTab)}
                           className={cn(
-                            "h-8 text-xs text-muted-foreground",
+                            "h-11 text-xs text-muted-foreground",
                             "hover:text-destructive",
                           )}
                         >
@@ -704,7 +825,9 @@ export default function CreateAppointment() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Selected Schedule Pill */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
@@ -733,7 +856,9 @@ export default function CreateAppointment() {
               </div>
 
               {/* Concern Category */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
                 <span
                   className={cn(
                     "text-[11px] font-semibold",
@@ -860,8 +985,10 @@ export default function CreateAppointment() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting}
+                title="Shortcut: Ctrl + Enter"
                 className={cn(
-                  "w-full rounded-xl py-5 text-sm font-semibold shadow-sm",
+                  "min-h-11 w-full rounded-xl py-5 text-sm font-semibold",
+                  "shadow-sm",
                 )}
               >
                 {isSubmitting ? "Booking Appointment..." : "Book Appointment"}

@@ -9,6 +9,7 @@ import {
   MapPin,
   HelpCircle,
   Folder,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,9 @@ import {
   useGetSlipAttachments,
 } from "@/features/slips/hooks";
 import { CreateSlipRequest } from "@/features/slips/types";
-import { usePageMetadata, useToast } from "@/context";
+import { useAuth, usePageMetadata, useToast } from "@/context";
+import { useFormShortcuts, useLocalDraft } from "@/hooks";
+import { STUDENT_ROUTES } from "@/config/constants";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
@@ -47,14 +50,18 @@ const MAX_FILES_PER_DOCUMENT = 3;
 const MAX_REASON_CHARS = 500;
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const ALLOWED_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
+const SLIP_DRAFT_PREFIX = "guisis_draft_slip_";
 
 type DocumentType = "excuseLetter" | "parentId" | "medicalCert";
 
-interface SubmitSlipFormState {
+interface SlipTextDraft {
   dateOfAbsence: string;
   dateNeeded: string;
   reason: string;
   categoryId: number;
+}
+
+interface SubmitSlipFormState extends SlipTextDraft {
   files: {
     excuseLetter: File[];
     parentId: File[];
@@ -62,11 +69,15 @@ interface SubmitSlipFormState {
   };
 }
 
-const EMPTY_FORM_DATA: SubmitSlipFormState = {
+const EMPTY_TEXT_DRAFT: SlipTextDraft = {
   dateOfAbsence: "",
   dateNeeded: "",
   reason: "",
   categoryId: 0,
+};
+
+const EMPTY_FORM_DATA: SubmitSlipFormState = {
+  ...EMPTY_TEXT_DRAFT,
   files: {
     excuseLetter: [],
     parentId: [],
@@ -78,11 +89,21 @@ export default function SubmitSlip() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
+  const { user } = useAuth();
   const { triggerToast } = useToast();
   const submittingRef = useRef(false);
 
-  const [formData, setFormData] =
-    useState<SubmitSlipFormState>(EMPTY_FORM_DATA);
+  const draftKey = `${SLIP_DRAFT_PREFIX}${user?.id || "anon"}`;
+  const {
+    draft: savedTextDraft,
+    setDraft: setSavedTextDraft,
+    clearDraft: clearSavedTextDraft,
+  } = useLocalDraft<SlipTextDraft>(draftKey, EMPTY_TEXT_DRAFT, !isEditMode);
+
+  const [formData, setFormData] = useState<SubmitSlipFormState>(() => ({
+    ...EMPTY_FORM_DATA,
+    ...(isEditMode ? {} : savedTextDraft),
+  }));
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewData, setPreviewData] = useState<{
     file: File;
@@ -116,6 +137,40 @@ export default function SubmitSlip() {
       [isEditMode],
     ),
   );
+
+  // Sync text fields to sessionStorage draft in create mode
+  useEffect(() => {
+    if (isEditMode) return;
+    setSavedTextDraft({
+      dateOfAbsence: formData.dateOfAbsence,
+      dateNeeded: formData.dateNeeded,
+      reason: formData.reason,
+      categoryId: formData.categoryId,
+    });
+  }, [
+    isEditMode,
+    formData.dateOfAbsence,
+    formData.dateNeeded,
+    formData.reason,
+    formData.categoryId,
+    setSavedTextDraft,
+  ]);
+
+  const hasLocalFiles =
+    formData.files.excuseLetter.length > 0 ||
+    formData.files.parentId.length > 0 ||
+    formData.files.medicalCert.length > 0;
+
+  // Warn before closing tab if local files are attached but not yet uploaded
+  useEffect(() => {
+    if (!hasLocalFiles || isSubmitting || isUpdating) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasLocalFiles, isSubmitting, isUpdating]);
 
   useEffect(() => {
     if (isEditMode && existingAttachments.length > 0) {
@@ -181,6 +236,22 @@ export default function SubmitSlip() {
     excuseLetterProvided &&
     parentIdProvided &&
     medicalCertProvided;
+
+  const hasDraftProgress =
+    !isEditMode &&
+    Boolean(
+      formData.dateOfAbsence ||
+        formData.dateNeeded ||
+        formData.categoryId > 0 ||
+        formData.reason.trim() ||
+        hasLocalFiles,
+    );
+
+  const handleClearDraft = () => {
+    clearSavedTextDraft();
+    setFormData(EMPTY_FORM_DATA);
+    triggerToast("Saved slip progress cleared.");
+  };
 
   const handleDateChange = (
     field: "dateOfAbsence" | "dateNeeded",
@@ -263,7 +334,8 @@ export default function SubmitSlip() {
 
     if (existingFileCount + validFiles.length > MAX_FILES_PER_DOCUMENT) {
       triggerToast(
-        `A maximum of ${MAX_FILES_PER_DOCUMENT} files is allowed for this document type.`,
+        `A maximum of ${MAX_FILES_PER_DOCUMENT} files is allowed for ` +
+          "this document type.",
       );
       return;
     }
@@ -273,29 +345,24 @@ export default function SubmitSlip() {
       return;
     }
 
-    setFormData((prev) => {
-      const updated = [...prev.files[documentType], ...validFiles];
-      return {
-        ...prev,
-        files: {
-          ...prev.files,
-          [documentType]: sanitizeFileNames(documentType, updated),
-        },
-      };
-    });
+    // Preserve original file names in UI state (Tesler's Law)
+    setFormData((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [documentType]: [...prev.files[documentType], ...validFiles],
+      },
+    }));
   };
 
   const handleFileRemove = (documentType: DocumentType, index: number) => {
-    setFormData((prev) => {
-      const filtered = prev.files[documentType].filter((_, i) => i !== index);
-      return {
-        ...prev,
-        files: {
-          ...prev.files,
-          [documentType]: sanitizeFileNames(documentType, filtered),
-        },
-      };
-    });
+    setFormData((prev) => ({
+      ...prev,
+      files: {
+        ...prev.files,
+        [documentType]: prev.files[documentType].filter((_, i) => i !== index),
+      },
+    }));
   };
 
   const handleSubmit = async () => {
@@ -305,7 +372,8 @@ export default function SubmitSlip() {
       ["excuseLetter", "parentId", "medicalCert"] as DocumentType[]
     ).some(
       (documentType) =>
-        formData.files[documentType].length + getKeptFiles(documentType).length >
+        formData.files[documentType].length +
+          getKeptFiles(documentType).length >
         MAX_FILES_PER_DOCUMENT,
     );
 
@@ -346,9 +414,15 @@ export default function SubmitSlip() {
       dateNeeded: new Date(formData.dateNeeded).toISOString().split("T")[0],
       categoryId: formData.categoryId,
       files: {
-        excuseLetter: formData.files.excuseLetter,
-        parentId: formData.files.parentId,
-        medicalCert: formData.files.medicalCert,
+        excuseLetter: sanitizeFileNames(
+          "excuseLetter",
+          formData.files.excuseLetter,
+        ),
+        parentId: sanitizeFileNames("parentId", formData.files.parentId),
+        medicalCert: sanitizeFileNames(
+          "medicalCert",
+          formData.files.medicalCert,
+        ),
       },
       keepFileIds: isEditMode
         ? keptAttachments.map((att) => att.id)
@@ -371,7 +445,7 @@ export default function SubmitSlip() {
           onSuccess: () => {
             submittingRef.current = false;
             triggerToast("Admission slip updated successfully");
-            navigate(`/student/slips/${id}`);
+            navigate(`${STUDENT_ROUTES.SLIPS}/${id}`);
           },
           onError: (error: any) => {
             submittingRef.current = false;
@@ -385,13 +459,14 @@ export default function SubmitSlip() {
         {
           onSuccess: () => {
             submittingRef.current = false;
+            clearSavedTextDraft();
             triggerToast("Admission slip submitted successfully");
-            navigate("/student/slips");
+            navigate(STUDENT_ROUTES.SLIPS);
           },
           onError: (error: any) => {
             submittingRef.current = false;
             if (error.message?.includes("IIR profile")) {
-              navigate("/iir-form");
+              navigate(STUDENT_ROUTES.IIR_FORM);
             } else {
               triggerToast(getErrorMessage(error));
             }
@@ -400,6 +475,11 @@ export default function SubmitSlip() {
       );
     }
   };
+
+  useFormShortcuts({
+    onSubmit: handleSubmit,
+    enabled: isFormValid && !isSubmitting && !isUpdating,
+  });
 
   const renderUploadDropzone = (
     documentType: DocumentType,
@@ -449,7 +529,9 @@ export default function SubmitSlip() {
 
         {/* Existing & Local File Cards */}
         {hasFiles && (
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
+          <div
+            className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3"
+          >
             {keptFiles.map((file) => (
               <ExistingFileCard
                 key={file.id}
@@ -476,7 +558,7 @@ export default function SubmitSlip() {
         {/* Upload Button Dropzone */}
         <div
           className={cn(
-            "relative flex cursor-pointer items-center justify-center",
+            "relative flex min-h-11 cursor-pointer items-center justify-center",
             "rounded-xl border border-dashed border-border/80 bg-muted/20",
             "p-4 transition-colors hover:border-primary/50 hover:bg-muted/40",
           )}
@@ -587,11 +669,30 @@ export default function SubmitSlip() {
           {/* Card 1: Absence Details */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" />
-                <CardTitle className="text-base font-semibold">
-                  1. Absence & Filing Details
-                </CardTitle>
+              <div
+                className="flex flex-wrap items-center justify-between gap-2"
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <CardTitle className="text-base font-semibold">
+                    1. Absence & Filing Details
+                  </CardTitle>
+                </div>
+                {hasDraftProgress && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearDraft}
+                    className={cn(
+                      "h-9 gap-1.5 rounded-lg text-xs text-muted-foreground",
+                      "hover:text-destructive",
+                    )}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Reset Draft
+                  </Button>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Enter your absence date and state your reason for filing
@@ -639,7 +740,7 @@ export default function SubmitSlip() {
                 maxChars={MAX_REASON_CHARS}
                 info={
                   "This will be reviewed by the guidance counselor upon " +
-                  "validation."
+                  "validation. Progress is saved automatically in this session."
                 }
               />
             </CardContent>
@@ -648,7 +749,9 @@ export default function SubmitSlip() {
           {/* Card 2: Required Supporting Documents */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div
+                className="flex flex-wrap items-center justify-between gap-2"
+              >
                 <div className="flex items-center gap-2">
                   <FileUp className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
@@ -661,7 +764,7 @@ export default function SubmitSlip() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsGuidelineModalOpen(true)}
-                    className="h-8 gap-1.5 rounded-lg text-xs"
+                    className="h-11 gap-1.5 rounded-lg text-xs"
                   >
                     <HelpCircle className="h-3.5 w-3.5 text-primary" />
                     Nurse Sign-off Guide
@@ -729,8 +832,12 @@ export default function SubmitSlip() {
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               {/* Dates Pill */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Filing Timeline
                 </span>
                 <div
@@ -745,8 +852,12 @@ export default function SubmitSlip() {
               </div>
 
               {/* Category */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                <span className="text-[11px] font-semibold text-muted-foreground">
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className="text-[11px] font-semibold text-muted-foreground"
+                >
                   Category
                 </span>
                 <p className="mt-1 text-xs font-semibold text-foreground">
@@ -871,8 +982,10 @@ export default function SubmitSlip() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting || isUpdating}
+                title="Shortcut: Ctrl + Enter"
                 className={cn(
-                  "w-full rounded-xl py-5 text-sm font-semibold shadow-sm",
+                  "min-h-11 w-full rounded-xl py-5 text-sm font-semibold",
+                  "shadow-sm",
                 )}
               >
                 {isSubmitting || isUpdating

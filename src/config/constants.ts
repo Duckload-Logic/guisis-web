@@ -12,11 +12,13 @@ export const ROLE_ROUTES = {
 // Admission Slip status
 export const STATUS_COLORS: Record<string, string> = {
   warning:
-    "border-warning-foreground/30 bg-warning-background text-warning-foreground",
+    "border-warning-foreground/30 bg-warning-background " +
+    "text-warning-foreground",
   danger:
     "border-danger-foreground/30 bg-danger-background text-danger-foreground",
   success:
-    "border-success-foreground/30 bg-success-background text-success-foreground",
+    "border-success-foreground/30 bg-success-background " +
+    "text-success-foreground",
   info: "border-info-foreground/30 bg-info-background text-info-foreground",
   stale: "border-stale-foreground/30 bg-stale-background text-stale-foreground",
   notice:
@@ -131,13 +133,50 @@ export const LAYOUT_STYLES = {
     "[&>svg]:!left-5 [&>svg]:!top-5 [&>svg~*]:!pl-8",
 } as const;
 
-
 // Centralized emergency and crisis hotline contacts
 export const CRISIS_CONTACTS = {
   ncmhShortCode: "1553",
+  ncmhTelHref: "tel:1553",
   dohTelephone: "(632) 8651-7800",
   displayHotline: "1553 (Toll-Free) or Tel: (632) 8651-7800",
   guidanceOfficeNote:
     "Direct in-person walk-in consultation is accommodated immediately " +
     "during office hours.",
+} as const;
+
+// Shared student route constants
+export const STUDENT_ROUTES = {
+  IIR_FORM: "/student/iir/form",
+  APPOINTMENTS: "/student/appointments",
+  SLIPS: "/student/slips",
+} as const;
+
+// Plain-language privacy and cookie notices for students and staff
+export const PRIVACY_DISCLOSURES = {
+  PRIMARY_SUMMARY:
+    "Everything you share in GuiSIS is kept private and used only by the " +
+    "PUP-Taguig Guidance Office to support you.",
+  COOKIE_SUMMARY:
+    "We only use basic sign-in cookies to keep your account safe—we never " +
+    "track you or show ads.",
+  BULLETS: [
+    {
+      title: "Private to Guidance Counselors:",
+      detail:
+        "Your counseling notes and appointment reasons are only visible to " +
+        "licensed Guidance Counselors.",
+    },
+    {
+      title: "Automatic Sign-Out for Safety:",
+      detail:
+        "Your account signs out after 30 minutes of inactivity to protect " +
+        "you on shared computers.",
+    },
+    {
+      title: "Your Control Over Your Info:",
+      detail:
+        "You can view your profile and ask the Guidance Office to update " +
+        "your details anytime.",
+    },
+  ],
 } as const;

@@ -39,17 +39,14 @@ export default function ConsentDialog({
         <DialogHeader>
           <DialogTitle className="text-2xl">Confirm Submission</DialogTitle>
           <DialogDescription className="pt-4 text-justify text-base">
-            By submitting this form, I hereby certify and testify that all
-            information provided herein are true, accurate, and legitimate to
-            the best of my knowledge. I acknowledge that any deliberate
-            omission, misrepresentation, or falsification of information herein
-            shall constitute grounds for disciplinary action, academic
-            sanctions, and/or legal penalties in accordance with the rules and
-            regulations of the{" "}
+            By submitting this form, I confirm that the information I entered
+            is true and complete. I allow the{" "}
             <span className="font-semibold text-primary">
-              Polytechnic University of the Philippines - Taguig Campus
+              PUP-Taguig Guidance Office
             </span>{" "}
-            and applicable laws.
+            to keep and use my records confidentially for counseling and
+            student support, and I understand that submitting false information
+            may violate university rules.
           </DialogDescription>
         </DialogHeader>
 
@@ -59,7 +56,7 @@ export default function ConsentDialog({
             variant="outline"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="border border-border hover:bg-muted"
+            className="h-11 border border-border hover:bg-muted"
           >
             Cancel
           </Button>
@@ -67,16 +64,18 @@ export default function ConsentDialog({
             type="button"
             onClick={onAccept}
             disabled={isSubmitting}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className={cn(
+              "h-11 bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
           >
             {isSubmitting ? (
               <>
                 <div
                   className={cn(
-                    "mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white",
-                    "border-t-transparent",
+                    "mr-2 h-4 w-4 animate-spin rounded-full border-2",
+                    "border-primary-foreground border-t-transparent",
                   )}
-                ></div>
+                />
                 Submitting...
               </>
             ) : (
