@@ -1,21 +1,19 @@
 import Layout from "@/components/layout/Layout";
 import { API_ROUTES } from "@/config/apiRoutes";
-import {
-  Calendar,
-  LifeBuoy,
-  Mail,
-  MapPin,
-  ArrowRight,
-  HelpCircle,
-  FileText,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+  LogIn,
+  Clock,
+  MapPin,
+  Mail,
+  AlertCircle,
+  FileCheck2,
+  CalendarCheck,
+  ClipboardList,
+  ShieldCheck,
+  HelpCircle,
+} from "lucide-react";
 
 export default function Landing() {
   const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
@@ -33,238 +31,186 @@ export default function Landing() {
     }
   };
 
-  const services = [
-    {
-      icon: Calendar,
-      title: "Counseling & Triage",
-      desc:
-        "Confidential appointment requests with automated urgency " +
-        "prioritization for prompt counselor intervention.",
-    },
-    {
-      icon: FileText,
-      title: "Admission & Excuse Slips",
-      desc:
-        "Digital submission of absence excuses and instant issuance of " +
-        "tamper-verified admission slip tickets.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Individual Inventory Record",
-      desc:
-        "Centralized, RA 10173-compliant student profiling with automated " +
-        "Certificate of Registration (COR) extraction.",
-    },
-  ];
-
   const faqs = [
     {
-      q: "How do I log in to GuiSIS?",
-      a:
-        "Authenticate using your official PUP Webmail credentials via the " +
-        "university Identity Provider (IDP).",
+      q: "How do I sign in?",
+      a: "Use your registered institutional webmail credentials via the university Identity Provider (IDP).",
     },
     {
-      q: "Who can see my counseling notes and submitted forms?",
-      a:
-        "Your records are protected by strict Role-Based Access Control " +
-        "(RBAC). Only the designated Guidance Counselor can access " +
-        "counseling case histories.",
+      q: "Who can access counseling records?",
+      a: "Only authorized Guidance Counselors have permission to view counseling case notes and session records.",
     },
     {
-      q: "Can I request admission slips remotely?",
-      a:
-        "Yes. Upload your supporting documents (medical certificate, excuse " +
-        "letter) directly through the portal for async counselor review.",
+      q: "How long does admission slip verification take?",
+      a: "Submitted slips are verified during regular office hours (Monday to Friday, 8:00 AM – 5:00 PM).",
     },
   ];
 
   return (
     <Layout isLoggedIn={false} showHeader={true}>
-      <div id="top" className="relative space-y-16 pb-16">
-        {/* Subtle Institutional Grid */}
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-grid opacity-30" />
+      <div id="top" className="space-y-16 pb-16">
+        {/* Main Portal Hero */}
+        <main className="min-h-[calc(100vh-8rem)] flex flex-col justify-center px-4 pt-4 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Column: Institutional Information & Operational Advisories */}
+            <div className="lg:col-span-7 space-y-6">
+              <div>
+                <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  Guidance and Counseling Office
+                </p>
+                <h1 className="mt-1.5 text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                  Guidance Services Information System
+                </h1>
+                <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl">
+                  Official online service portal for student individual inventory records,
+                  counseling appointment requests, and admission slip processing.
+                </p>
+              </div>
 
-        {/* Hero Section */}
-        <section className="relative mx-auto max-w-5xl pt-12 sm:pt-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center"
-          >
-            {/* Status Pill */}
-            <div
-              className={
-                "mb-6 inline-flex items-center gap-2 rounded-full border " +
-                "border-border bg-card px-3.5 py-1 text-xs font-medium " +
-                "text-foreground shadow-sm"
-              }
-            >
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>PUP-Taguig Guidance & Counseling Services Portal</span>
-            </div>
+              {/* Operational Bulletin Board */}
+              <div id="about" className="scroll-mt-24 rounded-lg border border-border bg-card p-5 space-y-4 shadow-sm">
+                <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  Service Reminders & Operational Policies
+                </h2>
 
-            {/* Main Headline */}
-            <h1
-              className={
-                "text-4xl font-extrabold tracking-tight text-foreground " +
-                "sm:text-6xl max-w-3xl leading-[1.15]"
-              }
-            >
-              Campus Guidance Services, <br />
-              <span className="text-primary">Streamlined & Secure.</span>
-            </h1>
+                <ul className="space-y-3 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <ClipboardList className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-foreground font-medium">Individual Inventory Record (IIR):</strong>{" "}
+                      Enrolled students must complete and maintain an updated digital profile each academic term.
+                    </span>
+                  </li>
 
-            {/* Sub-headline */}
-            <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-muted-foreground">
-              The official centralized platform for Polytechnic University of the
-              Philippines – Taguig students. Manage your Individual Inventory
-              Record (IIR), request admission slips, and schedule counseling sessions.
-            </p>
+                  <li className="flex items-start gap-3">
+                    <CalendarCheck className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-foreground font-medium">Counseling Appointments:</strong>{" "}
+                      Appointments are scheduled based on counselor availability and prioritized according to case urgency.
+                    </span>
+                  </li>
 
-            {/* CTAs */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto gap-2 text-base font-semibold px-8 h-12 shadow-sm"
-                onClick={handleLogin}
-              >
-                Sign In with University IDP <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto text-base font-medium h-12"
-                onClick={() =>
-                  document.getElementById("services")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-              >
-                View Services
-              </Button>
-            </div>
+                  <li className="flex items-start gap-3">
+                    <FileCheck2 className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-foreground font-medium">Admission & Excuse Slips:</strong>{" "}
+                      Upload your valid Certificate of Registration (COR) and official absence documentation for verification.
+                    </span>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Trust Badges */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" /> RA 10173 Data Privacy Compliant
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-primary" /> Single Sign-On Enabled
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-primary" /> Mon – Fri, 8:00 AM – 5:00 PM
-              </span>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Core Services Section */}
-        <section id="services" className="scroll-mt-20 mx-auto max-w-5xl">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Core Guidance Services</h2>
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-              Digitized workflows engineered to eliminate physical office bottlenecks.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm hover:border-primary/40 transition-colors flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                  </div>
+              {/* Office Contact Info Strip */}
+              <div id="contact" className="scroll-mt-24 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs text-muted-foreground border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 shrink-0" />
+                  <span>Mon – Fri, 8:00 AM – 5:00 PM</span>
                 </div>
-              );
-            })}
-          </div>
-        </section>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span>Guidance Office, Ground Floor</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  <span>supportguisis@gmail.com</span>
+                </div>
+              </div>
+            </div>
 
-        {/* Support & FAQ */}
-        <section id="support" className="scroll-mt-20 mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* FAQ Column (2/3 width) */}
-          <div className="lg:col-span-2 space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Frequently Asked Questions</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Common inquiries regarding access, appointments, and data protection.
+            {/* Right Column: Authentication Card */}
+            <div className="lg:col-span-5">
+              <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="space-y-1 text-center sm:text-left">
+                  <h2 className="text-xl font-semibold text-foreground tracking-tight">
+                    Portal Authentication
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Sign in using your institutional webmail account to access services.
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <Button
+                    size="lg"
+                    className="w-full gap-2.5 font-medium h-11 text-sm"
+                    onClick={handleLogin}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Continue with University IDP
+                  </Button>
+                </div>
+
+                <div className="rounded border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground leading-normal">
+                  <p>
+                    <strong>Access Policy:</strong> This portal processes confidential guidance and academic records.
+                    Access is restricted to authorized university personnel and currently enrolled students in accordance with RA 10173.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        {/* What We Offer / Features Section (Targets #features) */}
+        <section id="features" className="scroll-mt-24 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="border-t border-border pt-12">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">Available Guidance Services</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Core student assistance modules accessible via the web portal.
               </p>
             </div>
-            <div className="space-y-3">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="rounded-lg border border-border bg-card p-5 space-y-2">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Individual Inventory Profiling</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Digital profiling form capturing academic, family, and demographic background with automated COR extraction.
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-card p-5 space-y-2">
+                <CalendarCheck className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Counseling Appointment Triage</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Confidential consultation scheduling with automated priority categorization for high-risk concerns.
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border bg-card p-5 space-y-2">
+                <FileCheck2 className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Admission Slip Requests</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Asynchronous absence documentation filing, counselor validation, and digital slip generation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section (Targets #faq) */}
+        <section id="faq" className="scroll-mt-24 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="border-t border-border pt-12">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">Frequently Asked Questions</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Reference guidelines for portal usage and record management.
+              </p>
+            </div>
+
+            <div className="space-y-3 max-w-3xl">
               {faqs.map((faq, i) => (
-                <div key={i} className="rounded-lg border border-border bg-card p-5">
-                  <div className="flex gap-3">
-                    <HelpCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-sm font-semibold text-foreground">{faq.q}</h4>
-                      <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-                    </div>
-                  </div>
+                <div key={i} className="rounded-lg border border-border bg-card p-4 space-y-1.5">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-primary shrink-0" />
+                    {faq.q}
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed pl-6">{faq.a}</p>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Contact Card (1/3 width) */}
-          <div className="rounded-xl border border-border bg-card p-6 flex flex-col justify-between space-y-6">
-            <div>
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
-                <LifeBuoy className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground">Need Assistance?</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Guidance Office personnel are available during operational hours.
-              </p>
-
-              <div className="mt-6 space-y-4 text-sm">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                  <div>
-                    <p className="font-medium text-foreground">Guidance Office</p>
-                    <p className="text-xs text-muted-foreground">
-                      PUP Taguig Campus, Gen. Santos Ave, Bicutan
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                  <div>
-                    <p className="font-medium text-foreground">Technical Support</p>
-                    <p className="text-xs text-muted-foreground">supportguisis@gmail.com</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                  <div>
-                    <p className="font-medium text-foreground">Office Schedule</p>
-                    <p className="text-xs text-muted-foreground">
-                      Monday – Friday: 8:00 AM – 5:00 PM
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full text-sm font-medium"
-              onClick={() => {
-                window.location.href = "mailto:supportguisis@gmail.com";
-              }}
-            >
-              Contact Support
-            </Button>
           </div>
         </section>
       </div>
