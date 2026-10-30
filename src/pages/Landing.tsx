@@ -58,31 +58,37 @@ export default function Landing() {
   ];
 
   return (
-    <Layout isLoggedIn={false} showHeader={true}>
-      <div id="top" className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-20">
+    <Layout
+      isLoggedIn={false}
+      showHeader={true}
+    >
+      <div
+        id="top"
+        className="mx-auto max-w-5xl space-y-20 px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
+      >
         {/* Editorial Header / Hero */}
-        <section className="space-y-6 max-w-3xl">
-          <p className="text-xs font-semibold tracking-widest text-primary uppercase">
+        <section className="max-w-3xl space-y-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             PUP-T Guidance and Counseling Services
           </p>
 
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+          <h1 className="text-3xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
             Student welfare, psychological guidance, and academic support.
           </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
             The Guidance Services Information System (GuiSIS) is the official
             university channel for confidential counseling consultations,
             absence verification, and student inventory records.
           </p>
 
-          <div className="pt-2 flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button
               size="lg"
               onClick={handleLogin}
-              className="gap-2 font-medium px-6 h-11"
+              className="h-11 gap-2 px-6 font-medium"
             >
-              Sign In with University Webmail <ArrowRight className="h-4 w-4" />
+              Log In <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
               size="lg"
@@ -92,7 +98,7 @@ export default function Landing() {
                   behavior: "smooth",
                 });
               }}
-              className="font-medium h-11"
+              className="h-11 font-medium"
             >
               Explore Services
             </Button>
@@ -100,36 +106,39 @@ export default function Landing() {
         </section>
 
         {/* Two Direct Action Portals (Editorial Dual Tiles) */}
-        <section id="services" className="scroll-mt-24 space-y-6">
+        <section
+          id="services"
+          className="scroll-mt-24 space-y-6"
+        >
           <div className="border-b border-border pb-4">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               Primary Guidance Services
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Select an option to proceed with your transaction.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Tile 1: Counseling Consultation */}
-            <div className="rounded-lg border border-border bg-card p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-foreground/30 transition-colors">
+            <div className="flex flex-col justify-between space-y-6 rounded-lg border border-border bg-card p-6 transition-colors hover:border-foreground/30 sm:p-8">
               <div className="space-y-3">
-                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
                   <Calendar className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Counseling Consultations
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   Confidential appointments for academic stress, emotional
                   concerns, or personal difficulties. Submissions are reviewed
                   with priority triage for urgent situations.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-border space-y-3">
+              <div className="space-y-3 border-t border-border pt-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Shield className="h-4 w-4 text-primary shrink-0" />
+                  <Shield className="h-4 w-4 shrink-0 text-primary" />
                   <span>Conducted in private consultation rooms</span>
                 </div>
                 <Button
@@ -143,24 +152,24 @@ export default function Landing() {
             </div>
 
             {/* Tile 2: Admission & Excuse Slips */}
-            <div className="rounded-lg border border-border bg-card p-6 sm:p-8 flex flex-col justify-between space-y-6 hover:border-foreground/30 transition-colors">
+            <div className="flex flex-col justify-between space-y-6 rounded-lg border border-border bg-card p-6 transition-colors hover:border-foreground/30 sm:p-8">
               <div className="space-y-3">
-                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
                   <FileText className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Admission & Excuse Slips
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   Asynchronous submission of absence documentation, medical
                   certificates, and official excuse letters without manual
                   office queueing.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-border space-y-3">
+              <div className="space-y-3 border-t border-border pt-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-4 w-4 text-primary shrink-0" />
+                  <Clock className="h-4 w-4 shrink-0 text-primary" />
                   <span>Digital tickets issued upon staff review</span>
                 </div>
                 <Button
@@ -176,85 +185,97 @@ export default function Landing() {
         </section>
 
         {/* Operating Hours & Institutional Contact Directory */}
-        <section id="contact" className="scroll-mt-24 rounded-lg border border-border bg-card p-6 sm:p-8 space-y-6">
+        <section
+          id="contact"
+          className="scroll-mt-24 space-y-6 rounded-lg border border-border bg-card p-6 sm:p-8"
+        >
           <div className="border-b border-border pb-4">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               Office Directory and Emergency Support
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               On-campus office location and 24/7 crisis hotlines.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+          <div className="grid grid-cols-1 gap-6 text-sm md:grid-cols-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2 font-medium text-foreground">
-                <Clock className="h-4 w-4 text-primary shrink-0" />
+                <Clock className="h-4 w-4 shrink-0 text-primary" />
                 <span>Operating Hours</span>
               </div>
-              <p className="text-xs text-muted-foreground pl-6">
+              <p className="pl-6 text-xs text-muted-foreground">
                 Monday to Friday
               </p>
-              <p className="text-xs text-muted-foreground pl-6">
+              <p className="pl-6 text-xs text-muted-foreground">
                 8:00 AM – 5:00 PM (Philippine Standard Time)
               </p>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2 font-medium text-foreground">
-                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                <MapPin className="h-4 w-4 shrink-0 text-primary" />
                 <span>Office Location</span>
               </div>
-              <p className="text-xs text-muted-foreground pl-6">
+              <p className="pl-6 text-xs text-muted-foreground">
                 Guidance and Counseling Office
               </p>
-              <p className="text-xs text-muted-foreground pl-6">
+              <p className="pl-6 text-xs text-muted-foreground">
                 PUP Taguig Campus, Bicutan, Taguig City
               </p>
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2 font-medium text-foreground">
-                <Mail className="h-4 w-4 text-primary shrink-0" />
+                <Mail className="h-4 w-4 shrink-0 text-primary" />
                 <span>Technical & Office Inquiries</span>
               </div>
-              <p className="text-xs text-muted-foreground pl-6">
+              <p className="pl-6 text-xs text-muted-foreground">
                 supportguisis@gmail.com
               </p>
             </div>
           </div>
 
           {/* Emergency Crisis Strip */}
-          <div className="rounded border border-border/80 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-foreground font-medium">
-              <PhoneCall className="h-4 w-4 text-primary shrink-0" />
-              <span>National Center for Mental Health (NCMH) 24/7 Crisis Hotline:</span>
+          <div className="flex flex-col justify-between gap-3 rounded border border-border/80 bg-muted/40 p-4 text-xs sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 font-medium text-foreground">
+              <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+              <span>
+                National Center for Mental Health (NCMH) 24/7 Crisis Hotline:
+              </span>
             </div>
-            <span className="font-mono font-bold text-foreground text-sm">
+            <span className="font-mono text-sm font-bold text-foreground">
               1553 (Luzon Toll-Free) / 0917-899-8727
             </span>
           </div>
         </section>
 
         {/* FAQs */}
-        <section id="faq" className="scroll-mt-24 space-y-6">
+        <section
+          id="faq"
+          className="scroll-mt-24 space-y-6"
+        >
           <div className="border-b border-border pb-4">
             <h2 className="text-xl font-bold tracking-tight text-foreground">
               Frequently Asked Questions
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Common procedures regarding counseling privacy and service processing.
+            <p className="mt-1 text-sm text-muted-foreground">
+              Common procedures regarding counseling privacy and service
+              processing.
             </p>
           </div>
 
-          <div className="space-y-4 max-w-3xl">
+          <div className="max-w-3xl space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="space-y-1.5 border-b border-border/60 pb-4">
-                <h3 className="text-sm font-semibold text-foreground flex items-start gap-2">
-                  <HelpCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <div
+                key={i}
+                className="space-y-1.5 border-b border-border/60 pb-4"
+              >
+                <h3 className="flex items-start gap-2 text-sm font-semibold text-foreground">
+                  <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   {faq.q}
                 </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed pl-6">
+                <p className="pl-6 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {faq.a}
                 </p>
               </div>
