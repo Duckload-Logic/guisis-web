@@ -728,6 +728,17 @@ export default function AppointmentDetails() {
                   </Button>
                   <Button
                     variant="outline"
+                    onClick={() => handleActionClick("Reschedule")}
+                    className={cn(
+                      "h-11 w-full gap-2 rounded-xl border-border/80",
+                      "text-xs font-semibold text-foreground",
+                    )}
+                  >
+                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
+                    Reschedule / Propose New Schedule
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => handleActionClick("Reject")}
                     className={cn(
                       "h-11 w-full gap-2 rounded-xl border-destructive/30",
@@ -742,41 +753,47 @@ export default function AppointmentDetails() {
               )}
 
               {isScheduled && !isSessionActive && (
-                <div className="grid grid-cols-2 gap-2.5 pt-1">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("Reschedule")}
-                    className={cn(
-                      "h-11 gap-2 rounded-xl border-border/80",
-                      "text-xs font-semibold",
-                    )}
-                  >
-                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
-                    Reschedule
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("No-show")}
-                    className={cn(
-                      "h-11 gap-2 rounded-xl border-border/80",
-                      "text-xs font-semibold",
-                    )}
-                  >
-                    <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
-                    Mark No-show
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleActionClick("Cancel")}
-                    className={cn(
-                      "col-span-2 h-11 gap-2 rounded-xl",
-                      "border-destructive/30 text-xs font-semibold",
-                      "text-destructive hover:bg-destructive/10",
-                    )}
-                  >
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Cancel Appointment
-                  </Button>
+                <div className="space-y-2 pt-1">
+                  <p className="text-[11px] text-muted-foreground">
+                    Appointment confirmed. Need to adjust the date or time?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("Reschedule")}
+                      className={cn(
+                        "h-11 gap-2 rounded-xl border-primary/30",
+                        "bg-primary/5 text-xs font-semibold text-primary",
+                        "hover:bg-primary/10",
+                      )}
+                    >
+                      <CalendarRange className="h-3.5 w-3.5" />
+                      Reschedule
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("No-show")}
+                      className={cn(
+                        "h-11 gap-2 rounded-xl border-border/80",
+                        "text-xs font-semibold",
+                      )}
+                    >
+                      <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                      Mark No-show
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("Cancel")}
+                      className={cn(
+                        "col-span-2 h-11 gap-2 rounded-xl",
+                        "border-destructive/30 text-xs font-semibold",
+                        "text-destructive hover:bg-destructive/10",
+                      )}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Cancel Appointment
+                    </Button>
+                  </div>
                 </div>
               )}
 
