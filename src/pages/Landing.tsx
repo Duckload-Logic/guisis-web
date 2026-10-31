@@ -67,10 +67,7 @@ export default function Landing() {
         className="mx-auto max-w-5xl space-y-20 px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
       >
         {/* Editorial Header / Hero */}
-        <section
-          id="about"
-          className="scroll-mt-24 max-w-3xl space-y-6"
-        >
+        <section className="max-w-3xl space-y-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             PUP-T Guidance and Counseling Services
           </p>
@@ -105,6 +102,57 @@ export default function Landing() {
             >
               Explore Services
             </Button>
+          </div>
+        </section>
+
+        {/* Institutional Mandate & About */}
+        <section
+          id="about"
+          className="scroll-mt-24 space-y-6"
+        >
+          <div className="border-b border-border pb-4">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              About the Guidance Office
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Institutional mandate, counseling standards, and ethical student
+              support.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 rounded-lg border border-border bg-card p-6 sm:p-8 md:grid-cols-3">
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">
+                Confidentiality & Ethics
+              </h3>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Operating strictly under Republic Act No. 9258 and RA 10173
+                (Data Privacy Act), all personal disclosures and case records
+                remain sealed between the student and licensed counselor.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">
+                Academic & Life Guidance
+              </h3>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                We assist students with emotional hurdles, adjustment
+                concerns, and university routine verification to maintain
+                academic continuity and personal well-being.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">
+                Digital Service Access
+              </h3>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                GuiSIS provides asynchronous queueing for consultations and
+                routine absence documentation, ensuring equal support
+                access across the PUP Taguig student community.
+              </p>
+            </div>
           </div>
         </section>
 
