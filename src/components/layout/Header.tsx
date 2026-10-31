@@ -14,6 +14,14 @@ import { User } from "@/features/users/types/user";
 
 const LOGO_SRC = "/logo.svg";
 
+const LANDING_NAV_ITEMS = [
+  { label: "Home", id: "top" },
+  { label: "About", id: "about" },
+  { label: "Services", id: "services" },
+  { label: "Contact", id: "contact" },
+  { label: "FAQ", id: "faq" },
+] as const;
+
 interface HeaderProps {
   user: User | Record<string, any> | null;
   role: string;
@@ -52,7 +60,8 @@ export default function Header({
 
   const handleNavClick = (targetId: string) => {
     setMobileMenuOpen(false);
-    const element = document.getElementById(targetId);
+    const resolvedId = targetId === "features" ? "services" : targetId;
+    const element = document.getElementById(resolvedId);
     if (element) {
       element.scrollIntoView({
         behavior: "smooth",
@@ -162,83 +171,24 @@ export default function Header({
         </div>
       </div>
 
-      {!isLoggedIn && (
+      {!isLoggedIn && isLanding && (
         <nav className="mr-5 hidden min-w-0 items-center justify-end gap-4 lg:gap-8 xl:flex">
-          {isLanding ? (
+          {LANDING_NAV_ITEMS.map(({ label, id }) => (
             <a
-              href="#top"
+              key={id}
+              href={`#${id}`}
               onClick={(event) => {
                 event.preventDefault();
-                handleNavClick("top");
+                handleNavClick(id);
               }}
               className={cn(
                 "text-sm font-medium text-foreground/70 transition-colors",
                 "hover:text-foreground",
               )}
             >
-              Home
+              {label}
             </a>
-          ) : (
-            <></>
-          )}
-          {isLanding ? (
-            <>
-              <a
-                href="#about"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavClick("about");
-                }}
-                className={cn(
-                  "text-sm font-medium text-foreground/70 transition-colors",
-                  "hover:text-foreground",
-                )}
-              >
-                About
-              </a>
-              <a
-                href="#features"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavClick("features");
-                }}
-                className={cn(
-                  "text-sm font-medium text-foreground/70 transition-colors",
-                  "hover:text-foreground",
-                )}
-              >
-                What We Offer
-              </a>
-              <a
-                href="#faq"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavClick("faq");
-                }}
-                className={cn(
-                  "text-sm font-medium text-foreground/70 transition-colors",
-                  "hover:text-foreground",
-                )}
-              >
-                FAQ
-              </a>
-              <a
-                href="#contact"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavClick("contact");
-                }}
-                className={cn(
-                  "text-sm font-medium text-foreground/70 transition-colors",
-                  "hover:text-foreground",
-                )}
-              >
-                Contact
-              </a>
-            </>
-          ) : (
-            <></>
-          )}
+          ))}
         </nav>
       )}
 
@@ -286,61 +236,22 @@ export default function Header({
         >
           {isLanding && (
             <nav className="flex flex-col gap-4">
-              <a
-                href="#top"
-                onClick={() => handleNavClick("top")}
-                className={cn(
-                  "text-sm font-medium text-foreground/70",
-                  "transition-colors hover:text-foreground",
-                  "border-b border-border/40 py-2",
-                )}
-              >
-                Home
-              </a>
-              <a
-                href="#features"
-                onClick={() => handleNavClick("features")}
-                className={cn(
-                  "text-sm font-medium text-foreground/70",
-                  "transition-colors hover:text-foreground",
-                  "border-b border-border/40 py-2",
-                )}
-              >
-                What We Offer
-              </a>
-              <a
-                href="#about"
-                onClick={() => handleNavClick("about")}
-                className={cn(
-                  "text-sm font-medium text-foreground/70",
-                  "transition-colors hover:text-foreground",
-                  "border-b border-border/40 py-2",
-                )}
-              >
-                About
-              </a>
-              <a
-                href="#faq"
-                onClick={() => handleNavClick("faq")}
-                className={cn(
-                  "text-sm font-medium text-foreground/70",
-                  "transition-colors hover:text-foreground",
-                  "border-b border-border/40 py-2",
-                )}
-              >
-                FAQ
-              </a>
-              <a
-                href="#contact"
-                onClick={() => handleNavClick("contact")}
-                className={cn(
-                  "text-sm font-medium text-foreground/70",
-                  "transition-colors hover:text-foreground",
-                  "border-b border-border/40 py-2",
-                )}
-              >
-                Contact
-              </a>
+              {LANDING_NAV_ITEMS.map(({ label, id }) => (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleNavClick(id);
+                  }}
+                  className={cn(
+                    "border-b border-border/40 py-2 text-sm font-medium",
+                    "text-foreground/70 transition-colors hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </a>
+              ))}
               <Button
                 size="sm"
                 className="mt-2 w-full gap-1.5 font-semibold shadow-sm"

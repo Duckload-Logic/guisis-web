@@ -67,7 +67,10 @@ export default function Landing() {
         className="mx-auto max-w-5xl space-y-20 px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
       >
         {/* Editorial Header / Hero */}
-        <section className="max-w-3xl space-y-6">
+        <section
+          id="about"
+          className="scroll-mt-24 max-w-3xl space-y-6"
+        >
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             PUP-T Guidance and Counseling Services
           </p>
