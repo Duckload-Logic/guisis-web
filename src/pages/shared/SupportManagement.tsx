@@ -871,18 +871,19 @@ export function SupportManagement() {
                 <span className="whitespace-nowrap">Active Conversations</span>
               </h2>
               <div className="flex shrink-0 items-center gap-1.5">
-                {meta ? (
+                {unreadCount > 0 && (
                   <Badge
                     variant="outline"
                     className={cn(
-                      "rounded-lg border-primary/20 bg-primary/10",
-                      "shrink-0 whitespace-nowrap px-2 py-0.5",
-                      "text-[10px] font-bold text-primary",
+                      "shrink-0 whitespace-nowrap rounded-lg px-2 py-0.5",
+                      "border-primary/30 bg-primary/10 text-[10px] font-bold",
+                      "text-primary",
                     )}
                   >
-                    {meta.total} {meta.total === 1 ? "ticket" : "tickets"}
+                    {unreadCount > 99 ? "99+" : unreadCount}{" "}
+                    {unreadCount === 1 ? "unread" : "unread"}
                   </Badge>
-                ) : null}
+                )}
                 {isSupportDesktop && (
                   <button
                     type="button"
