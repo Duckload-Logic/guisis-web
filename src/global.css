@@ -278,6 +278,7 @@
   input[type="datetime-local"],
   input[type="month"] {
     color-scheme: light;
+    cursor: pointer;
   }
 
   .dark input[type="date"],
@@ -285,6 +286,7 @@
   .dark input[type="datetime-local"],
   .dark input[type="month"] {
     color-scheme: dark;
+    cursor: pointer;
   }
 
   input[type="date"]::-webkit-calendar-picker-indicator,

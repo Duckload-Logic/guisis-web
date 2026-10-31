@@ -1,22 +1,18 @@
 import Layout from "@/components/layout/Layout";
 import { API_ROUTES } from "@/config/apiRoutes";
-import { cn } from "@/lib/utils";
-import {
-  Calendar,
-  Lock,
-  MessageSquare,
-  LifeBuoy,
-  Mail,
-  MapPin,
-  ArrowRight,
-  HelpCircle,
-  FileText,
-  ShieldCheck,
-  ChevronRight,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Calendar,
+  FileText,
+  Clock,
+  MapPin,
+  Mail,
+  PhoneCall,
+  Shield,
+  HelpCircle,
+} from "lucide-react";
 
 export default function Landing() {
   const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
@@ -36,22 +32,28 @@ export default function Landing() {
 
   const faqs = [
     {
-      q: "How do I log in to GuiSIS?",
+      q: "Who has access to my counseling records?",
       a:
-        "You must use your official university credentials via the " +
-        "integrated Identity Provider (IDP) login option.",
+        "All consultation notes and psychological assessments are strictly " +
+        "confidential. Access is restricted exclusively to authorized guidance " +
+        "counselors under Republic Act No. 10173 (Data Privacy Act of 2012). " +
+        "Faculty, department heads, and peers cannot view your records.",
     },
     {
-      q: "Can I request guidance support off-campus?",
+      q: "How does the admission slip verification work?",
       a:
-        "Yes, the portal allows you to book appointments and request " +
-        "admission slips directly online.",
+        "Students submit their absence reason alongside required medical " +
+        "certificates or official excuse documentation. Once reviewed and " +
+        "verified by guidance staff, a digital admission ticket is issued " +
+        "instantly for presentation to subject professors.",
     },
     {
-      q: "How do I create an account?",
+      q: "What should I do in an immediate mental health crisis?",
       a:
-        "You don't need to manually create one. Just use your official " +
-        "university credentials via the integrated IDP.",
+        "Urgent appointment submissions are prioritized on the counselor " +
+        "queue. For immediate, round-the-clock emergency assistance, you may " +
+        "contact the National Center for Mental Health (NCMH) toll-free hotline " +
+        "at 1553.",
     },
   ];
 
@@ -62,551 +64,223 @@ export default function Landing() {
     >
       <div
         id="top"
-        className="relative space-y-12 pb-12"
+        className="mx-auto max-w-5xl space-y-20 px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
       >
-        {/* Ambient Background Accents */}
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0 -z-10",
-            "overflow-hidden",
-          )}
-        >
-          <div
-            className={cn(
-              "hidden sm:block absolute -left-[10%] top-[10%]",
-              "h-[35rem] w-[35rem] rounded-full bg-primary/10 blur-[80px]",
-            )}
-          />
-          <div
-            className={cn(
-              "absolute -right-[10%] top-[40%] h-[25rem] w-[25rem]",
-              "rounded-full bg-secondary/15 blur-[60px]",
-            )}
-          />
-          <div
-            className={cn(
-              "hidden sm:block absolute left-[20%] top-[80%]",
-              "h-[30rem] w-[30rem] rounded-full bg-primary/5 blur-[80px]",
-            )}
-          />
-        </div>
+        {/* Editorial Header / Hero */}
+        <section className="max-w-3xl space-y-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            PUP-T Guidance and Counseling Services
+          </p>
 
-        {/* Asymmetric Hero Section */}
-        <section
-          className={cn(
-            "relative flex min-h-[80vh] flex-col items-center",
-            "overflow-hidden rounded-2xl border border-border bg-card",
-            "shadow-sm lg:flex-row",
-          )}
-        >
-          <div
-            className="bg-grid pointer-events-none absolute inset-0 opacity-60"
-          />
-          <div
-            className={cn(
-              "pointer-events-none absolute inset-0 bg-gradient-to-br",
-              "from-background/70 via-background/10 to-transparent",
-            )}
-          />
+          <h1 className="text-3xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-5xl">
+            Student welfare, psychological guidance, and academic support.
+          </h1>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className={cn(
-              "relative z-10 w-full px-6 py-12 sm:px-12",
-              "lg:w-3/5 lg:py-24",
-            )}
-          >
-            <div
-              className={cn(
-                "mb-6 inline-flex items-center gap-2 rounded-full border",
-                "border-primary/20 bg-primary/5 px-3 py-1 text-xs",
-                "font-semibold uppercase tracking-widest text-primary",
-                "shadow-sm backdrop-blur-sm",
-              )}
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Official Portal for PUP-Taguig GuiSIS
-            </div>
-            <h1
-              className={cn(
-                "text-4xl font-extrabold leading-[1.1] tracking-tight",
-                "text-foreground sm:text-5xl lg:text-6xl",
-              )}
-            >
-              Guidance & Support <br />
-              <span className="text-primary">Modernized.</span>
-            </h1>
-            <p
-              className={cn(
-                "mt-6 max-w-lg text-lg leading-relaxed",
-                "text-muted-foreground",
-              )}
-            >
-              Built exclusively for Polytechnic University of the Philippines –
-              Taguig. Access counseling appointments, admission slips, and
-              mental health resources securely.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button
-                size="lg"
-                className={cn(
-                  "gap-2 font-semibold shadow-md transition-transform",
-                  "hover:-translate-y-0.5",
-                )}
-                onClick={handleLogin}
-              >
-                Login <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="font-semibold"
-                onClick={() =>
-                  document.getElementById("features")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-              >
-                Explore Features
-              </Button>
-            </div>
-          </motion.div>
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            The Guidance Services Information System (GuiSIS) is the official
+            university channel for confidential counseling consultations,
+            absence verification, and student inventory records.
+          </p>
 
-          {/* Hero Visual Accent (Bento Style Preview) */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className={cn(
-              "relative z-10 flex h-full w-full flex-col justify-center",
-              "gap-4 p-6 sm:p-12 lg:w-2/5 lg:pl-0",
-            )}
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() =>
-                  document.getElementById("features")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-                className={cn(
-                  "col-span-2 text-left rounded-xl border border-border",
-                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
-                  "transition-all hover:border-primary/40",
-                  "hover:-translate-y-0.5 cursor-pointer",
-                )}
-              >
-                <div className="mb-3 flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "rounded-lg bg-secondary/15 p-2.5",
-                      "text-secondary-foreground",
-                    )}
-                  >
-                    <Calendar className="h-5 w-5 text-foreground" />
-                  </div>
-                  <h3 className="font-semibold">Quick Scheduling</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Book appointments instantly without falling in line.
-                </p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  document.getElementById("features")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-                className={cn(
-                  "text-left rounded-xl border border-border",
-                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
-                  "transition-all hover:border-primary/40",
-                  "hover:-translate-y-0.5 cursor-pointer",
-                )}
-              >
-                <FileText className="mb-3 h-6 w-6 text-primary" />
-                <h3 className="text-sm font-semibold">Admission Slips</h3>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  document.getElementById("support")?.scrollIntoView({
-                    behavior: "smooth",
-                  })
-                }
-                className={cn(
-                  "text-left rounded-xl border border-border",
-                  "bg-background/80 p-6 shadow-sm backdrop-blur-md",
-                  "transition-all hover:border-primary/40",
-                  "hover:-translate-y-0.5 cursor-pointer",
-                )}
-              >
-                <MessageSquare className="mb-3 h-6 w-6 text-secondary" />
-                <h3 className="text-sm font-semibold">Direct Support</h3>
-              </button>
-            </div>
-          </motion.div>
-        </section>
-
-        <div
-          className={cn(
-            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
-            "bg-gradient-to-r from-transparent via-border to-transparent",
-          )}
-        />
-
-        {/* About Section */}
-        <section
-          id="about"
-          className="scroll-mt-24 py-12"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-            className={cn(
-              "grid items-center gap-10 rounded-2xl border border-border",
-              "bg-muted/30 p-8 shadow-sm transition-all",
-              "hover:border-primary/30 sm:p-12 lg:grid-cols-2",
-            )}
-          >
-            <div className="max-w-lg space-y-6">
-              <div
-                className={cn(
-                  "mb-2 inline-flex rounded-xl bg-primary/10 p-3",
-                  "text-primary",
-                )}
-              >
-                <ShieldCheck className="h-6 w-6" />
-              </div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                The gateway for guidance and support.
-              </h2>
-              <p className="text-base leading-relaxed text-muted-foreground">
-                Built for the Polytechnic University of the Philippines
-                Taguig, GuiSIS is designed to support students with secure
-                access to academic guidance, counseling services, and
-                official resources.
-              </p>
-            </div>
-
-            <div className="w-full max-w-md space-y-8 lg:ml-auto">
-              <div className="space-y-3">
-                <h3
-                  className={cn(
-                    "flex items-center gap-2 text-xl font-bold",
-                    "text-foreground",
-                  )}
-                >
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  Secure by default
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Only authenticated students and staff can access the system,
-                  with all sessions routed through the university IDP.
-                </p>
-              </div>
-              <div className="space-y-3">
-                <h3
-                  className={cn(
-                    "flex items-center gap-2 text-xl font-bold",
-                    "text-foreground",
-                  )}
-                >
-                  <div className="h-2 w-2 rounded-full bg-secondary" />
-                  Easy navigation
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  A clean, modern interface gives you fast access to guidance
-                  resources, appointments, and support contacts.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        <div
-          className={cn(
-            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
-            "bg-gradient-to-r from-transparent via-border to-transparent",
-          )}
-        />
-
-        {/* Feature Bento Grid */}
-        <section
-          id="features"
-          className="scroll-mt-24 py-12"
-        >
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Core Services
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              Everything you need, securely authenticated.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5 }}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl border",
-                "border-border bg-card p-8 shadow-sm transition-all",
-                "hover:border-primary/40 hover:shadow-md md:col-span-2",
-              )}
-            >
-              <div
-                className={cn(
-                  "absolute right-0 top-0 -mr-20 -mt-20 h-64 w-64",
-                  "rounded-full bg-primary/5 blur-3xl transition-all",
-                  "group-hover:bg-primary/10",
-                )}
-              />
-              <div className="relative z-10">
-                <div
-                  className={cn(
-                    "mb-4 inline-flex rounded-xl bg-primary/10 p-3",
-                    "text-primary",
-                  )}
-                >
-                  <Calendar className="h-6 w-6" />
-                </div>
-                <h3 className="mb-3 text-2xl font-bold">
-                  Counseling Appointments
-                </h3>
-                <p className="max-w-md leading-relaxed text-muted-foreground">
-                  Manage your mental health journey. Request, track, and
-                  follow up on guidance appointments through a streamlined
-                  dashboard.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl border",
-                "border-border bg-card p-8 shadow-sm transition-all",
-                "hover:border-secondary/40 hover:shadow-md",
-              )}
-            >
-              <div
-                className={cn(
-                  "absolute bottom-0 right-0 -mb-10 -mr-10 h-40 w-40",
-                  "rounded-full bg-secondary/10 blur-2xl transition-all",
-                  "group-hover:bg-secondary/20",
-                )}
-              />
-              <div className="relative z-10">
-                <div
-                  className={cn(
-                    "mb-4 inline-flex rounded-xl bg-secondary/15 p-3",
-                    "text-secondary-foreground",
-                  )}
-                >
-                  <FileText className="h-6 w-6" />
-                </div>
-                <h3 className="mb-3 text-xl font-bold">Admission Slips</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Submit excuse letters and fetch admission slips online.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl border",
-                "border-border bg-card p-8 shadow-sm transition-all",
-                "hover:border-primary/40 hover:shadow-md",
-              )}
-            >
-              <div className="relative z-10">
-                <div
-                  className={cn(
-                    "mb-4 inline-flex rounded-xl bg-muted p-3",
-                    "text-foreground",
-                  )}
-                >
-                  <Lock className="h-6 w-6" />
-                </div>
-                <h3 className="mb-3 text-xl font-bold">SSO Integration</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  Zero password fatigue. Login directly with your university
-                  email.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl border",
-                "border-border bg-card p-8 shadow-sm transition-all",
-                "hover:border-primary/40 hover:shadow-md md:col-span-2",
-              )}
-            >
-              <div
-                className={cn(
-                  "absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64",
-                  "rounded-full bg-primary/5 blur-3xl transition-all",
-                  "group-hover:bg-primary/10",
-                )}
-              />
-              <div className="relative z-10">
-                <div
-                  className={cn(
-                    "mb-4 inline-flex rounded-xl bg-primary/10 p-3",
-                    "text-primary",
-                  )}
-                >
-                  <MessageSquare className="h-6 w-6" />
-                </div>
-                <h3 className="mb-3 text-2xl font-bold">
-                  Direct Communication
-                </h3>
-                <p className="max-w-md leading-relaxed text-muted-foreground">
-                  Reach out to the guidance office anytime. Safe, private,
-                  and recorded for your peace of mind.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        <div
-          className={cn(
-            "animate-divider-in mx-auto h-px w-3/4 max-w-3xl",
-            "bg-gradient-to-r from-transparent via-border to-transparent",
-          )}
-        />
-
-        {/* Contact & FAQ Split */}
-        <section
-          id="support"
-          className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-2"
-        >
-          <div
-            id="faq"
-            className="scroll-mt-24 space-y-6"
-          >
-            <div>
-              <h2 className="text-2xl font-bold">
-                Frequently Asked Questions
-              </h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Need help? We've got you covered.
-              </p>
-            </div>
-            <div className="space-y-4">
-              {faqs.map((faq, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className={cn(
-                    "group rounded-xl border border-border bg-card p-5",
-                    "transition-all hover:border-primary/30",
-                  )}
-                >
-                  <div className="flex gap-4">
-                    <HelpCircle
-                      className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-                    />
-                    <div>
-                      <h4 className="text-sm font-semibold">{faq.q}</h4>
-                      <p className="mt-1.5 text-sm text-muted-foreground">
-                        {faq.a}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <motion.div
-            id="contact"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className={cn(
-              "flex scroll-mt-24 flex-col justify-between",
-              "rounded-2xl border border-border bg-primary/5 p-8",
-            )}
-          >
-            <div>
-              <div
-                className={cn(
-                  "mb-6 inline-flex rounded-xl bg-primary/10 p-3",
-                  "text-primary",
-                )}
-              >
-                <LifeBuoy className="h-6 w-6" />
-              </div>
-              <h2 className="mb-2 text-2xl font-bold">Still need help?</h2>
-              <p className="text-muted-foreground">
-                Our support team is available during office hours.
-              </p>
-
-              <div className="mt-8 space-y-5">
-                <div
-                  className={cn(
-                    "flex items-center gap-4 border-b border-border pb-4",
-                  )}
-                >
-                  <Mail className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Tech Support</p>
-                    <p className="text-sm text-muted-foreground">
-                      supportguisis@gmail.com
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Guidance Office</p>
-                    <p className="text-sm text-muted-foreground">
-                      PUP Taguig Campus
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button
-              className="mt-8 w-full gap-2"
+              size="lg"
+              onClick={handleLogin}
+              className="h-11 gap-2 px-6 font-medium"
+            >
+              Log In <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
               variant="outline"
               onClick={() => {
-                window.location.href = "mailto:supportguisis@gmail.com";
+                document.getElementById("services")?.scrollIntoView({
+                  behavior: "smooth",
+                });
               }}
+              className="h-11 font-medium"
             >
-              Email Support <ChevronRight className="h-4 w-4" />
+              Explore Services
             </Button>
-          </motion.div>
+          </div>
+        </section>
+
+        {/* Two Direct Action Portals (Editorial Dual Tiles) */}
+        <section
+          id="services"
+          className="scroll-mt-24 space-y-6"
+        >
+          <div className="border-b border-border pb-4">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              Primary Guidance Services
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Select an option to proceed with your transaction.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Tile 1: Counseling Consultation */}
+            <div className="flex flex-col justify-between space-y-6 rounded-lg border border-border bg-card p-6 transition-colors hover:border-foreground/30 sm:p-8">
+              <div className="space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground">
+                  Counseling Consultations
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Confidential appointments for academic stress, emotional
+                  concerns, or personal difficulties. Submissions are reviewed
+                  with priority triage for urgent situations.
+                </p>
+              </div>
+
+              <div className="space-y-3 border-t border-border pt-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Shield className="h-4 w-4 shrink-0 text-primary" />
+                  <span>Conducted in private consultation rooms</span>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleLogin}
+                  className="w-full justify-between text-sm"
+                >
+                  Schedule an Appointment <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Tile 2: Admission & Excuse Slips */}
+            <div className="flex flex-col justify-between space-y-6 rounded-lg border border-border bg-card p-6 transition-colors hover:border-foreground/30 sm:p-8">
+              <div className="space-y-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-foreground">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground">
+                  Admission & Excuse Slips
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Asynchronous submission of absence documentation, medical
+                  certificates, and official excuse letters without manual
+                  office queueing.
+                </p>
+              </div>
+
+              <div className="space-y-3 border-t border-border pt-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="h-4 w-4 shrink-0 text-primary" />
+                  <span>Digital tickets issued upon staff review</span>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleLogin}
+                  className="w-full justify-between text-sm"
+                >
+                  File Excuse Documentation <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Operating Hours & Institutional Contact Directory */}
+        <section
+          id="contact"
+          className="scroll-mt-24 space-y-6 rounded-lg border border-border bg-card p-6 sm:p-8"
+        >
+          <div className="border-b border-border pb-4">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              Office Directory and Emergency Support
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              On-campus office location and 24/7 crisis hotlines.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 text-sm md:grid-cols-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <Clock className="h-4 w-4 shrink-0 text-primary" />
+                <span>Operating Hours</span>
+              </div>
+              <p className="pl-6 text-xs text-muted-foreground">
+                Monday to Friday
+              </p>
+              <p className="pl-6 text-xs text-muted-foreground">
+                8:00 AM – 5:00 PM (Philippine Standard Time)
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                <span>Office Location</span>
+              </div>
+              <p className="pl-6 text-xs text-muted-foreground">
+                Guidance and Counseling Office
+              </p>
+              <p className="pl-6 text-xs text-muted-foreground">
+                PUP Taguig Campus, Bicutan, Taguig City
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                <Mail className="h-4 w-4 shrink-0 text-primary" />
+                <span>Technical & Office Inquiries</span>
+              </div>
+              <p className="pl-6 text-xs text-muted-foreground">
+                supportguisis@gmail.com
+              </p>
+            </div>
+          </div>
+
+          {/* Emergency Crisis Strip */}
+          <div className="flex flex-col justify-between gap-3 rounded border border-border/80 bg-muted/40 p-4 text-xs sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 font-medium text-foreground">
+              <PhoneCall className="h-4 w-4 shrink-0 text-primary" />
+              <span>
+                National Center for Mental Health (NCMH) 24/7 Crisis Hotline:
+              </span>
+            </div>
+            <span className="font-mono text-sm font-bold text-foreground">
+              1553 (Luzon Toll-Free) / 0917-899-8727
+            </span>
+          </div>
+        </section>
+
+        {/* FAQs */}
+        <section
+          id="faq"
+          className="scroll-mt-24 space-y-6"
+        >
+          <div className="border-b border-border pb-4">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              Frequently Asked Questions
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Common procedures regarding counseling privacy and service
+              processing.
+            </p>
+          </div>
+
+          <div className="max-w-3xl space-y-4">
+            {faqs.map((faq, i) => (
+              <div
+                key={i}
+                className="space-y-1.5 border-b border-border/60 pb-4"
+              >
+                <h3 className="flex items-start gap-2 text-sm font-semibold text-foreground">
+                  <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  {faq.q}
+                </h3>
+                <p className="pl-6 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
     </Layout>

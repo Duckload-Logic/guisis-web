@@ -256,7 +256,7 @@ export default function Header({
           )}
           onClick={handleLogin}
         >
-          Login <ArrowRight className="h-3.5 w-3.5" />
+          Log In <ArrowRight className="h-3.5 w-3.5" />
         </Button>
 
         <button
@@ -346,7 +346,7 @@ export default function Header({
                 className="mt-2 w-full gap-1.5 font-semibold shadow-sm"
                 onClick={handleLogin}
               >
-                Login <ArrowRight className="h-3.5 w-3.5" />
+                Log In <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </nav>
           )}
