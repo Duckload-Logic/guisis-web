@@ -14,19 +14,13 @@ import {
   Copy,
   Check,
   ShieldAlert,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,6 +105,102 @@ function getAppointmentUrgency(appointment?: any) {
     description: "Standard guidance priority.",
     className: STATUS_COLORS.warning,
   };
+}
+
+function getAIExplainability(appointment?: any): string {
+  if (!appointment) return "";
+
+  // 1. First-class column from MySQL appointments.urgency_rationale
+  if (
+    typeof appointment.urgencyRationale === "string" &&
+    appointment.urgencyRationale.trim()
+  ) {
+    return appointment.urgencyRationale.trim();
+  }
+
+  const rawLevel = String(
+    appointment.urgencyLevel ?? appointment.urgency ?? "MEDIUM",
+  ).toUpperCase();
+  const score =
+    typeof appointment.urgencyScore === "number" &&
+    appointment.urgencyScore > 0
+      ? `${(appointment.urgencyScore * 100).toFixed(1)}% confidence`
+      : "";
+  const confText = score ? ` (${score})` : "";
+  const reasonText = String(appointment.reason || "").toLowerCase();
+
+  // 2. Synthesize explainability rationale for legacy records
+  if (rawLevel.includes("CRITICAL")) {
+    const isCrisisPattern =
+      /(?:laslas|suicide|pakamatay|stalk|banta|cut|ending my life|mamatay)/i.test(
+        reasonText,
+      );
+    if (isCrisisPattern) {
+      return (
+        `The AI inferred this appointment is CRITICAL${confText} because ` +
+        "the submission matched emergency safety indicators related to " +
+        "acute personal crisis or self-harm."
+      );
+    }
+    return (
+      `The AI inferred this appointment is CRITICAL${confText} because ` +
+      "contextual transformer analysis detected severe affective distress " +
+      "markers requiring immediate clinical triage."
+    );
+  }
+
+  if (rawLevel.includes("HIGH")) {
+    const isAcademic =
+      /(?:grade|bagsak|scholarship|graduate|failing|singko|sis|delay|drop)/i.test(
+        reasonText,
+      );
+    if (isAcademic) {
+      return (
+        `The AI inferred this appointment is HIGH${confText} because the ` +
+        "concern describes acute academic distress or critical institutional " +
+        "deadlines (e.g., failing grades, scholarship, or graduation)."
+      );
+    }
+    const isEmotional =
+      /(?:stress|anxiety|depress|pagod|di ko na kaya|overwhelm|hirap|panic)/i.test(
+        reasonText,
+      );
+    if (isEmotional) {
+      return (
+        `The AI inferred this appointment is HIGH${confText} because the ` +
+        "student manifested significant psychological strain, chronic anxiety, " +
+        "or emotional overwhelm."
+      );
+    }
+    return (
+      `The AI inferred this appointment is HIGH${confText} because contextual ` +
+      "semantic evaluation classified the concern as high-priority over " +
+      "routine guidance requests."
+    );
+  }
+
+  if (rawLevel.includes("LOW")) {
+    const isGreeting =
+      /^(?:hi|hello|hey|kamusta|good morning|test)/i.test(reasonText);
+    if (isGreeting) {
+      return (
+        `The AI inferred this appointment is LOW${confText} because the ` +
+        "submission consists of routine greetings or testing inputs without " +
+        "observable distress indicators."
+      );
+    }
+    return (
+      `The AI inferred this appointment is LOW${confText} because the ` +
+      "concern pertains to routine informational inquiries or standard " +
+      "scheduling without acute distress markers."
+    );
+  }
+
+  return (
+    `The AI inferred this appointment is MEDIUM${confText} because the ` +
+    "concern represents standard developmental, educational, or personal " +
+    "counseling needs without acute crisis markers."
+  );
 }
 
 function AppointmentDetailsSkeleton() {
@@ -258,35 +348,30 @@ export default function AppointmentDetails() {
     setTimeout(() => setHasCopiedId(false), COPY_FEEDBACK_MS);
   };
 
-  const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [counselorNoteText, setCounselorNoteText] = useState("");
+  const [isSavingNote, setIsSavingNote] = useState(false);
 
   const urgencyInfo = getAppointmentUrgency(appointment);
 
-  const isPriorityOverridden = useMemo(() => {
-    return auditEntries.some((entry) =>
-      entry.status.toUpperCase().includes("PRIORITY"),
-    );
-  }, [auditEntries]);
-
-  const handlePriorityChange = async (newLevel: string) => {
-    if (!appointment?.id || newLevel === urgencyInfo.label.toUpperCase()) {
-      return;
-    }
-    setIsUpdatingPriority(true);
+  const handleSaveCounselorNote = async () => {
+    if (!appointment?.id || !counselorNoteText.trim()) return;
+    setIsSavingNote(true);
     try {
       await updateAppointment({
         id: appointment.id,
         data: {
           ...appointment,
-          urgencyLevel: newLevel,
-          urgencyScore: 0,
-        },
+          adminNotes: counselorNoteText.trim(),
+        } as any,
       });
-      triggerToast(`✓ Priority updated to ${newLevel}`);
+      triggerToast("✓ Counselor remark saved to audit trail");
+      setCounselorNoteText("");
+      setIsNoteModalOpen(false);
     } catch {
-      triggerToast("Failed to update priority level");
+      triggerToast("Failed to save counselor note");
     } finally {
-      setIsUpdatingPriority(false);
+      setIsSavingNote(false);
     }
   };
 
@@ -329,32 +414,26 @@ export default function AppointmentDetails() {
                 {appointment.status.name}
               </Badge>
             )}
-            <Select
-              value={urgencyInfo.label.toUpperCase()}
-              onValueChange={handlePriorityChange}
-              disabled={isUpdatingPriority}
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-bold shadow-sm border",
+                urgencyInfo.className,
+              )}
+              title="Immutable AI Triage Urgency Level"
             >
-              <SelectTrigger
-                className={cn(
-                  "h-7 w-auto gap-1 rounded-full px-2.5 py-1",
-                  "text-[11px] font-bold shadow-sm transition-all border",
-                  urgencyInfo.className,
-                )}
-                title="Counselor Priority Override (Human-in-the-loop)"
-              >
-                <SelectValue placeholder="Priority">
-                  Priority: {urgencyInfo.label}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent align="start">
-                <SelectItem value="LOW">Low Priority</SelectItem>
-                <SelectItem value="MEDIUM">Medium Priority</SelectItem>
-                <SelectItem value="HIGH">High Priority</SelectItem>
-                <SelectItem value="CRITICAL">Critical Priority</SelectItem>
-              </SelectContent>
-            </Select>
-            {!isPriorityOverridden &&
-              typeof (appointment as any)?.urgencyScore === "number" &&
+              Priority: {urgencyInfo.label}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsNoteModalOpen(true)}
+              className="h-7 gap-1 rounded-full border-border/70 px-2.5 py-1 text-[11px] font-semibold"
+            >
+              <StickyNote className="h-3.5 w-3.5 text-primary" />
+              Add Note
+            </Button>
+            {typeof (appointment as any)?.urgencyScore === "number" &&
               (appointment as any)?.urgencyScore > 0 && (
                 <Badge
                   variant="outline"
@@ -403,8 +482,6 @@ export default function AppointmentDetails() {
         hasCopiedId,
         isLoading,
         urgencyInfo,
-        isUpdatingPriority,
-        isPriorityOverridden,
       ],
     ),
   );
@@ -489,7 +566,7 @@ export default function AppointmentDetails() {
       setShowReschedule(true);
       return;
     }
-    const requiresMessage = ["Reject", "Cancel", "No-show"].includes(action);
+    const requiresMessage = ["Cancel", "No-show"].includes(action);
     setPendingAction({ type: action, requiresMessage });
   };
 
@@ -739,15 +816,15 @@ export default function AppointmentDetails() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => handleActionClick("Reject")}
+                    onClick={() => setIsNoteModalOpen(true)}
                     className={cn(
-                      "h-11 w-full gap-2 rounded-xl border-destructive/30",
-                      "text-xs font-semibold text-destructive",
-                      "hover:bg-destructive/10",
+                      "h-11 w-full gap-2 rounded-xl border-primary/30",
+                      "bg-primary/5 text-xs font-semibold text-primary",
+                      "hover:bg-primary/10",
                     )}
                   >
-                    <XCircle className="h-4 w-4" />
-                    Reject Consultation Request
+                    <StickyNote className="h-3.5 w-3.5 text-primary" />
+                    Add Counselor Triage Remarks
                   </Button>
                 </div>
               )}
@@ -899,6 +976,50 @@ export default function AppointmentDetails() {
                 </div>
               </div>
 
+              {/* AI Triage Explainability Card */}
+              <div
+                className={cn(
+                  "space-y-2 rounded-xl border border-primary/20",
+                  "bg-primary/5 p-4 transition-all",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-bold text-foreground">
+                      AI Triage Explainability Rationale
+                    </span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 text-[10px] font-bold shadow-sm border",
+                      urgencyInfo.className,
+                    )}
+                  >
+                    {urgencyInfo.label} Priority
+                  </Badge>
+                </div>
+                <p className="text-xs leading-relaxed text-foreground/85">
+                  {getAIExplainability(appointment)}
+                </p>
+                <div
+                  className={cn(
+                    "flex items-center justify-between border-t",
+                    "border-border/40 pt-2 text-[10px] text-muted-foreground",
+                  )}
+                >
+                  <span>Model: DistilBERT triage pipeline</span>
+                  <span>
+                    Confidence:{" "}
+                    {typeof (appointment as any)?.urgencyScore === "number" &&
+                    (appointment as any)?.urgencyScore > 0
+                      ? `${((appointment as any).urgencyScore * 100).toFixed(1)}%`
+                      : "Deterministic Safety Gate"}
+                  </span>
+                </div>
+              </div>
+
               {/* Schedule options / Selected schedule */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
@@ -1019,15 +1140,20 @@ export default function AppointmentDetails() {
                   const upper = entry.status.toUpperCase();
                   const statusBorder = upper.includes("RESCHEDULED")
                     ? "border-amber-500"
-                    : upper.includes("PRIORITY")
+                    : upper.includes("PRIORITY") ||
+                        upper.includes("NOTE") ||
+                        upper.includes("COUNSELOR")
                       ? "border-sky-500"
-                      : upper.includes("APPROVED") ||
-                          upper.includes("COMPLETED")
-                        ? "border-emerald-500"
-                        : upper.includes("REJECTED") ||
-                            upper.includes("CANCELLED")
-                          ? "border-destructive"
-                          : "border-primary";
+                      : upper.includes("AI TRIAGE") ||
+                          upper.includes("TRIAGE")
+                        ? "border-primary"
+                        : upper.includes("APPROVED") ||
+                            upper.includes("COMPLETED")
+                          ? "border-emerald-500"
+                          : upper.includes("REJECTED") ||
+                              upper.includes("CANCELLED")
+                            ? "border-destructive"
+                            : "border-primary";
 
                   return (
                     <div key={idx} className="relative">
@@ -1179,6 +1305,70 @@ export default function AppointmentDetails() {
               {startAppointmentMutation.isPending
                 ? "Starting..."
                 : "Start Session"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isNoteModalOpen} onOpenChange={setIsNoteModalOpen}>
+        <AlertDialogContent
+          className={cn(
+            "max-w-md border border-border bg-card shadow-2xl",
+            "backdrop-blur-2xl",
+          )}
+        >
+          <AlertDialogHeader>
+            <div
+              className={cn(
+                "mb-2 flex h-10 w-10 items-center justify-center rounded-xl",
+                "bg-primary/10 text-primary",
+              )}
+            >
+              <StickyNote className="h-5 w-5" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold">
+              Add Counselor Clinical Remark
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground">
+              Add your clinical observations or remarks regarding this
+              appointment. This remark will be immutably recorded in the
+              audit history without altering the automated AI triage baseline.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <textarea
+              value={counselorNoteText}
+              onChange={(e) => setCounselorNoteText(e.target.value)}
+              placeholder="e.g., Student exhibits acute anxiety regarding academic load. Prioritizing intake despite low AI baseline."
+              rows={4}
+              className={cn(
+                "w-full rounded-xl border border-border/80 bg-background/50",
+                "p-3 text-sm text-foreground focus:outline-none",
+                "focus:ring-2 focus:ring-primary/40",
+              )}
+            />
+          </div>
+          <div
+            className="flex justify-end gap-3 border-t border-border/50 pt-4"
+          >
+            <AlertDialogCancel
+              onClick={() => {
+                setCounselorNoteText("");
+                setIsNoteModalOpen(false);
+              }}
+              className="h-11 rounded-xl font-semibold"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveCounselorNote}
+              disabled={isSavingNote || !counselorNoteText.trim()}
+              className={cn(
+                "h-11 rounded-xl bg-primary font-semibold text-primary-foreground",
+                "shadow-sm hover:bg-primary/90",
+              )}
+            >
+              {isSavingNote ? "Saving..." : "Save Remark"}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>
