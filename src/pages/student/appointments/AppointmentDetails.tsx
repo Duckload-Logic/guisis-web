@@ -42,57 +42,6 @@ const APPOINTMENT_PILL_CLASS =
   "inline-flex h-7 items-center rounded-full border px-3 text-[11px] " +
   "font-semibold leading-none";
 
-function getAppointmentUrgency(appointment?: any) {
-  const raw = appointment?.urgencyLevel ?? appointment?.urgency;
-
-  if (!raw) {
-    return {
-      label: "Medium",
-      description: "Default priority when no urgency level is provided.",
-      className: STATUS_COLORS.warning,
-    };
-  }
-
-  const label =
-    typeof raw === "string" ? raw : raw.name || raw.label || "Medium";
-  const normalized = String(label).toLowerCase();
-
-  if (normalized.includes("critical")) {
-    return {
-      label: "Critical",
-      description:
-        "This appointment has a critical priority and " +
-        "requires immediate attention.",
-      className:
-        "border-destructive/30 bg-destructive/15 text-destructive " +
-        "font-extrabold animate-pulse",
-    };
-  }
-
-  if (normalized.includes("high") || normalized.includes("urgent")) {
-    return {
-      label: "High",
-      description:
-        "This appointment should be prioritized by the Guidance Office.",
-      className: "border-destructive/20 bg-destructive/10 text-destructive",
-    };
-  }
-
-  if (normalized.includes("low")) {
-    return {
-      label: "Low",
-      description: "This appointment can be handled through the regular queue.",
-      className: STATUS_COLORS.success,
-    };
-  }
-
-  return {
-    label: "Medium",
-    description: "This appointment has a standard guidance priority.",
-    className: STATUS_COLORS.warning,
-  };
-}
-
 export default function AppointmentDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -105,7 +54,19 @@ export default function AppointmentDetails() {
     useCancelAppointment();
 
   const auditEntries = useMemo(() => {
-    return parseAuditTrail(appointment?.adminNotes);
+    const raw = parseAuditTrail(appointment?.adminNotes);
+    // Clinical observations and AI triage notes are privileged counselor-only
+    // data. Only display operational administrative logs to students.
+    return raw.filter((entry) => {
+      const upper = entry.status.toUpperCase();
+      return (
+        !upper.includes("COUNSELOR") &&
+        !upper.includes("NOTE") &&
+        !upper.includes("PRIORITY") &&
+        !upper.includes("TRIAGE") &&
+        !upper.includes("AI")
+      );
+    });
   }, [appointment?.adminNotes]);
 
   const getStatusColor = (statusName?: string) => {
@@ -261,7 +222,6 @@ export default function AppointmentDetails() {
   const isCancellable =
     appointment?.status?.name === "Pending" ||
     appointment?.status?.name === "Scheduled";
-  const urgencyInfo = getAppointmentUrgency(appointment);
 
   const whenDate = appointment?.whenDate
     ? new Date(appointment.whenDate)
@@ -320,16 +280,6 @@ export default function AppointmentDetails() {
                   )}
                 >
                   {appointment?.status?.name || "Unknown"}
-                </Badge>
-
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "px-2 py-0.5 text-[10px] font-semibold",
-                    urgencyInfo.className,
-                  )}
-                >
-                  {urgencyInfo.label} Urgency
                 </Badge>
               </div>
 
