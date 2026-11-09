@@ -22,6 +22,14 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  GetCounselorProfileMe,
+  PutCounselorProfileMe,
+} from "@/features/appointments/services";
+import { QUERY_KEYS } from "@/config/queryKeys";
 import {
   Camera,
   Mail,
@@ -98,6 +106,63 @@ export default function Profile() {
     }
     return authUser;
   }, [userId, authUser, targetUser]);
+
+  const isOwnProfile = !userId || userId === authUser?.id;
+  const isCounselor =
+    isOwnProfile &&
+    Boolean(
+      authUser?.roles?.some(
+        (r) =>
+          r.name.toLowerCase().includes("admin") ||
+          r.name.toLowerCase().includes("counselor"),
+      ),
+    );
+
+  const {
+    data: counselorProfile,
+    refetch: refetchCounselorProfile,
+  } = useQuery({
+    queryKey: QUERY_KEYS.appointments.counselorProfileMe,
+    queryFn: () => GetCounselorProfileMe(),
+    enabled: isCounselor,
+  });
+
+  const [counselorTitle, setCounselorTitle] = useState("");
+  const [counselorGender, setCounselorGender] = useState("FEMALE");
+  const [counselorPosition, setCounselorPosition] = useState("");
+  const [counselorIsActive, setCounselorIsActive] = useState(true);
+  const [isSavingCounselor, setIsSavingCounselor] = useState(false);
+
+  useEffect(() => {
+    if (counselorProfile) {
+      setCounselorTitle(counselorProfile.title || "");
+      setCounselorGender(counselorProfile.gender || "FEMALE");
+      setCounselorPosition(counselorProfile.position || "");
+      setCounselorIsActive(counselorProfile.isActive !== false);
+    }
+  }, [counselorProfile]);
+
+  const handleSaveCounselorProfile = async () => {
+    if (!counselorTitle.trim() || !counselorPosition.trim()) {
+      triggerToast("Title and Position are required.");
+      return;
+    }
+    setIsSavingCounselor(true);
+    try {
+      await PutCounselorProfileMe({
+        title: counselorTitle.trim(),
+        gender: counselorGender,
+        position: counselorPosition.trim(),
+        isActive: counselorIsActive,
+      });
+      await refetchCounselorProfile();
+      triggerToast("Counselor profile updated successfully.");
+    } catch {
+      triggerToast("Failed to update counselor profile.");
+    } finally {
+      setIsSavingCounselor(false);
+    }
+  };
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -781,6 +846,134 @@ export default function Profile() {
               </div>
             </CardContent>
           </Card>
+
+          {isCounselor && (
+            <Card
+              className={cn(
+                "overflow-hidden rounded-2xl border-glass-border bg-glass-bg",
+                "shadow-md backdrop-blur-xl transition-colors md:col-span-2",
+              )}
+            >
+              <CardHeader
+                className={cn(
+                  "border-b border-glass-border bg-glass-bg p-5 sm:p-8",
+                )}
+              >
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                      <User className="text-primary" size={22} />
+                      Guidance Counselor Clinical Details
+                    </CardTitle>
+                    <CardDescription>
+                      Configure your title, gender designation, and position
+                      displayed to students booking appointments.
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant={counselorIsActive ? "secondary" : "outline"}
+                    className="w-fit text-xs font-semibold uppercase"
+                  >
+                    {counselorIsActive
+                      ? "Accepting Appointments"
+                      : "Unavailable"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 p-6 sm:p-8">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="counselor-title"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    >
+                      Professional Title
+                    </Label>
+                    <Input
+                      id="counselor-title"
+                      placeholder="e.g., Ms., Mr., Dr., Prof."
+                      value={counselorTitle}
+                      onChange={(e) => setCounselorTitle(e.target.value)}
+                      className="min-h-11 rounded-xl"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="counselor-gender"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    >
+                      Gender Designation
+                    </Label>
+                    <select
+                      id="counselor-gender"
+                      value={counselorGender}
+                      onChange={(e) => setCounselorGender(e.target.value)}
+                      className={cn(
+                        "flex min-h-11 w-full rounded-xl border border-input",
+                        "bg-background px-3 py-2 text-sm shadow-sm",
+                        "transition-colors focus-visible:outline-none",
+                        "focus-visible:ring-2 focus-visible:ring-primary",
+                      )}
+                    >
+                      <option value="FEMALE">FEMALE</option>
+                      <option value="MALE">MALE</option>
+                      <option value="OTHER">OTHER</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label
+                      htmlFor="counselor-position"
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                    >
+                      Institutional Position / Subtitle
+                    </Label>
+                    <Input
+                      id="counselor-position"
+                      placeholder="e.g., Guidance Counselor III"
+                      value={counselorPosition}
+                      onChange={(e) => setCounselorPosition(e.target.value)}
+                      className="min-h-11 rounded-xl"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4 sm:col-span-2">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-foreground">
+                        Accept Student Consultations
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Toggle whether students can select you for appointments.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={counselorIsActive}
+                      onCheckedChange={setCounselorIsActive}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    type="button"
+                    onClick={handleSaveCounselorProfile}
+                    disabled={isSavingCounselor}
+                    className="min-h-11 rounded-xl px-6 text-xs font-semibold"
+                  >
+                    {isSavingCounselor ? (
+                      <>
+                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Counselor Profile"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card
             className={cn(

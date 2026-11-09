@@ -28,6 +28,19 @@ export interface AvailableTimeSlotView {
   isAvailable: boolean;
 }
 
+export interface CounselorProfileView {
+  userId: string;
+  title: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  suffixName?: string;
+  gender: string;
+  position: string;
+  profilePicture?: string;
+  isActive: boolean;
+}
+
 export interface StatusCount {
   id: number;
   name: string;
@@ -66,6 +79,8 @@ export interface Appointment {
   urgency?: string | { id?: number; name?: string; colorKey?: string };
   urgencyScore?: number;
   urgencyRationale?: string;
+  preferredCounselorId?: string;
+  counselorPreference?: string;
   hasSignificantNote?: boolean;
   studentCorUrl?: string;
   startedAt?: any;
@@ -89,6 +104,8 @@ export interface CreateAppointmentRequest {
   whenDate: string;
   timeSlot: { id: number };
   appointmentCategory: { id: number };
+  preferredCounselorId?: string;
+  counselorPreference?: string;
   preferredDate1?: string;
   preferredTimeSlot1?: { id: number };
   preferredDate2?: string;

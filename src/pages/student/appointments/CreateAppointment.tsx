@@ -9,14 +9,16 @@ import {
   Building2,
   Info,
   ShieldCheck,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
   RotateCcw,
+  User,
+  Users,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SelectField } from "@/components/ui/select-field";
 import { FormField } from "@/components/ui/form-field";
 import Calendar, {
@@ -26,6 +28,7 @@ import SlotSelector from "@/features/appointments/components/SlotSelector";
 import {
   useAvailableSlots,
   useCategories,
+  useCounselors,
 } from "@/features/appointments/hooks";
 import {
   useSubmitAppointment,
@@ -43,10 +46,13 @@ import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import { CRISIS_CONTACTS, STUDENT_ROUTES } from "@/config/constants";
+import {
+  CounselorPreferenceModal,
+  formatCounselorFullName,
+} from "./components/CounselorPreferenceModal";
 
 const MAX_REASON_LENGTH = 500;
 const MAX_BOOKING_DAYS_AHEAD = 60;
-const MAX_BACKUP_OPTIONS = 3;
 const APPOINTMENT_DRAFT_PREFIX = "guisis_draft_appointment_";
 
 function isNonWorkingAppointmentDate(date: Date): boolean {
@@ -69,6 +75,8 @@ interface AppointmentDraftState {
   selectedTime?: TimeSlot;
   categoryId: number;
   reason: string;
+  preferredCounselorId?: string;
+  counselorPreference?: string;
 }
 
 const EMPTY_APPOINTMENT_DRAFT: AppointmentDraftState = {
@@ -76,6 +84,8 @@ const EMPTY_APPOINTMENT_DRAFT: AppointmentDraftState = {
   selectedTime: undefined,
   categoryId: 0,
   reason: "",
+  preferredCounselorId: undefined,
+  counselorPreference: "NO PREFERENCE",
 };
 
 export default function CreateAppointment() {
@@ -104,19 +114,29 @@ export default function CreateAppointment() {
         ? new Date(`${savedDraft.selectedDateIso}T00:00:00`)
         : new Date(),
   );
-  const [backupMonth, setBackupMonth] = useState<Date>(() => new Date());
+
   const [categoryId, setCategoryId] = useState<number>(
     () => savedDraft.categoryId || 0,
   );
   const [reason, setReason] = useState<string>(() => savedDraft.reason || "");
 
-  const [showBackupSchedule, setShowBackupSchedule] = useState(false);
-  const [activeBackupTab, setActiveBackupTab] = useState(0);
+  const [activeScheduleOption, setActiveScheduleOption] = useState<number>(0);
+  const [backupMonth0, setBackupMonth0] = useState<Date>(() => new Date());
+  const [backupMonth1, setBackupMonth1] = useState<Date>(() => new Date());
   const [backupSchedules, setBackupSchedules] = useState<BackupSchedule[]>([
     { date: undefined, timeSlot: undefined },
     { date: undefined, timeSlot: undefined },
-    { date: undefined, timeSlot: undefined },
   ]);
+
+  const { data: counselors = [], isLoading: isCounselorsLoading } =
+    useCounselors();
+  const [selectedCounselorId, setSelectedCounselorId] = useState<
+    string | undefined
+  >(() => savedDraft.preferredCounselorId);
+  const [selectedPreference, setSelectedPreference] = useState<string>(
+    () => savedDraft.counselorPreference || "NO PREFERENCE",
+  );
+  const [isCounselorModalOpen, setIsCounselorModalOpen] = useState(false);
 
   useEffect(() => {
     setSavedDraft({
@@ -124,19 +144,27 @@ export default function CreateAppointment() {
       selectedTime,
       categoryId,
       reason,
+      preferredCounselorId: selectedCounselorId,
+      counselorPreference: selectedPreference,
     });
-  }, [selectedDate, selectedTime, categoryId, reason, setSavedDraft]);
+  }, [
+    selectedDate,
+    selectedTime,
+    categoryId,
+    reason,
+    selectedCounselorId,
+    selectedPreference,
+    setSavedDraft,
+  ]);
 
   const { data: categories = [], isLoading: isCategoriesLoading } =
     useCategories();
   const { data: slots = [], isLoading: isSlotsLoading } =
     useAvailableSlots(selectedDate);
-
-  const activeBackup = backupSchedules[activeBackupTab];
-  const {
-    data: activeBackupSlots = [],
-    isLoading: isActiveBackupSlotsLoading,
-  } = useAvailableSlots(activeBackup?.date);
+  const { data: backupSlots0 = [], isLoading: isBackupSlotsLoading0 } =
+    useAvailableSlots(backupSchedules[0]?.date);
+  const { data: backupSlots1 = [], isLoading: isBackupSlotsLoading1 } =
+    useAvailableSlots(backupSchedules[1]?.date);
 
   const { mutate: submitAppointment, isPending: isSubmitting } =
     useSubmitAppointment();
@@ -183,6 +211,9 @@ export default function CreateAppointment() {
   }, []);
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
+  const selectedCounselor = counselors.find(
+    (c) => c.userId === selectedCounselorId,
+  );
 
   const hasPrimarySchedule = !!selectedDate && !!selectedTime?.id;
   const hasCategory = categoryId > 0;
@@ -190,7 +221,11 @@ export default function CreateAppointment() {
   const isFormValid = hasPrimarySchedule && hasCategory && hasReason;
 
   const hasDraftProgress = Boolean(
-    selectedDate || selectedTime || categoryId > 0 || reason.trim(),
+    selectedDate ||
+      selectedTime ||
+      categoryId > 0 ||
+      reason.trim() ||
+      selectedCounselorId,
   );
 
   const handleResetDraft = () => {
@@ -199,8 +234,9 @@ export default function CreateAppointment() {
     setSelectedTime(undefined);
     setCategoryId(0);
     setReason("");
+    setSelectedCounselorId(undefined);
+    setSelectedPreference("NO PREFERENCE");
     setBackupSchedules([
-      { date: undefined, timeSlot: undefined },
       { date: undefined, timeSlot: undefined },
       { date: undefined, timeSlot: undefined },
     ]);
@@ -217,7 +253,8 @@ export default function CreateAppointment() {
 
     setSelectedDate(date);
     setSelectedTime(undefined);
-    setBackupMonth(new Date(date.getFullYear(), date.getMonth(), 1));
+    setBackupMonth0(new Date(date.getFullYear(), date.getMonth(), 1));
+    setBackupMonth1(new Date(date.getFullYear(), date.getMonth(), 1));
   };
 
   const handleDisabledDateClick = (
@@ -256,19 +293,6 @@ export default function CreateAppointment() {
     setSelectedTime({ id: slot.id, time: slot.time });
   };
 
-  const handleClearBackup = (indexToClear: number) => {
-    setBackupSchedules((prev) => {
-      const next = [...prev];
-      for (let i = indexToClear; i < next.length; i++) {
-        next[i] = { date: undefined, timeSlot: undefined };
-      }
-      return next;
-    });
-    if (activeBackupTab > indexToClear) {
-      setActiveBackupTab(indexToClear);
-    }
-  };
-
   const isSubmittingRef = useRef(false);
 
   const handleSubmit = () => {
@@ -300,6 +324,8 @@ export default function CreateAppointment() {
       timeSlot: { id: selectedTime.id },
       appointmentCategory: { id: categoryId },
       reason: reason.trim(),
+      preferredCounselorId: selectedCounselorId,
+      counselorPreference: selectedPreference,
     };
 
     if (backupSchedules[0]?.date && backupSchedules[0]?.timeSlot?.id) {
@@ -309,10 +335,6 @@ export default function CreateAppointment() {
     if (backupSchedules[1]?.date && backupSchedules[1]?.timeSlot?.id) {
       payload.preferredDate2 = toISODateString(backupSchedules[1].date);
       payload.preferredTimeSlot2 = { id: backupSchedules[1].timeSlot.id };
-    }
-    if (backupSchedules[2]?.date && backupSchedules[2]?.timeSlot?.id) {
-      payload.preferredDate3 = toISODateString(backupSchedules[2].date);
-      payload.preferredTimeSlot3 = { id: backupSchedules[2].timeSlot.id };
     }
 
     submitAppointment(payload, {
@@ -394,7 +416,7 @@ export default function CreateAppointment() {
           className="animate-fade-in-up space-y-6 lg:col-span-8"
           style={{ animationDelay: "0.04s", animationFillMode: "both" }}
         >
-          {/* Card 1: Interactive Schedule Picker */}
+          {/* Card 1: Preferred Schedule Options (1 to 3) */}
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
               <div
@@ -403,7 +425,7 @@ export default function CreateAppointment() {
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
-                    1. Select Date & Available Time Slot
+                    1. Preferred Consultation Schedules (Options 1 to 3)
                   </CardTitle>
                 </div>
                 {hasDraftProgress && (
@@ -423,44 +445,290 @@ export default function CreateAppointment() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Click a date on the calendar, then choose your consultation time
+                Select your primary date and time, and optionally provide
+                alternative options
               </p>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              {/* Clinical Justification Banner */}
+              <div
+                className={cn(
+                  "flex items-start gap-2.5 rounded-xl border",
+                  "border-primary/20 bg-primary/5 p-3 text-xs",
+                  "text-foreground",
+                )}
+              >
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <p className="leading-relaxed">
+                  <strong>Schedule Options:</strong> Please provide up to three
+                  (3) preferred schedule options. This allows the Guidance Office
+                  to better address the needs of the students scheduled for
+                  counseling as well as the availability of the counselors.
+                </p>
+              </div>
+
+              {/* Option Selector Tabs */}
+              <div
+                className={cn(
+                  "flex flex-wrap items-center gap-2 border-b",
+                  "border-border/60 pb-3",
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveScheduleOption(0)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
+                    "text-xs font-semibold transition-all",
+                    activeScheduleOption === 0
+                      ? cn(
+                          "border border-primary/40 bg-primary/10",
+                          "text-primary shadow-sm",
+                        )
+                      : cn(
+                          "border border-border/70 bg-muted/30",
+                          "text-muted-foreground hover:bg-muted/60",
+                          "hover:text-foreground",
+                        ),
+                  )}
+                >
+                  <span>Option 1 (Primary - Required)</span>
+                  {hasPrimarySchedule && (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveScheduleOption(1)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
+                    "text-xs font-semibold transition-all",
+                    activeScheduleOption === 1
+                      ? cn(
+                          "border border-primary/40 bg-primary/10",
+                          "text-primary shadow-sm",
+                        )
+                      : cn(
+                          "border border-border/70 bg-muted/30",
+                          "text-muted-foreground hover:bg-muted/60",
+                          "hover:text-foreground",
+                        ),
+                  )}
+                >
+                  <span>Option 2 (Optional)</span>
+                  {backupSchedules[0]?.date &&
+                    backupSchedules[0]?.timeSlot && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveScheduleOption(2)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
+                    "text-xs font-semibold transition-all",
+                    activeScheduleOption === 2
+                      ? cn(
+                          "border border-primary/40 bg-primary/10",
+                          "text-primary shadow-sm",
+                        )
+                      : cn(
+                          "border border-border/70 bg-muted/30",
+                          "text-muted-foreground hover:bg-muted/60",
+                          "hover:text-foreground",
+                        ),
+                  )}
+                >
+                  <span>Option 3 (Optional)</span>
+                  {backupSchedules[1]?.date &&
+                    backupSchedules[1]?.timeSlot && (
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    )}
+                </button>
+              </div>
+
+              {/* Active Option Notice / Clear Button */}
+              {activeScheduleOption > 0 && (
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    Configuring Option {activeScheduleOption + 1} (Alternative)
+                  </span>
+                  {(backupSchedules[activeScheduleOption - 1]?.date ||
+                    backupSchedules[activeScheduleOption - 1]?.timeSlot) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setBackupSchedules((prev) => {
+                          const next = [...prev];
+                          next[activeScheduleOption - 1] = {
+                            date: undefined,
+                            timeSlot: undefined,
+                          };
+                          return next;
+                        });
+                        triggerToast(
+                          `Option ${activeScheduleOption + 1} cleared.`,
+                        );
+                      }}
+                      className={cn(
+                        "h-8 gap-1 rounded-lg text-xs text-muted-foreground",
+                        "hover:text-destructive",
+                      )}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Clear Option {activeScheduleOption + 1}
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Calendar & Slot Selector */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-                {/* Calendar sub-column */}
+                {/* Calendar Column */}
                 <div className="md:col-span-6">
-                  <Calendar
-                    currentMonth={currentMonth}
-                    selectedDate={selectedDate}
-                    onMonthChange={setCurrentMonth}
-                    onDateSelect={handleDateSelect}
-                    onDisabledDateClick={handleDisabledDateClick}
-                    title="Consultation Calendar"
-                    occupiedDayColor="bg-primary/80"
-                    hasHeader
-                    allowCurrentDate={false}
-                    allowPastDates={false}
-                    allowWeekends={false}
-                    maxDate={maxAllowedDate}
-                    className="w-full border-0 p-0 shadow-none"
-                  />
+                  {activeScheduleOption === 0 && (
+                    <Calendar
+                      currentMonth={currentMonth}
+                      selectedDate={selectedDate}
+                      onMonthChange={setCurrentMonth}
+                      onDateSelect={handleDateSelect}
+                      onDisabledDateClick={handleDisabledDateClick}
+                      title="Option 1 Date (Primary)"
+                      occupiedDayColor="bg-primary/80"
+                      hasHeader
+                      allowCurrentDate={false}
+                      allowPastDates={false}
+                      allowWeekends={false}
+                      maxDate={maxAllowedDate}
+                      className="w-full border-0 p-0 shadow-none"
+                    />
+                  )}
+
+                  {activeScheduleOption === 1 && (
+                    <Calendar
+                      currentMonth={backupMonth0}
+                      selectedDate={backupSchedules[0]?.date}
+                      onMonthChange={setBackupMonth0}
+                      onDateSelect={(d) => {
+                        if (isNonWorkingAppointmentDate(d)) {
+                          triggerToast(
+                            "Appointments cannot be scheduled on non-working days.",
+                          );
+                          return;
+                        }
+                        setBackupMonth0(
+                          new Date(d.getFullYear(), d.getMonth(), 1),
+                        );
+                        setBackupSchedules((prev) => {
+                          const next = [...prev];
+                          next[0] = { date: d, timeSlot: undefined };
+                          return next;
+                        });
+                      }}
+                      onDisabledDateClick={handleDisabledDateClick}
+                      title="Option 2 Date (Alternative)"
+                      occupiedDayColor="bg-primary/80"
+                      hasHeader
+                      allowCurrentDate={false}
+                      allowPastDates={false}
+                      allowWeekends={false}
+                      maxDate={maxAllowedDate}
+                      className="w-full border-0 p-0 shadow-none"
+                    />
+                  )}
+
+                  {activeScheduleOption === 2 && (
+                    <Calendar
+                      currentMonth={backupMonth1}
+                      selectedDate={backupSchedules[1]?.date}
+                      onMonthChange={setBackupMonth1}
+                      onDateSelect={(d) => {
+                        if (isNonWorkingAppointmentDate(d)) {
+                          triggerToast(
+                            "Appointments cannot be scheduled on non-working days.",
+                          );
+                          return;
+                        }
+                        setBackupMonth1(
+                          new Date(d.getFullYear(), d.getMonth(), 1),
+                        );
+                        setBackupSchedules((prev) => {
+                          const next = [...prev];
+                          next[1] = { date: d, timeSlot: undefined };
+                          return next;
+                        });
+                      }}
+                      onDisabledDateClick={handleDisabledDateClick}
+                      title="Option 3 Date (Alternative)"
+                      occupiedDayColor="bg-primary/80"
+                      hasHeader
+                      allowCurrentDate={false}
+                      allowPastDates={false}
+                      allowWeekends={false}
+                      maxDate={maxAllowedDate}
+                      className="w-full border-0 p-0 shadow-none"
+                    />
+                  )}
                 </div>
 
-                {/* Time slot sub-column */}
+                {/* Time Slot Column */}
                 <div
                   className={cn(
                     "border-t border-border/60 pt-4 md:col-span-6",
                     "md:border-l md:border-t-0 md:pl-6 md:pt-0",
                   )}
                 >
-                  <SlotSelector
-                    selectedDate={selectedDate}
-                    selectedTime={selectedTime}
-                    availableSlots={slots}
-                    loading={isSlotsLoading}
-                    onTimeSelect={handleSlotSelect}
-                  />
+                  {activeScheduleOption === 0 && (
+                    <SlotSelector
+                      selectedDate={selectedDate}
+                      selectedTime={selectedTime}
+                      availableSlots={slots}
+                      loading={isSlotsLoading}
+                      onTimeSelect={handleSlotSelect}
+                    />
+                  )}
+
+                  {activeScheduleOption === 1 && (
+                    <SlotSelector
+                      selectedDate={backupSchedules[0]?.date}
+                      selectedTime={backupSchedules[0]?.timeSlot}
+                      availableSlots={backupSlots0}
+                      loading={isBackupSlotsLoading0}
+                      onTimeSelect={(slot) => {
+                        setBackupSchedules((prev) => {
+                          const next = [...prev];
+                          next[0] = {
+                            date: next[0].date,
+                            timeSlot: { id: slot.id, time: slot.time },
+                          };
+                          return next;
+                        });
+                      }}
+                    />
+                  )}
+
+                  {activeScheduleOption === 2 && (
+                    <SlotSelector
+                      selectedDate={backupSchedules[1]?.date}
+                      selectedTime={backupSchedules[1]?.timeSlot}
+                      availableSlots={backupSlots1}
+                      loading={isBackupSlotsLoading1}
+                      onTimeSelect={(slot) => {
+                        setBackupSchedules((prev) => {
+                          const next = [...prev];
+                          next[1] = {
+                            date: next[1].date,
+                            timeSlot: { id: slot.id, time: slot.time },
+                          };
+                          return next;
+                        });
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -488,6 +756,81 @@ export default function CreateAppointment() {
                 loading={isCategoriesLoading}
                 required
               />
+
+              {/* Counselor Preference for First-Time Counseling (Requirement 1) */}
+              <div className="space-y-2 rounded-2xl border border-border/70 bg-muted/20 p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-foreground">
+                      For students seeking counseling for the first time, kindly
+                      select your preference:
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Select a preferred counselor or choose No Preference.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCounselorModalOpen(true)}
+                    className="min-h-11 shrink-0 gap-1.5 rounded-xl text-xs font-semibold"
+                  >
+                    <User className="h-3.5 w-3.5 text-primary" />
+                    <span>
+                      {selectedPreference
+                        ? "Change Preference"
+                        : "Select Preference"}
+                    </span>
+                  </Button>
+                </div>
+
+                {/* Selected Counselor Preview Card */}
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background p-3">
+                  {selectedCounselor ? (
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar className="h-10 w-10 shrink-0 border border-primary/20">
+                        <AvatarImage
+                          src={selectedCounselor.profilePicture}
+                          alt={formatCounselorFullName(selectedCounselor)}
+                        />
+                        <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
+                          {selectedCounselor.firstName.charAt(0)}
+                          {selectedCounselor.lastName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-foreground">
+                          {formatCounselorFullName(selectedCounselor)}
+                        </p>
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          {selectedCounselor.position || "Guidance Counselor"}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-foreground">
+                          No Preference
+                        </p>
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          Any available guidance counselor will be assigned
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 text-[10px] font-semibold uppercase"
+                  >
+                    {selectedPreference || "NO PREFERENCE"}
+                  </Badge>
+                </div>
+              </div>
 
               <FormField
                 label="Reason for Consultation"
@@ -583,226 +926,8 @@ export default function CreateAppointment() {
             </CardContent>
           </Card>
 
-          {/* Card 3: Optional Backup Schedules (Up to 3) */}
-          <Card className="rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader
-              className="cursor-pointer border-b border-border/60 py-3.5"
-              onClick={() => setShowBackupSchedule(!showBackupSchedule)}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div
-                  className="flex min-w-0 flex-1 flex-wrap items-center gap-2"
-                >
-                  <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <CardTitle className="text-sm font-medium text-foreground">
-                    Alternative Preferred Schedules (Optional — Up to 3)
-                  </CardTitle>
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 whitespace-nowrap text-[10px]"
-                  >
-                    {filledBackupCount > 0
-                      ? `${filledBackupCount} of ` +
-                        `${MAX_BACKUP_OPTIONS} selected`
-                      : "Optional"}
-                  </Badge>
-                </div>
-                {showBackupSchedule ? (
-                  <ChevronUp
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
-                ) : (
-                  <ChevronDown
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                  />
-                )}
-              </div>
-            </CardHeader>
-            {showBackupSchedule && (
-              <CardContent className="space-y-4 p-4 sm:p-6">
-                <p className="text-xs text-muted-foreground">
-                  If your primary date has scheduling conflicts, the counselor
-                  can consider up to 3 alternative backup options:
-                </p>
 
-                {/* Tab Selector */}
-                <div
-                  className={cn(
-                    "flex flex-wrap items-center gap-2 border-b",
-                    "border-border/60 pb-3",
-                  )}
-                >
-                  {[0, 1, 2].map((idx) => {
-                    const opt = backupSchedules[idx];
-                    const isComplete = !!opt.date && !!opt.timeSlot;
-                    const isTabActive = activeBackupTab === idx;
-                    const isPrecedingEmpty =
-                      idx > 0 &&
-                      (!backupSchedules[idx - 1].date ||
-                        !backupSchedules[idx - 1].timeSlot);
 
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        disabled={isPrecedingEmpty}
-                        onClick={() => {
-                          if (!isPrecedingEmpty) {
-                            setActiveBackupTab(idx);
-                            const tabDate =
-                              backupSchedules[idx]?.date || selectedDate;
-                            if (tabDate) {
-                              setBackupMonth(
-                                new Date(
-                                  tabDate.getFullYear(),
-                                  tabDate.getMonth(),
-                                  1,
-                                ),
-                              );
-                            }
-                          }
-                        }}
-                        title={
-                          isPrecedingEmpty
-                            ? `Complete Option ${idx} first`
-                            : undefined
-                        }
-                        className={cn(
-                          "flex min-h-11 items-center gap-1.5 rounded-xl px-3",
-                          "py-1.5 text-xs font-semibold transition-all",
-                          isPrecedingEmpty &&
-                            "cursor-not-allowed opacity-40 hover:bg-muted/30",
-                          !isPrecedingEmpty &&
-                            (isTabActive
-                              ? cn(
-                                  "border border-primary/40 bg-primary/10",
-                                  "text-primary shadow-sm",
-                                )
-                              : cn(
-                                  "border border-border/70 bg-muted/30",
-                                  "text-muted-foreground",
-                                  "hover:bg-muted/60 hover:text-foreground",
-                                )),
-                        )}
-                      >
-                        <span>Option {idx + 1}</span>
-                        {isComplete && (
-                          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Active Tab Schedule Picker */}
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-                  <div className="md:col-span-6">
-                    <Calendar
-                      currentMonth={backupMonth}
-                      selectedDate={activeBackup.date}
-                      onMonthChange={setBackupMonth}
-                      onDateSelect={(d) => {
-                        if (isNonWorkingAppointmentDate(d)) {
-                          triggerToast(
-                            "Appointments cannot be scheduled on " +
-                              "non-working days.",
-                          );
-                          return;
-                        }
-
-                        setBackupMonth(
-                          new Date(d.getFullYear(), d.getMonth(), 1),
-                        );
-                        setBackupSchedules((prev) => {
-                          const next = [...prev];
-                          next[activeBackupTab] = {
-                            date: d,
-                            timeSlot: undefined,
-                          };
-                          for (
-                            let i = activeBackupTab + 1;
-                            i < next.length;
-                            i++
-                          ) {
-                            next[i] = {
-                              date: undefined,
-                              timeSlot: undefined,
-                            };
-                          }
-                          return next;
-                        });
-                      }}
-                      onDisabledDateClick={handleDisabledDateClick}
-                      title={`Backup Option ${activeBackupTab + 1} Date`}
-                      occupiedDayColor="bg-primary/80"
-                      hasHeader
-                      allowCurrentDate={false}
-                      allowPastDates={false}
-                      allowWeekends={false}
-                      maxDate={maxAllowedDate}
-                      className="w-full border-0 p-0 shadow-none"
-                    />
-                  </div>
-                  <div
-                    className={cn(
-                      "md:col-span-6 md:border-l md:border-border/60 md:pl-6",
-                    )}
-                  >
-                    {activeBackup.date ? (
-                      <div className="space-y-3">
-                        <SlotSelector
-                          selectedDate={activeBackup.date}
-                          selectedTime={activeBackup.timeSlot}
-                          availableSlots={activeBackupSlots}
-                          loading={isActiveBackupSlotsLoading}
-                          onTimeSelect={(slot) => {
-                            setBackupSchedules((prev) => {
-                              const next = [...prev];
-                              next[activeBackupTab] = {
-                                ...next[activeBackupTab],
-                                timeSlot: { id: slot.id, time: slot.time },
-                              };
-                              return next;
-                            });
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleClearBackup(activeBackupTab)}
-                          className={cn(
-                            "h-11 text-xs text-muted-foreground",
-                            "hover:text-destructive",
-                          )}
-                        >
-                          Clear Option {activeBackupTab + 1}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div
-                        className={cn(
-                          "flex min-h-[220px] flex-col items-center",
-                          "justify-center rounded-xl border border-dashed",
-                          "border-border/70 p-4 text-center",
-                        )}
-                      >
-                        <Clock
-                          className={cn(
-                            "mb-1.5 h-6 w-6 text-muted-foreground/50",
-                          )}
-                        />
-                        <p className="text-xs font-medium text-foreground">
-                          Select a date on the calendar for Option{" "}
-                          {activeBackupTab + 1}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            )}
-          </Card>
         </div>
 
         {/* Right Column: Sticky Booking Summary (4 cols) */}
@@ -824,7 +949,7 @@ export default function CreateAppointment() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              {/* Selected Schedule Pill */}
+              {/* Option 1: Primary Schedule */}
               <div
                 className="rounded-xl border border-border/70 bg-muted/30 p-3"
               >
@@ -834,7 +959,7 @@ export default function CreateAppointment() {
                     "text-muted-foreground",
                   )}
                 >
-                  Primary Schedule
+                  Option 1 (Primary Schedule)
                 </span>
                 {formattedDate && selectedTime?.time ? (
                   <div className="mt-1 flex items-center justify-between">
@@ -853,6 +978,98 @@ export default function CreateAppointment() {
                     Select a date and time slot
                   </p>
                 )}
+              </div>
+
+              {/* Alternative Schedules Summary (Options 2 and 3) */}
+              {(backupSchedules[0]?.date || backupSchedules[1]?.date) && (
+                <div
+                  className={cn(
+                    "rounded-xl border border-border/70",
+                    "bg-muted/30 p-3",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "text-[11px] font-semibold",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    Alternative Options
+                  </span>
+                  <div className="mt-1.5 space-y-1 text-xs">
+                    {backupSchedules[0]?.date &&
+                      backupSchedules[0]?.timeSlot && (
+                        <div
+                          className={cn(
+                            "flex items-center justify-between",
+                            "text-muted-foreground",
+                          )}
+                        >
+                          <span>
+                            Opt 2:{" "}
+                            {backupSchedules[0].date.toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </span>
+                          <span
+                            className={cn(
+                              "font-mono text-[11px] text-foreground",
+                            )}
+                          >
+                            {backupSchedules[0].timeSlot.time}
+                          </span>
+                        </div>
+                      )}
+                    {backupSchedules[1]?.date &&
+                      backupSchedules[1]?.timeSlot && (
+                        <div
+                          className={cn(
+                            "flex items-center justify-between",
+                            "text-muted-foreground",
+                          )}
+                        >
+                          <span>
+                            Opt 3:{" "}
+                            {backupSchedules[1].date.toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </span>
+                          <span
+                            className={cn(
+                              "font-mono text-[11px] text-foreground",
+                            )}
+                          >
+                            {backupSchedules[1].timeSlot.time}
+                          </span>
+                        </div>
+                      )}
+                  </div>
+                </div>
+              )}
+
+              {/* Counselor Preference Summary */}
+              <div
+                className="rounded-xl border border-border/70 bg-muted/30 p-3"
+              >
+                <span
+                  className={cn(
+                    "text-[11px] font-semibold",
+                    "text-muted-foreground",
+                  )}
+                >
+                  Counselor Preference
+                </span>
+                <p className="mt-1 text-xs font-semibold text-foreground">
+                  {selectedPreference || "NO PREFERENCE"}
+                </p>
               </div>
 
               {/* Concern Category */}
@@ -876,54 +1093,6 @@ export default function CreateAppointment() {
                 </p>
               </div>
 
-              {/* Backup Schedules Summary */}
-              {filledBackupCount > 0 && (
-                <div
-                  className={cn(
-                    "rounded-xl border border-border/70",
-                    "bg-muted/30 p-3",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "text-[11px] font-semibold",
-                      "text-muted-foreground",
-                    )}
-                  >
-                    Backup Options ({filledBackupCount})
-                  </span>
-                  <div className="mt-1.5 space-y-1 text-xs">
-                    {backupSchedules.map((b, idx) => {
-                      if (!b.date || !b.timeSlot) return null;
-                      return (
-                        <div
-                          key={idx}
-                          className={cn(
-                            "flex items-center justify-between",
-                            "text-muted-foreground",
-                          )}
-                        >
-                          <span>
-                            Opt {idx + 1}:{" "}
-                            {b.date.toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
-                          <span
-                            className={cn(
-                              "font-mono text-[11px] text-foreground",
-                            )}
-                          >
-                            {b.timeSlot.time}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               {/* Readiness Checklist */}
               <div className="space-y-2 border-t border-border/60 pt-3">
                 <span className="text-xs font-semibold text-muted-foreground">
@@ -943,7 +1112,7 @@ export default function CreateAppointment() {
                           : "text-muted-foreground",
                       )}
                     >
-                      Date & Time slot selected
+                      Option 1 Date & Time slot selected
                     </span>
                   </div>
 
@@ -1002,6 +1171,20 @@ export default function CreateAppointment() {
           </Card>
         </div>
       </div>
+
+      {/* Counselor Selection Modal */}
+      <CounselorPreferenceModal
+        isOpen={isCounselorModalOpen}
+        onClose={() => setIsCounselorModalOpen(false)}
+        counselors={counselors}
+        isLoading={isCounselorsLoading}
+        selectedCounselorId={selectedCounselorId}
+        selectedPreference={selectedPreference}
+        onSelect={(id, label) => {
+          setSelectedCounselorId(id);
+          setSelectedPreference(label || "NO PREFERENCE");
+        }}
+      />
     </div>
   );
 }

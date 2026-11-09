@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ interface ActionConfirmModalProps {
   onConfirm: (message?: string) => Promise<boolean>;
   action: string;
   requiresMessage: boolean;
+  defaultMessage?: string;
 }
 
 export default function ActionConfirmModal({
@@ -24,13 +25,33 @@ export default function ActionConfirmModal({
   onConfirm,
   action,
   requiresMessage,
+  defaultMessage,
 }: ActionConfirmModalProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const isNoShow = action.toLowerCase().includes("no-show");
+
+  useEffect(() => {
+    if (isOpen) {
+      if (defaultMessage) {
+        setMessage(defaultMessage);
+      } else if (isNoShow) {
+        setMessage(
+          "Good day. We noticed that you were unable to attend your scheduled " +
+            "counseling session today. Could you please share the reason for " +
+            "missing your appointment, or let us know if you would like to reschedule?",
+        );
+      } else {
+        setMessage("");
+      }
+      setError("");
+    }
+  }, [isOpen, defaultMessage, isNoShow]);
+
   const handleConfirm = async () => {
     if (requiresMessage && !message.trim()) {
-      setError("A reason or justification is required for this action.");
+      setError("A reason or message is required for this action.");
       return;
     }
 
@@ -47,6 +68,21 @@ export default function ActionConfirmModal({
     onClose();
   };
 
+  const titleText = isNoShow
+    ? "Mark Appointment as No-Show & Inquire Reason"
+    : `Confirm ${action}`;
+
+  const descriptionText = isNoShow
+    ? "The appointment will be marked as No-show, and an empathetic inquiry " +
+      "message will be sent to the student to check on them and offer options to reschedule."
+    : `Are you sure you want to ${action.toLowerCase()} this appointment?${
+        requiresMessage ? " Please provide a reason for this decision." : ""
+      }`;
+
+  const labelText = isNoShow
+    ? "Follow-up Inquiry Message to Student"
+    : "Reason / Justification";
+
   return (
     <Dialog
       open={isOpen}
@@ -54,24 +90,27 @@ export default function ActionConfirmModal({
     >
       <DialogContent className="animate-in fade-in zoom-in-95 duration-200 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Confirm {action}</DialogTitle>
+          <DialogTitle>{titleText}</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
-            Are you sure you want to {action.toLowerCase()} this appointment?
-            {requiresMessage && " Please provide a reason for this decision."}
+            {descriptionText}
           </DialogDescription>
         </DialogHeader>
 
         {requiresMessage && (
           <div className="py-4">
             <FormField
-              placeholder="Enter reason or message..."
+              placeholder={
+                isNoShow
+                  ? "Enter follow-up message to inquire reason..."
+                  : "Enter reason or message..."
+              }
               value={message}
               onChange={(val) => {
                 setMessage(val);
                 if (val.trim()) setError("");
               }}
               isTextarea
-              label={"Reason"}
+              label={labelText}
               required={requiresMessage}
               error={error}
             />

@@ -11,6 +11,7 @@ import type {
   AvailableTimeSlotView,
   ConcernCategory,
   AppointmentStatus,
+  CounselorProfileView,
 } from "../types";
 
 /**
@@ -57,5 +58,17 @@ export const useStatuses = () => {
     (config) => appointmentService.GetAppointmentStatuses(config),
     "GetAppointmentStatuses",
     "Fetch Statuses",
+  );
+};
+
+/**
+ * Fetch active counselors for appointment options
+ */
+export const useCounselors = () => {
+  return useLookupWithMeta<CounselorProfileView[]>(
+    QUERY_KEYS.appointments.lookups.counselors,
+    (config) => appointmentService.GetAppointmentCounselors(config),
+    "GetAppointmentCounselors",
+    "Fetch Counselors",
   );
 };

@@ -1,4 +1,9 @@
-export { useAvailableSlots, useCategories, useStatuses } from "./useLookups";
+export {
+  useAvailableSlots,
+  useCategories,
+  useStatuses,
+  useCounselors,
+} from "./useLookups";
 export {
   useAppointments,
   useAppointmentsStats,

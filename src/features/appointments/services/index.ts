@@ -13,6 +13,7 @@ import type {
   AppointmentStatus,
   PaginatedAppointmentsResponse,
   StatusCount,
+  CounselorProfileView,
 } from "../types";
 import { QueryParam } from "../types/reqParams";
 import { DailyStatusCount } from "../types/calendar";
@@ -326,6 +327,58 @@ export async function PostStartAppointment(
 }
 
 /**
+ * Get active counselors for appointment options
+ */
+export async function GetAppointmentCounselors(
+  config?: AxiosConfigWithMeta,
+): Promise<CounselorProfileView[]> {
+  try {
+    const response = await apiClient.get(
+      API_ROUTES.appointments.lookups.counselors,
+      config,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+/**
+ * Get logged-in counselor's profile
+ */
+export async function GetCounselorProfileMe(
+  config?: AxiosConfigWithMeta,
+): Promise<CounselorProfileView | null> {
+  try {
+    const response = await apiClient.get(
+      API_ROUTES.appointments.counselorProfileMe,
+      config,
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+/**
+ * Update logged-in counselor's profile
+ */
+export async function PutCounselorProfileMe(
+  data: Partial<CounselorProfileView>,
+  config?: AxiosConfigWithMeta,
+): Promise<void> {
+  try {
+    await apiClient.put(
+      API_ROUTES.appointments.counselorProfileMe,
+      data,
+      config,
+    );
+  } catch (error: any) {
+    throw error;
+  }
+}
+
+/**
  * Legacy service object for backward compatibility
  * Gradually migrate to direct function imports
  */
@@ -338,6 +391,9 @@ export const appointmentService = {
   GetAvailableSlots,
   GetAppointmentCategories,
   GetAppointmentStatuses,
+  GetAppointmentCounselors,
+  GetCounselorProfileMe,
+  PutCounselorProfileMe,
   PostAppointment,
   PostStartAppointment,
   PatchAppointmentStatus,

@@ -44,9 +44,11 @@ export const QUERY_KEYS = {
     lookups: {
       statuses: ["appointments", "lookups", "statuses"] as const,
       categories: ["appointments", "lookups", "categories"] as const,
+      counselors: ["appointments", "lookups", "counselors"] as const,
       slots: (date: string) =>
         ["appointments", "lookups", "slots", date] as const,
     },
+    counselorProfileMe: ["appointments", "counselor-profile", "me"] as const,
   },
 
   /**

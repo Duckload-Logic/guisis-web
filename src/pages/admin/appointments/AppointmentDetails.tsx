@@ -939,15 +939,25 @@ export default function AppointmentDetails() {
                   <MessageSquare className="h-4 w-4 text-primary" />
                   Consultation Request Context
                 </CardTitle>
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "rounded-lg border border-primary/20 bg-primary/10",
-                    "text-xs font-bold text-primary",
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "rounded-lg border border-primary/20 bg-primary/10",
+                      "text-xs font-bold text-primary",
+                    )}
+                  >
+                    {appointment.appointmentCategory.name}
+                  </Badge>
+                  {appointment.counselorPreference && (
+                    <Badge
+                      variant="outline"
+                      className="rounded-lg border-border/80 text-xs font-semibold"
+                    >
+                      Preference: {appointment.counselorPreference}
+                    </Badge>
                   )}
-                >
-                  {appointment.appointmentCategory.name}
-                </Badge>
+                </div>
               </div>
             </CardHeader>
 
