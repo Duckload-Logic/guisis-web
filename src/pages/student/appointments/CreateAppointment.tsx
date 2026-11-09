@@ -128,8 +128,12 @@ export default function CreateAppointment() {
     { date: undefined, timeSlot: undefined },
   ]);
 
-  const { data: counselors = [], isLoading: isCounselorsLoading } =
+  const { data: rawCounselors, isLoading: isCounselorsLoading } =
     useCounselors();
+  const counselors = useMemo(
+    () => (Array.isArray(rawCounselors) ? rawCounselors : []),
+    [rawCounselors],
+  );
   const [selectedCounselorId, setSelectedCounselorId] = useState<
     string | undefined
   >(() => savedDraft.preferredCounselorId);
@@ -157,8 +161,12 @@ export default function CreateAppointment() {
     setSavedDraft,
   ]);
 
-  const { data: categories = [], isLoading: isCategoriesLoading } =
+  const { data: rawCategories, isLoading: isCategoriesLoading } =
     useCategories();
+  const categories = useMemo(
+    () => (Array.isArray(rawCategories) ? rawCategories : []),
+    [rawCategories],
+  );
   const { data: slots = [], isLoading: isSlotsLoading } =
     useAvailableSlots(selectedDate);
   const { data: backupSlots0 = [], isLoading: isBackupSlotsLoading0 } =
@@ -210,8 +218,8 @@ export default function CreateAppointment() {
     return d;
   }, []);
 
-  const selectedCategory = categories.find((c) => c.id === categoryId);
-  const selectedCounselor = counselors.find(
+  const selectedCategory = categories?.find((c) => c.id === categoryId);
+  const selectedCounselor = counselors?.find(
     (c) => c.userId === selectedCounselorId,
   );
 

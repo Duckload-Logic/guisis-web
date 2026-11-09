@@ -79,6 +79,8 @@ export function CounselorPreferenceModal({
     onClose();
   };
 
+  const safeCounselors = Array.isArray(counselors) ? counselors : [];
+
   const isNoPreferenceSelected =
     tempPreference === "NO PREFERENCE" ||
     (!tempCounselorId && !tempPreference);
@@ -114,7 +116,7 @@ export function CounselorPreferenceModal({
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
               {/* Dynamic Counselor Cards */}
-              {counselors.map((c) => {
+              {safeCounselors.map((c) => {
                 const isSelected = tempCounselorId === c.userId;
                 const initials = `${c.firstName.charAt(0)}${c.lastName.charAt(0)}`;
                 const fullName = formatCounselorFullName(c);
