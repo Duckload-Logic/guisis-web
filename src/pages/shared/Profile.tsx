@@ -24,7 +24,6 @@ import { Slider } from "@/components/ui/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   GetCounselorProfileMe,
   PutCounselorProfileMe,
@@ -130,7 +129,6 @@ export default function Profile() {
   const [counselorTitle, setCounselorTitle] = useState("");
   const [counselorGender, setCounselorGender] = useState("FEMALE");
   const [counselorPosition, setCounselorPosition] = useState("");
-  const [counselorIsActive, setCounselorIsActive] = useState(true);
   const [isSavingCounselor, setIsSavingCounselor] = useState(false);
 
   useEffect(() => {
@@ -138,7 +136,6 @@ export default function Profile() {
       setCounselorTitle(counselorProfile.title || "");
       setCounselorGender(counselorProfile.gender || "FEMALE");
       setCounselorPosition(counselorProfile.position || "");
-      setCounselorIsActive(counselorProfile.isActive !== false);
     }
   }, [counselorProfile]);
 
@@ -153,7 +150,6 @@ export default function Profile() {
         title: counselorTitle.trim(),
         gender: counselorGender,
         position: counselorPosition.trim(),
-        isActive: counselorIsActive,
       });
       await refetchCounselorProfile();
       triggerToast("Counselor profile updated successfully.");
@@ -859,7 +855,7 @@ export default function Profile() {
                   "border-b border-glass-border bg-glass-bg p-5 sm:p-8",
                 )}
               >
-                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
                   <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-xl font-bold">
                       <User className="text-primary" size={22} />
@@ -870,14 +866,6 @@ export default function Profile() {
                       displayed to students booking appointments.
                     </CardDescription>
                   </div>
-                  <Badge
-                    variant={counselorIsActive ? "secondary" : "outline"}
-                    className="w-fit text-xs font-semibold uppercase"
-                  >
-                    {counselorIsActive
-                      ? "Accepting Appointments"
-                      : "Unavailable"}
-                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-6 sm:p-8">
@@ -935,21 +923,6 @@ export default function Profile() {
                       value={counselorPosition}
                       onChange={(e) => setCounselorPosition(e.target.value)}
                       className="min-h-11 rounded-xl"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4 sm:col-span-2">
-                    <div className="space-y-0.5">
-                      <p className="text-sm font-semibold text-foreground">
-                        Accept Student Consultations
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Toggle whether students can select you for appointments.
-                      </p>
-                    </div>
-                    <Switch
-                      checked={counselorIsActive}
-                      onCheckedChange={setCounselorIsActive}
                     />
                   </div>
                 </div>
