@@ -41,6 +41,54 @@ export function formatCounselorOptionLabel(c: CounselorProfileView): string {
   return `${c.gender.toUpperCase()} - ${fullName}`;
 }
 
+export interface CounselorGenderStyle {
+  cardBg: string;
+  cardBorder: string;
+  cardHover: string;
+  badge: string;
+  avatarRing: string;
+  avatarFallback: string;
+}
+
+/**
+ * Returns subtle institutional color tokens based on counselor gender.
+ * Avoids gaudy pillars, harsh neon, or distracting saturated blocks.
+ */
+export function getCounselorGenderStyle(gender?: string): CounselorGenderStyle {
+  const g = gender?.toUpperCase() || "";
+  if (g === "FEMALE") {
+    return {
+      cardBg: "bg-rose-500/[0.03] dark:bg-rose-500/[0.05]",
+      cardBorder: "border-rose-500/20 dark:border-rose-500/30",
+      cardHover: "hover:border-rose-500/40 hover:bg-rose-500/[0.06]",
+      badge:
+        "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+      avatarRing: "ring-rose-500/25",
+      avatarFallback: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
+    };
+  }
+  if (g === "MALE") {
+    return {
+      cardBg: "bg-sky-500/[0.03] dark:bg-sky-500/[0.05]",
+      cardBorder: "border-sky-500/20 dark:border-sky-500/30",
+      cardHover: "hover:border-sky-500/40 hover:bg-sky-500/[0.06]",
+      badge:
+        "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+      avatarRing: "ring-sky-500/25",
+      avatarFallback: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+    };
+  }
+  return {
+    cardBg: "bg-violet-500/[0.03] dark:bg-violet-500/[0.05]",
+    cardBorder: "border-violet-500/20 dark:border-violet-500/30",
+    cardHover: "hover:border-violet-500/40 hover:bg-violet-500/[0.06]",
+    badge:
+      "border-violet-500/20 bg-violet-500/10 text-violet-700 dark:text-violet-300",
+    avatarRing: "ring-violet-500/25",
+    avatarFallback: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  };
+}
+
 export function CounselorPreferenceModal({
   isOpen,
   onClose,
@@ -118,8 +166,10 @@ export function CounselorPreferenceModal({
               {/* Dynamic Counselor Cards */}
               {safeCounselors.map((c) => {
                 const isSelected = tempCounselorId === c.userId;
-                const initials = `${c.firstName.charAt(0)}${c.lastName.charAt(0)}`;
+                const initials =
+                  `${c.firstName.charAt(0)}${c.lastName.charAt(0)}`;
                 const fullName = formatCounselorFullName(c);
+                const genderStyle = getCounselorGenderStyle(c.gender);
 
                 return (
                   <button
@@ -127,29 +177,48 @@ export function CounselorPreferenceModal({
                     type="button"
                     onClick={() => handleSelectCounselor(c)}
                     className={cn(
-                      "group relative flex min-h-[170px] flex-col items-center",
+                      "group relative flex min-h-[175px] flex-col items-center",
                       "justify-center rounded-2xl border p-4 text-center",
                       "transition-all duration-200 focus-visible:outline-none",
                       "focus-visible:ring-2 focus-visible:ring-primary min-h-11",
+                      genderStyle.cardBg,
                       isSelected
-                        ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary"
-                        : "border-border/70 bg-card hover:border-primary/40 hover:bg-muted/40",
+                        ? "border-primary ring-2 ring-primary shadow-sm"
+                        : cn(genderStyle.cardBorder, genderStyle.cardHover),
                     )}
                   >
                     {isSelected && (
-                      <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <span
+                        className={cn(
+                          "absolute right-2.5 top-2.5 flex h-5 w-5",
+                          "items-center justify-center rounded-full bg-primary",
+                          "text-primary-foreground shadow-sm",
+                        )}
+                      >
                         <Check className="h-3 w-3 stroke-[3]" />
                       </span>
                     )}
 
                     {/* Centerpiece Profile Picture Avatar */}
-                    <Avatar className="mb-2.5 h-16 w-16 border-2 border-background shadow-sm ring-2 ring-primary/20">
+                    <Avatar
+                      className={cn(
+                        "mb-2.5 h-16 w-16 border-2 border-background shadow-sm ring-2",
+                        isSelected
+                          ? "ring-primary/40"
+                          : genderStyle.avatarRing,
+                      )}
+                    >
                       <AvatarImage
                         src={c.profilePicture}
                         alt={fullName}
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-primary/10 font-bold text-primary">
+                      <AvatarFallback
+                        className={cn(
+                          "text-xs font-bold",
+                          genderStyle.avatarFallback,
+                        )}
+                      >
                         {initials ? initials : <User className="h-6 w-6" />}
                       </AvatarFallback>
                     </Avatar>
@@ -163,12 +232,14 @@ export function CounselorPreferenceModal({
                       </p>
                     </div>
 
-                    <Badge
-                      variant="secondary"
-                      className="mt-1 text-[10px] uppercase font-semibold"
+                    <span
+                      className={cn(
+                        "mt-1 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                        genderStyle.badge,
+                      )}
                     >
                       {c.gender}
-                    </Badge>
+                    </span>
                   </button>
                 );
               })}
@@ -178,22 +249,36 @@ export function CounselorPreferenceModal({
                 type="button"
                 onClick={handleSelectNoPreference}
                 className={cn(
-                  "group relative flex min-h-[170px] flex-col items-center",
+                  "group relative flex min-h-[175px] flex-col items-center",
                   "justify-center rounded-2xl border p-4 text-center",
                   "transition-all duration-200 focus-visible:outline-none",
                   "focus-visible:ring-2 focus-visible:ring-primary min-h-11",
+                  "bg-muted/10",
                   isNoPreferenceSelected
-                    ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary"
-                    : "border-border/70 bg-card hover:border-primary/40 hover:bg-muted/40",
+                    ? "border-primary ring-2 ring-primary shadow-sm bg-primary/5"
+                    : "border-border/70 hover:border-primary/40 hover:bg-muted/30",
                 )}
               >
                 {isNoPreferenceSelected && (
-                  <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <span
+                    className={cn(
+                      "absolute right-2.5 top-2.5 flex h-5 w-5",
+                      "items-center justify-center rounded-full bg-primary",
+                      "text-primary-foreground shadow-sm",
+                    )}
+                  >
                     <Check className="h-3 w-3 stroke-[3]" />
                   </span>
                 )}
 
-                <div className="mb-2.5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-primary/30 bg-primary/5 text-primary">
+                <div
+                  className={cn(
+                    "mb-2.5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed shadow-sm",
+                    isNoPreferenceSelected
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground bg-muted/20",
+                  )}
+                >
                   <Users className="h-7 w-7" />
                 </div>
 
@@ -206,12 +291,9 @@ export function CounselorPreferenceModal({
                   </p>
                 </div>
 
-                <Badge
-                  variant="outline"
-                  className="mt-1 text-[10px] uppercase font-semibold text-muted-foreground"
-                >
+                <span className="mt-1 inline-flex items-center rounded-full border border-border/70 bg-background/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Any Counselor
-                </Badge>
+                </span>
               </button>
             </div>
           )}

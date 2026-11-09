@@ -814,18 +814,6 @@ export default function AppointmentDetails() {
                     <CalendarRange className="h-3.5 w-3.5 text-primary" />
                     Reschedule / Propose New Schedule
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsNoteModalOpen(true)}
-                    className={cn(
-                      "h-11 w-full gap-2 rounded-xl border-primary/30",
-                      "bg-primary/5 text-xs font-semibold text-primary",
-                      "hover:bg-primary/10",
-                    )}
-                  >
-                    <StickyNote className="h-3.5 w-3.5 text-primary" />
-                    Add Counselor Triage Remarks
-                  </Button>
                 </div>
               )}
 

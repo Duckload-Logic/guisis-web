@@ -49,6 +49,7 @@ import { CRISIS_CONTACTS, STUDENT_ROUTES } from "@/config/constants";
 import {
   CounselorPreferenceModal,
   formatCounselorFullName,
+  getCounselorGenderStyle,
 } from "./components/CounselorPreferenceModal";
 
 const MAX_REASON_LENGTH = 500;
@@ -831,12 +832,19 @@ export default function CreateAppointment() {
                       </div>
                     </div>
                   )}
-                  <Badge
-                    variant="secondary"
-                    className="shrink-0 text-[10px] font-semibold uppercase"
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full border px-2 py-0.5 text-[10px]",
+                      "font-semibold uppercase tracking-wider",
+                      selectedCounselor
+                        ? getCounselorGenderStyle(selectedCounselor.gender).badge
+                        : "border-border/70 bg-muted/30 text-muted-foreground",
+                    )}
                   >
-                    {selectedPreference || "NO PREFERENCE"}
-                  </Badge>
+                    {selectedCounselor
+                      ? `${selectedCounselor.gender} Counselor`
+                      : "No Preference"}
+                  </span>
                 </div>
               </div>
 
