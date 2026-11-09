@@ -58,7 +58,6 @@ import { cn } from "@/lib/utils";
 
 const FALLBACK_RESCHEDULED_STATUS_ID = 6;
 const COPY_FEEDBACK_MS = 2000;
-const LOW_CONFIDENCE_THRESHOLD = 0.7;
 
 function getAppointmentUrgency(appointment?: any) {
   const raw = appointment?.urgencyLevel ?? appointment?.urgency;
@@ -433,32 +432,6 @@ export default function AppointmentDetails() {
               <StickyNote className="h-3.5 w-3.5 text-primary" />
               Add Note
             </Button>
-            {typeof (appointment as any)?.urgencyScore === "number" &&
-              (appointment as any)?.urgencyScore > 0 && (
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "rounded-full border-border/70 px-3 py-1",
-                    "text-[11px] font-medium shadow-sm",
-                    (appointment as any).urgencyScore <
-                      LOW_CONFIDENCE_THRESHOLD
-                      ? cn(
-                          "border-amber-500/30 bg-amber-500/10",
-                          "text-amber-700 dark:text-amber-400",
-                        )
-                      : "bg-muted/40 text-muted-foreground",
-                  )}
-                  title={
-                    (appointment as any).urgencyScore <
-                    LOW_CONFIDENCE_THRESHOLD
-                      ? "Automated triage confidence below 70%"
-                      : "DistilBERT automated triage confidence"
-                  }
-                >
-                  Confidence:{" "}
-                  {((appointment as any).urgencyScore * 100).toFixed(1)}%
-                </Badge>
-              )}
             <Badge
               variant="outline"
               className={cn(
