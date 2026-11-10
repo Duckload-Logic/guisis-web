@@ -19,6 +19,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SelectField } from "@/components/ui/select-field";
 import { FormField } from "@/components/ui/form-field";
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+} from "@/components/ui/responsive-modal";
 import Calendar, {
   type DisabledDateReason,
 } from "@/features/appointments/components/Calendar";
@@ -140,6 +148,8 @@ export default function CreateAppointment() {
     () => savedDraft.counselorPreference || "NO PREFERENCE",
   );
   const [isCounselorModalOpen, setIsCounselorModalOpen] = useState(false);
+  const [isNoCounselorConfirmOpen, setIsNoCounselorConfirmOpen] =
+    useState(false);
 
   useEffect(() => {
     setSavedDraft({
@@ -302,7 +312,7 @@ export default function CreateAppointment() {
 
   const isSubmittingRef = useRef(false);
 
-  const handleSubmit = () => {
+  const executeSubmit = () => {
     if (
       !isFormValid ||
       !selectedDate ||
@@ -367,8 +377,22 @@ export default function CreateAppointment() {
     });
   };
 
+  const handleInitiateSubmit = () => {
+    if (!isFormValid || isSubmitting) return;
+
+    const hasSpecificCounselor =
+      Boolean(selectedCounselorId) && selectedPreference !== "NO PREFERENCE";
+
+    if (!hasSpecificCounselor) {
+      setIsNoCounselorConfirmOpen(true);
+      return;
+    }
+
+    executeSubmit();
+  };
+
   useFormShortcuts({
-    onSubmit: handleSubmit,
+    onSubmit: handleInitiateSubmit,
     enabled: isFormValid && !isSubmitting,
   });
 
@@ -384,7 +408,8 @@ export default function CreateAppointment() {
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-7xl space-y-6 px-4 pb-12 sm:px-6 md:px-8",
+        "mx-auto w-full max-w-7xl space-y-6 px-3.5 pb-24 sm:px-6 md:px-8",
+        "lg:pb-12",
       )}
     >
       <AnimationStyles />
@@ -449,34 +474,37 @@ export default function CreateAppointment() {
               </p>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
-              {/* Option Selector Tabs */}
+              {/* Option Selector Tabs (Mobile-friendly segmented dock) */}
               <div
                 className={cn(
-                  "flex flex-wrap items-center gap-2 border-b",
-                  "border-border/60 pb-3",
+                  "grid grid-cols-3 gap-1.5 rounded-xl border",
+                  "border-border/60 bg-muted/30 p-1 sm:flex sm:flex-wrap",
+                  "sm:border-0 sm:border-b sm:bg-transparent sm:p-0 sm:pb-3",
                 )}
               >
                 <button
                   type="button"
                   onClick={() => setActiveScheduleOption(0)}
                   className={cn(
-                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
-                    "text-xs font-semibold transition-all",
+                    "flex min-h-11 items-center justify-center gap-1.5",
+                    "rounded-lg px-2 py-2 text-center text-xs font-semibold",
+                    "transition-all sm:rounded-xl sm:px-3.5",
                     activeScheduleOption === 0
                       ? cn(
-                          "border border-primary/40 bg-primary/10",
-                          "text-primary shadow-sm",
+                          "border border-primary/40 bg-background text-primary",
+                          "shadow-sm sm:bg-primary/10",
                         )
                       : cn(
-                          "border border-border/70 bg-muted/30",
-                          "text-muted-foreground hover:bg-muted/60",
-                          "hover:text-foreground",
+                          "border border-transparent text-muted-foreground",
+                          "hover:bg-muted/60 hover:text-foreground",
+                          "sm:border-border/70 sm:bg-muted/30",
                         ),
                   )}
                 >
-                  <span>Option 1 (Primary)</span>
+                  <span className="sm:hidden">1. Primary</span>
+                  <span className="hidden sm:inline">Option 1 (Primary)</span>
                   {hasPrimarySchedule && (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                   )}
                 </button>
 
@@ -484,24 +512,26 @@ export default function CreateAppointment() {
                   type="button"
                   onClick={() => setActiveScheduleOption(1)}
                   className={cn(
-                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
-                    "text-xs font-semibold transition-all",
+                    "flex min-h-11 items-center justify-center gap-1.5",
+                    "rounded-lg px-2 py-2 text-center text-xs font-semibold",
+                    "transition-all sm:rounded-xl sm:px-3.5",
                     activeScheduleOption === 1
                       ? cn(
-                          "border border-primary/40 bg-primary/10",
-                          "text-primary shadow-sm",
+                          "border border-primary/40 bg-background text-primary",
+                          "shadow-sm sm:bg-primary/10",
                         )
                       : cn(
-                          "border border-border/70 bg-muted/30",
-                          "text-muted-foreground hover:bg-muted/60",
-                          "hover:text-foreground",
+                          "border border-transparent text-muted-foreground",
+                          "hover:bg-muted/60 hover:text-foreground",
+                          "sm:border-border/70 sm:bg-muted/30",
                         ),
                   )}
                 >
-                  <span>Option 2 (Optional)</span>
+                  <span className="sm:hidden">2. Backup</span>
+                  <span className="hidden sm:inline">Option 2 (Backup)</span>
                   {backupSchedules[0]?.date &&
                     backupSchedules[0]?.timeSlot && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                     )}
                 </button>
 
@@ -509,24 +539,26 @@ export default function CreateAppointment() {
                   type="button"
                   onClick={() => setActiveScheduleOption(2)}
                   className={cn(
-                    "flex min-h-11 items-center gap-2 rounded-xl px-3.5 py-2",
-                    "text-xs font-semibold transition-all",
+                    "flex min-h-11 items-center justify-center gap-1.5",
+                    "rounded-lg px-2 py-2 text-center text-xs font-semibold",
+                    "transition-all sm:rounded-xl sm:px-3.5",
                     activeScheduleOption === 2
                       ? cn(
-                          "border border-primary/40 bg-primary/10",
-                          "text-primary shadow-sm",
+                          "border border-primary/40 bg-background text-primary",
+                          "shadow-sm sm:bg-primary/10",
                         )
                       : cn(
-                          "border border-border/70 bg-muted/30",
-                          "text-muted-foreground hover:bg-muted/60",
-                          "hover:text-foreground",
+                          "border border-transparent text-muted-foreground",
+                          "hover:bg-muted/60 hover:text-foreground",
+                          "sm:border-border/70 sm:bg-muted/30",
                         ),
                   )}
                 >
-                  <span>Option 3 (Optional)</span>
+                  <span className="sm:hidden">3. Backup</span>
+                  <span className="hidden sm:inline">Option 3 (Backup)</span>
                   {backupSchedules[1]?.date &&
                     backupSchedules[1]?.timeSlot && (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                     )}
                 </button>
               </div>
@@ -740,9 +772,14 @@ export default function CreateAppointment() {
               />
 
               {/* Counselor Preference */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label
+                    className={cn(
+                      "text-xs font-bold uppercase tracking-wider",
+                      "text-foreground",
+                    )}
+                  >
                     Counselor Preference
                   </label>
                   <Button
@@ -750,9 +787,14 @@ export default function CreateAppointment() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsCounselorModalOpen(true)}
-                    className="h-7 text-xs font-semibold text-primary hover:text-primary/80"
+                    className={cn(
+                      "h-8 text-xs font-semibold text-primary",
+                      "hover:text-primary/80",
+                    )}
                   >
-                    Change Preference
+                    {selectedCounselor
+                      ? "Change Counselor"
+                      : "Select Counselor"}
                   </Button>
                 </div>
 
@@ -760,13 +802,21 @@ export default function CreateAppointment() {
                   onClick={() => setIsCounselorModalOpen(true)}
                   className={cn(
                     "flex cursor-pointer items-center justify-between gap-3",
-                    "rounded-xl border border-border bg-background p-3",
-                    "transition-colors hover:border-primary/40 hover:bg-muted/20",
+                    "rounded-xl border p-3.5 transition-all",
+                    selectedCounselor
+                      ? cn(
+                          "border-primary/30 bg-primary/[0.02]",
+                          "hover:border-primary/50 hover:bg-primary/[0.04]",
+                        )
+                      : cn(
+                          "border-dashed border-primary/40 bg-primary/[0.02]",
+                          "hover:border-primary hover:bg-primary/[0.05]",
+                        ),
                   )}
                 >
                   {selectedCounselor ? (
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-9 w-9 shrink-0 border border-primary/20">
+                      <Avatar className="h-10 w-10 shrink-0 border border-primary/20">
                         <AvatarImage
                           src={selectedCounselor.profilePicture}
                           alt={formatCounselorFullName(selectedCounselor)}
@@ -777,7 +827,7 @@ export default function CreateAppointment() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-foreground">
+                        <p className="truncate text-xs font-bold text-foreground sm:text-sm">
                           {formatCounselorFullName(selectedCounselor)}
                         </p>
                         <p className="truncate text-[11px] text-muted-foreground">
@@ -787,32 +837,35 @@ export default function CreateAppointment() {
                     </div>
                   ) : (
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Users className="h-4 w-4" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Users className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-foreground">
-                          No Preference
+                        <p className="text-xs font-bold text-foreground sm:text-sm">
+                          No Counselor Preference
                         </p>
-                        <p className="truncate text-[11px] text-muted-foreground">
-                          First available counselor will be assigned
+                        <p className="text-[11px] text-muted-foreground">
+                          Any available counselor • Tap to choose a specific
+                          counselor
                         </p>
                       </div>
                     </div>
                   )}
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full border px-2 py-0.5 text-[10px]",
-                      "font-semibold uppercase tracking-wider",
-                      selectedCounselor
-                        ? getCounselorGenderStyle(selectedCounselor.gender).badge
-                        : "border-border/70 bg-muted/30 text-muted-foreground",
-                    )}
-                  >
-                    {selectedCounselor
-                      ? `${selectedCounselor.gender} Counselor`
-                      : "Any Counselor"}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded-full border px-2.5 py-0.5 text-[10px]",
+                        "font-semibold uppercase tracking-wider",
+                        selectedCounselor
+                          ? getCounselorGenderStyle(selectedCounselor.gender).badge
+                          : "border-primary/30 bg-background font-bold text-primary",
+                      )}
+                    >
+                      {selectedCounselor
+                        ? `${selectedCounselor.gender} Counselor`
+                        : "Choose"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1083,9 +1136,12 @@ export default function CreateAppointment() {
 
               {/* Primary Action Button */}
               <Button
-                onClick={handleSubmit}
+                onClick={handleInitiateSubmit}
                 disabled={!isFormValid || isSubmitting}
-                className="min-h-11 w-full rounded-xl py-3 text-sm font-semibold shadow-sm"
+                className={cn(
+                  "min-h-11 w-full rounded-xl py-3 text-sm font-semibold",
+                  "shadow-sm",
+                )}
               >
                 {isSubmitting ? "Booking Appointment..." : "Book Appointment"}
               </Button>
@@ -1097,6 +1153,100 @@ export default function CreateAppointment() {
           </Card>
         </div>
       </div>
+
+      {/* Mobile Floating Action Dock (Hidden on lg+ screens) */}
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-30 border-t border-border",
+          "bg-background/95 p-3 backdrop-blur-md lg:hidden",
+          "pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]",
+        )}
+      >
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold text-foreground">
+              {formattedDate && selectedTime?.time ? (
+                `${formattedDate} • ${selectedTime.time}`
+              ) : (
+                <span className="text-muted-foreground">
+                  Select date & time slot
+                </span>
+              )}
+            </p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              {selectedCounselor
+                ? formatCounselorFullName(selectedCounselor)
+                : "No Preference (Any Counselor)"}
+              {selectedCategory ? ` • ${selectedCategory.name}` : ""}
+            </p>
+          </div>
+          <Button
+            onClick={handleInitiateSubmit}
+            disabled={!isFormValid || isSubmitting}
+            className={cn(
+              "min-h-11 shrink-0 rounded-xl px-5 text-xs font-semibold",
+              "shadow-sm",
+            )}
+          >
+            {isSubmitting ? "Booking..." : "Book Appointment"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Confirmation Modal when No Counselor is Selected */}
+      <ResponsiveModal
+        open={isNoCounselorConfirmOpen}
+        onOpenChange={(open) => !open && setIsNoCounselorConfirmOpen(false)}
+      >
+        <ResponsiveModalContent className="sm:max-w-md">
+          <ResponsiveModalHeader className="text-left">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <ResponsiveModalTitle className="text-base font-semibold">
+                No Counselor Selected
+              </ResponsiveModalTitle>
+            </div>
+            <ResponsiveModalDescription
+              className={cn(
+                "pt-2 text-xs leading-relaxed text-muted-foreground",
+              )}
+            >
+              You haven&apos;t chosen a preferred guidance counselor. If you
+              proceed, the Guidance Office will automatically assign any
+              available counselor for your consultation.
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
+          <ResponsiveModalFooter
+            className={cn(
+              "flex-col-reverse gap-2 border-t border-border/60 pt-3",
+              "sm:flex-row sm:justify-end",
+            )}
+          >
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsNoCounselorConfirmOpen(false);
+                setIsCounselorModalOpen(true);
+              }}
+              className="min-h-11 w-full text-xs font-semibold sm:w-auto"
+            >
+              Choose a Counselor
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setIsNoCounselorConfirmOpen(false);
+                executeSubmit();
+              }}
+              disabled={isSubmitting}
+              className="min-h-11 w-full text-xs font-semibold sm:w-auto"
+            >
+              Continue Booking
+            </Button>
+          </ResponsiveModalFooter>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
       {/* Counselor Selection Modal */}
       <CounselorPreferenceModal
