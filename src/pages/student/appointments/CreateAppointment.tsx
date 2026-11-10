@@ -2,14 +2,12 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CalendarDays,
-  Clock,
   CheckCircle2,
   AlertCircle,
   Phone,
   Building2,
   Info,
-  ShieldCheck,
-  Sparkles,
+  FileText,
   RotateCcw,
   User,
   Users,
@@ -383,10 +381,6 @@ export default function CreateAppointment() {
       })
     : null;
 
-  const filledBackupCount = backupSchedules.filter(
-    (b) => b.date && b.timeSlot,
-  ).length;
-
   return (
     <div
       className={cn(
@@ -395,27 +389,24 @@ export default function CreateAppointment() {
     >
       <AnimationStyles />
 
-      {/* Schedule Context Banner (Replaces intrusive popup) */}
+      {/* Schedule Context Banner */}
       <div
         className={cn(
-          "animate-fade-in-up flex flex-col gap-2.5 rounded-2xl border",
-          "border-primary/20 bg-primary/5 p-4 text-xs sm:flex-row",
-          "sm:items-center sm:justify-between sm:text-sm",
+          "animate-fade-in-up flex items-center justify-between gap-3",
+          "rounded-xl border border-border/80 bg-muted/40 px-4 py-3 text-xs",
         )}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Info className="h-4 w-4 shrink-0 text-primary" />
-          <span className="font-medium text-foreground">
-            Guidance Office Schedule: Consultations are strictly from{" "}
-            <strong>8:00 AM to 5:00 PM</strong> on weekdays.
+          <span>
+            Guidance Office consultations:{" "}
+            <strong className="text-foreground">8:00 AM – 5:00 PM</strong>,
+            weekdays only.
           </span>
         </div>
-        <Badge
-          variant="secondary"
-          className="w-fit rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
-        >
-          PUP-Taguig Guidance Office
-        </Badge>
+        <span className="hidden text-[11px] font-medium text-muted-foreground sm:inline">
+          PUP-Taguig Guidance & Counseling Office
+        </span>
       </div>
 
       {/* 2-Column Master-Detail Layout */}
@@ -434,7 +425,7 @@ export default function CreateAppointment() {
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base font-semibold">
-                    1. Preferred Consultation Schedules (Options 1 to 3)
+                    1. Preferred Consultation Schedules
                   </CardTitle>
                 </div>
                 {hasDraftProgress && (
@@ -444,7 +435,7 @@ export default function CreateAppointment() {
                     size="sm"
                     onClick={handleResetDraft}
                     className={cn(
-                      "h-9 gap-1.5 rounded-lg text-xs text-muted-foreground",
+                      "h-8 gap-1.5 rounded-lg text-xs text-muted-foreground",
                       "hover:text-destructive",
                     )}
                   >
@@ -454,28 +445,10 @@ export default function CreateAppointment() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Select your primary date and time, and optionally provide
-                alternative options
+                Select your primary date and time slot (up to 2 backup options)
               </p>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
-              {/* Clinical Justification Banner */}
-              <div
-                className={cn(
-                  "flex items-start gap-2.5 rounded-xl border",
-                  "border-primary/20 bg-primary/5 p-3 text-xs",
-                  "text-foreground",
-                )}
-              >
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p className="leading-relaxed">
-                  <strong>Schedule Options:</strong> Please provide up to three
-                  (3) preferred schedule options. This allows the Guidance Office
-                  to better address the needs of the students scheduled for
-                  counseling as well as the availability of the counselors.
-                </p>
-              </div>
-
               {/* Option Selector Tabs */}
               <div
                 className={cn(
@@ -501,7 +474,7 @@ export default function CreateAppointment() {
                         ),
                   )}
                 >
-                  <span>Option 1 (Primary - Required)</span>
+                  <span>Option 1 (Primary)</span>
                   {hasPrimarySchedule && (
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                   )}
@@ -747,13 +720,13 @@ export default function CreateAppointment() {
           <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 pb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <FileText className="h-4 w-4 text-primary" />
                 <CardTitle className="text-base font-semibold">
-                  2. Consultation Request Details
+                  2. Consultation Details
                 </CardTitle>
               </div>
               <p className="text-xs text-muted-foreground">
-                Help the guidance counselor prepare for your consultation
+                Specify your concern category, counselor preference, and reason
               </p>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
@@ -766,39 +739,34 @@ export default function CreateAppointment() {
                 required
               />
 
-              {/* Counselor Preference for First-Time Counseling (Requirement 1) */}
-              <div className="space-y-2 rounded-2xl border border-border/70 bg-muted/20 p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-foreground">
-                      For students seeking counseling for the first time, kindly
-                      select your preference:
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      Select a preferred counselor or choose No Preference.
-                    </p>
-                  </div>
+              {/* Counselor Preference */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Counselor Preference
+                  </label>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => setIsCounselorModalOpen(true)}
-                    className="min-h-11 shrink-0 gap-1.5 rounded-xl text-xs font-semibold"
+                    className="h-7 text-xs font-semibold text-primary hover:text-primary/80"
                   >
-                    <User className="h-3.5 w-3.5 text-primary" />
-                    <span>
-                      {selectedPreference
-                        ? "Change Preference"
-                        : "Select Preference"}
-                    </span>
+                    Change Preference
                   </Button>
                 </div>
 
-                {/* Selected Counselor Preview Card */}
-                <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background p-3">
+                <div
+                  onClick={() => setIsCounselorModalOpen(true)}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-between gap-3",
+                    "rounded-xl border border-border bg-background p-3",
+                    "transition-colors hover:border-primary/40 hover:bg-muted/20",
+                  )}
+                >
                   {selectedCounselor ? (
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-10 w-10 shrink-0 border border-primary/20">
+                      <Avatar className="h-9 w-9 shrink-0 border border-primary/20">
                         <AvatarImage
                           src={selectedCounselor.profilePicture}
                           alt={formatCounselorFullName(selectedCounselor)}
@@ -819,15 +787,15 @@ export default function CreateAppointment() {
                     </div>
                   ) : (
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <Users className="h-5 w-5" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Users className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-xs font-bold text-foreground">
                           No Preference
                         </p>
                         <p className="truncate text-[11px] text-muted-foreground">
-                          Any available guidance counselor will be assigned
+                          First available counselor will be assigned
                         </p>
                       </div>
                     </div>
@@ -843,7 +811,7 @@ export default function CreateAppointment() {
                   >
                     {selectedCounselor
                       ? `${selectedCounselor.gender} Counselor`
-                      : "No Preference"}
+                      : "Any Counselor"}
                   </span>
                 </div>
               </div>
@@ -857,8 +825,8 @@ export default function CreateAppointment() {
                 required
                 maxChars={MAX_REASON_LENGTH}
                 info={
-                  "Confidential note read strictly by your guidance " +
-                  "counselor. Progress is saved automatically in this session."
+                  "Strictly confidential. Read only by your assigned " +
+                  "guidance counselor."
                 }
               />
 
@@ -921,29 +889,8 @@ export default function CreateAppointment() {
                   </div>
                 </div>
               )}
-
-              <div
-                className={cn(
-                  "flex items-start gap-2.5 rounded-xl border",
-                  "border-primary/20 bg-primary/5 p-3 text-xs",
-                  "text-muted-foreground",
-                )}
-              >
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <p className="leading-relaxed">
-                  <strong className="text-foreground">
-                    Strict Confidentiality:
-                  </strong>{" "}
-                  Your consultation reason is restricted exclusively to your
-                  guidance counselor. It is never included in attendance exports
-                  or shared with academic faculty.
-                </p>
-              </div>
             </CardContent>
           </Card>
-
-
-
         </div>
 
         {/* Right Column: Sticky Booking Summary (4 cols) */}
@@ -957,7 +904,7 @@ export default function CreateAppointment() {
             <CardHeader className="border-b border-border/60 pb-3">
               <CardTitle
                 className={cn(
-                  "text-sm font-bold uppercase tracking-wider",
+                  "text-xs font-bold uppercase tracking-wider",
                   "text-muted-foreground",
                 )}
               >
@@ -965,62 +912,38 @@ export default function CreateAppointment() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              {/* Option 1: Primary Schedule */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className={cn(
-                    "text-[11px] font-semibold",
-                    "text-muted-foreground",
-                  )}
-                >
-                  Option 1 (Primary Schedule)
-                </span>
-                {formattedDate && selectedTime?.time ? (
-                  <div className="mt-1 flex items-center justify-between">
-                    <p className="text-sm font-bold text-foreground">
-                      {formattedDate}
-                    </p>
-                    <Badge
-                      variant="secondary"
-                      className="font-mono text-xs"
-                    >
-                      {selectedTime.time}
-                    </Badge>
-                  </div>
-                ) : (
-                  <p className="mt-1 text-xs italic text-muted-foreground">
-                    Select a date and time slot
-                  </p>
-                )}
-              </div>
-
-              {/* Alternative Schedules Summary (Options 2 and 3) */}
-              {(backupSchedules[0]?.date || backupSchedules[1]?.date) && (
-                <div
-                  className={cn(
-                    "rounded-xl border border-border/70",
-                    "bg-muted/30 p-3",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "text-[11px] font-semibold",
-                      "text-muted-foreground",
-                    )}
-                  >
-                    Alternative Options
+              {/* Structured Key-Value Breakdown */}
+              <div className="divide-y divide-border/60 text-xs">
+                {/* Primary Slot */}
+                <div className="pb-3">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Primary Schedule
                   </span>
-                  <div className="mt-1.5 space-y-1 text-xs">
+                  {formattedDate && selectedTime?.time ? (
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="font-semibold text-foreground">
+                        {formattedDate}
+                      </span>
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {selectedTime.time}
+                      </Badge>
+                    </div>
+                  ) : (
+                    <p className="mt-1 italic text-muted-foreground">
+                      Select date & time slot
+                    </p>
+                  )}
+                </div>
+
+                {/* Alternative Slots (conditionally rendered) */}
+                {(backupSchedules[0]?.date || backupSchedules[1]?.date) && (
+                  <div className="space-y-1.5 py-2.5">
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      Alternative Options
+                    </span>
                     {backupSchedules[0]?.date &&
                       backupSchedules[0]?.timeSlot && (
-                        <div
-                          className={cn(
-                            "flex items-center justify-between",
-                            "text-muted-foreground",
-                          )}
-                        >
+                        <div className="flex items-center justify-between text-muted-foreground">
                           <span>
                             Opt 2:{" "}
                             {backupSchedules[0].date.toLocaleDateString(
@@ -1031,23 +954,14 @@ export default function CreateAppointment() {
                               },
                             )}
                           </span>
-                          <span
-                            className={cn(
-                              "font-mono text-[11px] text-foreground",
-                            )}
-                          >
+                          <span className="font-mono text-foreground">
                             {backupSchedules[0].timeSlot.time}
                           </span>
                         </div>
                       )}
                     {backupSchedules[1]?.date &&
                       backupSchedules[1]?.timeSlot && (
-                        <div
-                          className={cn(
-                            "flex items-center justify-between",
-                            "text-muted-foreground",
-                          )}
-                        >
+                        <div className="flex items-center justify-between text-muted-foreground">
                           <span>
                             Opt 3:{" "}
                             {backupSchedules[1].date.toLocaleDateString(
@@ -1058,109 +972,110 @@ export default function CreateAppointment() {
                               },
                             )}
                           </span>
-                          <span
-                            className={cn(
-                              "font-mono text-[11px] text-foreground",
-                            )}
-                          >
+                          <span className="font-mono text-foreground">
                             {backupSchedules[1].timeSlot.time}
                           </span>
                         </div>
                       )}
                   </div>
+                )}
+
+                {/* Counselor Preference */}
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Counselor
+                  </span>
+                  <span className="max-w-[180px] truncate font-semibold text-foreground">
+                    {selectedCounselor
+                      ? formatCounselorFullName(selectedCounselor)
+                      : "No Preference"}
+                  </span>
                 </div>
-              )}
 
-              {/* Counselor Preference Summary */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className={cn(
-                    "text-[11px] font-semibold",
-                    "text-muted-foreground",
-                  )}
-                >
-                  Counselor Preference
-                </span>
-                <p className="mt-1 text-xs font-semibold text-foreground">
-                  {selectedPreference || "NO PREFERENCE"}
-                </p>
+                {/* Category */}
+                <div className="flex items-center justify-between py-2.5">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Category
+                  </span>
+                  <span className="max-w-[180px] truncate font-semibold text-foreground">
+                    {selectedCategory?.name || (
+                      <span className="font-normal italic text-muted-foreground">
+                        Not selected
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {/* Reason status */}
+                <div className="flex items-center justify-between pt-2.5">
+                  <span className="text-[11px] font-medium text-muted-foreground">
+                    Reason
+                  </span>
+                  <span
+                    className={cn(
+                      "font-semibold",
+                      hasReason ? "text-emerald-600" : "text-amber-500",
+                    )}
+                  >
+                    {hasReason ? "Provided" : "Required"}
+                  </span>
+                </div>
               </div>
 
-              {/* Concern Category */}
-              <div
-                className="rounded-xl border border-border/70 bg-muted/30 p-3"
-              >
-                <span
-                  className={cn(
-                    "text-[11px] font-semibold",
-                    "text-muted-foreground",
-                  )}
-                >
-                  Category
+              {/* Requirement Checklist */}
+              <div className="space-y-1.5 border-t border-border/60 pt-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Submission Checklist
                 </span>
-                <p className="mt-1 text-xs font-semibold text-foreground">
-                  {selectedCategory?.name || (
-                    <span className="italic text-muted-foreground">
-                      No category selected
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              {/* Readiness Checklist */}
-              <div className="space-y-2 border-t border-border/60 pt-3">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  Booking Checklist (3-Click Rule):
-                </span>
-                <div className="space-y-1.5 text-xs">
+                <div className="space-y-1 text-xs">
                   <div className="flex items-center gap-2">
                     {hasPrimarySchedule ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                     )}
                     <span
-                      className={cn(
+                      className={
                         hasPrimarySchedule
                           ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
+                          : "text-muted-foreground"
+                      }
                     >
-                      Option 1 Date & Time slot selected
+                      Primary date & time slot
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {hasCategory ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                     )}
                     <span
-                      className={cn(
+                      className={
                         hasCategory
                           ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
+                          : "text-muted-foreground"
+                      }
                     >
-                      Concern category selected
+                      Concern category
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {hasReason ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                     ) : (
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                     )}
                     <span
-                      className={cn(
-                        hasReason ? "text-foreground" : "text-muted-foreground",
-                      )}
+                      className={
+                        hasReason
+                          ? "text-foreground"
+                          : "text-muted-foreground"
+                      }
                     >
-                      Reason for consultation provided
+                      Reason for consultation
                     </span>
                   </div>
                 </div>
@@ -1170,18 +1085,13 @@ export default function CreateAppointment() {
               <Button
                 onClick={handleSubmit}
                 disabled={!isFormValid || isSubmitting}
-                title="Shortcut: Ctrl + Enter"
-                className={cn(
-                  "min-h-11 w-full rounded-xl py-5 text-sm font-semibold",
-                  "shadow-sm",
-                )}
+                className="min-h-11 w-full rounded-xl py-3 text-sm font-semibold shadow-sm"
               >
                 {isSubmitting ? "Booking Appointment..." : "Book Appointment"}
               </Button>
 
               <p className="text-center text-[11px] text-muted-foreground">
-                You will receive a notification once the counselor confirms your
-                appointment slot.
+                Confirmation will be sent once reviewed by the guidance office.
               </p>
             </CardContent>
           </Card>
