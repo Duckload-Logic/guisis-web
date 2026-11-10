@@ -227,35 +227,9 @@ function AppointmentDetailsSkeleton() {
       </div>
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Main Column Skeleton (8 cols) */}
-        <div className="space-y-6 lg:col-span-8">
-          <Card className="space-y-5 rounded-2xl border border-border p-6">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-5 w-44 rounded" />
-              <Skeleton className="h-6 w-20 rounded-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-32 rounded" />
-              <Skeleton className="h-16 w-full rounded-xl" />
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Skeleton className="h-16 w-full rounded-xl" />
-              <Skeleton className="h-16 w-full rounded-xl" />
-            </div>
-          </Card>
-
-          <Card className="space-y-4 rounded-2xl border border-border p-6">
-            <Skeleton className="h-5 w-32 rounded" />
-            <div className="space-y-3">
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
-            </div>
-          </Card>
-        </div>
-
-        {/* Sidebar Column Skeleton (4 cols) */}
+        {/* Left Column Skeleton */}
         <div className="space-y-6 lg:col-span-4">
-          <Card className="space-y-4 rounded-2xl border border-border p-5">
+          <Card className="space-y-4 rounded-2xl border border-border/70 p-5">
             <div className="flex items-center gap-3">
               <Skeleton className="h-12 w-12 rounded-2xl" />
               <div className="flex-1 space-y-1.5">
@@ -266,8 +240,44 @@ function AppointmentDetailsSkeleton() {
             <div className="space-y-2 border-t border-border/50 pt-3">
               <Skeleton className="h-3 w-full rounded" />
               <Skeleton className="h-3 w-4/5 rounded" />
+              <Skeleton className="h-3 w-2/3 rounded" />
             </div>
             <Skeleton className="h-11 w-full rounded-xl" />
+          </Card>
+
+          <Card className="space-y-3 rounded-2xl border border-border/70 p-5">
+            <Skeleton className="h-4 w-1/2 rounded" />
+            <Skeleton className="h-11 w-full rounded-xl" />
+            <div className="flex gap-2">
+              <Skeleton className="h-11 flex-1 rounded-xl" />
+              <Skeleton className="h-11 flex-1 rounded-xl" />
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column Skeleton */}
+        <div className="space-y-6 lg:col-span-8">
+          <Card className="space-y-5 rounded-2xl border border-border/70 p-6">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-5 w-44 rounded" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-16 w-full rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-24 rounded" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+            </div>
+          </Card>
+
+          <Card className="space-y-4 rounded-2xl border border-border/70 p-6">
+            <Skeleton className="h-5 w-32 rounded" />
+            <div className="space-y-3">
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+            </div>
           </Card>
         </div>
       </div>
@@ -420,22 +430,20 @@ export default function AppointmentDetails() {
               <StickyNote className="h-3.5 w-3.5 text-primary" />
               Add Note
             </Button>
-            {appointment.startedAt && appointment.completedAt && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "rounded-full border-border/70 bg-muted/40",
-                  "px-2.5 py-0.5 text-xs font-semibold text-foreground/80",
-                )}
-              >
-                <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
-                Turnaround:{" "}
-                {formatProcessDuration(
-                  appointment.startedAt,
-                  appointment.completedAt,
-                )}
-              </Badge>
-            )}
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full border-border/70 bg-muted/40",
+                "px-2.5 py-0.5 text-xs font-semibold text-foreground/80",
+              )}
+            >
+              <Clock3 className="mr-1 inline h-3 w-3 text-muted-foreground" />
+              Turnaround:{" "}
+              {formatProcessDuration(
+                appointment.startedAt,
+                appointment.completedAt,
+              )}
+            </Badge>
           </div>
         ) : null,
       }),
@@ -683,22 +691,192 @@ export default function AppointmentDetails() {
         </div>
       )}
 
-      {/* 2-Column Responsive Workspace: Col-8 Main, Col-4 Sidebar */}
+      {/* 2-Column Sidebar Master-Detail Layout (Jakob's Law) */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-        {/* Main Column: Consultation Details, Schedules & Actions (8 cols) */}
+        {/* Left Column: Dossier & Controls (Col-span 4) */}
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
+          className="space-y-6 lg:col-span-4"
+        >
+          <StudentProfileBentoCard
+            student={studentData}
+            onViewCor={() => setShowCorPreview(true)}
+            canAccessIir={true}
+          />
+
+          {/* Administrative Controls Card */}
+          <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader
+              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
+            >
+              <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                <CalendarRange className="h-4 w-4 text-primary" />
+                Administrative Controls
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4 p-5">
+              {/* In-Office Session Timer */}
+              {isScheduled && !appointment.startedAt && (
+                <InOfficeSessionTimer
+                  startedAt={null}
+                  completedAt={null}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => {
+                    if (!offset) {
+                      setIsStartConfirming(true);
+                    } else {
+                      handleConfirmStartAppointment(offset);
+                    }
+                  }}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
+
+              {isSessionActive && (
+                <InOfficeSessionTimer
+                  startedAt={appointment.startedAt}
+                  completedAt={appointment.completedAt}
+                  title="Counseling Session"
+                  studentName={fullName}
+                  studentNumber={appointment.studentNumber}
+                  onStart={(offset) => handleConfirmStartAppointment(offset)}
+                  onComplete={() => handleActionClick("Complete")}
+                  isPending={startAppointmentMutation.isPending}
+                />
+              )}
+
+              {/* Lifecycle Actions (44px Touch Targets) */}
+              {isPending && (
+                <div className="space-y-2.5">
+                  <Button
+                    onClick={() => handleActionClick("Approve")}
+                    className={cn(
+                      "h-11 w-full gap-2 rounded-xl bg-emerald-600",
+                      "font-bold text-white shadow-sm transition-all",
+                      "hover:bg-emerald-700",
+                    )}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Approve Selected Schedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleActionClick("Reschedule")}
+                    className={cn(
+                      "h-11 w-full gap-2 rounded-xl border-border/80",
+                      "text-xs font-semibold text-foreground",
+                    )}
+                  >
+                    <CalendarRange className="h-3.5 w-3.5 text-primary" />
+                    Reschedule / Propose New Schedule
+                  </Button>
+                </div>
+              )}
+
+              {isScheduled && !isSessionActive && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-[11px] text-muted-foreground">
+                    Appointment confirmed. Need to adjust the date or time?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("Reschedule")}
+                      className={cn(
+                        "h-11 gap-2 rounded-xl border-primary/30",
+                        "bg-primary/5 text-xs font-semibold text-primary",
+                        "hover:bg-primary/10",
+                      )}
+                    >
+                      <CalendarRange className="h-3.5 w-3.5" />
+                      Reschedule
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("No-show")}
+                      className={cn(
+                        "h-11 gap-2 rounded-xl border-border/80",
+                        "text-xs font-semibold",
+                      )}
+                    >
+                      <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                      Mark No-show
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleActionClick("Cancel")}
+                      className={cn(
+                        "col-span-2 h-11 gap-2 rounded-xl",
+                        "border-destructive/30 text-xs font-semibold",
+                        "text-destructive hover:bg-destructive/10",
+                      )}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      Cancel Appointment
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {isCompleted && (
+                <div
+                  className={cn(
+                    "rounded-xl border border-dashed border-border/70",
+                    "py-6 text-center",
+                  )}
+                >
+                  <CheckCircle
+                    className="mx-auto h-7 w-7 text-emerald-600/80"
+                  />
+                  <p className="mt-2 text-xs font-bold text-foreground/80">
+                    Consultation Completed
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    All session actions have concluded.
+                  </p>
+                </div>
+              )}
+
+              {!isPending && !isScheduled && !isCompleted && (
+                <div
+                  className={cn(
+                    "rounded-xl border border-dashed border-border/70",
+                    "py-6 text-center",
+                  )}
+                >
+                  <ShieldAlert
+                    className="mx-auto h-7 w-7 text-muted-foreground/60"
+                  />
+                  <p className="mt-2 text-xs font-bold text-muted-foreground">
+                    Appointment is {appointment.status?.name}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Right Column: Context & Audit History (Col-span 8) */}
+        <motion.div
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
           className="space-y-6 lg:col-span-8"
         >
-          {/* Card 1: Consultation Details & Scheduling */}
+          {/* Consultation Request Context Card */}
           <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
+            <CardHeader
+              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
+            >
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <MessageSquare className="h-4 w-4 text-primary" />
-                  Consultation Details
+                  Consultation Request Context
                 </CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
@@ -719,263 +897,242 @@ export default function AppointmentDetails() {
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-5 p-5">
-              {/* Reason for Consultation */}
-              <div className="space-y-1">
+            <CardContent className="space-y-4 p-5">
+              {/* Reason description box */}
+              <div className="space-y-1.5">
                 <p className="text-xs font-medium text-muted-foreground">
                   Reason for Consultation
                 </p>
-                <p className="text-sm leading-relaxed text-foreground">
-                  {appointment.reason || "No specific reason provided."}
-                </p>
-              </div>
-
-              {/* Schedule Selection & Action Area */}
-              <div className="space-y-3 border-t border-border/60 pt-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {isPending
-                      ? "Requested Schedule Options"
-                      : "Confirmed Consultation Schedule"}
+                <div className="rounded-xl border border-border/70 bg-muted/10 p-4">
+                  <p className="text-xs leading-relaxed text-foreground">
+                    &ldquo;
+                    {appointment.reason || "No specific reason provided."}
+                    &rdquo;
                   </p>
-                  {isPending && (
-                    <span className="text-xs text-muted-foreground">
-                      Select a preferred slot below to approve
-                    </span>
-                  )}
                 </div>
-
-                {isPending && (
-                  <>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                      {scheduleOptions.map((opt, idx) => {
-                        const isSelected =
-                          selectedSchedule?.date === opt.date &&
-                          selectedSchedule?.timeSlotId === opt.slot.id;
-
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() =>
-                              setSelectedSchedule({
-                                date: opt.date,
-                                timeSlotId: opt.slot.id,
-                                timeSlotTime: opt.slot.time,
-                              })
-                            }
-                            className={cn(
-                              "group relative flex min-h-[90px] flex-col justify-between",
-                              "rounded-xl border p-3 text-left transition-all duration-200",
-                              isSelected
-                                ? "border-primary bg-primary/5 ring-2 ring-primary shadow-sm"
-                                : "border-border/80 bg-muted/10 hover:border-primary/40 hover:bg-muted/20",
-                            )}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-medium text-muted-foreground">
-                                {opt.title}
-                              </span>
-                              {isSelected ? (
-                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                  <Check className="h-2.5 w-2.5 stroke-[3]" />
-                                </span>
-                              ) : (
-                                <span className="h-3.5 w-3.5 rounded-full border border-border" />
-                              )}
-                            </div>
-                            <div className="mt-2 space-y-0.5">
-                              <p className="text-xs font-semibold text-foreground">
-                                {formatDate(opt.date)}
-                              </p>
-                              <p className="font-mono text-[11px] text-muted-foreground">
-                                {format12HourTime(opt.slot.time)}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Direct Action Bar below options */}
-                    <div className="flex flex-wrap items-center gap-2.5 pt-2">
-                      <Button
-                        onClick={() => handleActionClick("Approve")}
-                        className={cn(
-                          "h-11 flex-1 min-w-[200px] gap-2 rounded-xl bg-emerald-600",
-                          "text-xs font-semibold text-white shadow-sm transition-all hover:bg-emerald-700",
-                        )}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        <span>
-                          Approve{" "}
-                          {selectedSchedule
-                            ? `${formatDate(selectedSchedule.date)} (${format12HourTime(selectedSchedule.timeSlotTime)})`
-                            : "Schedule"}
-                        </span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleActionClick("Reschedule")}
-                        className="h-11 gap-2 rounded-xl border-border/80 text-xs font-semibold hover:bg-muted/30"
-                      >
-                        <CalendarRange className="h-3.5 w-3.5 text-primary" />
-                        Propose Alternate Time
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleActionClick("Cancel")}
-                        className="h-11 gap-1.5 rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10"
-                      >
-                        <AlertCircle className="h-3.5 w-3.5" />
-                        Decline
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {isScheduled && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Calendar className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">
-                          Confirmed Date & Time
-                        </p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatDate(appointment.whenDate)} •{" "}
-                          {format12HourTime(appointment.timeSlot.time)}
-                        </p>
-                      </div>
-                    </div>
-                    {!isSessionActive && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleActionClick("Reschedule")}
-                        className="h-9 gap-1.5 rounded-lg border-border/80 text-xs font-semibold hover:bg-muted/40"
-                      >
-                        <CalendarRange className="h-3.5 w-3.5 text-primary" />
-                        Reschedule
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                {isCompleted && (
-                  <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/15 p-4">
-                    <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
-                    <div className="text-xs">
-                      <p className="font-semibold text-foreground">
-                        Consultation Completed
-                      </p>
-                      <p className="text-muted-foreground">
-                        Session was conducted on{" "}
-                        {formatDate(appointment.whenDate)} at{" "}
-                        {format12HourTime(appointment.timeSlot.time)}.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {!isPending && !isScheduled && !isCompleted && (
-                  <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/15 p-4">
-                    <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="text-xs">
-                      <p className="font-semibold text-foreground">
-                        Appointment is {appointment.status?.name}
-                      </p>
-                      <p className="text-muted-foreground">
-                        No active session or schedule adjustments pending.
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Clinical Triage Rationale Box */}
-              <div className="rounded-xl border border-border/70 bg-muted/20 p-3.5 space-y-1.5">
+              <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldAlert className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs font-semibold text-foreground">
                       Clinical Triage Rationale
                     </span>
                   </div>
-                  {typeof (appointment as any)?.urgencyScore === "number" &&
-                    (appointment as any)?.urgencyScore > 0 && (
-                      <span className="text-[11px] text-muted-foreground">
-                        Confidence:{" "}
-                        {((appointment as any).urgencyScore * 100).toFixed(1)}%
-                      </span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                      urgencyInfo.className,
                     )}
+                  >
+                    {urgencyInfo.label} Priority
+                  </Badge>
                 </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="text-xs leading-relaxed text-foreground/85">
                   {getAIExplainability(appointment)}
                 </p>
+                <div className="flex items-center justify-between border-t border-border/50 pt-2 text-[11px] text-muted-foreground">
+                  <span>Model: DistilBERT triage pipeline</span>
+                  <span>
+                    Confidence:{" "}
+                    {typeof (appointment as any)?.urgencyScore === "number" &&
+                    (appointment as any)?.urgencyScore > 0
+                      ? `${((appointment as any).urgencyScore * 100).toFixed(1)}%`
+                      : "Deterministic Safety Gate"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Schedule options / Selected schedule */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {isPending
+                      ? "Select Schedule Option to Approve"
+                      : "Confirmed Consultation Schedule"}
+                  </p>
+                  {isPending && (
+                    <span className="text-xs text-muted-foreground">
+                      Click a slot to set approval target
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {scheduleOptions.map((opt, idx) => {
+                    const isSelected =
+                      selectedSchedule?.date === opt.date &&
+                      selectedSchedule?.timeSlotId === opt.slot.id;
+
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        disabled={!isPending}
+                        onClick={() =>
+                          setSelectedSchedule({
+                            date: opt.date,
+                            timeSlotId: opt.slot.id,
+                            timeSlotTime: opt.slot.time,
+                          })
+                        }
+                        className={cn(
+                          "group relative flex min-h-11 flex-col",
+                          "justify-between rounded-xl border p-3.5",
+                          "text-left transition-all duration-200",
+                          isSelected
+                            ? cn(
+                                "border-primary bg-primary/5 shadow-sm",
+                                "ring-1 ring-primary",
+                              )
+                            : cn(
+                                "border-border/80 bg-muted/10",
+                                "hover:border-primary/30 hover:bg-muted/20",
+                              ),
+                          !isPending && "cursor-default hover:border-border/80",
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {opt.title}
+                          </span>
+                          {isSelected && (
+                            <span className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-sm font-semibold text-foreground">
+                            {formatDate(opt.date)}
+                          </p>
+                          <p
+                            className="font-mono text-xs text-muted-foreground"
+                          >
+                            {format12HourTime(opt.slot.time)}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Card 2: Streamlined Activity History & Audit Trail */}
+          {/* Audit Trail & History Card */}
           <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
+            <CardHeader
+              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
+            >
               <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
                 <Clock3 className="h-4 w-4 text-primary" />
-                Activity History & Timeline
+                Audit Trail & History
               </CardTitle>
             </CardHeader>
+
             <CardContent className="p-5">
-              <div className="relative space-y-4 pl-5">
+              <div className="relative space-y-5 pl-6">
                 <div
-                  className="absolute bottom-2 left-[5px] top-2 w-px bg-border/80"
+                  className={cn(
+                    "absolute bottom-2 left-[5px] top-2",
+                    "w-0.5 bg-border/60",
+                  )}
                   aria-hidden="true"
                 />
 
-                {auditEntries.map((entry, idx) => (
-                  <div key={idx} className="relative">
-                    <div
-                      className="absolute -left-5 top-1.5 z-10 h-2.5 w-2.5 rounded-full border-2 border-background bg-primary ring-2 ring-card"
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold text-foreground">
-                          {entry.status}
-                        </p>
-                        {entry.timestamp && (
-                          <span className="font-mono text-[11px] text-muted-foreground">
-                            {entry.timestamp}
-                          </span>
+                {auditEntries.map((entry, idx) => {
+                  const upper = entry.status.toUpperCase();
+                  const statusBorder = upper.includes("RESCHEDULED")
+                    ? "border-amber-500"
+                    : upper.includes("PRIORITY") ||
+                        upper.includes("NOTE") ||
+                        upper.includes("COUNSELOR")
+                      ? "border-sky-500"
+                      : upper.includes("AI TRIAGE") ||
+                          upper.includes("TRIAGE")
+                        ? "border-primary"
+                        : upper.includes("APPROVED") ||
+                            upper.includes("COMPLETED")
+                          ? "border-emerald-500"
+                          : upper.includes("REJECTED") ||
+                              upper.includes("CANCELLED")
+                            ? "border-destructive"
+                            : "border-primary";
+
+                  return (
+                    <div key={idx} className="relative">
+                      <div
+                        className={cn(
+                          "absolute -left-6 top-1 z-10 h-3 w-3",
+                          "rounded-full border-2 bg-background",
+                          "shadow-sm ring-4 ring-card",
+                          statusBorder,
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-bold text-foreground">
+                            {entry.status}
+                          </p>
+                          {entry.timestamp && (
+                            <span
+                              className={cn(
+                                "font-mono text-[10px]",
+                                "text-muted-foreground",
+                              )}
+                            >
+                              {entry.timestamp}
+                            </span>
+                          )}
+                        </div>
+                        {entry.remarks && (
+                          <p
+                            className={cn(
+                              "rounded-lg border bg-muted/20 p-2.5",
+                              "text-xs text-foreground/85",
+                            )}
+                          >
+                            {entry.remarks}
+                          </p>
+                        )}
+                        {entry.details && (
+                          <p
+                            className={cn(
+                              "text-[11px] font-medium",
+                              "text-amber-600",
+                            )}
+                          >
+                            {entry.details}
+                          </p>
                         )}
                       </div>
-                      {entry.remarks && (
-                        <p className="rounded-lg border border-border/60 bg-muted/20 p-2 text-xs text-foreground/85">
-                          {entry.remarks}
-                        </p>
-                      )}
-                      {entry.details && (
-                        <p className="text-[11px] text-muted-foreground">
-                          {entry.details}
-                        </p>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <div className="relative">
                   <div
-                    className="absolute -left-5 top-1.5 z-10 h-2.5 w-2.5 rounded-full border-2 border-background bg-muted-foreground ring-2 ring-card"
+                    className={cn(
+                      "absolute -left-6 top-1 z-10 h-3 w-3",
+                      "rounded-full border-2 border-primary",
+                      "bg-background shadow-sm ring-4 ring-card",
+                    )}
                     aria-hidden="true"
                   />
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-foreground">
+                      <p className="text-xs font-bold text-foreground">
                         Request Initialized
                       </p>
-                      <span className="font-mono text-[11px] text-muted-foreground">
+                      <span
+                        className={cn(
+                          "font-mono text-[10px]",
+                          "text-muted-foreground",
+                        )}
+                      >
                         {formatDate(appointment.createdAt || "")}
                       </span>
                     </div>
@@ -987,75 +1144,6 @@ export default function AppointmentDetails() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
-
-        {/* Sidebar Column: Student Dossier & Active Session (4 cols) */}
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="space-y-6 lg:col-span-4"
-        >
-          <StudentProfileBentoCard
-            student={studentData}
-            onViewCor={() => setShowCorPreview(true)}
-            canAccessIir={true}
-          />
-
-          {/* Session Timer & Secondary Actions (Only when scheduled) */}
-          {isScheduled && (
-            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
-                <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
-                  <Play className="h-4 w-4 text-primary" />
-                  In-Office Consultation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-5">
-                <InOfficeSessionTimer
-                  startedAt={appointment.startedAt}
-                  completedAt={appointment.completedAt}
-                  title="Counseling Session"
-                  studentName={fullName}
-                  studentNumber={appointment.studentNumber}
-                  onStart={(offset) => {
-                    if (!offset) {
-                      setIsStartConfirming(true);
-                    } else {
-                      handleConfirmStartAppointment(offset);
-                    }
-                  }}
-                  onComplete={
-                    isSessionActive
-                      ? () => handleActionClick("Complete")
-                      : undefined
-                  }
-                  isPending={startAppointmentMutation.isPending}
-                />
-
-                {!isSessionActive && (
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/60">
-                    <Button
-                      variant="outline"
-                      onClick={() => handleActionClick("No-show")}
-                      className="h-10 gap-1.5 rounded-xl border-border/80 text-xs font-semibold hover:bg-muted/30"
-                    >
-                      <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
-                      Mark No-show
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleActionClick("Cancel")}
-                      className="h-10 gap-1.5 rounded-xl border-destructive/30 text-xs font-semibold text-destructive hover:bg-destructive/10"
-                    >
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Cancel
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </motion.div>
       </div>
 
