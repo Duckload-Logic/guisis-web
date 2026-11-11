@@ -15,6 +15,27 @@ import { useMe } from "@/features/users/hooks/useMe";
 export const IIR_DRAFT_STORAGE_KEY = (userId: string) =>
   `iir_draft-student_${userId}`;
 
+export const encodeStoragePayload = (value: unknown): string => {
+  try {
+    return btoa(encodeURIComponent(JSON.stringify(value)));
+  } catch {
+    return "";
+  }
+};
+
+export const decodeStoragePayload = <T>(stored?: string | null): T | null => {
+  if (!stored) return null;
+  try {
+    return JSON.parse(decodeURIComponent(atob(stored))) as T;
+  } catch {
+    try {
+      return JSON.parse(stored) as T;
+    } catch {
+      return null;
+    }
+  }
+};
+
 /**
  * Hook for managing the IIR Form state and submission
  */
@@ -106,10 +127,10 @@ export function useSaveIIRDraft() {
       // Mirror to session storage to avoid persisting sensitive PII in localStorage.
       if (me?.id) {
         try {
-          sessionStorage.setItem(
-            IIR_DRAFT_STORAGE_KEY(me.id),
-            JSON.stringify(data),
-          );
+          const encoded = encodeStoragePayload(data);
+          if (encoded) {
+            sessionStorage.setItem(IIR_DRAFT_STORAGE_KEY(me.id), encoded);
+          }
           localStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me.id));
           const now = new Date();
           setLastSaved(

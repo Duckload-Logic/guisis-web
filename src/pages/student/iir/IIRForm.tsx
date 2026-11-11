@@ -16,6 +16,7 @@ import {
   useIIRFormSave,
   useSaveIIRDraft,
   useTouchedState,
+  decodeStoragePayload,
 } from "@/features/iir/hooks";
 import { EMPTY_IIR_FORM } from "@/features/iir/constants";
 import {
@@ -357,12 +358,13 @@ export default function IIRForm() {
     }
     if (localDraftStr) {
       try {
-        const parsed = JSON.parse(localDraftStr) as IIRFormType;
+        const parsed = decodeStoragePayload<IIRFormType>(localDraftStr);
         if (
-          parsed.student?.basicInfo?.lastName ||
-          parsed.student?.basicInfo?.firstName ||
-          (parsed.family?.relatedPersons &&
-            parsed.family.relatedPersons.length > 0)
+          parsed &&
+          (parsed.student?.basicInfo?.lastName ||
+            parsed.student?.basicInfo?.firstName ||
+            (parsed.family?.relatedPersons &&
+              parsed.family.relatedPersons.length > 0))
         ) {
           setDraftData(parsed);
           setShowDraftPrompt(true);
