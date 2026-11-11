@@ -18,6 +18,7 @@ import {
 import { FormField } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { API_ROUTES } from "@/config/apiRoutes";
+import { normalizeApiBaseUrl } from "@/lib/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -37,7 +38,9 @@ export default function Login() {
   const [isCheckingIDP, setIsCheckingIDP] = useState(isFallback);
 
   const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
-  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const apiBase = normalizeApiBaseUrl(
+    import.meta.env.VITE_API_BASE_URL || "",
+  );
   const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
   const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
 

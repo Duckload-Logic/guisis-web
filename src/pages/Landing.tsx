@@ -1,5 +1,6 @@
 import Layout from "@/components/layout/Layout";
 import { API_ROUTES } from "@/config/apiRoutes";
+import { normalizeApiBaseUrl } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,7 +17,9 @@ import {
 
 export default function Landing() {
   const isProd = import.meta.env.VITE_IS_PRODUCTION === "true";
-  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const apiBase = normalizeApiBaseUrl(
+    import.meta.env.VITE_API_BASE_URL || "",
+  );
   const authorizeUrl = API_ROUTES.auth.idpAuthorizeUrl;
   const loginUrl = isProd ? `${apiBase}${authorizeUrl}` : "/login";
 
