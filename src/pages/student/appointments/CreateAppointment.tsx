@@ -772,51 +772,29 @@ export default function CreateAppointment() {
               />
 
               {/* Counselor Preference */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label
-                    className={cn(
-                      "text-xs font-bold uppercase tracking-wider",
-                      "text-foreground",
-                    )}
-                  >
-                    Counselor Preference
-                  </label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsCounselorModalOpen(true)}
-                    className={cn(
-                      "h-8 text-xs font-semibold text-primary",
-                      "hover:text-primary/80",
-                    )}
-                  >
-                    {selectedCounselor
-                      ? "Change Counselor"
-                      : "Select Counselor"}
-                  </Button>
-                </div>
-
-                <div
-                  onClick={() => setIsCounselorModalOpen(true)}
+              <div className="space-y-1.5">
+                <label
                   className={cn(
-                    "flex cursor-pointer items-center justify-between gap-3",
-                    "rounded-xl border p-3.5 transition-all",
-                    selectedCounselor
-                      ? cn(
-                          "border-primary/30 bg-primary/[0.02]",
-                          "hover:border-primary/50 hover:bg-primary/[0.04]",
-                        )
-                      : cn(
-                          "border-dashed border-primary/40 bg-primary/[0.02]",
-                          "hover:border-primary hover:bg-primary/[0.05]",
-                        ),
+                    "text-xs font-bold uppercase tracking-wider",
+                    "text-foreground",
                   )}
                 >
-                  {selectedCounselor ? (
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar className="h-10 w-10 shrink-0 border border-primary/20">
+                  Counselor Preference
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsCounselorModalOpen(true)}
+                  className={cn(
+                    "flex min-h-11 w-full items-center justify-between gap-3",
+                    "rounded-xl border border-border/80 bg-background px-3.5",
+                    "py-2.5 text-left transition-colors hover:bg-muted/40",
+                    "focus-visible:outline-none focus-visible:ring-2",
+                    "focus-visible:ring-primary",
+                  )}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    {selectedCounselor ? (
+                      <Avatar className="h-8 w-8 shrink-0 border border-border">
                         <AvatarImage
                           src={selectedCounselor.profilePicture}
                           alt={formatCounselorFullName(selectedCounselor)}
@@ -826,47 +804,32 @@ export default function CreateAppointment() {
                           {selectedCounselor.lastName.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-foreground sm:text-sm">
-                          {formatCounselorFullName(selectedCounselor)}
-                        </p>
+                    ) : (
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-foreground">
+                        {selectedCounselor
+                          ? formatCounselorFullName(selectedCounselor)
+                          : "No Preference (Any Available Counselor)"}
+                      </p>
+                      {selectedCounselor?.position ? (
                         <p className="truncate text-[11px] text-muted-foreground">
-                          {selectedCounselor.position || "Guidance Counselor"}
+                          {selectedCounselor.position}
                         </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Users className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground sm:text-sm">
-                          No Counselor Preference
+                      ) : (
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          Tap to select a specific counselor
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          Any available counselor • Tap to choose a specific
-                          counselor
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span
-                      className={cn(
-                        "rounded-full border px-2.5 py-0.5 text-[10px]",
-                        "font-semibold uppercase tracking-wider",
-                        selectedCounselor
-                          ? getCounselorGenderStyle(selectedCounselor.gender).badge
-                          : "border-primary/30 bg-background font-bold text-primary",
                       )}
-                    >
-                      {selectedCounselor
-                        ? `${selectedCounselor.gender} Counselor`
-                        : "Choose"}
-                    </span>
+                    </div>
                   </div>
-                </div>
+                  <span className="text-xs font-semibold text-primary">
+                    {selectedCounselor ? "Change" : "Choose"}
+                  </span>
+                </button>
               </div>
 
               <FormField
@@ -967,8 +930,39 @@ export default function CreateAppointment() {
             <CardContent className="space-y-4 pt-4">
               {/* Structured Key-Value Breakdown */}
               <div className="divide-y divide-border/60 text-xs">
-                {/* Primary Slot */}
+                {/* Counselor Preference */}
                 <div className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      Counselor Preference
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCounselorModalOpen(true)}
+                      className={cn(
+                        "text-[11px] font-semibold text-primary",
+                        "hover:underline",
+                      )}
+                    >
+                      {selectedCounselor ? "Change" : "Select"}
+                    </button>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="font-semibold text-foreground">
+                      {selectedCounselor
+                        ? formatCounselorFullName(selectedCounselor)
+                        : "No Preference (Any Counselor)"}
+                    </span>
+                    {selectedCounselor?.gender && (
+                      <Badge variant="outline" className="text-[10px]">
+                        {selectedCounselor.gender}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Primary Slot */}
+                <div className="py-2.5">
                   <span className="text-[11px] font-medium text-muted-foreground">
                     Primary Schedule
                   </span>
@@ -1033,17 +1027,6 @@ export default function CreateAppointment() {
                   </div>
                 )}
 
-                {/* Counselor Preference */}
-                <div className="flex items-center justify-between py-2.5">
-                  <span className="text-[11px] font-medium text-muted-foreground">
-                    Counselor
-                  </span>
-                  <span className="max-w-[180px] truncate font-semibold text-foreground">
-                    {selectedCounselor
-                      ? formatCounselorFullName(selectedCounselor)
-                      : "No Preference"}
-                  </span>
-                </div>
 
                 {/* Category */}
                 <div className="flex items-center justify-between py-2.5">
