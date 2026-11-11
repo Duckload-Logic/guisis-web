@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Calendar,
   CheckCircle,
-  XCircle,
   AlertCircle,
   Clock3,
   CalendarRange,
@@ -44,15 +43,11 @@ import {
 } from "@/utils/dateTime";
 import { usePageMetadata, useToast } from "@/context";
 import { parseAuditTrail } from "@/utils/auditTrail";
-import ActionConfirmModal from
-  "@/features/appointments/components/ConfirmModal";
-import RescheduleModal from
-  "@/features/appointments/components/RescheduleModal";
+import ActionConfirmModal from "@/features/appointments/components/ConfirmModal";
+import RescheduleModal from "@/features/appointments/components/RescheduleModal";
 import { CORPreviewDialog } from "@/components/shared/CORPreviewDialog";
 import { InOfficeSessionTimer } from "@/components/shared/InOfficeSessionTimer";
-import {
-  StudentProfileBentoCard,
-} from "@/components/shared/StudentProfileBentoCard";
+import { StudentProfileBentoCard } from "@/components/shared/StudentProfileBentoCard";
 import { cn } from "@/lib/utils";
 
 const FALLBACK_RESCHEDULED_STATUS_ID = 6;
@@ -119,8 +114,7 @@ function getAIExplainability(appointment?: any): string {
     appointment.urgencyLevel ?? appointment.urgency ?? "MEDIUM",
   ).toUpperCase();
   const score =
-    typeof appointment.urgencyScore === "number" &&
-    appointment.urgencyScore > 0
+    typeof appointment.urgencyScore === "number" && appointment.urgencyScore > 0
       ? `${(appointment.urgencyScore * 100).toFixed(1)}% confidence`
       : "";
   const confText = score ? ` (${score})` : "";
@@ -177,8 +171,9 @@ function getAIExplainability(appointment?: any): string {
   }
 
   if (rawLevel.includes("LOW")) {
-    const isGreeting =
-      /^(?:hi|hello|hey|kamusta|good morning|test)/i.test(reasonText);
+    const isGreeting = /^(?:hi|hello|hey|kamusta|good morning|test)/i.test(
+      reasonText,
+    );
     if (isGreeting) {
       return (
         `The AI inferred this appointment is LOW${confText} because the ` +
@@ -414,7 +409,7 @@ export default function AppointmentDetails() {
             <Badge
               variant="outline"
               className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-semibold border",
+                "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
                 urgencyInfo.className,
               )}
               title="Automated Triage Urgency Level"
@@ -447,13 +442,7 @@ export default function AppointmentDetails() {
           </div>
         ) : null,
       }),
-      [
-        appointment,
-        fullName,
-        hasCopiedId,
-        isLoading,
-        urgencyInfo,
-      ],
+      [appointment, fullName, hasCopiedId, isLoading, urgencyInfo],
     ),
   );
 
@@ -597,8 +586,7 @@ export default function AppointmentDetails() {
     middleName: appointment.user?.middleName,
     lastName: appointment.user?.lastName,
     email: appointment.user?.email,
-    studentNumber:
-      appointment.studentNumber || appointment.user?.studentNumber,
+    studentNumber: appointment.studentNumber || appointment.user?.studentNumber,
     contactNumber: appointment.contactNumber,
     profilePicture: appointment.user?.profilePicture,
     iirId: appointment.iirId,
@@ -708,9 +696,7 @@ export default function AppointmentDetails() {
 
           {/* Administrative Controls Card */}
           <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader
-              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
-            >
+            <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
               <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
                 <CalendarRange className="h-4 w-4 text-primary" />
                 Administrative Controls
@@ -830,9 +816,7 @@ export default function AppointmentDetails() {
                     "py-6 text-center",
                   )}
                 >
-                  <CheckCircle
-                    className="mx-auto h-7 w-7 text-emerald-600/80"
-                  />
+                  <CheckCircle className="mx-auto h-7 w-7 text-emerald-600/80" />
                   <p className="mt-2 text-xs font-bold text-foreground/80">
                     Consultation Completed
                   </p>
@@ -849,9 +833,7 @@ export default function AppointmentDetails() {
                     "py-6 text-center",
                   )}
                 >
-                  <ShieldAlert
-                    className="mx-auto h-7 w-7 text-muted-foreground/60"
-                  />
+                  <ShieldAlert className="mx-auto h-7 w-7 text-muted-foreground/60" />
                   <p className="mt-2 text-xs font-bold text-muted-foreground">
                     Appointment is {appointment.status?.name}
                   </p>
@@ -870,9 +852,7 @@ export default function AppointmentDetails() {
         >
           {/* Consultation Request Context Card */}
           <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader
-              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
-            >
+            <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <MessageSquare className="h-4 w-4 text-primary" />
@@ -912,13 +892,13 @@ export default function AppointmentDetails() {
                 </div>
               </div>
 
-              {/* Clinical Triage Rationale Box */}
+              {/* AI Triage Rationale Box */}
               <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs font-semibold text-foreground">
-                      Clinical Triage Rationale
+                      AI Rationale
                     </span>
                   </div>
                   <Badge
@@ -1007,9 +987,7 @@ export default function AppointmentDetails() {
                           <p className="text-sm font-semibold text-foreground">
                             {formatDate(opt.date)}
                           </p>
-                          <p
-                            className="font-mono text-xs text-muted-foreground"
-                          >
+                          <p className="font-mono text-xs text-muted-foreground">
                             {format12HourTime(opt.slot.time)}
                           </p>
                         </div>
@@ -1023,9 +1001,7 @@ export default function AppointmentDetails() {
 
           {/* Audit Trail & History Card */}
           <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-            <CardHeader
-              className="border-b border-border/60 bg-muted/20 px-5 py-3.5"
-            >
+            <CardHeader className="border-b border-border/60 bg-muted/20 px-5 py-3.5">
               <CardTitle className="flex items-center gap-2 text-xs font-semibold text-foreground">
                 <Clock3 className="h-4 w-4 text-primary" />
                 Audit Trail & History
@@ -1050,8 +1026,7 @@ export default function AppointmentDetails() {
                         upper.includes("NOTE") ||
                         upper.includes("COUNSELOR")
                       ? "border-sky-500"
-                      : upper.includes("AI TRIAGE") ||
-                          upper.includes("TRIAGE")
+                      : upper.includes("AI TRIAGE") || upper.includes("TRIAGE")
                         ? "border-primary"
                         : upper.includes("APPROVED") ||
                             upper.includes("COMPLETED")
@@ -1062,7 +1037,10 @@ export default function AppointmentDetails() {
                             : "border-primary";
 
                   return (
-                    <div key={idx} className="relative">
+                    <div
+                      key={idx}
+                      className="relative"
+                    >
                       <div
                         className={cn(
                           "absolute -left-6 top-1 z-10 h-3 w-3",
@@ -1189,9 +1167,7 @@ export default function AppointmentDetails() {
               in the office to begin tracking session duration.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div
-            className="flex justify-end gap-3 border-t border-border/50 pt-4"
-          >
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
             <AlertDialogCancel className="h-11 rounded-xl font-semibold">
               Cancel
             </AlertDialogCancel>
@@ -1211,7 +1187,10 @@ export default function AppointmentDetails() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={isNoteModalOpen} onOpenChange={setIsNoteModalOpen}>
+      <AlertDialog
+        open={isNoteModalOpen}
+        onOpenChange={setIsNoteModalOpen}
+      >
         <AlertDialogContent className="max-w-md border border-border bg-card shadow-lg">
           <AlertDialogHeader>
             <div
@@ -1223,12 +1202,12 @@ export default function AppointmentDetails() {
               <StickyNote className="h-5 w-5" />
             </div>
             <AlertDialogTitle className="text-xl font-bold">
-              Add Counselor Clinical Remark
+              Add Counselor Remark
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-muted-foreground">
-              Add your clinical observations or remarks regarding this
-              appointment. This remark will be immutably recorded in the
-              audit history without altering the automated AI triage baseline.
+              Add your observations or remarks regarding this appointment. This
+              remark will be immutably recorded in the audit history without
+              altering the automated AI triage baseline.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
@@ -1244,9 +1223,7 @@ export default function AppointmentDetails() {
               )}
             />
           </div>
-          <div
-            className="flex justify-end gap-3 border-t border-border/50 pt-4"
-          >
+          <div className="flex justify-end gap-3 border-t border-border/50 pt-4">
             <AlertDialogCancel
               onClick={() => {
                 setCounselorNoteText("");
