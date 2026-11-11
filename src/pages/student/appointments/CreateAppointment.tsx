@@ -902,9 +902,9 @@ export default function CreateAppointment() {
                   </div>
                   <p className="leading-relaxed text-muted-foreground">
                     If you are experiencing severe distress or crisis,
-                    support is accessible. While your request will be
-                    prioritized by automated triage, direct institutional
-                    hotlines are provided below.
+                    immediate support is available. While the Guidance Office
+                    prioritizes urgent concerns, direct hotlines and walk-in
+                    options are provided below.
                   </p>
                   <div
                     className={cn(

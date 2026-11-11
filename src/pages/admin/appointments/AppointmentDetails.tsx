@@ -136,7 +136,7 @@ function getAIExplainability(appointment?: any): string {
     return (
       `The AI inferred this appointment is CRITICAL${confText} because ` +
       "contextual transformer analysis detected severe affective distress " +
-      "markers requiring immediate clinical triage."
+      "markers requiring immediate guidance triage."
     );
   }
 
@@ -526,7 +526,7 @@ export default function AppointmentDetails() {
       setShowReschedule(true);
       return;
     }
-    const requiresMessage = ["Cancel", "No-show"].includes(action);
+    const requiresMessage = action === "No-show";
     setPendingAction({ type: action, requiresMessage });
   };
 
@@ -657,7 +657,7 @@ export default function AppointmentDetails() {
                 Record Significant Note
               </h3>
               <p className="text-xs text-muted-foreground">
-                This completed appointment requires a consultation note in the
+                This completed appointment requires a significant note in the
                 student&apos;s records.
               </p>
             </div>
@@ -792,18 +792,6 @@ export default function AppointmentDetails() {
                     >
                       <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
                       Mark No-show
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleActionClick("Cancel")}
-                      className={cn(
-                        "col-span-2 h-11 gap-2 rounded-xl",
-                        "border-destructive/30 text-xs font-semibold",
-                        "text-destructive hover:bg-destructive/10",
-                      )}
-                    >
-                      <AlertCircle className="h-3.5 w-3.5" />
-                      Cancel Appointment
                     </Button>
                   </div>
                 </div>

@@ -55,7 +55,7 @@ export default function AppointmentDetails() {
 
   const auditEntries = useMemo(() => {
     const raw = parseAuditTrail(appointment?.adminNotes);
-    // Clinical observations and AI triage notes are privileged counselor-only
+    // Significant notes and AI triage notes are privileged counselor-only
     // data. Only display operational administrative logs to students.
     return raw.filter((entry) => {
       const upper = entry.status.toUpperCase();

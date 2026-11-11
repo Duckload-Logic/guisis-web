@@ -170,7 +170,7 @@ export default function StudentAppointments() {
       <Button
         asChild={hasValidCor}
         disabled={!hasValidCor}
-        className="h-10 gap-2 rounded-xl shadow-lg shadow-primary/15"
+        className="h-10 gap-2 rounded-xl shadow-sm"
         title={
           !user?.studentCorUrl
             ? "Upload your COR in your profile to book an appointment"
@@ -274,7 +274,7 @@ export default function StudentAppointments() {
             <Button
               asChild={hasValidCor}
               disabled={!hasValidCor}
-              className="mt-5 gap-2 rounded-xl shadow-lg shadow-primary/15"
+              className="mt-5 gap-2 rounded-xl shadow-sm"
               onClick={(e) => {
                 if (!hasValidCor) e.preventDefault();
               }}

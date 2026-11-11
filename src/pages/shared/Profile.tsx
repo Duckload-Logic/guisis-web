@@ -859,7 +859,7 @@ export default function Profile() {
                   <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2 text-xl font-bold">
                       <User className="text-primary" size={22} />
-                      Guidance Counselor Clinical Details
+                      Guidance Counselor Professional Details
                     </CardTitle>
                     <CardDescription>
                       Configure your title, gender designation, and position

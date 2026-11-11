@@ -296,8 +296,7 @@ export default function AppointmentsManagement() {
           <Card
             className={cn(
               "animate-fade-in-up overflow-hidden rounded-2xl border",
-              "border-border bg-card shadow-sm backdrop-blur-md",
-              "transition-all duration-300 hover:shadow-md lg:col-span-4",
+              "border-border bg-card shadow-sm lg:col-span-4",
             )}
             style={{ animationDelay: "0.10s", animationFillMode: "both" }}
           >
@@ -357,7 +356,7 @@ export default function AppointmentsManagement() {
               <div
                 className={cn(
                   "rounded-2xl border border-border/70 bg-muted/10",
-                  "px-4 py-6 shadow-inner backdrop-blur-md sm:px-6",
+                  "px-4 py-6 sm:px-6",
                 )}
               >
                 <div className="relative h-[280px]">
