@@ -1,9 +1,6 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  useAppointment,
-  useCancelAppointment,
-} from "@/features/appointments/hooks";
+import { useAppointment } from "@/features/appointments/hooks";
 import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,16 +17,6 @@ import {
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/context";
 import { format } from "date-fns";
@@ -50,8 +37,6 @@ export default function AppointmentDetails() {
   useAutoMarkNotificationRead(id);
 
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
-  const { mutate: cancelAppointment, isPending: isCancelling } =
-    useCancelAppointment();
 
   const auditEntries = useMemo(() => {
     const raw = parseAuditTrail(appointment?.adminNotes);
@@ -73,9 +58,6 @@ export default function AppointmentDetails() {
     const key = getStatusColorKey(statusName);
     return STATUS_COLORS[key] || "bg-muted text-muted-foreground";
   };
-
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
 
   const pageHeaderActions = useMemo(
     () => (
@@ -112,24 +94,6 @@ export default function AppointmentDetails() {
       [appointment?.status?.name, pageHeaderActions, isLoading],
     ),
   );
-
-  const handleCancel = () => {
-    if (!id || !cancelReason.trim()) return;
-
-    cancelAppointment(
-      { id, reason: cancelReason },
-      {
-        onSuccess: () => {
-          triggerToast("Appointment cancelled successfully");
-          setIsCancelModalOpen(false);
-          navigate("/student/appointments");
-        },
-        onError: () => {
-          triggerToast("Failed to cancel appointment");
-        },
-      },
-    );
-  };
 
   if (isError) {
     return (
@@ -219,10 +183,6 @@ export default function AppointmentDetails() {
     );
   }
 
-  const isCancellable =
-    appointment?.status?.name === "Pending" ||
-    appointment?.status?.name === "Scheduled";
-
   const whenDate = appointment?.whenDate
     ? new Date(appointment.whenDate)
     : null;
@@ -299,20 +259,6 @@ export default function AppointmentDetails() {
                 </span>
               </h2>
             </div>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2 sm:self-center">
-            {isCancellable && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setIsCancelModalOpen(true)}
-                disabled={isCancelling}
-                className="h-9 rounded-xl font-semibold shadow-sm"
-              >
-                Cancel Appointment
-              </Button>
-            )}
           </div>
         </div>
 
@@ -607,55 +553,6 @@ export default function AppointmentDetails() {
           </div>
         </div>
       </div>
-
-      <Dialog
-        open={isCancelModalOpen}
-        onOpenChange={setIsCancelModalOpen}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Cancel Appointment</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for cancelling your appointment. This
-              helps our counselors understand your situation.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="reason">Reason for Cancellation</Label>
-              <Textarea
-                id="reason"
-                placeholder={
-                  "e.g., Class conflict, feeling better, urgent " +
-                  "schedule change..."
-                }
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <p className="text-[10px] italic text-muted-foreground">
-                * This reason will be recorded in your guidance audit trail.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="ghost"
-              onClick={() => setIsCancelModalOpen(false)}
-              disabled={isCancelling}
-            >
-              Go Back
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleCancel}
-              disabled={!cancelReason.trim() || isCancelling}
-            >
-              {isCancelling ? "Cancelling..." : "Confirm Cancellation"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
