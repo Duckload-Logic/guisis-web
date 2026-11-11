@@ -10,6 +10,7 @@ export {
   useIIRFormSave,
   useGetIIRDraft,
   useSaveIIRDraft,
+  decodeStoragePayload,
 } from "./useIIRForm";
 
 export { useAddressSync } from "./useAddressSync";
