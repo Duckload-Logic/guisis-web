@@ -113,14 +113,9 @@ function getAIExplainability(appointment?: any): string {
   const rawLevel = String(
     appointment.urgencyLevel ?? appointment.urgency ?? "MEDIUM",
   ).toUpperCase();
-  const score =
-    typeof appointment.urgencyScore === "number" && appointment.urgencyScore > 0
-      ? `${(appointment.urgencyScore * 100).toFixed(1)}% confidence`
-      : "";
-  const confText = score ? ` (${score})` : "";
   const reasonText = String(appointment.reason || "").toLowerCase();
 
-  // 2. Synthesize explainability rationale for legacy records
+  // 2. Synthesize clean, human-friendly explainability for counselors
   if (rawLevel.includes("CRITICAL")) {
     const isCrisisPattern =
       /(?:laslas|suicide|pakamatay|stalk|banta|cut|ending my life|mamatay)/i.test(
@@ -128,15 +123,13 @@ function getAIExplainability(appointment?: any): string {
       );
     if (isCrisisPattern) {
       return (
-        `The AI inferred this appointment is CRITICAL${confText} because ` +
-        "the submission matched emergency safety indicators related to " +
-        "acute personal crisis or self-harm."
+        "Flagged as CRITICAL priority due to emergency safety indicators " +
+        "or potential self-harm. Immediate counselor contact is advised."
       );
     }
     return (
-      `The AI inferred this appointment is CRITICAL${confText} because ` +
-      "contextual transformer analysis detected severe affective distress " +
-      "markers requiring immediate guidance triage."
+      "Flagged as CRITICAL priority due to signs of acute personal " +
+      "distress requiring immediate guidance intervention."
     );
   }
 
@@ -147,9 +140,9 @@ function getAIExplainability(appointment?: any): string {
       );
     if (isAcademic) {
       return (
-        `The AI inferred this appointment is HIGH${confText} because the ` +
-        "concern describes acute academic distress or critical institutional " +
-        "deadlines (e.g., failing grades, scholarship, or graduation)."
+        "Flagged as HIGH priority due to acute academic distress or " +
+        "time-sensitive concerns (e.g., failing marks, scholarship, or " +
+        "graduation deadlines)."
       );
     }
     const isEmotional =
@@ -158,15 +151,13 @@ function getAIExplainability(appointment?: any): string {
       );
     if (isEmotional) {
       return (
-        `The AI inferred this appointment is HIGH${confText} because the ` +
-        "student manifested significant psychological strain, chronic anxiety, " +
-        "or emotional overwhelm."
+        "Flagged as HIGH priority due to significant emotional strain, " +
+        "chronic anxiety, or severe overwhelm."
       );
     }
     return (
-      `The AI inferred this appointment is HIGH${confText} because contextual ` +
-      "semantic evaluation classified the concern as high-priority over " +
-      "routine guidance requests."
+      "Flagged as HIGH priority for prompt counselor review ahead of " +
+      "routine consultations."
     );
   }
 
@@ -176,22 +167,19 @@ function getAIExplainability(appointment?: any): string {
     );
     if (isGreeting) {
       return (
-        `The AI inferred this appointment is LOW${confText} because the ` +
-        "submission consists of routine greetings or testing inputs without " +
-        "observable distress indicators."
+        "Classified as LOW priority for brief inquiry or test submission " +
+        "without urgent concern."
       );
     }
     return (
-      `The AI inferred this appointment is LOW${confText} because the ` +
-      "concern pertains to routine informational inquiries or standard " +
-      "scheduling without acute distress markers."
+      "Classified as LOW priority for routine informational inquiries or " +
+      "general guidance questions."
     );
   }
 
   return (
-    `The AI inferred this appointment is MEDIUM${confText} because the ` +
-    "concern represents standard developmental, educational, or personal " +
-    "counseling needs without acute crisis markers."
+    "Classified as MEDIUM priority for standard developmental, academic, " +
+    "or personal counseling consultations."
   );
 }
 
@@ -880,39 +868,91 @@ export default function AppointmentDetails() {
                 </div>
               </div>
 
-              {/* AI Triage Rationale Box */}
-              <div className="space-y-2 rounded-xl border border-border/80 bg-muted/20 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-semibold text-foreground">
-                      AI Rationale
-                    </span>
-                  </div>
-                  <Badge
-                    variant="outline"
+              {/* Triage Assessment Box */}
+              {(() => {
+                const urgencyLabel = urgencyInfo.label.toLowerCase();
+                const containerStyle = urgencyLabel.includes("critical")
+                  ? "border-destructive/40 bg-destructive/[0.04] border-l-destructive"
+                  : urgencyLabel.includes("high")
+                    ? "border-amber-500/40 bg-amber-500/[0.04] border-l-amber-500"
+                    : urgencyLabel.includes("low")
+                      ? "border-emerald-500/30 bg-emerald-500/[0.03] border-l-emerald-500"
+                      : "border-sky-500/30 bg-sky-500/[0.03] border-l-sky-500";
+
+                const confidencePct =
+                  typeof (appointment as any)?.urgencyScore === "number" &&
+                  (appointment as any)?.urgencyScore > 0
+                    ? `${((appointment as any).urgencyScore * 100).toFixed(0)}%`
+                    : null;
+
+                return (
+                  <div
                     className={cn(
-                      "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
-                      urgencyInfo.className,
+                      "space-y-3 rounded-xl border border-l-4 p-4",
+                      containerStyle,
                     )}
                   >
-                    {urgencyInfo.label} Priority
-                  </Badge>
-                </div>
-                <p className="text-xs leading-relaxed text-foreground/85">
-                  {getAIExplainability(appointment)}
-                </p>
-                <div className="flex items-center justify-between border-t border-border/50 pt-2 text-[11px] text-muted-foreground">
-                  <span>Model: DistilBERT triage pipeline</span>
-                  <span>
-                    Confidence:{" "}
-                    {typeof (appointment as any)?.urgencyScore === "number" &&
-                    (appointment as any)?.urgencyScore > 0
-                      ? `${((appointment as any).urgencyScore * 100).toFixed(1)}%`
-                      : "Deterministic Safety Gate"}
-                  </span>
-                </div>
-              </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert
+                          className={cn(
+                            "h-4 w-4 shrink-0",
+                            urgencyLabel.includes("critical")
+                              ? "text-destructive"
+                              : urgencyLabel.includes("high")
+                                ? "text-amber-500"
+                                : "text-primary",
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-xs font-bold uppercase tracking-wider",
+                            "text-foreground",
+                          )}
+                        >
+                          Triage Assessment
+                        </span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                          urgencyInfo.className,
+                        )}
+                      >
+                        {urgencyInfo.label} Priority
+                      </Badge>
+                    </div>
+
+                    <p
+                      className={cn(
+                        "text-xs font-medium leading-relaxed",
+                        "text-foreground sm:text-sm",
+                      )}
+                    >
+                      {getAIExplainability(appointment)}
+                    </p>
+
+                    <div
+                      className={cn(
+                        "flex flex-wrap items-center justify-between gap-2",
+                        "border-t border-border/60 pt-2 text-[11px]",
+                        "text-muted-foreground",
+                      )}
+                    >
+                      <span>Automated Intake Assessment</span>
+                      <span>
+                        Assessment Reliability:{" "}
+                        <strong className="font-semibold text-foreground">
+                          {confidencePct
+                            ? `${confidencePct} Match`
+                            : "Safety Rule Match"}
+                        </strong>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Schedule options / Selected schedule */}
               <div className="space-y-2">
