@@ -2,7 +2,15 @@ import { capitalizeFirstLetter, isAuthPath } from "@/utils";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { decamelizeKeys, camelizeKeys } from "humps";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+const normalizeApiBaseUrl = (url: string) => {
+  const trimmed = url.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(rawBaseUrl);
 
 const isStagingEnvironment = () => {
   const environmentName = String(

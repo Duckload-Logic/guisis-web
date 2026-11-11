@@ -349,7 +349,12 @@ export default function IIRForm() {
   }, [currentSection, scrollToTop]);
 
   useEffect(() => {
-    const localDraftStr = localStorage.getItem(`iir_draft-student_${me?.id}`);
+    const draftKey = `iir_draft-student_${me?.id}`;
+    const localDraftStr =
+      sessionStorage.getItem(draftKey) || localStorage.getItem(draftKey);
+    if (localStorage.getItem(draftKey)) {
+      localStorage.removeItem(draftKey);
+    }
     if (localDraftStr) {
       try {
         const parsed = JSON.parse(localDraftStr) as IIRFormType;

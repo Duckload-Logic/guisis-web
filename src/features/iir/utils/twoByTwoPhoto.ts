@@ -47,15 +47,13 @@ const normalizeKeyPart = (value?: string | number | null) =>
 
 const getStorageKeys = (identity?: TwoByTwoPhotoIdentity) => {
   const keys = [
-    identity?.iirId ? `${STORAGE_PREFIX}:iir:${normalizeKeyPart(identity.iirId)}` : "",
+    identity?.iirId ?
+      `${STORAGE_PREFIX}:iir:${normalizeKeyPart(identity.iirId)}` : "",
     identity?.userId
       ? `${STORAGE_PREFIX}:user:${normalizeKeyPart(identity.userId)}`
       : "",
     identity?.studentNumber
       ? `${STORAGE_PREFIX}:student:${normalizeKeyPart(identity.studentNumber)}`
-      : "",
-    identity?.email
-      ? `${STORAGE_PREFIX}:email:${normalizeKeyPart(identity.email)}`
       : "",
   ].filter(Boolean);
 
@@ -171,7 +169,8 @@ export function saveIIRTwoByTwoPhoto(
   if (typeof window === "undefined" || !photoUrl) return;
 
   getStorageKeys(identity).forEach((key) => {
-    localStorage.setItem(key, photoUrl);
+    sessionStorage.setItem(key, photoUrl);
+    localStorage.removeItem(key);
   });
 }
 
@@ -179,6 +178,7 @@ export function removeIIRTwoByTwoPhoto(identity?: TwoByTwoPhotoIdentity) {
   if (typeof window === "undefined") return;
 
   getStorageKeys(identity).forEach((key) => {
+    sessionStorage.removeItem(key);
     localStorage.removeItem(key);
   });
 }
@@ -193,7 +193,9 @@ export function getIIRTwoByTwoPhoto(
   if (typeof window === "undefined") return "";
 
   for (const key of getStorageKeys(identity)) {
-    const value = normalizeTwoByTwoPhotoUrl(localStorage.getItem(key));
+    const value = normalizeTwoByTwoPhotoUrl(
+      sessionStorage.getItem(key) || localStorage.getItem(key),
+    );
     if (value) return value;
   }
 

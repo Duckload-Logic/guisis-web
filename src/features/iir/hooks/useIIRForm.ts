@@ -97,21 +97,26 @@ export function useSaveIIRDraft() {
 
   const clearDraft = useCallback(() => {
     if (!me?.id) return;
+    sessionStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me.id));
     localStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me.id));
   }, [me?.id]);
 
   const mutation = useMutation({
     mutationFn: async (data: IIRForm) => {
-      // Mirror to local storage even if the backend draft endpoint fails.
+      // Mirror to session storage to avoid persisting sensitive PII in localStorage.
       if (me?.id) {
         try {
-          localStorage.setItem(IIR_DRAFT_STORAGE_KEY(me.id), JSON.stringify(data));
+          sessionStorage.setItem(
+            IIR_DRAFT_STORAGE_KEY(me.id),
+            JSON.stringify(data),
+          );
+          localStorage.removeItem(IIR_DRAFT_STORAGE_KEY(me.id));
           const now = new Date();
           setLastSaved(
             now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           );
         } catch (err) {
-          console.error("Local storage save error:", err);
+          console.error("Session storage save error:", err);
         }
       }
 
