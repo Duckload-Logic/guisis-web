@@ -20,6 +20,7 @@ import {
   Quote,
   MoreVertical,
   User,
+  Zap,
 } from "lucide-react";
 
 import { usePageMetadata } from "@/context";
@@ -1803,7 +1804,7 @@ export function SupportManagement() {
                         "font-semibold text-muted-foreground",
                       )}
                     >
-                      <Sparkles className="h-3 w-3 text-primary" />
+                      <Zap className="h-3 w-3 text-primary" />
                       Quick:
                     </span>
                     {CANNED_RESPONSES.map((snippet) => (
