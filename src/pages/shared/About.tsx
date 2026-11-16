@@ -6,35 +6,36 @@ export default function About() {
       showHeader
       isLoggedIn={false}
     >
-      <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-10 sm:px-6 lg:px-8">
-        <div className="rounded-[30px] border border-border bg-card p-8 shadow-sm backdrop-blur-2xl">
-          <h1 className="text-4xl font-semibold text-foreground">
+      <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-10 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             About PUP Guidance Services
           </h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-muted-foreground">
-            The Guidance Services Information System (GuiSIS) helps students
-            access counseling, appointments, and support services from the
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            The Guidance Services Information System (GuiSIS) is the official
+            university channel for confidential counseling consultations,
+            absence verification, and student inventory records for the
             Polytechnic University of the Philippines – Taguig.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-border p-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                Our Mission
+            <div className="rounded-xl border border-border bg-muted/20 p-5">
+              <h2 className="text-lg font-semibold text-foreground">
+                Institutional Mandate
               </h2>
-              <p className="mt-3 text-muted-foreground">
-                To provide secure, easy access to guidance support,
-                appointments, and student records through a modern online
-                portal.
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Operating strictly under Republic Act No. 9258 and RA 10173
+                (Data Privacy Act of 2012), all student records and session notes
+                remain strictly confidential.
               </p>
             </div>
-            <div className="rounded-3xl border border-border p-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                Who Can Use It
+            <div className="rounded-xl border border-border bg-muted/20 p-5">
+              <h2 className="text-lg font-semibold text-foreground">
+                Who Can Access
               </h2>
-              <p className="mt-3 text-muted-foreground">
-                Currently, authorized students, guidance advisors, and
-                administrators can log in through the university IDP to manage
-                guidance services.
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Authorized students, guidance counselors, and administrators
+                access services via official university credentials to submit,
+                manage, and review guidance requests.
               </p>
             </div>
           </div>

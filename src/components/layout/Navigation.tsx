@@ -145,7 +145,7 @@ function NavItem({
       onClick={onClick}
       title={!isExpanded ? item.label : undefined}
       className={cn(
-        "sidebar-icon-tilt group flex cursor-pointer items-center",
+        "group flex cursor-pointer items-center",
         isExpanded ? "justify-start gap-3 px-3 py-3" : "justify-center p-3",
         "rounded-xl",
         "transition-[background-color,color,box-shadow] duration-200 ease-out",

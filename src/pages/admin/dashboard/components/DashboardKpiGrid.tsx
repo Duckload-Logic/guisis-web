@@ -1,4 +1,4 @@
-import { type LucideIcon, TrendingUp } from "lucide-react";
+import { type LucideIcon, TrendingDown, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -23,14 +23,11 @@ export function DashboardKpiGrid({ isLoading, kpis }: DashboardKpiGridProps) {
         ? Array.from({ length: 4 }).map((_, index) => (
             <Card
               key={index}
-              className={cn(
-                "rounded-2xl border border-glass-border bg-card/50",
-                "shadow-xs p-5 backdrop-blur-xl",
-              )}
+              className="rounded-xl border border-border bg-card p-5 shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <Skeleton className="h-4 w-24 rounded-md" />
-                <Skeleton className="h-8 w-8 rounded-xl" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
               </div>
               <div className="mt-3 space-y-2">
                 <Skeleton className="h-7 w-16 rounded-md" />
@@ -46,24 +43,18 @@ export function DashboardKpiGrid({ isLoading, kpis }: DashboardKpiGridProps) {
               <Card
                 key={index}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl border",
-                  "shadow-xs border-glass-border bg-card/60 p-5",
-                  "backdrop-blur-xl transition-all duration-300",
-                  "hover:-translate-y-0.5 hover:shadow-md",
+                  "relative overflow-hidden rounded-xl border border-border",
+                  "bg-card p-5 shadow-sm transition-colors",
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold text-muted-foreground",
-                    )}
-                  >
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {kpi.title}
                   </span>
                   <div
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-xl",
-                      "shadow-xs border border-glass-border",
+                      "flex h-8 w-8 items-center justify-center rounded-lg",
+                      "border border-border/60",
                       kpi.iconStyle,
                     )}
                   >
@@ -92,7 +83,11 @@ export function DashboardKpiGrid({ isLoading, kpis }: DashboardKpiGridProps) {
                             : "bg-destructive/10 text-destructive",
                         )}
                       >
-                        <TrendingUp className="h-2.5 w-2.5" />
+                        {kpi.trend! >= 0 ? (
+                          <TrendingUp className="h-2.5 w-2.5" />
+                        ) : (
+                          <TrendingDown className="h-2.5 w-2.5" />
+                        )}
                         {kpi.trend! >= 0 ? `+${kpi.trend}` : kpi.trend}
                       </span>
                     ) : null}

@@ -6,34 +6,37 @@ export default function Contact() {
       showHeader
       isLoggedIn={false}
     >
-      <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-10 sm:px-6 lg:px-8">
-        <div className="rounded-[30px] border border-border bg-card p-8 shadow-sm backdrop-blur-2xl">
-          <h1 className="text-4xl font-semibold text-foreground">Contact Us</h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-muted-foreground">
-            Need help with your GuiSIS account or guidance services? Reach out
-            to the PUP Taguig Guidance Office using the details below.
+      <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-10 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Office Directory & Support
+          </h1>
+          <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Reach out to the Polytechnic University of the Philippines – Taguig
+            Guidance and Counseling Office for academic concerns, admission
+            documentation, or counseling consultations.
           </p>
-          <div className="mt-8 space-y-6">
-            <div className="rounded-3xl border border-border p-6">
-              <h2 className="text-xl font-semibold text-foreground">
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-muted/20 p-5">
+              <h2 className="text-lg font-semibold text-foreground">
                 Guidance Office
               </h2>
-              <p className="mt-3 text-muted-foreground">
-                Phone: (02) 1234-5678
+              <p className="mt-2 text-sm text-muted-foreground">
+                Location: Guidance & Counseling Office, 2nd Floor
               </p>
-              <p className="mt-1 text-muted-foreground">
-                Email: guidance@pup.edu.ph
+              <p className="mt-1 text-sm text-muted-foreground">
+                Hours: Monday – Friday, 8:00 AM – 5:00 PM
               </p>
             </div>
-            <div className="rounded-3xl border border-border p-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                Technical Support
+            <div className="rounded-xl border border-border bg-muted/20 p-5">
+              <h2 className="text-lg font-semibold text-foreground">
+                Emergency & Crisis Hotline
               </h2>
-              <p className="mt-3 text-muted-foreground">
-                Email: support@pup.edu.ph
+              <p className="mt-2 text-sm text-muted-foreground">
+                National Center for Mental Health (NCMH): 1553 (Toll-Free)
               </p>
-              <p className="mt-1 text-muted-foreground">
-                Office hours: Monday to Friday, 8:00 AM to 5:00 PM
+              <p className="mt-1 text-sm text-muted-foreground">
+                Available 24/7 for immediate psychological support.
               </p>
             </div>
           </div>

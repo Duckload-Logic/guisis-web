@@ -362,7 +362,7 @@
     display: block;
     font-size: 1rem;
     font-weight: 600;
-    color: #374151;
+    color: hsl(var(--foreground));
   }
 
   .students-input {
@@ -370,28 +370,28 @@
   }
 
   .students-input:disabled {
-    background-color: #f1f1f1;
-    color: #acb1b9;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
     cursor: not-allowed;
   }
 
   .students-section-title {
     font-size: 1.125rem;
     font-weight: bold;
-    color: #111827;
+    color: hsl(var(--foreground));
   }
 
   .pill {
-    background-color: #e5e7eb;
-    color: #374151;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
     border-radius: 9999px;
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
   }
 
   .pill:disabled {
-    background-color: #e5e7eb;
-    color: #9ca3af;
+    background-color: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
     cursor: not-allowed;
   }
 
@@ -478,6 +478,94 @@
     }
   }
 
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.25s ease-in-out forwards;
+  }
+
+  @keyframes scan {
+    0% {
+      top: 0%;
+    }
+    50% {
+      top: 100%;
+    }
+    100% {
+      top: 0%;
+    }
+  }
+
+  .scanner-line {
+    animation: scan 2.5s linear infinite;
+  }
+
+  #qr-reader-viewport {
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  #qr-reader-viewport video {
+    object-fit: cover !important;
+    width: 100% !important;
+    height: 100% !important;
+    transform: scaleX(-1) !important;
+    -webkit-transform: scaleX(-1) !important;
+  }
+
   @keyframes expand-x {
     0% {
       transform: scaleX(0);
@@ -539,34 +627,6 @@
     transition: background-color 5000s ease-in-out 0s;
   }
 
-  @keyframes sidebar-tilt {
-    0% {
-      transform: rotate(0deg);
-    }
-    25% {
-      transform: rotate(-8deg);
-    }
-    50% {
-      transform: rotate(6deg);
-    }
-    75% {
-      transform: rotate(-4deg);
-    }
-    100% {
-      transform: rotate(0deg);
-    }
-  }
-
-  .sidebar-icon-tilt:hover svg {
-    animation: sidebar-tilt 0.35s ease-in-out;
-  }
-
-  .card-elevated,
-  [data-ui="card"] {
-    border-radius: 0.75rem !important;
-    box-shadow: var(--shadow-md) !important;
-  }
-
   .dyslexic-mode,
   .dyslexic-mode * {
     font-family: "Open-Dyslexic", "OpenDyslexic", sans-serif !important;
@@ -596,12 +656,8 @@
     max-width: 100%;
   }
 
-  .card-elevated,
-  [data-ui="card"],
-  .glass-card {
+  [data-ui="card"] {
     min-width: 0;
     max-width: 100%;
-    border-radius: 0.75rem !important;
-    box-shadow: var(--shadow-md) !important;
   }
 }

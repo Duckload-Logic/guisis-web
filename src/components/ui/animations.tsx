@@ -141,10 +141,10 @@ export const getAnimationDelay = (
 };
 
 /**
- * Component wrapper for animation styles
- * Use this to inject animation keyframes into your pages
+ * Legacy component wrapper for animation styles.
+ * Keyframes are now consolidated in global.css.
  */
-export const AnimationStyles = () => <style>{ANIMATION_KEYFRAMES}</style>;
+export const AnimationStyles = () => null;
 
 /**
  * Helper function to create staggered animation classes

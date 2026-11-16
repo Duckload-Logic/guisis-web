@@ -20,14 +20,14 @@ export function SlipsSummaryCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-2xl border border-glass-border",
-        "shadow-xs bg-card/60 backdrop-blur-xl",
+        "overflow-hidden rounded-xl border border-border",
+        "bg-card shadow-sm",
       )}
     >
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between border-b",
-          "border-glass-border bg-muted/20 px-5 py-3.5",
+          "border-border bg-muted/20 px-5 py-3.5",
         )}
       >
         <CardTitle className="text-sm font-bold text-foreground">

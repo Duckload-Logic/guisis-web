@@ -47,15 +47,14 @@ export function TodayAppointmentsCard({
   return (
     <Card
       className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border",
-        "shadow-xs border-glass-border bg-card/60 backdrop-blur-xl",
-        "lg:col-span-8",
+        "flex flex-col overflow-hidden rounded-xl border",
+        "border-border bg-card shadow-sm lg:col-span-8",
       )}
     >
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between border-b",
-          "border-glass-border bg-muted/20 px-6 py-4",
+          "border-border bg-muted/20 px-6 py-4",
         )}
       >
         <div>
@@ -97,7 +96,7 @@ export function TodayAppointmentsCard({
                 key={index}
                 className={cn(
                   "flex items-center justify-between rounded-xl border",
-                  "border-glass-border bg-muted/20 p-3",
+                  "border-border bg-muted/20 p-3",
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -120,8 +119,8 @@ export function TodayAppointmentsCard({
           >
             <div
               className={cn(
-                "flex h-12 w-12 items-center justify-center rounded-2xl",
-                "border border-glass-border bg-muted/40",
+                "flex h-12 w-12 items-center justify-center rounded-xl",
+                "border border-border bg-muted/40",
                 "text-muted-foreground shadow-inner",
               )}
             >
@@ -144,7 +143,7 @@ export function TodayAppointmentsCard({
             </Button>
           </div>
         ) : (
-          <div className="divide-y divide-glass-border">
+          <div className="divide-y divide-border">
             {appointments.map((apt, index) => (
               <div
                 key={apt.id || index}
@@ -161,7 +160,7 @@ export function TodayAppointmentsCard({
                   <Avatar
                     className={cn(
                       "h-9 w-9 shrink-0 rounded-full",
-                      "border border-glass-border",
+                      "border border-border",
                     )}
                   >
                     <AvatarImage

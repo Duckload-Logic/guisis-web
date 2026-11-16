@@ -43,12 +43,12 @@ export function MonthlyActivityChart({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-2xl border border-glass-border",
-        "shadow-xs bg-card/60 backdrop-blur-xl",
+        "overflow-hidden rounded-xl border border-border",
+        "bg-card shadow-sm",
       )}
     >
       <CardHeader
-        className={cn("border-b border-glass-border bg-muted/20 px-5 py-3.5")}
+        className={cn("border-b border-border bg-muted/20 px-5 py-3.5")}
       >
         <CardTitle className="text-sm font-bold text-foreground">
           Monthly Activity Trend

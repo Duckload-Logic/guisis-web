@@ -94,22 +94,10 @@ export default function Register() {
       >
         <div
           className={cn(
-            "relative grid w-full overflow-hidden rounded-[30px] border",
-            "border-[hsl(var(--border)/0.65)] bg-[hsl(var(--card)/0.82)]",
-            "shadow-[0_30px_90px_-40px_rgba(0,0,0,0.55)] backdrop-blur-2xl",
-            "lg:grid-cols-[0.9fr_1.1fr]",
+            "relative grid w-full overflow-hidden rounded-2xl border",
+            "border-border bg-card shadow-lg lg:grid-cols-[0.9fr_1.1fr]",
           )}
         >
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -right-12 top-0 h-48 w-48 rounded-full bg-red-500/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-56 w-56 rounded-full bg-amber-300/10 blur-3xl" />
-            <div
-              className={cn(
-                "absolute inset-0",
-                "bg-[linear-gradient(135deg,rgba(255,255,255,0.10),transparent_45%,rgba(255,255,255,0.03))]",
-              )}
-            />
-          </div>
 
           <AuthHeader
             title="GuiSIS"

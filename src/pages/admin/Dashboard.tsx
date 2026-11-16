@@ -2,7 +2,7 @@ import { useMemo, useId } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Calendar, Users, FileText, Sparkles, Ticket } from "lucide-react";
+import { Calendar, Users, FileText, ShieldCheck, Ticket } from "lucide-react";
 
 import { useAppointments } from "@/features/appointments/hooks/useAppointments";
 import { useAdminDashboard } from "@/features/analytics/hooks";
@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { toISODateString } from "@/utils";
 
 import { AcademicAlert } from "./dashboard/components/AcademicAlert";
-import { DailyTipBanner } from "./dashboard/components/DailyTipBanner";
 import { DashboardKpiGrid } from "./dashboard/components/DashboardKpiGrid";
 import { TodayAppointmentsCard } from "./dashboard/components/TodayAppointmentsCard";
 import { SlipsSummaryCard } from "./dashboard/components/SlipsSummaryCard";
@@ -144,7 +143,7 @@ export default function Dashboard() {
     description:
       "Polytechnic University of the Philippines – Guidance Services",
     badgeText: "Admin Overview",
-    badgeIcon: <Sparkles className="h-3.5 w-3.5" />,
+    badgeIcon: <ShieldCheck className="h-3.5 w-3.5" />,
     showDate: true,
     isLoading: false,
   });
@@ -165,8 +164,6 @@ export default function Dashboard() {
         currentYearEnd={settings?.currentYearEnd}
         onConfigure={() => navigate("/admin/academic-settings")}
       />
-
-      <DailyTipBanner />
 
       <DashboardKpiGrid
         isLoading={isAnalyticsLoading}

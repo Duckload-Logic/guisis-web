@@ -679,17 +679,10 @@ export const InterestsSection = forwardRef<
 
           <div
             className={cn(
-              "bg-glass-bg/60 relative mb-8 border-glass-border",
-              "overflow-hidden rounded-xl p-5 backdrop-blur-glass",
-              "transition-all duration-300 sm:p-8",
+              "relative mb-8 rounded-xl border border-border bg-card",
+              "p-5 shadow-sm sm:p-8",
             )}
           >
-            <div
-              className={cn(
-                "pointer-events-none absolute right-0 top-0 -mr-16 -mt-16",
-                "h-48 w-48 rounded-full bg-primary/5 blur-3xl",
-              )}
-            />
 
             <h4
               className={cn(

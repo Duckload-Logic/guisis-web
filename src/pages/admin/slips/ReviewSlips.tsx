@@ -585,29 +585,6 @@ export default function ReviewSlips() {
         "sm:px-6 md:px-8",
       )}
     >
-      <style>{`
-        @keyframes scan {
-          0% { top: 0%; }
-          50% { top: 100%; }
-          100% { top: 0%; }
-        }
-        .scanner-line {
-          animation: scan 2.5s linear infinite;
-        }
-        #qr-reader-viewport {
-          border: none !important;
-          width: 100% !important;
-          height: 100% !important;
-        }
-        #qr-reader-viewport video {
-          object-fit: cover !important;
-          width: 100% !important;
-          height: 100% !important;
-          transform: scaleX(-1) !important;
-          -webkit-transform: scaleX(-1) !important;
-        }
-      `}</style>
-
       <AnimatePresence>
         {dateRange.isExtended && (
           <motion.div

@@ -25,47 +25,39 @@ export function IIRSuccessPopup({
       <DialogContent
         hasCloseButton={false}
         className={cn(
-          "max-w-md border-card bg-card p-10 text-center shadow-2xl",
-          "backdrop-blur-2xl",
+          "max-w-md border border-border bg-card p-8 text-center shadow-md",
         )}
       >
         <div className="flex justify-center">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-green-500/20 blur-2xl" />
-            <div
-              className={cn(
-                "relative flex h-20 w-20 items-center justify-center",
-                "animate-bounce rounded-full bg-green-500 shadow-xl",
-                "shadow-green-500/30",
-              )}
-            >
-              <Check
-                className="h-10 w-10 text-white"
-                strokeWidth={4}
-              />
-            </div>
+          <div
+            className={cn(
+              "flex h-12 w-12 items-center justify-center rounded-full",
+              "border border-success-foreground/20 bg-success-background",
+              "text-success-foreground",
+            )}
+          >
+            <Check
+              className="h-6 w-6"
+              strokeWidth={2.5}
+            />
           </div>
         </div>
 
-        <DialogTitle className="text-3xl font-[900] text-foreground">
-          All Done!
+        <DialogTitle className="mt-4 text-xl font-bold text-foreground">
+          {isEditMode ? "IIR Profile Updated" : "IIR Form Submitted"}
         </DialogTitle>
 
-        <DialogDescription className="px-4 font-medium text-muted-foreground">
+        <DialogDescription className="px-2 text-sm text-muted-foreground">
           {isEditMode
-            ? "Your Individual Inventory Record has been successfully updated and saved."
-            : "Your Individual Inventory Record has been successfully submitted and saved to our secure database."}
+            ? "Your Individual Inventory Record has been successfully updated."
+            : "Your Individual Inventory Record has been submitted and queued for guidance validation."}
         </DialogDescription>
 
         <Button
           onClick={onReturn}
-          className={cn(
-            "h-14 w-full rounded-md bg-primary text-lg font-bold",
-            "text-primary-foreground shadow-xl transition-all",
-            "duration-300 hover:bg-primary/90 active:scale-95",
-          )}
+          className="mt-4 h-11 w-full rounded-lg font-semibold"
         >
-          Complete
+          Return to Dashboard
         </Button>
       </DialogContent>
     </Dialog>

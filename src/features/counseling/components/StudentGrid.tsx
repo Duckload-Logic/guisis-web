@@ -723,31 +723,14 @@ export default function StudentGrid({
                 {student.status?.name || "Unknown"}
               </div>
 
-              <div
-                className={cn(
-                  "absolute -right-10 -top-10 h-32 w-32 rounded-xl",
-                  "bg-primary/5 blur-3xl transition-colors duration-500",
-                  "group-hover:bg-primary/10",
-                )}
-              />
-
               <div className="relative z-10 flex flex-col gap-2 md:gap-5">
                 <div className="flex flex-col items-center gap-2 text-center md:gap-4">
                   <div className="group/avatar relative">
                     <div
                       className={cn(
-                        "absolute inset-0 rounded-xl bg-primary/20 opacity-0",
-                        "blur-2xl transition-all duration-700",
-                        "group-hover/avatar:bg-primary/30 group-hover:opacity-100",
-                      )}
-                    />
-
-                    <div
-                      className={cn(
                         "relative flex h-16 w-16 items-center justify-center",
-                        "overflow-hidden rounded-xl border-[3px] md:h-28 md:w-28",
-                        "bg-glass-bg/50 border-primary/20 shadow-md md:border-[6px]",
-                        "transition-transform duration-500",
+                        "overflow-hidden rounded-xl border-2 md:h-28 md:w-28",
+                        "border-border bg-muted/30 shadow-sm md:border-4",
                       )}
                     >
                       {renderStudentAvatar(

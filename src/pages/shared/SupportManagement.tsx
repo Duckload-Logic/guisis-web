@@ -17,7 +17,8 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
-  Sparkles,
+  Quote,
+  MoreVertical,
   User,
 } from "lucide-react";
 
@@ -188,6 +189,31 @@ export function SupportManagement() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    message: Message;
+  } | null>(null);
+  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+
+    const handleDismiss = () => setContextMenu(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setContextMenu(null);
+    };
+
+    window.addEventListener("click", handleDismiss);
+    window.addEventListener("contextmenu", handleDismiss);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("click", handleDismiss);
+      window.removeEventListener("contextmenu", handleDismiss);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [contextMenu]);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -569,6 +595,33 @@ export function SupportManagement() {
       );
   }, [selectedGroupKey, selectedGroup]);
 
+  // Mark all conversations across tickets as read
+  const handleMarkAllAsRead = useCallback(async () => {
+    const unreadMap = new Map<string, Ticket>();
+    allTickets.forEach((t) => {
+      if (!t.isRead) unreadMap.set(t.id, t);
+    });
+    tickets.forEach((t) => {
+      if (!t.isRead) unreadMap.set(t.id, t);
+    });
+
+    const unreadTickets = Array.from(unreadMap.values());
+    if (unreadTickets.length === 0) return;
+
+    setIsMarkingAllRead(true);
+    try {
+      await Promise.all(unreadTickets.map((t) => PatchSupportTicketRead(t.id)));
+      const markRead = (list: Ticket[]) =>
+        list.map((t) => (unreadMap.has(t.id) ? { ...t, isRead: true } : t));
+      setTickets(markRead);
+      setAllTickets(markRead);
+    } catch (err) {
+      console.error("[SupportManagement] {MarkAllAsRead}:", err);
+    } finally {
+      setIsMarkingAllRead(false);
+    }
+  }, [allTickets, tickets]);
+
   // Initial scroll to bottom when group switches
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -868,34 +921,54 @@ export function SupportManagement() {
                 )}
               >
                 <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
-                <span className="whitespace-nowrap">Active Conversations</span>
-              </h2>
-              <div className="flex shrink-0 items-center gap-1.5">
+                <span className="truncate">Conversations</span>
                 {unreadCount > 0 && (
                   <Badge
                     variant="outline"
                     className={cn(
-                      "shrink-0 whitespace-nowrap rounded-lg px-2 py-0.5",
-                      "border-primary/30 bg-primary/10 text-[10px] font-bold",
+                      "shrink-0 rounded-full px-1.5 py-0 text-[10px]",
+                      "font-bold border-primary/30 bg-primary/10",
                       "text-primary",
                     )}
+                    title={`${unreadCount} unread`}
                   >
-                    {unreadCount > 99 ? "99+" : unreadCount}{" "}
-                    {unreadCount === 1 ? "unread" : "unread"}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </Badge>
+                )}
+              </h2>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllAsRead}
+                    disabled={isMarkingAllRead}
+                    className={cn(
+                      "inline-flex h-7 items-center justify-center gap-1",
+                      "rounded-lg border border-border bg-muted/20 px-2",
+                      "text-[10px] font-semibold text-muted-foreground",
+                      "transition-colors hover:bg-muted hover:text-foreground",
+                      "focus-visible:outline-none focus-visible:ring-1",
+                      "focus-visible:ring-primary disabled:opacity-40",
+                    )}
+                    title="Mark all conversations as read"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                    <span className="hidden sm:inline">
+                      {isMarkingAllRead ? "Marking..." : "Mark read"}
+                    </span>
+                  </button>
                 )}
                 {isSupportDesktop && (
                   <button
                     type="button"
                     onClick={handleHideConversations}
                     className={cn(
-                      "relative z-30 inline-flex h-7 items-center",
-                      "justify-center gap-1 rounded-lg border",
-                      "border-glass-border bg-transparent px-2",
-                      "text-[10px] font-semibold text-muted-foreground",
-                      "transition-colors hover:bg-primary/10",
-                      "hover:text-primary focus-visible:outline-none",
-                      "focus-visible:ring-2 focus-visible:ring-primary",
+                      "inline-flex h-7 w-7 items-center justify-center",
+                      "rounded-lg border border-glass-border bg-transparent",
+                      "text-muted-foreground transition-colors",
+                      "hover:bg-primary/10 hover:text-primary",
+                      "focus-visible:outline-none focus-visible:ring-1",
+                      "focus-visible:ring-primary",
                     )}
                     aria-label="Hide active conversations"
                     aria-controls="active-conversations-panel"
@@ -903,7 +976,6 @@ export function SupportManagement() {
                     title="Hide active conversations"
                   >
                     <PanelLeftClose className="h-3.5 w-3.5" />
-                    Hide
                   </button>
                 )}
               </div>
@@ -1515,7 +1587,7 @@ export function SupportManagement() {
 
                             <div
                               className={cn(
-                                "flex flex-col",
+                                "group/msg flex flex-col",
                                 isStaff ? "items-end" : "items-start",
                                 isNewSenderStack ? "mt-2.5" : "mt-0.5",
                               )}
@@ -1535,34 +1607,75 @@ export function SupportManagement() {
                               )}
 
                               <div
-                                onClick={() =>
-                                  setActiveMessageId((prev) =>
-                                    prev === msg.id ? null : msg.id,
-                                  )
-                                }
                                 className={cn(
-                                  "max-w-[88%] cursor-pointer select-none",
-                                  "rounded-2xl px-3.5 py-2 text-xs",
-                                  "sm:max-w-[78%] sm:text-sm",
-                                  isNewSenderStack ? "mt-1" : "mt-0",
-                                  isStaff
-                                    ? "rounded-tr-none bg-primary " +
-                                        "shadow-xs text-primary-foreground"
-                                    : "rounded-tl-none border " +
-                                        "border-glass-border/60 bg-muted/80" +
-                                        "text-foreground",
-                                  msg.isPending && "opacity-75",
+                                  "flex max-w-[92%] items-center gap-1",
+                                  "sm:max-w-[85%]",
+                                  isStaff && "flex-row-reverse",
                                 )}
-                                title={formattedFullDate}
                               >
-                                <p
+                                <div
+                                  onClick={() =>
+                                    setActiveMessageId((prev) =>
+                                      prev === msg.id ? null : msg.id,
+                                    )
+                                  }
+                                  onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setContextMenu({
+                                      x: e.clientX,
+                                      y: e.clientY,
+                                      message: msg,
+                                    });
+                                  }}
                                   className={cn(
-                                    "whitespace-pre-wrap break-words",
-                                    "leading-relaxed",
+                                    "cursor-pointer select-none rounded-2xl",
+                                    "px-3.5 py-2 text-xs sm:text-sm",
+                                    isNewSenderStack ? "mt-1" : "mt-0",
+                                    isStaff
+                                      ? "rounded-tr-none bg-primary " +
+                                          "text-primary-foreground shadow-xs"
+                                      : "rounded-tl-none border " +
+                                          "border-border bg-muted/80 " +
+                                          "text-foreground",
+                                    msg.isPending && "opacity-75",
                                   )}
+                                  title={formattedFullDate}
                                 >
-                                  {msg.message}
-                                </p>
+                                  <p
+                                    className={cn(
+                                      "whitespace-pre-wrap break-words",
+                                      "leading-relaxed",
+                                    )}
+                                  >
+                                    {msg.message}
+                                  </p>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const rect =
+                                      e.currentTarget.getBoundingClientRect();
+                                    setContextMenu({
+                                      x: rect.left,
+                                      y: rect.bottom + 4,
+                                      message: msg,
+                                    });
+                                  }}
+                                  className={cn(
+                                    "flex h-6 w-6 shrink-0 items-center",
+                                    "justify-center rounded-md p-1 text-muted-foreground",
+                                    "opacity-0 transition-opacity hover:bg-muted",
+                                    "hover:text-foreground focus-visible:opacity-100",
+                                    "group-hover/msg:opacity-100",
+                                  )}
+                                  title="Quick actions"
+                                  aria-label="Quick actions"
+                                >
+                                  <MoreVertical className="h-3.5 w-3.5" />
+                                </button>
                               </div>
 
                               {/* Timestamp / Status */}
@@ -1996,6 +2109,74 @@ export function SupportManagement() {
           </motion.div>
         )}
       </motion.div>
+
+      {contextMenu && (
+        <div
+          style={{
+            position: "fixed",
+            left: `${Math.max(
+              12,
+              Math.min(contextMenu.x, window.innerWidth - 188),
+            )}px`,
+            top: `${Math.max(
+              12,
+              Math.min(contextMenu.y, window.innerHeight - 150),
+            )}px`,
+            zIndex: 9999,
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "w-44 rounded-xl border border-border bg-card p-1",
+            "text-card-foreground shadow-xl",
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(contextMenu.message.message);
+              setContextMenu(null);
+            }}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs",
+              "font-medium text-foreground transition-colors hover:bg-muted",
+            )}
+          >
+            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Copy Message</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const quoted = `> ${contextMenu.message.message.trim()}\n`;
+              setReplyText((prev) => (prev ? `${prev}\n${quoted}` : quoted));
+              setContextMenu(null);
+              setTimeout(() => textareaRef.current?.focus(), 50);
+            }}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs",
+              "font-medium text-foreground transition-colors hover:bg-muted",
+            )}
+          >
+            <Quote className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Quote in Reply</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(contextMenu.message.id);
+              setContextMenu(null);
+            }}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs",
+              "text-muted-foreground transition-colors hover:bg-muted",
+              "hover:text-foreground",
+            )}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>Copy Message ID</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
