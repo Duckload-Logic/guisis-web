@@ -50,6 +50,7 @@ import { useAuth, usePageMetadata, useToast } from "@/context";
 import { useFormShortcuts, useLocalDraft } from "@/hooks";
 import { AnimationStyles } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { getErrorMessage } from "@/lib/api";
 import { CRISIS_CONTACTS, STUDENT_ROUTES } from "@/config/constants";
 import {
@@ -796,7 +797,9 @@ export default function CreateAppointment() {
                     {selectedCounselor ? (
                       <Avatar className="h-8 w-8 shrink-0 border border-border">
                         <AvatarImage
-                          src={selectedCounselor.profilePicture}
+                          src={getProfilePictureUrl(
+                            selectedCounselor.profilePicture,
+                          )}
                           alt={formatCounselorFullName(selectedCounselor)}
                         />
                         <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">

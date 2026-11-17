@@ -3,11 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   useAppointment,
   useCancelAppointment,
+  useCounselors,
 } from "@/features/appointments/hooks";
 import { useAutoMarkNotificationRead } from "@/features/notifications/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertCircle,
   ArrowLeft,
@@ -17,6 +19,7 @@ import {
   Info,
   MapPin,
   MessageSquare,
+  UserCheck,
 } from "lucide-react";
 import { usePageMetadata } from "@/context";
 import { AnimationStyles } from "@/components/ui/animations";
@@ -34,6 +37,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/context";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import { STATUS_COLORS, getStatusColorKey } from "@/config/constants";
 import { parseAuditTrail } from "@/utils/auditTrail";
 import { format12HourTime } from "@/utils/dateTime";
@@ -52,6 +56,19 @@ export default function AppointmentDetails() {
   const { data: appointment, isLoading, isError } = useAppointment(id || "");
   const { mutate: cancelAppointment, isPending: isCancelling } =
     useCancelAppointment();
+
+  const { data: rawCounselors } = useCounselors();
+  const counselors = useMemo(
+    () => (Array.isArray(rawCounselors) ? rawCounselors : []),
+    [rawCounselors],
+  );
+
+  const preferredCounselor = useMemo(() => {
+    if (!appointment?.preferredCounselorId) return null;
+    return counselors.find(
+      (c) => c.userId === appointment.preferredCounselorId,
+    );
+  }, [counselors, appointment?.preferredCounselorId]);
 
   const auditEntries = useMemo(() => {
     const raw = parseAuditTrail(appointment?.adminNotes);
@@ -281,6 +298,18 @@ export default function AppointmentDetails() {
                 >
                   {appointment?.status?.name || "Unknown"}
                 </Badge>
+
+                {appointment?.counselorPreference && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "border-border/80 bg-muted/40 text-[10px] font-semibold",
+                      "text-muted-foreground",
+                    )}
+                  >
+                    Preference: {appointment.counselorPreference}
+                  </Badge>
+                )}
               </div>
 
               <h2
@@ -340,7 +369,7 @@ export default function AppointmentDetails() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5 pt-5">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div
                     className={cn(
                       "flex items-start gap-3 rounded-xl border",
@@ -388,6 +417,53 @@ export default function AppointmentDetails() {
                         )}
                       >
                         {format12HourTime(appointment?.timeSlot?.time || "")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border",
+                      "border-border/60 bg-muted/20 p-3.5",
+                    )}
+                  >
+                    {preferredCounselor ? (
+                      <Avatar className="mt-0.5 h-7 w-7 shrink-0 border border-border">
+                        <AvatarImage
+                          src={getProfilePictureUrl(
+                            preferredCounselor.profilePicture,
+                          )}
+                          alt={`${preferredCounselor.firstName} ${preferredCounselor.lastName}`}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-primary/10 text-[10px] font-bold text-primary">
+                          {preferredCounselor.firstName.charAt(0)}
+                          {preferredCounselor.lastName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    )}
+                    <div className="min-w-0">
+                      <p
+                        className={cn(
+                          "text-[11px] font-semibold text-muted-foreground",
+                        )}
+                      >
+                        Counselor Preference
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-0.5 truncate text-xs font-semibold",
+                          "text-foreground",
+                        )}
+                        title={
+                          appointment?.counselorPreference ||
+                          "No preference indicated"
+                        }
+                      >
+                        {appointment?.counselorPreference ||
+                          "No preference indicated"}
                       </p>
                     </div>
                   </div>

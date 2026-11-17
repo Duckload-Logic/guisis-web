@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getProfilePictureUrl } from "@/lib/profilePicture";
 import type { CounselorProfileView } from "@/features/appointments/types";
 
 interface CounselorPreferenceModalProps {
@@ -143,14 +144,14 @@ export function CounselorPreferenceModal({
           >
             Counselor Selection
           </Badge>
-          <ResponsiveModalTitle className="text-sm font-bold uppercase tracking-tight sm:text-base">
-            For students seeking counseling for the first time, kindly select
-            your preference:
+          <ResponsiveModalTitle
+            className="text-sm font-bold uppercase tracking-tight sm:text-base"
+          >
+            Select your counselor preference for this session:
           </ResponsiveModalTitle>
           <ResponsiveModalDescription className="text-xs text-muted-foreground">
-            Choose your preferred counselor or opt for No Preference. The
-            Guidance Office will accommodate your preference based on
-            availability.
+            Choose your preferred guidance counselor or opt for No Preference.
+            The Guidance Office will accommodate requests based on availability.
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
 
@@ -209,7 +210,7 @@ export function CounselorPreferenceModal({
                       )}
                     >
                       <AvatarImage
-                        src={c.profilePicture}
+                        src={getProfilePictureUrl(c.profilePicture)}
                         alt={fullName}
                         className="object-cover"
                       />
